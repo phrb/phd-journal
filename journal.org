@@ -1,0 +1,35 @@
+# -*- mode: org -*-
+# -*- coding: utf-8 -*-
+#+STARTUP: overview indent inlineimages logdrawer
+#+TITLE:  Pedro's Journal
+#+AUTHOR:      Pedro H R Bruel
+#+LANGUAGE:    en
+#+TAGS: LIG(L) HOME(H) Europe(E) Blog(B) noexport(n) Stats(S)
+#+TAGS: Epistemology(E) Vulgarization(V) Teaching(T) R(R) OrgMode(O) Python(P)
+#+EXPORT_SELECT_TAGS: Blog
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
+#+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+
+* 2017
+** November
+*** Reading Fisher's Design of Experiments
+**** Stopped at page 41 <2017-11-29 Wed 17:37>
+**** Quotes for key concepts
+- "Every experiment may be said to exist only in order to give the
+    facts a chance of disproving the null hypothesis"
+- "The null hypothesis must be exact, that is free from vagueness and
+    ambiguity"
+**** A null hipothesis for autotuning techniques
+***** Definitions
+- A base autotuning technique t_b
+- A new autotuning technique t_n
+- An autotuning problem P
+- A metric M
+***** An exact null hipothesis H 
+- H: The improvement of M produced by t_n is equal to t_b for P
+- What is the chance of disproving H?
+  
