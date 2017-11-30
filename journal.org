@@ -16,8 +16,7 @@
 
 * 2017
 ** November
-*** Reading Fisher's Design of Experiments
-**** Stopped at page 41 <2017-11-29 Wed 17:37>
+*** Reading Fisher's Design & Montgomery's Design
 **** Quotes for key concepts
 - "Every experiment may be said to exist only in order to give the
     facts a chance of disproving the null hypothesis"
@@ -27,9 +26,12 @@
 ***** Definitions
 - A base autotuning technique t_b
 - A new autotuning technique t_n
-- An autotuning problem P
+- A set of autotuning problems P
 - A metric M
 ***** An exact null hipothesis H 
-- H: The improvement of M produced by t_n is equal to t_b for P
-- What is the chance of disproving H?
-  
+- We can state H as: The improvement of M produced by t_n is equal to t_b for all
+  problems p \in P, that is, t_n performance is equal to t_b for P.
+***** Problems 
+- What is the chance of disproving H? In other words, to be considered better for P,
+  for how many problems p \in P must t_n perform better than t_b?
+- The set P must be very well chosen for this experiment to make sense. 
