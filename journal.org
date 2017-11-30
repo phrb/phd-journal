@@ -35,3 +35,4 @@
 - What is the chance of disproving H? In other words, to be considered better for P,
   for how many problems p \in P must t_n perform better than t_b?
 - The set P must be very well chosen for this experiment to make sense. 
+  
