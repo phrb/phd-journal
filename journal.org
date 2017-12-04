@@ -15,24 +15,22 @@
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
 * 2017
-** November
-*** Reading Fisher's Design & Montgomery's Design
-**** Quotes for key concepts
+** Reading Fisher's Design & Montgomery's Design
+*** Quotes for key concepts
 - "Every experiment may be said to exist only in order to give the
     facts a chance of disproving the null hypothesis"
 - "The null hypothesis must be exact, that is free from vagueness and
     ambiguity"
-**** A null hipothesis for autotuning techniques
-***** Definitions
+*** A null hipothesis for autotuning techniques
+**** Definitions
 - A base autotuning technique t_b
 - A new autotuning technique t_n
 - A set of autotuning problems P
 - A metric M
-***** An exact null hipothesis H 
+**** An exact null hipothesis H 
 - We can state H as: The improvement of M produced by t_n is equal to t_b for all
   problems p \in P, that is, t_n performance is equal to t_b for P.
-***** Problems 
+**** Problems 
 - What is the chance of disproving H? In other words, to be considered better for P,
   for how many problems p \in P must t_n perform better than t_b?
 - The set P must be very well chosen for this experiment to make sense. 
-  
