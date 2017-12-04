@@ -58,3 +58,14 @@ Pkg.add("NODAL")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
+** Reading Johanne's Paper the Bandit Problem
+*** Managing Autotuning Techniques as an N-Player Game
+- The players are distributed processes
+- The actions are changing, keeping, restarting or reconfiguring
+  search techniques
+- The payoff is finding better configurations
+  - Related to the Area Under the Curve Credit Assignment
+  - The 'full bandit' case is very similar to MAB AUC
+- Understanding applicability will require studying the implementation
+in C++ shared by Amélie.
+
