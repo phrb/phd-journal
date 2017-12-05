@@ -33,42 +33,10 @@
 - What is the chance of disproving H? In other words, to be considered better for P,
   for how many problems p \in P must t_n perform better than t_b?
 - The set P must be very well chosen for this experiment to make sense. 
-* Installing NODAL in Julia Nightly
-[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org/][Julia]] language.
-The idea is to provide tools for the implementation of parallel and
-distributed autotuners for various problem domains.
-** Download Julia Nightly
-*** [[https://julialang.org/downloads/][Download Generic Binary]]
-*** Downloading from the CLI
-You can run the following to install the latest *Julia* version:
-#+BEGIN_SRC bash
-cd ~ && mkdir .bin && cd .bin
-wget https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz
-tar xvf julia-latest-linux64.tar.gz
-mv julia-* julia
-rm julia-latest-linux64.tar.gz
-#+END_SRC
-This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
-You can use it like that or add an =alias= to your shell.
-** Installing the unregistered version
-This will not be needed after registering NODAL to METADATA.
-*** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
-*** Julia Commands
-#+BEGIN_SRC julia
-Pkg.clone("https://github.com/phrb/NODAL.jl")
-Pkg.build("NODAL")
-Pkg.test("NODAL")
-#+END_SRC
-** Installing from the Julia package manager
-*** Julia commands
-#+BEGIN_SRC julia
-Pkg.add("NODAL")
-Pkg.build("NODAL")
-Pkg.test("NODAL")
-#+END_SRC
-* Reading "Learning with Bandit Feedback in Potential Games" 
+* Studying "Learning with Bandit Feedback in Potential Games"
+** Reading "Learning with Bandit Feedback in Potential Games" 
 The [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][pdf file]] is in my paper library.
-** Managing Autotuning Techniques as an N-Player Game
+*** Managing Autotuning Techniques as an N-Player Game
 - Understanding applicability will require studying the implementation
   in C++ shared by Amélie.
 - The players are distributed processes
@@ -83,9 +51,9 @@ The [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][pdf file]] is 
 - In this context, what would be equivalent to the *Nash Equilibrium*?
   - No process "wants" to change its policy for selecting techniques
   - No process "wants" to change its current technique
-* Studying the code from "Learning with Bandit Feedback in Potential Games"
+** Studying the code from "Learning with Bandit Feedback in Potential Games"
 The [[file:~/code/bandit-johanne/][source code]] is located in my code library.  
-** General Questions & Considerations
+*** General Questions & Considerations
 It seems the game has only 2 players, but the paper considers N-player
 games. From the paper, it seems that the N-player implementation would
 work without much change.
@@ -93,9 +61,12 @@ work without much change.
 Payoffs seem to be pre-computed for each strategy but this does not,
 at first, imply that needing to compute the payoffs would change
 anything.
-** Questions about specific points in code
-*** =main.cpp=
-*** =game.h= & =game.cpp=
+
+To adapt this code to the selection of search algorithms by Julia
+processes we would need a way to implement the strategies.
+*** Questions about specific points in code
+**** =main.cpp=
+**** =game.h= & =game.cpp=
 Questions related to the [[file:~/code/bandit-johanne/code/game.h][header]] and the [[file:~/code/bandit-johanne/code/game.cpp][implementation]].
 
 Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]] to understand:
@@ -103,8 +74,50 @@ Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]
 - The =potential_function=
 - Constraints on payoff arrays
 - What are =gamma= & =utility=
-*** =player.h= & =player.cpp=
+**** =player.h= & =player.cpp=
 Questions related to the [[file:~/code/bandit-johanne/code/player.h][header]] and the [[file:~/code/bandit-johanne/code/player.cpp][implementation]].
 
 What are the arrays:
 - =proba_strat= & =y_strat=
+* NODAL Development
+** Installing NODAL in Julia Nightly
+[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org/][Julia]] language.
+The idea is to provide tools for the implementation of parallel and
+distributed autotuners for various problem domains.
+*** Download Julia Nightly
+**** [[https://julialang.org/downloads/][Download Generic Binary]]
+**** Downloading from the CLI
+You can run the following to install the latest *Julia* version:
+#+BEGIN_SRC bash
+cd ~ && mkdir .bin && cd .bin
+wget https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz
+tar xvf julia-latest-linux64.tar.gz
+mv julia-* julia
+rm julia-latest-linux64.tar.gz
+#+END_SRC
+This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
+You can use it like that or add an =alias= to your shell.
+*** Installing the unregistered version
+This will not be needed after registering NODAL to METADATA.
+**** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
+**** Julia Commands
+#+BEGIN_SRC julia
+Pkg.clone("https://github.com/phrb/NODAL.jl")
+Pkg.build("NODAL")
+Pkg.test("NODAL")
+#+END_SRC
+*** Installing from the Julia package manager
+**** Julia commands
+#+BEGIN_SRC julia
+Pkg.add("NODAL")
+Pkg.build("NODAL")
+Pkg.test("NODAL")
+#+END_SRC
+** Setting up a new Release
+*** Using Attobot
+[[https://github.com/attobot][Attobot]] integrates with *GitHub* to automatically register a new package
+or a package version to *Julia*'s =METADATA= package repository.  Attobot
+only needs a new *GitHub* release to work.
+*** Using *Julia*'s =PkgDev=
+Check the [[https://docs.julialang.org/en/latest/manual/packages/#Tagging-and-Publishing-Your-Package-1][documentation]] to learn how to register and publish user
+packages to =METADATA=.
