@@ -66,7 +66,8 @@ Pkg.add("NODAL")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
-* Reading Johanne's Paper the Bandit Problem
+* Reading "Learning with Bandit Feedback in Potential Games" 
+The [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][pdf file]] is in my paper library.
 ** Managing Autotuning Techniques as an N-Player Game
 - Understanding applicability will require studying the implementation
   in C++ shared by Amélie.
@@ -82,3 +83,28 @@ Pkg.test("NODAL")
 - In this context, what would be equivalent to the *Nash Equilibrium*?
   - No process "wants" to change its policy for selecting techniques
   - No process "wants" to change its current technique
+* Studying the code from "Learning with Bandit Feedback in Potential Games"
+The [[file:~/code/bandit-johanne/][source code]] is located in my code library.  
+** General Questions & Considerations
+It seems the game has only 2 players, but the paper considers N-player
+games. From the paper, it seems that the N-player implementation would
+work without much change.
+
+Payoffs seem to be pre-computed for each strategy but this does not,
+at first, imply that needing to compute the payoffs would change
+anything.
+** Questions about specific points in code
+*** =main.cpp=
+*** =game.h= & =game.cpp=
+Questions related to the [[file:~/code/bandit-johanne/code/game.h][header]] and the [[file:~/code/bandit-johanne/code/game.cpp][implementation]].
+
+Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]] to understand:
+- What is a potential game
+- The =potential_function=
+- Constraints on payoff arrays
+- What are =gamma= & =utility=
+*** =player.h= & =player.cpp=
+Questions related to the [[file:~/code/bandit-johanne/code/player.h][header]] and the [[file:~/code/bandit-johanne/code/player.cpp][implementation]].
+
+What are the arrays:
+- =proba_strat= & =y_strat=
