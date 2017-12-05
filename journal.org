@@ -41,7 +41,14 @@ distributed autotuners for various problem domains.
 *** Download Julia Nightly
 **** [[https://julialang.org/downloads/][Download Generic Binary]]
 **** Alternative: Update Script
-#+INCLUDE: "./scripts/update_julia.sh" src bash
+You can run the following to install the latest *Julia* version:
+#+BEGIN_SRC bash
+cd ~ && mkdir .bin && cd .bin
+wget https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz
+tar xvf julia-latest-linux64.tar.gz
+mv julia-* julia
+rm julia-latest-linux64.tar.gz
+#+END_SRC
 *** Installing the unregistered version
 This will not be needed after registering to METADATA
 **** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
@@ -60,12 +67,17 @@ Pkg.test("NODAL")
 #+END_SRC
 ** Reading Johanne's Paper the Bandit Problem
 *** Managing Autotuning Techniques as an N-Player Game
+- Understanding applicability will require studying the implementation
+  in C++ shared by Amélie.
 - The players are distributed processes
 - The actions are changing, keeping, restarting or reconfiguring
   search techniques
 - The payoff is finding better configurations
   - Related to the Area Under the Curve Credit Assignment
   - The 'full bandit' case is very similar to MAB AUC
-- Understanding applicability will require studying the implementation
-in C++ shared by Amélie.
-
+- Gaming strategies could consist of policies to select
+  techniques based on the number of processes, past results,
+  and maybe characteristics of the search space
+- In this context, what would be equivalent to the Nash Equilibrium?
+  - No process "wants" to change its policy for selecting techniques
+  - No process "wants" to change its current technique
