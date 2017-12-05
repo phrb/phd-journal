@@ -14,33 +14,32 @@
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
-* 2017
-** Reading Fisher's Design & Montgomery's Design
-*** Quotes for key concepts
+* Reading Fisher's Design & Montgomery's Design
+** Quotes for key concepts
 - "Every experiment may be said to exist only in order to give the
     facts a chance of disproving the null hypothesis"
 - "The null hypothesis must be exact, that is free from vagueness and
     ambiguity"
-*** A null hipothesis for autotuning techniques
-**** Definitions
+** A null hipothesis for autotuning techniques
+*** Definitions
 - A base autotuning technique t_b
 - A new autotuning technique t_n
 - A set of autotuning problems P
 - A metric M
-**** An exact null hipothesis H 
+*** An exact null hipothesis H 
 - We can state H as: The improvement of M produced by t_n is equal to t_b for all
   problems p \in P, that is, t_n performance is equal to t_b for P.
-**** Problems 
+*** Problems 
 - What is the chance of disproving H? In other words, to be considered better for P,
   for how many problems p \in P must t_n perform better than t_b?
 - The set P must be very well chosen for this experiment to make sense. 
-** Installing NODAL in Julia Nightly
+* Installing NODAL in Julia Nightly
 [[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org/][Julia]] language.
 The idea is to provide tools for the implementation of parallel and
 distributed autotuners for various problem domains.
-*** Download Julia Nightly
-**** [[https://julialang.org/downloads/][Download Generic Binary]]
-**** Alternative: Update Script
+** Download Julia Nightly
+*** [[https://julialang.org/downloads/][Download Generic Binary]]
+*** Downloading from the CLI
 You can run the following to install the latest *Julia* version:
 #+BEGIN_SRC bash
 cd ~ && mkdir .bin && cd .bin
@@ -49,24 +48,26 @@ tar xvf julia-latest-linux64.tar.gz
 mv julia-* julia
 rm julia-latest-linux64.tar.gz
 #+END_SRC
-*** Installing the unregistered version
-This will not be needed after registering to METADATA
-**** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
-**** Julia Commands
+This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
+You can use it like that or add an =alias= to your shell.
+** Installing the unregistered version
+This will not be needed after registering NODAL to METADATA.
+*** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
+*** Julia Commands
 #+BEGIN_SRC julia
 Pkg.clone("https://github.com/phrb/NODAL.jl")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
-*** Installing from the Julia package manager
-**** Julia commands
+** Installing from the Julia package manager
+*** Julia commands
 #+BEGIN_SRC julia
 Pkg.add("NODAL")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
-** Reading Johanne's Paper the Bandit Problem
-*** Managing Autotuning Techniques as an N-Player Game
+* Reading Johanne's Paper the Bandit Problem
+** Managing Autotuning Techniques as an N-Player Game
 - Understanding applicability will require studying the implementation
   in C++ shared by Amélie.
 - The players are distributed processes
@@ -78,6 +79,6 @@ Pkg.test("NODAL")
 - Gaming strategies could consist of policies to select
   techniques based on the number of processes, past results,
   and maybe characteristics of the search space
-- In this context, what would be equivalent to the Nash Equilibrium?
+- In this context, what would be equivalent to the *Nash Equilibrium*?
   - No process "wants" to change its policy for selecting techniques
   - No process "wants" to change its current technique
