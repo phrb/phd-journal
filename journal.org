@@ -6,6 +6,7 @@
 #+LANGUAGE:    en
 #+TAGS: LIG(L) HOME(H) Europe(E) Blog(B) noexport(n) Stats(S)
 #+TAGS: Epistemology(E) Vulgarization(V) Teaching(T) R(R) OrgMode(O) Python(P)
+#+TAGS: Book(b) DOE(D) Code(C) NODAL(N)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
@@ -14,29 +15,58 @@
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
-* Reading Fisher's Design & Montgomery's Design
-** Quotes for key concepts
+* 2017
+** November 
+*** [2017-11-28 Tue]
+**** Install and Configure Emacs
+- Attempted to use vim-orgmode but gave up: not enough features
+- Switch to Emacs
+**** Start an OrgMode Journal
+- Use template from webinars
+- Populate with some tasks
+**** Advance on Reconfig Presentation
+- Should add presentation notes for Alfredo
+*** [2017-11-29 Wed]
+- Complete Reconfig Presentation
+- Read Fisher's Design of Experiments
+**** Meeting with Alfredo
+- Present our work for Brice and his research center
+- Finish slides for Reconfig
+*** [2017-11-30 Thu]
+- Fix OFII form error and post it
+- Start working on NODAL poster
+**** Amélie's Presentation
+- She is the author of Johanne's NIPS paper
+- Two bandit cases: bandit and semi-bandit
+- It is possible to achieve Nash Equilibria with both, given certain
+  conditions
+- I sent her an e-mail, asking for her C++ implementation of her work
+- She already sent her code
+- Print and read Amélie's paper
+** December
+*** Reading Fisher's Design & Montgomery's Design                :Book:DOE:
+**** Quotes for key concepts
 - "Every experiment may be said to exist only in order to give the
     facts a chance of disproving the null hypothesis"
 - "The null hypothesis must be exact, that is free from vagueness and
     ambiguity"
-** A null hipothesis for autotuning techniques
-*** Definitions
+**** A null hipothesis for autotuning techniques
+***** Definitions
 - A base autotuning technique t_b
 - A new autotuning technique t_n
 - A set of autotuning problems P
 - A metric M
-*** An exact null hipothesis H 
+***** An exact null hipothesis H 
 - We can state H as: The improvement of M produced by t_n is equal to t_b for all
   problems p \in P, that is, t_n performance is equal to t_b for P.
-*** Problems 
+***** Problems 
 - What is the chance of disproving H? In other words, to be considered better for P,
   for how many problems p \in P must t_n perform better than t_b?
 - The set P must be very well chosen for this experiment to make sense. 
-* Studying "Learning with Bandit Feedback in Potential Games"
-** Reading "Learning with Bandit Feedback in Potential Games" 
+*** Studying "Learning with Bandit Feedback in Potential Games"      :Code:
+**** Reading "Learning with Bandit Feedback in Potential Games" 
 The [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][pdf file]] is in my paper library.
-*** Managing Autotuning Techniques as an N-Player Game
+***** Managing Autotuning Techniques as an N-Player Game
 - Understanding applicability will require studying the implementation
   in C++ shared by Amélie.
 - The players are distributed processes
@@ -51,9 +81,9 @@ The [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][pdf file]] is 
 - In this context, what would be equivalent to the *Nash Equilibrium*?
   - No process "wants" to change its policy for selecting techniques
   - No process "wants" to change its current technique
-** Studying the code from "Learning with Bandit Feedback in Potential Games"
+**** Studying the code from "Learning with Bandit Feedback in Potential Games"
 The [[file:~/code/bandit-johanne/][source code]] is located in my code library.  
-*** General Questions & Considerations
+***** General Questions & Considerations
 It seems the game has only 2 players, but the paper considers N-player
 games. From the paper, it seems that the N-player implementation would
 work without much change.
@@ -64,16 +94,16 @@ anything.
 
 To adapt this code to the selection of search algorithms by Julia
 processes we would need a way to implement the strategies.
-*** Questions about specific points in code
-**** =main.cpp=
+***** Questions about specific points in code
+****** =main.cpp=
 Questions and execution flow related to the [[file:~/code/bandit-johanne/code/main.cpp][main file]].
 
-***** Questions
+******* Questions
 
 - Why weren't random payoffs used?
 - How are strategies represented in the =evol= array?
 
-***** Execution Flow
+******* Execution Flow
 
 1. Declare payoff and strategy arrays
 2. Initialize pre-computed payoffs
@@ -82,10 +112,10 @@ Questions and execution flow related to the [[file:~/code/bandit-johanne/code/ma
 5. Call =Game->Play=
 6. Save output to file
    
-**** =game.h= & =game.cpp=
+****** =game.h= & =game.cpp=
 Questions and execution flow related to the [[file:~/code/bandit-johanne/code/game.h][header]] and the [[file:~/code/bandit-johanne/code/game.cpp][implementation]].
 
-***** Questions
+******* Questions
 
 Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]] to understand:
 
@@ -95,7 +125,7 @@ Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]
 - What are =gamma= & =utility=?
 - What is =res= used for inside =Game->play=? And inside =Game=?
 
-***** Execution Flow
+******* Execution Flow
 
 1. Instantiated by =main.cpp=
 2. =void Game->play= is called by =main.cpp=
@@ -111,32 +141,34 @@ evol[i][(int)floor(P1->proba_strat[0]*100)][(int)floor(P2->proba_strat[0]*100)]+
    2. Calls =play_one_turn= (see below)
 5. Save output to file
 
-****** Execution Flow of =play_one_turn=
+******** Execution Flow of =play_one_turn=
 
 1. Called by =Game->play=
 2. Initializes =epsilon=, =gamma= and =utility=
-3. Set strategies for each player using =draw_proba=
-4. Update =utility= arrays
+3. Set strategies for each player with =P->setStrat()= and
+   =P->draw_proba()=
+4. Update =utility= arrays with =P1->utility(P2->getStrat())=
+   and =P2->utility(P1->getStrat())=
 5. Update =y_strat= arrays with =utility= and =gamma=
-6. Calls =update_proba(epsilon)= for each player
+6. Calls =P->update_proba(epsilon)= for each player
 
-**** =player.h= & =player.cpp=
+****** =player.h= & =player.cpp=
 Questions and execution flow related to the
 [[file:~/code/bandit-johanne/code/player.h][header]] and the
 [[file:~/code/bandit-johanne/code/player.cpp][implementation]].
 
-***** Questions
+******* Questions
 
 - What are the arrays =proba_strat= & =y_strat=?
 
-* NODAL Development
-** Installing NODAL in Julia Nightly
-[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org/][Julia]] language.
-The idea is to provide tools for the implementation of parallel and
-distributed autotuners for various problem domains.
-*** Download Julia Nightly
-**** [[https://julialang.org/downloads/][Download Generic Binary]]
-**** Downloading from the CLI
+*** NODAL Development                                          :Code:NODAL:
+**** Installing NODAL in Julia Nightly
+[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org][Julia]]
+language. The idea is to provide tools for the implementation of
+parallel and distributed autotuners for various problem domains.
+***** Download Julia Nightly
+****** [[https://julialang.org/downloads][Download Generic Binary]] 
+****** Downloading from the CLI
 You can run the following to install the latest *Julia* version:
 #+BEGIN_SRC bash
 cd ~ && mkdir .bin && cd .bin
@@ -147,31 +179,31 @@ rm julia-latest-linux64.tar.gz
 #+END_SRC
 This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
 You can use it like that or add an =alias= to your shell.
-*** Installing the unregistered version
+***** Installing the unregistered version
 This will not be needed after registering NODAL to METADATA.
-**** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
-**** Julia Commands
+****** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
+****** Julia Commands
 #+BEGIN_SRC julia
 Pkg.clone("https://github.com/phrb/NODAL.jl")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
-*** Installing from the Julia package manager
-**** Julia commands
+***** Installing from the Julia package manager
+****** Julia commands
 #+BEGIN_SRC julia
 Pkg.add("NODAL")
 Pkg.build("NODAL")
 Pkg.test("NODAL")
 #+END_SRC
-** Setting up a new Release
-*** Using Attobot
+**** Setting up a new Release
+***** Using Attobot
 [[https://github.com/attobot][Attobot]] integrates with *GitHub* to automatically register a new package
 or a package version to *Julia*'s =METADATA= package repository.  Attobot
 only needs a new *GitHub* release to work.
-*** Using *Julia*'s =PkgDev=
+***** Using *Julia*'s =PkgDev=
 Check the [[https://docs.julialang.org/en/latest/manual/packages/#Tagging-and-Publishing-Your-Package-1][documentation]] to learn how to register and publish user
 packages to =METADATA=.
-** Development Workflow
+**** Development Workflow
 The process of fixing an [[https://github.com/phrb/NODAL.jl/issues][issue]] or submitting a new
 feature is:
 0. Fork [[https://github.com/phrb/NODAL.jl][NODAL on GitHub]]
@@ -198,4 +230,117 @@ git checkout -b fix-or-feature
    messages. Something similar to [[https://udacity.github.io/git-styleguide/][Udacity's guidelines]] is preferred
    but not strictly necessary.
 
-4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= branch
+4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= bran
+*** [2017-12-01 Fri]
+- Finish the Reconfig poster
+- Converge to final Reconfig presentation
+*** [2017-12-04 Mon]
+- Set up build environment for latest Julia version
+- Apply Sai's corrections to presentation
+**** Fix NODAL's status in Julia pkg Manager
+- Fixed warnings and deprecations
+- Tagged new version 'v0.3.5'
+- Released new version
+- Made new pull request to METADATA
+- Waiting for merge
+*** [2017-12-05 Tue]
+- Started using new us-layout keyboard.
+- Study the Bandit's code and paper
+**** Start NODAL's 'dev' branch
+- Pushed 'dev' branch to GitHub repository.
+- Added development workflow to Journal
+*** [2017-12-06 Wed]
+- Describe Hedge's code exec flow ([[Studying "Learning with Bandit Feedback in Potential Games"][Main Section]])
+- Elaborate concrete bandit implementation plan for autotuning ([[Studying "Learning with Bandit Feedback in Potential Games"][Main Section]])
+- Resume study of Fisher's and Montgomer's books ([[Reading Fisher's Design & Montgomery's Design][Main Section]])
+**** Discussion with Brice and Arnaud
+Meeting notes kindly taken by Arnaud.
+***** Questions left open in Pedro's journal
+- Bandits: This would clearly be useful for auto-tuning as we may not
+  know in advance what would work better on a given instance.
+  - Bandit algorithms could be used to select which algorithms work better.
+  - They could also be used to select which areas to explore.
+  A possibly interesting question is "How does parallel bandit work?".
+
+- Game Theory: branch of mathematics for
+  1. modeling/studying situations where agents compete with each others.
+  2. improving situation where agents compete with each others
+  3. design fully distributed algorithms/protocols
+  It's not clear yet how game theory would help in our auto-tuning
+  context but we can keep this in mind.
+
+- Design of Experiments: Master 2 lecture on
+[[https://github.com/alegrand/SMPE][SMPE]]. Description and
+  rooms are
+[[http://mescal.imag.fr/membres/arnaud.legrand/teaching/2017/M2R_SMPE.php][here]].
+
+- Quick discussions about Julia and how it compares with other
+  languages (compiled on the fly, FFI, ...).
+***** Autotuning context:
+  - So far, with FPGAs, what was distinctive was:
+    1. Many many compilation parameters
+    2. Several parameters to optimize
+    3. Extremely long experiments
+    4. Parallel exploration
+    Can we keep all these research challenges open or should we focus
+    on one or two of them ?
+  - Brice thinks there is:
+    - The structure of the code is also important for the compiler and
+      it may be worth looking at code transformation. Changing the
+      code may have a lot of impact on performance and this
+      variability may contain a lot of useful information. BOAST
+      (meta-programming rather than code transformation) can help to
+      investigate this.
+
+      Actually, the fact some gain can be obtained by tweaking the
+      compiler option may mean we're far from the peak performance,
+      which may be caused by an ineffective code structure. *This could
+      be explored with BOAST and* *we should probably check this before
+      going into compiler flag exploration*.
+  - Discussions about compiler passes (LLVM) and the importance of
+    unroll/jam.
+  - Questions:
+    - Do we have FPGAs to play with ?
+      - Some of the recent Intel Skylake CPUs have FPGAs. They were
+        released in Spring but Google and Amazon bought them all so we
+        have to wait for new ones to be produced.
+    - Do we have the right compilers/toolchain ? Is it functional ?
+      - Maybe. :) Intel is supposed to provide us with an OpenCL to
+        FPGA compiler with their Skylake chips.
+      - Before, Pedro used an open-source High Level Synthesis tool.
+    - Can we explore application structures for FPGAs with BOAST ?
+      - Sure, why not ?
+
+  - Arnaud mentions http://www.exanest.eu/ and Fabien Chaix he knows
+    quite well.
+  - Pedro's work was published at ReConfig (Cancun) and Alfredo's
+    currently presenting it.
+    - https://github.com/phrb/slides-reconfig-2017-autotuning
+    -
+https://github.com/phrb/slides-reconfig-2017-autotuning/raw/master/src/presentation.pdf
+      - Slide 9: We have a quick discussion on why there is a single
+        configuration file controlling all the knobs/parameters of the
+        blue workflow compared to being able to obtain intermediary
+        information and possibly perform selections at each step
+        before moving to the next one.
+      - Slide 9: This phase is fast. It's the compiling from the
+        Verilog format to the hardware synthesis that is really
+        slow. They use Quartus. Quartus also has parameters but this
+        parameter space was not explored yet in this work.
+        - LegUp is supposed to have a cost model that allows to guide
+          the optimization without going all the way down to the
+          hardware synthesis to evaluate configurations but it was not
+          functional.
+      - Slide 11: summarizes the whole workflow. 6+ compilation passes
+      - Brice wonders if peak performance models exists for such
+        app/systems. It would be worth knowing how far we are from the
+        optimal to decide whether further optimizations are needed.
+      - Quick discussion about multi-criteria optimization and Pareto
+        front.
+***** Stuff to do
+- Create a big data frame with all the samples you obtained during the
+  exploration of the autotuner. We'll try to explore (metric
+  variability, parameter space exploration, criteria Pareto structure)
+  it together.
+- The same could be done for GPU experiments.
+  
