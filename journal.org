@@ -66,19 +66,69 @@ To adapt this code to the selection of search algorithms by Julia
 processes we would need a way to implement the strategies.
 *** Questions about specific points in code
 **** =main.cpp=
+Questions and execution flow related to the [[file:~/code/bandit-johanne/code/main.cpp][main file]].
+
+***** Questions
+
+- Why weren't random payoffs used?
+- How are strategies represented in the =evol= array?
+
+***** Execution Flow
+
+1. Declare payoff and strategy arrays
+2. Initialize pre-computed payoffs
+3. Initialize seeds array
+4. Instantiate a new =Game=
+5. Call =Game->Play=
+6. Save output to file
+   
 **** =game.h= & =game.cpp=
-Questions related to the [[file:~/code/bandit-johanne/code/game.h][header]] and the [[file:~/code/bandit-johanne/code/game.cpp][implementation]].
+Questions and execution flow related to the [[file:~/code/bandit-johanne/code/game.h][header]] and the [[file:~/code/bandit-johanne/code/game.cpp][implementation]].
+
+***** Questions
 
 Re-read [[file:~/Dropbox/papers/bandit-problem/cohen2017learning.pdf][the paper]] to understand:
-- What is a potential game
-- The =potential_function=
-- Constraints on payoff arrays
-- What are =gamma= & =utility=
-**** =player.h= & =player.cpp=
-Questions related to the [[file:~/code/bandit-johanne/code/player.h][header]] and the [[file:~/code/bandit-johanne/code/player.cpp][implementation]].
 
-What are the arrays:
-- =proba_strat= & =y_strat=
+- What is a potential game?
+- What does the =potential_function= do?
+- What are the constraints on payoff arrays?
+- What are =gamma= & =utility=?
+- What is =res= used for inside =Game->play=? And inside =Game=?
+
+***** Execution Flow
+
+1. Instantiated by =main.cpp=
+2. =void Game->play= is called by =main.cpp=
+3. Open output file
+4. Loop for the number of steps:
+   1. Registers player strategies in =evol= for step =i= such that:
+      #+BEGIN_SRC C
+evol[i][(int)floor(P1->proba_strat[0]*100)][(int)floor(P2->proba_strat[0]*100)]++;
+      #+END_SRC
+   
+      Where =P1= and =P2= are =Player= objects and the =proba_strat= arrays store
+      the current strategy of each player.
+   2. Calls =play_one_turn= (see below)
+5. Save output to file
+
+****** Execution Flow of =play_one_turn=
+
+1. Called by =Game->play=
+2. Initializes =epsilon=, =gamma= and =utility=
+3. Set strategies for each player using =draw_proba=
+4. Update =utility= arrays
+5. Update =y_strat= arrays with =utility= and =gamma=
+6. Calls =update_proba(epsilon)= for each player
+
+**** =player.h= & =player.cpp=
+Questions and execution flow related to the
+[[file:~/code/bandit-johanne/code/player.h][header]] and the
+[[file:~/code/bandit-johanne/code/player.cpp][implementation]].
+
+***** Questions
+
+- What are the arrays =proba_strat= & =y_strat=?
+
 * NODAL Development
 ** Installing NODAL in Julia Nightly
 [[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org/][Julia]] language.
