@@ -413,5 +413,6 @@ https://github.com/phrb/slides-reconfig-2017-autotuning/raw/master/src/presentat
   it together.
 - The same could be done for GPU experiments.
 *** [2017-12-07 Thu]
-- Watch Arnaud's lecture
+**** Arnaud's Lecture on Linear Regression
+The slides and code are hosted at [[https://github.com/alegrand/SMPE][GitHub]].
 **** Creating data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
