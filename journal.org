@@ -231,6 +231,75 @@ git checkout -b fix-or-feature
    but not strictly necessary.
 
 4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= bran
+*** Creating a Data Frame for FPGA Autotuning Samples
+Following Arnaud's [[https://github.com/alegrand/SMPE#learning-r][guidelines]] from the SMPE course.
+**** Installing R Dependencies
+#+BEGIN_SRC R
+install.packages(c("ggplot2", "dplyr", "tidyr"),
+                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
+#+END_SRC
+
+Loading libraries:
+
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+#+END_SRC
+
+#+RESULTS:
+| tidyr     |
+| dplyr     |
+| ggplot2   |
+| stats     |
+| graphics  |
+| grDevices |
+| utils     |
+| datasets  |
+| methods   |
+| base      |
+**** Loading Data from Experiments
+#+BEGIN_SRC R
+repository   <- "~/code/legup-tuner"
+results      <- "post_place_and_route/py/results"
+experiments  <- c("default_stratixV_perf")
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes" "blowfish", "gsm", "mips")
+
+txt_measurements <-
+
+for (experiment in experiments) {
+    
+}
+data <- read.table("~/code/legup-tuner/post_place_and_route/py/results/default_stratixV_perf/dfdiv_5400_1/best_block_log.txt",
+                   header = FALSE)
+#+END_SRC
+
+#+RESULTS:
+| 424.792549849 | 1 |
+| 510.478797913 | 1 |
+| 926.182755947 | 1 |
+| 1009.01599383 | 1 |
+| 1403.77470398 | 1 |
+| 1493.32000685 | 1 |
+|  1946.0224638 | 1 |
+| 2037.53957796 | 1 |
+| 2429.52309799 | 1 |
+| 2856.39093089 | 1 |
+|  2943.9662559 | 1 |
+| 3025.37711191 | 1 |
+|   3109.482301 | 1 |
+| 3485.85893583 | 1 |
+| 3860.53636289 | 1 |
+|  3940.2128768 | 1 |
+| 4314.92783189 | 1 |
+| 4686.38417888 | 1 |
+| 4770.40381098 | 1 |
+| 5179.46483493 | 1 |
+| 5261.57638383 | 1 |
+| 5652.38556695 | 1 |
+| 5652.38578987 | 1 |
+
 *** [2017-12-01 Fri]
 - Finish the Reconfig poster
 - Converge to final Reconfig presentation
@@ -343,4 +412,6 @@ https://github.com/phrb/slides-reconfig-2017-autotuning/raw/master/src/presentat
   variability, parameter space exploration, criteria Pareto structure)
   it together.
 - The same could be done for GPU experiments.
-  
+*** [2017-12-07 Thu]
+- Watch Arnaud's lecture
+**** Creating data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
