@@ -259,6 +259,11 @@ Then, replace the contents of the variable =repository= with the path
 into which you cloned the repository.
 The following script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/generate_csv_files.r][GitHub]]:
 
+#+BEGIN_SRC sh :results output code :wrap "SRC R"
+cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
+#+END_SRC
+
+#+RESULTS:
 #+BEGIN_SRC R
 library(dplyr)
 library(tidyr)
@@ -404,6 +409,11 @@ happened when there was some problem during HLS, synthesis, or
 testing. The following script, hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/mean_sd.r][GitHub]], will print the *mean*
 and *standard deviation* for the FPGA *hardware metrics* and *WNS*:
 
+#+BEGIN_SRC sh :results output code :wrap "SRC R :results output"
+cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+END_SRC
+
+#+RESULTS:
 #+BEGIN_SRC R :results output
 library(dplyr)
 
@@ -501,6 +511,11 @@ the following script plots the 30 largest correlations so that we can
 look at the relationships between variables. The script is hosted at
 [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/correlations.r][GitHub]].
 
+#+BEGIN_SRC sh :results output code :wrap "SRC R :file correlations.eps :results output graphics"
+cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r 
+#+END_SRC
+
+#+RESULTS:
 #+BEGIN_SRC R :file correlations.eps :results output graphics
 library(dplyr)
 
