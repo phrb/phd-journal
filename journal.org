@@ -257,7 +257,7 @@ git clone https://github.com/phrb/legup-tuner.git
 
 Then, replace the contents of the variable =repository= with the path
 into which you cloned the repository.
-After that, run the script:
+The following script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/generate_csv_files.r][GitHub]]:
 
 #+BEGIN_SRC R
 library(dplyr)
@@ -371,7 +371,7 @@ for (experiment in experiments) {
 
 #+RESULTS:
 
-**** Data Analysis
+*** Analysing FPGA Autotuning Samples                              :R:Code:
 The generated =csv= files live in the [[https://github.com/phrb/legup-tuner/tree/master/post_place_and_route/py/results/r_scripts/data][repository]], and are organized by
 *experiment* and CHStone *application*. The *experiments* are the autotuning
 runs targeting different optimization objectives. The *applications*
@@ -391,6 +391,107 @@ Combining data from different *applications* would be more complicated.
 The search spaces are not the same, but the *target FPGA* is the same.
 We could try to understand some property of the hardware by looking
 at the variability of the hardware metrics.
+
+**** Multivariate Analysis
+Implementing some ideas from [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html][The Little Book of R for Multivariate
+Analysis]].
+
+***** Summary Statistics
+First, we will combine all *experiments* with the *dfdiv* application. In
+this case, the =WNS= columns are not directly comparable so I am not
+removing the rows where ~WNS == Inf~. This indicates a penalty that
+happened when there was some problem during HLS, synthesis, or
+testing. The following script, hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/mean_sd.r][GitHub]], will print the *mean*
+and *standard deviation* for the FPGA *hardware metrics* and *WNS*:
+
+#+BEGIN_SRC R :results output
+library(dplyr)
+
+csv_dir <- c("~/code/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+data       <- data.frame()
+clean_data <- data.frame()
+
+application <- applications[2]
+
+for (experiment in experiments) {
+    new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                               experiment, paste(application,
+                                                 ".csv",
+                                                 sep = ""),
+                               sep = "/"),
+                         header = TRUE, sep = ",")
+
+    new_data       <- as.data.frame(new_data)
+    new_clean_data <- new_data[is.finite(new_data$WNS),]
+
+    if (ncol(data) == 0) {
+        data <- new_data
+    } else {
+        data <- rbind(data, new_data)
+    }
+
+    if (ncol(clean_data) == 0) {
+        clean_data <- new_clean_data
+    } else {
+        clean_data <- rbind(clean_data, new_clean_data)
+    }
+}
+
+names <- c("WNS","RAM")
+
+idx <- match(names, names(data))
+
+print("Data with 'WNS == Inf' rows:")
+
+print("Mean:")
+sapply(data[idx[1]:idx[2]], mean)
+
+print("Standard Deviation:")
+sapply(data[idx[1]:idx[2]], sd)
+
+print("Data without 'WNS == Inf' rows:")
+
+print("Mean:")
+sapply(clean_data[idx[1]:idx[2]], mean)
+
+print("Standard Deviation:")
+sapply(clean_data[idx[1]:idx[2]], sd)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] "Data with 'WNS == Inf' rows:"
+[1] "Mean:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+         Inf  587.1083650   24.1486882    1.0000000    3.2813688 4153.5665399 
+      Blocks          RAM 
+   0.8992395    0.8992395 
+[1] "Standard Deviation:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+         NaN  227.1528406   13.1032536    0.0000000    0.4500950 1123.2949061 
+      Blocks          RAM 
+   0.3012978    0.3012978 
+[1] "Data without 'WNS == Inf' rows:"
+[1] "Mean:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+   1.0651531  564.3596215   23.6492429    1.0000000    3.2492114 4032.5268139 
+      Blocks          RAM 
+   0.9116719    0.9116719 
+[1] "Standard Deviation:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+   0.3079517  207.3545319   12.8765244    0.0000000    0.4332403 1049.1423668 
+      Blocks          RAM 
+   0.2842201    0.2842201 
+#+end_example
+
 *** [2017-12-01 Fri]
 - Finish the Reconfig poster
 - Converge to final Reconfig presentation
@@ -510,4 +611,5 @@ The slides and code are hosted at
 [[https://github.com/alegrand/SMPE][GitHub]].
 *** [2017-12-08 Fri]
 - Finish the data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
-- Complete ADUM Registration
+- Initial FPGA Data Analysis ([[Analysing FPGA Autotuning Samples][Main Section]])
+- Ask for help to complete ADUM Registration
