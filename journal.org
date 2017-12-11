@@ -401,6 +401,18 @@ at the variability of the hardware metrics.
 Implementing some ideas from [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html][The Little Book of R for Multivariate
 Analysis]].
 
+***** Introduction
+To run the code in this section you first need to clone the repository
+to get the data and the R scripts:
+
+#+BEGIN_SRC sh
+git clone https://github.com/phrb/legup-tuner.git
+#+END_SRC
+
+Then, you must replace the directory into which you cloned the
+repository in all scripts. The variable that contains the repository
+path is always at the top of each script.
+
 ***** Summary Statistics
 First, we will combine all *experiments* with the *dfdiv* application. In
 this case, the =WNS= columns are not directly comparable so I am not
@@ -507,20 +519,20 @@ Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en
 correlations between *parameters* and *hardware metrics*.  The largest
 correlations might not be really signficant, because the relationship
 between variables might not be linear, as illustrated [[http://www.dummies.com/education/math/statistics/how-to-interpret-a-correlation-coefficient-r/][here]]. Therefore,
-the following script plots the 30 largest correlations so that we can
-look at the relationships between variables. The script is hosted at
-[[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/correlations.r][GitHub]].
+the following script plots the 30 largest correlations, for all
+*applications* in all *experiments*, so that we can look at the
+relationships between variables. The script also generates =csv= files
+with the 120 strongest correlations. The script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/correlations.r][GitHub]].
 
-#+BEGIN_SRC sh :results output code :wrap "SRC R :file correlations.eps :results output graphics"
+#+BEGIN_SRC sh :results output code :wrap "SRC R :results output"
 cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r 
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_SRC R :file correlations.eps :results output graphics
+#+BEGIN_SRC R :results output
 library(dplyr)
 
 setEPS()
-postscript("correlations.eps", width = 16, height = 11)
 
 #
 # Function adapted from:
@@ -540,6 +552,9 @@ sorted_correlations <- function(data, datapoints) {
     hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
                           "Blocks", "RAM", "DPS")
 
+    #
+    # Restricting comparisons to correlations that contain a hardware metric
+    #
     fm <- dplyr::filter(fm, grepl(paste(hardware_metrics, collapse = "|"),
                                   fm$Second.Variable))
 
@@ -550,61 +565,233 @@ csv_dir <- c("~/code/legup-tuner/",
              "post_place_and_route/py/results/r_scripts/",
              "data")
 
+plot_dir <- c("~/code/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "correlations")
+
 experiments <- c("balanced", "area", "perf", "perflat")
 
 applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
                   "dfsin", "aes", "blowfish", "gsm", "mips")
 
-data       <- data.frame()
-clean_data <- data.frame()
+plot_application_correlations <- function() {
+    dir.create(paste(plot_dir, collapse = ""))
 
-application <- applications[2]
+    for (application in applications) {
+        data       <- data.frame()
+        clean_data <- data.frame()
 
-for (experiment in experiments) {
-    new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
-                               experiment, paste(application,
-                                                 ".csv",
-                                                 sep = ""),
-                               sep = "/"),
-                         header = TRUE, sep = ",")
+        for (experiment in experiments) {
+            new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                                       experiment, paste(application,
+                                                         ".csv",
+                                                         sep = ""),
+                                       sep = "/"),
+                                 header = TRUE, sep = ",")
 
-    new_data <- as.data.frame(new_data)
-    new_data <- new_data[is.finite(new_data$WNS),]
+            new_data <- as.data.frame(new_data)
+            new_data <- new_data[is.finite(new_data$WNS),]
 
-    if (ncol(data) == 0) {
-        data <- new_data
-    } else {
-        data <- rbind(data, new_data)
+            if (ncol(data) == 0) {
+                data <- new_data
+            } else {
+                data <- rbind(data, new_data)
+            }
+        }
+
+        data  <- sapply(data, as.numeric)
+
+        correlation <- sorted_correlations(data, 120)
+
+        print(paste("Generating 120 strongest correlations for '", application,
+                    "'...", sep = ""))
+
+        write.csv(correlation, file = paste(paste(plot_dir, collapse = ""),
+                                            paste("correlations_", application,
+                                                  ".csv", sep = ""), sep = "/"))
+        print(paste("Generating scatter plots of the 30 strongest correlations for '",
+                    application, "'...", sep = ""))
+
+        print(paste(paste("CSV generated at ", plot_dir, collapse = "",
+                          sep = ""), paste("correlations_", application,
+                                           ".csv", sep = ""),
+                    sep = "/"))
+
+        short_correlation <- correlation[1:30, ]
+
+        postscript(paste(paste(plot_dir, collapse = ""), paste("correlations_",
+                                                               application,
+                                                               ".eps",
+                                                               sep = ""),
+                         sep = "/"),
+                   width = 16, height = 11)
+
+        old.par <- par(mfrow = c(5, 6))
+
+        for (i in 1:nrow(short_correlation)) {
+            first  <- as.character(short_correlation[i, 'First.Variable'])
+            second <- as.character(short_correlation[i, 'Second.Variable'])
+
+            plot(data[, first], data[, second], xlab = first, ylab = second)
+        }
+
+        print(paste(paste("Plot generated at ", plot_dir, collapse = "",
+                          sep = ""), paste("correlations_", application,
+                                           ".eps", sep = ""),
+                    sep = "/"))
+
+        par(old.par)
+        dev.off()
     }
 }
 
-names <- c("WNS","RAM")
-idx   <- match(names, names(data))
-data  <- sapply(data, as.numeric)
-
-correlation <- sorted_correlations(data, 120)
-
-print("120 Largest Correlations:")
-#print(correlation)
-
-print("Scatter Plots of the 10 Largest Correlations")
-short_correlation <- correlation[1:30, ]
-
-old.par <- par(mfrow = c(5, 6))
-
-for (i in 1:nrow(short_correlation)) {
-    first  <- as.character(short_correlation[i, 'First.Variable'])
-    second <- as.character(short_correlation[i, 'Second.Variable'])
-
-    plot(data[, first], data[, second], xlab = first, ylab = second)
-}
-
-par(old.par)
-dev.off()
+plot_application_correlations()
 #+END_SRC
 
 #+RESULTS:
-[[file:correlations.eps]]
+#+begin_example
+[1] "Generating 120 strongest correlations for 'dfadd'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfadd'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfadd.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfadd.eps"
+[1] "Generating 120 strongest correlations for 'dfdiv'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfdiv'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfdiv.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfdiv.eps"
+[1] "Generating 120 strongest correlations for 'dfmul'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfmul'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfmul.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfmul.eps"
+[1] "Generating 120 strongest correlations for 'sha'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'sha'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_sha.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_sha.eps"
+[1] "Generating 120 strongest correlations for 'motion'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'motion'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_motion.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_motion.eps"
+[1] "Generating 120 strongest correlations for 'adpcm'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'adpcm'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_adpcm.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_adpcm.eps"
+[1] "Generating 120 strongest correlations for 'dfsin'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfsin'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfsin.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfsin.eps"
+[1] "Generating 120 strongest correlations for 'aes'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'aes'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_aes.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_aes.eps"
+[1] "Generating 120 strongest correlations for 'blowfish'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'blowfish'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_blowfish.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_blowfish.eps"
+[1] "Generating 120 strongest correlations for 'gsm'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'gsm'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_gsm.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_gsm.eps"
+[1] "Generating 120 strongest correlations for 'mips'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'mips'..."
+[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_mips.csv"
+[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_mips.eps"
+#+end_example
+
+***** Attempts at PCA
+Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#principal-component-analysis][this guide]] I attempted to perform Principal Component
+Analysis for the data combining all *experiments* for all
+*applications*. The following script generates [[https://stat.ethz.ch/R-manual/R-devel/library/stats/html/screeplot.html][scree plots]] for the PCA
+of each *application*. The script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/pca.r][GitHub]].
+
+#+BEGIN_SRC sh :results output code :wrap "SRC R :results output"
+cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/pca.r
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC R :results output
+library(dplyr)
+
+setEPS()
+
+csv_dir <- c("~/code/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+plot_dir <- c("~/code/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "scree_plots")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs", "Blocks",
+                      "RAM", "DPS")
+
+plot_scree_pca <- function() {
+    dir.create(paste(plot_dir, collapse = ""))
+
+    for (application in applications) {
+        data <- data.frame()
+
+        for (experiment in experiments) {
+            new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                                       experiment, paste(application,
+                                                         ".csv",
+                                                         sep = ""),
+                                       sep = "/"),
+                                 header = TRUE, sep = ",")
+
+            new_data <- as.data.frame(new_data)
+            new_data <- new_data[is.finite(new_data$WNS),]
+
+            if (ncol(data) == 0) {
+                data <- new_data
+            } else {
+                data <- rbind(data, new_data)
+            }
+        }
+
+        headers <- names(data)
+        data  <- as.data.frame(sapply(data, as.numeric))
+
+        standardised_data <- as.data.frame(scale(data[, !(names(data) %in% hardware_metrics)]))
+
+        data.pca <- prcomp(t(na.omit(t(standardised_data))))
+
+        print(paste("Generating scree plots of PCA for '",
+                    application, "'...", sep = ""))
+
+        postscript(paste(paste(plot_dir, collapse = ""), paste("scree_",
+                                                               application,
+                                                               ".eps",
+                                                               sep = ""),
+                         sep = "/"),
+                   width = 16, height = 11)
+
+        screeplot(data.pca, type = "lines")
+
+        dev.off()
+    }
+}
+
+plot_scree_pca()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] "Generating scree plots of PCA for 'dfadd'..."
+[1] "Generating scree plots of PCA for 'dfdiv'..."
+[1] "Generating scree plots of PCA for 'dfmul'..."
+[1] "Generating scree plots of PCA for 'sha'..."
+[1] "Generating scree plots of PCA for 'motion'..."
+[1] "Generating scree plots of PCA for 'adpcm'..."
+[1] "Generating scree plots of PCA for 'dfsin'..."
+[1] "Generating scree plots of PCA for 'aes'..."
+[1] "Generating scree plots of PCA for 'blowfish'..."
+[1] "Generating scree plots of PCA for 'gsm'..."
+[1] "Generating scree plots of PCA for 'mips'..."
+#+end_example
 
 *** [2017-12-01 Fri]
 - Finish the Reconfig poster
@@ -727,3 +914,32 @@ The slides and code are hosted at
 - Finish the data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
 - Initial FPGA Data Analysis ([[Analysing FPGA Autotuning Samples][Main Section]])
 - Ask for help to complete ADUM Registration
+*** [2017-12-11 Mon]
+- Explore correlations between FPGA metrics and parameters ([[Attempts at Computing Correlations][Main Section]])
+- Use Vinicius' info to complete ADUM registration
+- Read [[file:~/Dropbox/papers/stochastic-search/schkufza2016stochastic.pdf][Schkufza]]'s paper
+**** Reading the [[file:~/Dropbox/papers/autotuning/cronsioe2013boast.pdf][BOAST]] paper
+- BOAST: Bringing Optimization through Automatic
+  Source-to-source Transformations
+- Optimizes loop structures for different HPC architectures
+  - Loop unrolling and tiling
+***** Questions
+1. Why loop tiling with PIPS was not performed and measured?
+2. What would be the improvements of appling unrolling and
+   tiling to the same loop?
+3. Can "search-based" strategies help for larger loops?
+2. What would be the improvements of appling unrolling and
+   tiling to the same loop?
+3. Can "search-based" strategies help for larger loops?
+***** Optimization Methodology
+- Compare BOAST with PIPS, another code transformation tool
+- Benchmark transformed code to find the best version
+  - Objective: Perform loop unrolling and tiling using PIPS
+    - Did not perform loop tiling with PIPS
+  - Independently measured hardware counters
+  - Hardware counters:
+    - Cache accesses and misses
+    - Instruction cache misses
+    - TLB data and instruction misses
+    - Total CPU cycles
+
