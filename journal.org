@@ -6,7 +6,7 @@
 #+LANGUAGE:    en
 #+TAGS: LIG(L) HOME(H) Europe(E) Blog(B) noexport(n) Stats(S)
 #+TAGS: Epistemology(E) Vulgarization(V) Teaching(T) R(R) OrgMode(O) Python(P)
-#+TAGS: Book(b) DOE(D) Code(C) NODAL(N)
+#+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
@@ -231,1224 +231,6 @@ git checkout -b fix-or-feature
    but not strictly necessary.
 
 4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= bran
-*** Creating a Data Frame for FPGA Autotuning Samples              :R:Code:
-**** Installing R Dependencies
-The next code block install all =R= dependencies.
-We are not using =ggplot2= to create the =csv= files,
-but it will be used later for plotting.
-
-We are installing =rjson= because part of the data files were generated
-by OpenTuner in the =JSON= format.  The other packages are from Arnaud's
-[[https://github.com/alegrand/SMPE#learning-r][guidelines]] for the SMPE course.
-
-#+BEGIN_SRC R
-install.packages(c("ggplot2", "dplyr", "tidyr", "rjson"),
-                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
-#+END_SRC
-
-**** Generating =csv= Files with the Data
-The following script is hosted at the [[https://github.com/phrb/legup-tuner/blob/master/post_place_and_route/py/results/r_scripts/generate_csv_files.r][LegUp autotuner repository]].
-
-To run it, you first need to clone the repository to get the data:
-
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
-
-Then, replace the contents of the variable =repository= with the path
-into which you cloned the repository.
-The following script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/generate_csv_files.r][GitHub]]:
-
-#+BEGIN_SRC sh :results output code :wrap "SRC R"
-cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC R
-library(dplyr)
-library(tidyr)
-library(jsonlite)
-
-runs         <- 10
-tuning_time  <- 5400
-
-repository   <- "~/code/legup-tuner"
-results      <- "post_place_and_route/py/results"
-
-output_dir   <- paste(repository, results, "r_scripts/data", sep = "/")
-
-experiments  <- c("default_stratixV_perf", "default_stratixV_perflat",
-                  "default_stratixV_area", "default_stratixV_balanced")
-
-applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
-                  "dfsin", "aes", "blowfish", "gsm", "mips")
-
-txt_measurements <- c("log_details.txt", "best_cycles_log.txt",
-                      "best_fmax_log.txt", "best_lu_log.txt",
-                      "best_pins_log.txt", "best_regs_log.txt",
-                      "best_block_log.txt", "best_ram_log.txt",
-                      "best_dps_log.txt")
-
-json_configurations <- "best_log.json"
-
-headers <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs", "Blocks", "RAM",
-             "DPS")
-
-#
-# This function merges columns and fills missing rows with 'NA'.
-# This happens in this dataset because of unsynchronized logging,
-# where the last configuration was saved twice in one of the log
-# files. Will require to later clean the lines with 'NA's.
-#
-# Function from:
-#
-#    https://stackoverflow.com/questions/7962267/cbind-a-df-with-an-empty-df-cbind-fill
-#
-#
-cbind.fill <- function(...){
-    nm <- list(...)
-    nm <- lapply(nm, as.matrix)
-    n <- max(sapply(nm, nrow))
-    do.call(cbind, lapply(nm, function (x)
-        rbind(x, matrix(, n-nrow(x), ncol(x)))))
-}
-
-dir.create(output_dir)
-
-for (experiment in experiments) {
-    dir.create(paste(output_dir, strsplit(experiment, "_")[[1]][3], sep = "/"))
-
-    for (application in applications) {
-        data <- data.frame()
-
-        for (iteration in 1:runs) {
-            target_file <- (paste(repository, results, experiment,
-                                  paste(application, tuning_time, iteration,
-                                        sep = "_"), json_configurations,
-                                  sep = "/"))
-
-            if (file.exists(target_file)) {
-                configuration <- fromJSON(target_file)
-            }
-
-            columns <- data.frame()
-
-            for (measurement in txt_measurements) {
-                target_file <- paste(repository, results, experiment,
-                                     paste(application, tuning_time, iteration,
-                                           sep = "_"), measurement,
-                                     sep = "/")
-
-                if (file.exists(target_file)) {
-                    new_column <- read.table(target_file, header = FALSE)[2]
-
-                    if (ncol(columns) == 0) {
-                        columns <- new_column
-                    } else {
-                        columns = cbind.fill(columns, new_column)
-                    }
-                }
-            }
-
-            if (ncol(columns) != 0) {
-                colnames(columns) <- headers
-
-                columns = cbind.fill(configuration, columns)
-
-                if (nrow(data) == 0) {
-                    data <- columns
-                } else {
-                    data = bind_rows(as.data.frame(data),
-                                     as.data.frame(columns))
-                }
-            }
-        }
-
-        data <- data[complete.cases(data), ]
-
-        write.csv(data, file = paste(paste(output_dir, strsplit(experiment,
-                                                                "_")[[1]][3],
-                                           application, sep = "/"), ".csv",
-                                     sep = ""))
-    }
-}
-#+END_SRC
-
-#+RESULTS:
-
-*** Analysing FPGA Autotuning Samples                              :R:Code:
-The generated =csv= files live in the [[https://github.com/phrb/legup-tuner/tree/master/post_place_and_route/py/results/r_scripts/data][repository]], and are organized by
-*experiment* and CHStone *application*. The *experiments* are the autotuning
-runs targeting different optimization objectives. The *applications*
-are the different programs that were autotuned.
-
-It makes sense to combine data from different *experiments*, for a
-same *application*, because the search space is the same and the
-individual hardware metrics refer to the same FPGA circuit.
-
-The =WNS= column is not directly comparable between different
-*experiments*, even for the same *application*, because it represents a
-different computation over the absolute metric values for each
-*application*.  To compare =WNS= columns it would be necessary to
-recompute =WNS= with different weights using the other hardware metrics.
-
-Combining data from different *applications* would be more complicated.
-The search spaces are not the same, but the *target FPGA* is the same.
-We could try to understand some property of the hardware by looking
-at the variability of the hardware metrics.
-
-**** Multivariate Analysis
-Implementing some ideas from [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html][The Little Book of R for Multivariate
-Analysis]].
-
-***** Introduction
-To run the code in this section you first need to clone the repository
-to get the data and the R scripts:
-
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
-
-#+RESULTS:
-
-Then, you must replace the directory into which you cloned the
-repository in all scripts. The variable that contains the repository
-path is always at the top of each script.
-
-***** Summary Statistics
-First, we will combine all *experiments* with the *dfdiv* application. In
-this case, the =WNS= columns are not directly comparable so I am not
-removing the rows where ~WNS == Inf~. This indicates a penalty that
-happened when there was some problem during HLS, synthesis, or
-testing. The following script, hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/mean_sd.r][GitHub]], will print the *mean*
-and *standard deviation* for the FPGA *hardware metrics* and *WNS*:
-#+name: my_path
-#+begin_src sh :results output :exports both
-pwd
-#+end_src
-
-#+RESULTS: my_path
-: /home/alegrand/Work/Documents/Articles/2017/Pedro/journal
-
-
-#+begin_src R :results output :session *R* :exports both :var mypath=my_path
-print(mypath)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/alegrand/Work/Documents/Articles/2017/Pedro/journal\n"
-
-#+BEGIN_SRC sh :results output code :wrap "SRC R :results output :session *R* :var mypath=my_path" :var mypath=my_path
-for i in $mypath; do cat $i/legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r ; done
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC R :results output :session *R* :var mypath=my_path
-library(dplyr)
-
-chomp <- function (x) sub("\\s+$", "", x) # This was manually added
-
-csv_dir <- c(paste0(chomp(mypath),"/legup-tuner/"),     # This was manually added
-             "post_place_and_route/py/results/r_scripts/",
-             "data")
-
-experiments <- c("balanced", "area", "perf", "perflat")
-
-applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
-                  "dfsin", "aes", "blowfish", "gsm", "mips")
-
-data       <- data.frame()
-clean_data <- data.frame()
-
-application <- applications[2]
-
-for (experiment in experiments) {
-    new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
-                               experiment, paste(application,
-                                                 ".csv",
-                                                 sep = ""),
-                               sep = "/"),
-                         header = TRUE, sep = ",")
-
-    new_data       <- as.data.frame(new_data)
-    new_clean_data <- new_data[is.finite(new_data$WNS),]
-
-    if (ncol(data) == 0) {
-        data <- new_data
-    } else {
-        data <- rbind(data, new_data)
-    }
-
-    if (ncol(clean_data) == 0) {
-        clean_data <- new_clean_data
-    } else {
-        clean_data <- rbind(clean_data, new_clean_data)
-    }
-}
-
-names <- c("WNS","RAM")
-
-idx <- match(names, names(data))
-
-print("Data with 'WNS == Inf' rows:")
-
-print("Mean:")
-sapply(data[idx[1]:idx[2]], mean)
-
-print("Standard Deviation:")
-sapply(data[idx[1]:idx[2]], sd)
-
-print("Data without 'WNS == Inf' rows:")
-
-print("Mean:")
-sapply(clean_data[idx[1]:idx[2]], mean)
-
-print("Standard Deviation:")
-sapply(clean_data[idx[1]:idx[2]], sd)
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-[1] "Data with 'WNS == Inf' rows:"
-[1] "Mean:"
-         WNS       Cycles         FMax          LUs         Pins         Regs 
-         Inf  587.1083650   24.1486882    1.0000000    3.2813688 4153.5665399 
-      Blocks          RAM 
-   0.8992395    0.8992395
-[1] "Standard Deviation:"
-         WNS       Cycles         FMax          LUs         Pins         Regs 
-         NaN  227.1528406   13.1032536    0.0000000    0.4500950 1123.2949061 
-      Blocks          RAM 
-   0.3012978    0.3012978
-[1] "Data without 'WNS == Inf' rows:"
-[1] "Mean:"
-         WNS       Cycles         FMax          LUs         Pins         Regs 
-   1.0651531  564.3596215   23.6492429    1.0000000    3.2492114 4032.5268139 
-      Blocks          RAM 
-   0.9116719    0.9116719
-[1] "Standard Deviation:"
-         WNS       Cycles         FMax          LUs         Pins         Regs 
-   0.3079517  207.3545319   12.8765244    0.0000000    0.4332403 1049.1423668 
-      Blocks          RAM 
-   0.2842201    0.2842201
-#+end_example
-
-***** Attempts at Computing Correlations
-Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#calculating-correlations-for-multivariate-data][this guide]], I attempted to compute and plot the largest
-correlations between *parameters* and *hardware metrics*.  The largest
-correlations might not be really signficant, because the relationship
-between variables might not be linear, as illustrated [[http://www.dummies.com/education/math/statistics/how-to-interpret-a-correlation-coefficient-r/][here]]. Therefore,
-the following script plots the 30 largest correlations, for all
-*applications* in all *experiments*, so that we can look at the
-relationships between variables. The script also generates =csv= files
-with the 120 strongest correlations. The script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/correlations.r][GitHub]].
-
-#+BEGIN_SRC sh :results output code :wrap "SRC R :results output"
-cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r 
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC R :results output
-library(dplyr)
-
-setEPS()
-
-#
-# Function adapted from:
-#
-#   https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#calculating-correlations-for-multivariate-data
-#
-sorted_correlations <- function(data, datapoints) {
-    cormatrix <- cor(data)
-
-    diag(cormatrix) <- 0
-    cormatrix[lower.tri(cormatrix)] <- 0
-
-    fm <- as.data.frame(as.table(cormatrix))
-
-    names(fm) <- c("First.Variable", "Second.Variable","Correlation")
-
-    hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
-                          "Blocks", "RAM", "DPS")
-
-    #
-    # Restricting comparisons to correlations that contain a hardware metric
-    #
-    fm <- dplyr::filter(fm, grepl(paste(hardware_metrics, collapse = "|"),
-                                  fm$Second.Variable))
-
-    head(fm[order(abs(fm$Correlation), decreasing = T), ], n = datapoints)
-}
-
-csv_dir <- c("~/code/legup-tuner/",
-             "post_place_and_route/py/results/r_scripts/",
-             "data")
-
-plot_dir <- c("~/code/legup-tuner/",
-             "post_place_and_route/py/results/r_scripts/",
-             "correlations")
-
-experiments <- c("balanced", "area", "perf", "perflat")
-
-applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
-                  "dfsin", "aes", "blowfish", "gsm", "mips")
-
-plot_application_correlations <- function() {
-    dir.create(paste(plot_dir, collapse = ""))
-
-    for (application in applications) {
-        data       <- data.frame()
-        clean_data <- data.frame()
-
-        for (experiment in experiments) {
-            new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
-                                       experiment, paste(application,
-                                                         ".csv",
-                                                         sep = ""),
-                                       sep = "/"),
-                                 header = TRUE, sep = ",")
-
-            new_data <- as.data.frame(new_data)
-            new_data <- new_data[is.finite(new_data$WNS),]
-
-            if (ncol(data) == 0) {
-                data <- new_data
-            } else {
-                data <- rbind(data, new_data)
-            }
-        }
-
-        data  <- sapply(data, as.numeric)
-
-        correlation <- sorted_correlations(data, 120)
-
-        print(paste("Generating 120 strongest correlations for '", application,
-                    "'...", sep = ""))
-
-        write.csv(correlation, file = paste(paste(plot_dir, collapse = ""),
-                                            paste("correlations_", application,
-                                                  ".csv", sep = ""), sep = "/"))
-        print(paste("Generating scatter plots of the 30 strongest correlations for '",
-                    application, "'...", sep = ""))
-
-        print(paste(paste("CSV generated at ", plot_dir, collapse = "",
-                          sep = ""), paste("correlations_", application,
-                                           ".csv", sep = ""),
-                    sep = "/"))
-
-        short_correlation <- correlation[1:30, ]
-
-        postscript(paste(paste(plot_dir, collapse = ""), paste("correlations_",
-                                                               application,
-                                                               ".eps",
-                                                               sep = ""),
-                         sep = "/"),
-                   width = 16, height = 11)
-
-        old.par <- par(mfrow = c(5, 6))
-
-        for (i in 1:nrow(short_correlation)) {
-            first  <- as.character(short_correlation[i, 'First.Variable'])
-            second <- as.character(short_correlation[i, 'Second.Variable'])
-
-            plot(data[, first], data[, second], xlab = first, ylab = second)
-        }
-
-        print(paste(paste("Plot generated at ", plot_dir, collapse = "",
-                          sep = ""), paste("correlations_", application,
-                                           ".eps", sep = ""),
-                    sep = "/"))
-
-        par(old.par)
-        dev.off()
-    }
-}
-
-plot_application_correlations()
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-[1] "Generating 120 strongest correlations for 'dfadd'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'dfadd'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfadd.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfadd.eps"
-[1] "Generating 120 strongest correlations for 'dfdiv'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'dfdiv'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfdiv.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfdiv.eps"
-[1] "Generating 120 strongest correlations for 'dfmul'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'dfmul'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfmul.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfmul.eps"
-[1] "Generating 120 strongest correlations for 'sha'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'sha'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_sha.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_sha.eps"
-[1] "Generating 120 strongest correlations for 'motion'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'motion'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_motion.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_motion.eps"
-[1] "Generating 120 strongest correlations for 'adpcm'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'adpcm'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_adpcm.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_adpcm.eps"
-[1] "Generating 120 strongest correlations for 'dfsin'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'dfsin'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_dfsin.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_dfsin.eps"
-[1] "Generating 120 strongest correlations for 'aes'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'aes'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_aes.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_aes.eps"
-[1] "Generating 120 strongest correlations for 'blowfish'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'blowfish'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_blowfish.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_blowfish.eps"
-[1] "Generating 120 strongest correlations for 'gsm'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'gsm'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_gsm.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_gsm.eps"
-[1] "Generating 120 strongest correlations for 'mips'..."
-[1] "Generating scatter plots of the 30 strongest correlations for 'mips'..."
-[1] "CSV generated at ~/code/legup-tuner/CSV generated at post_place_and_route/py/results/r_scripts/CSV generated at correlations/correlations_mips.csv"
-[1] "Plot generated at ~/code/legup-tuner/Plot generated at post_place_and_route/py/results/r_scripts/Plot generated at correlations/correlations_mips.eps"
-#+end_example
-
-***** Attempts at PCA
-Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#principal-component-analysis][this guide]] I attempted to perform Principal Component
-Analysis for the data combining all *experiments* for all
-*applications*. The following script generates [[https://stat.ethz.ch/R-manual/R-devel/library/stats/html/screeplot.html][scree plots]] for the PCA
-of each *application*. The script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/pca.r][GitHub]].
-
-#+BEGIN_SRC sh :results output code :wrap "SRC R :results output"
-cat ~/code/legup-tuner/post_place_and_route/py/results/r_scripts/pca.r
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC R :results output
-library(dplyr)
-
-setEPS()
-
-csv_dir <- c("~/code/legup-tuner/",
-             "post_place_and_route/py/results/r_scripts/",
-             "data")
-
-plot_dir <- c("~/code/legup-tuner/",
-             "post_place_and_route/py/results/r_scripts/",
-             "scree_plots")
-
-experiments <- c("balanced", "area", "perf", "perflat")
-
-applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
-                  "dfsin", "aes", "blowfish", "gsm", "mips")
-
-hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs", "Blocks",
-                      "RAM", "DPS")
-
-plot_scree_pca <- function() {
-    dir.create(paste(plot_dir, collapse = ""))
-
-    for (application in applications) {
-        data <- data.frame()
-
-        for (experiment in experiments) {
-            new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
-                                       experiment, paste(application,
-                                                         ".csv",
-                                                         sep = ""),
-                                       sep = "/"),
-                                 header = TRUE, sep = ",")
-
-            new_data <- as.data.frame(new_data)
-            new_data <- new_data[is.finite(new_data$WNS),]
-
-            if (ncol(data) == 0) {
-                data <- new_data
-            } else {
-                data <- rbind(data, new_data)
-            }
-        }
-
-        headers <- names(data)
-        data  <- as.data.frame(sapply(data, as.numeric))
-
-        standardised_data <- as.data.frame(scale(data[, !(names(data) %in% hardware_metrics)]))
-
-        data.pca <- prcomp(t(na.omit(t(standardised_data))))
-
-        print(paste("Generating scree plots of PCA for '",
-                    application, "'...", sep = ""))
-
-        postscript(paste(paste(plot_dir, collapse = ""), paste("scree_",
-                                                               application,
-                                                               ".eps",
-                                                               sep = ""),
-                         sep = "/"),
-                   width = 16, height = 11)
-
-        screeplot(data.pca, type = "lines")
-
-        dev.off()
-    }
-}
-
-plot_scree_pca()
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-[1] "Generating scree plots of PCA for 'dfadd'..."
-[1] "Generating scree plots of PCA for 'dfdiv'..."
-[1] "Generating scree plots of PCA for 'dfmul'..."
-[1] "Generating scree plots of PCA for 'sha'..."
-[1] "Generating scree plots of PCA for 'motion'..."
-[1] "Generating scree plots of PCA for 'adpcm'..."
-[1] "Generating scree plots of PCA for 'dfsin'..."
-[1] "Generating scree plots of PCA for 'aes'..."
-[1] "Generating scree plots of PCA for 'blowfish'..."
-[1] "Generating scree plots of PCA for 'gsm'..."
-[1] "Generating scree plots of PCA for 'mips'..."
-#+end_example
-
-***** Looking at data with Arnaud. Not sure where we were heading though.
-
-#+begin_src R :results output :session *R* :exports both
-dim(data)
-str(data, list.len = 999) # only allows to see the first hundred of parameters, not what was measured
-#+end_src
-
-#+RESULTS:
-#+begin_example
-[1] 526 151
-'data.frame':	526 obs. of  151 variables:
- $ X                                           : int  1 2 3 4 5 6 7 8 9 10 ...
- $ set_operation_latency.altfp_divide_16       : int  33 33 33 33 33 33 33 33 33 33 ...
- $ set_resource_constraint.signed_divide_16    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.mem_dual_port         : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.altfp_truncate_16     : int  3 3 3 3 3 3 3 3 3 4 ...
- $ set_resource_constraint.altfp_multiply_64   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.NO_ROMS                       : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.signed_multiply_8   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_fptosi          : int  6 6 6 6 6 6 6 6 6 6 ...
- $ set_resource_constraint.unsigned_modulus_16 : int  1 1 1 1 1 1 1 1 1 5 ...
- $ set_resource_constraint.unsigned_multiply_32: int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_add_8         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_multiply_32  : int  1 1 1 1 1 1 1 3 3 3 ...
- $ set_resource_constraint.unsigned_add_32     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_divide_16    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_multiply_16  : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_modulus_32     : int  1 1 1 1 1 1 1 1 1 0 ...
- $ set_operation_latency.signed_multiply_32    : int  1 1 1 1 1 1 1 1 1 5 ...
- $ set_operation_latency.altfp_add_64          : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_operation_latency.altfp_subtract_32     : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_parameter.PS_MIN_SIZE                   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_add_64        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_multiply_64     : int  11 11 11 11 11 11 11 11 11 11 ...
- $ set_operation_latency.unsigned_multiply_8   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_add_32       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_truncate_8      : int  3 3 3 3 3 3 3 3 3 3 ...
- $ set_resource_constraint.signed_multiply_64  : int  1 1 1 1 1 1 1 6 6 6 ...
- $ set_operation_latency.signed_divide_64      : int  1 1 1 1 1 1 1 1 1 2 ...
- $ set_resource_constraint.altfp_subtract_16   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.MB_MINIMIZE_HW                : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_parameter.PATTERN_SHARE_ADD             : Factor w/ 3 levels " TRUE","FALSE",..: 3 3 3 3 3 3 3 3 3 3 ...
- $ set_resource_constraint.signed_add_16       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.MULTIPLIER_NO_CHAIN           : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.unsigned_multiply_8 : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.reg                   : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.unsigned_modulus_64   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_divide_16  : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_divide_64  : int  1 1 1 1 1 1 1 1 1 7 ...
- $ set_resource_constraint.signed_divide_8     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_extend_32       : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.altfp_add_16        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_modulus_32   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.DONT_CHAIN_GET_ELEM_PTR       : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.unsigned_modulus_64 : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_modulus_8    : int  1 1 1 1 1 1 1 1 1 0 ...
- $ set_resource_constraint.mem_dual_port       : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_parameter.SDC_MULTIPUMP                 : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.signed_multiply_16    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_multiply_16     : int  11 11 11 11 11 11 11 11 11 6 ...
- $ set_operation_latency.unsigned_modulus_16   : int  1 1 1 1 1 1 1 4 4 6 ...
- $ set_resource_constraint.altfp_subtract_64   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_add_8          : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_add_16       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PATTERN_SHARE_SUB             : Factor w/ 3 levels " TRUE","FALSE",..: 3 3 3 3 3 3 3 3 3 3 ...
- $ set_parameter.CLOCK_PERIOD                  : int  10 10 10 10 10 10 10 24 24 24 ...
- $ set_resource_constraint.altfp_subtract_8    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.NO_LOOP_PIPELINING            : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.altfp_divide_64       : int  64 64 64 64 64 64 64 64 64 64 ...
- $ set_parameter.INCREMENTAL_SDC               : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.signed_divide_8       : int  1 1 1 1 1 1 1 4 4 4 ...
- $ set_resource_constraint.altfp_multiply_8    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_multiply_16: int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_modulus_64     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_multiply_64  : int  1 1 1 1 1 1 1 1 1 3 ...
- $ set_resource_constraint.unsigned_multiply_64: int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_add_32         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.DISABLE_REG_SHARING           : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.unsigned_divide_64    : int  1 1 1 1 1 1 1 1 1 5 ...
- $ set_resource_constraint.unsigned_modulus_8  : int  1 1 1 1 1 1 1 1 1 4 ...
- $ set_combine_basicblock                      : int  0 0 0 0 0 0 0 0 0 0 ...
- $ set_parameter.ENABLE_PATTERN_SHARING        : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_parameter.PIPELINE_RESOURCE_SHARING     : Factor w/ 3 levels " TRUE","FALSE",..: 1 1 1 1 1 1 1 1 1 2 ...
- $ set_parameter.MULTIPUMPING                  : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.signed_add_32       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_add_32          : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_resource_constraint.altfp_divide_64     : int  1 1 1 1 1 1 1 3 3 2 ...
- $ set_operation_latency.signed_modulus_8      : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PIPELINE_ALL                  : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_parameter.SDC_NO_CHAINING               : chr  "FALSE" "FALSE" "FALSE" "FALSE" ...
- $ set_resource_constraint.altfp_add_32        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PS_MIN_WIDTH                  : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.altfp_subtract_8      : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_operation_latency.signed_multiply_8     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_extend_64       : int  2 2 2 2 2 2 2 7 7 7 ...
- $ set_operation_latency.local_mem_dual_port   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_subtract_64     : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_resource_constraint.signed_divide_32    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_multiply_32  : int  1 1 1 1 1 1 1 1 1 7 ...
- $ set_operation_latency.signed_divide_16      : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_multiply_64    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PATTERN_SHARE_BITOPS          : Factor w/ 3 levels " TRUE","FALSE",..: 3 3 3 3 3 3 3 3 3 3 ...
- $ set_resource_constraint.signed_add_8        : int  1 1 1 1 1 1 1 4 4 4 ...
- $ set_parameter.SDC_PRIORITY                  : Factor w/ 3 levels " TRUE","FALSE",..: 1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_multiply_32   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_divide_16     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_modulus_16   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_add_64         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_modulus_32 : int  1 1 1 1 1 1 1 7 7 7 ...
- $ set_operation_latency.altfp_multiply_8      : int  11 11 11 11 11 11 11 11 11 11 ...
- $ set_resource_constraint.signed_modulus_64   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_comp_o         : int  1 1 1 1 1 1 1 5 5 5 ...
- $ set_parameter.PS_MAX_SIZE                   : int  10 10 10 10 10 10 10 10 10 10 ...
- $ set_operation_latency.signed_comp_u         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.DUAL_PORT_BINDING             : Factor w/ 3 levels " TRUE","FALSE",..: 1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_divide_32  : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_multiply_32     : int  11 11 11 11 11 11 11 11 11 11 ...
- $ set_operation_latency.altfp_add_16          : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_operation_latency.altfp_truncate_32     : int  3 3 3 3 3 3 3 3 3 3 ...
- $ set_operation_latency.unsigned_add_64       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_add_16         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PS_BIT_DIFF_THRESHOLD         : int  10 10 10 10 10 10 10 10 10 10 ...
- $ set_operation_latency.altfp_add_8           : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_operation_latency.altfp_divide_32       : int  33 33 33 33 33 33 33 33 33 33 ...
- $ set_operation_latency.altfp_sitofp          : int  6 6 6 6 6 6 6 6 6 6 ...
- $ set_resource_constraint.unsigned_add_64     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_add_64       : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.signed_divide_32      : int  1 1 1 1 1 1 1 7 7 4 ...
- $ set_parameter.MODULO_SCHEDULER              : Factor w/ 3 levels "ITERATIVE","SDC_BACKTRACKING",..: 2 2 2 2 2 2 2 2 2 2 ...
- $ set_resource_constraint.unsigned_add_16     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_divide_8        : int  33 33 33 33 33 33 33 33 33 33 ...
- $ set_parameter.EXPLICIT_LPM_MULTS            : Factor w/ 2 levels " TRUE","FALSE": 2 2 2 2 2 2 2 2 2 2 ...
- $ set_parameter.MB_MAX_BACK_PASSES            : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
- $ set_operation_latency.signed_modulus_16     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_multiply_16  : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_extend_8        : int  2 2 2 2 2 2 2 2 2 2 ...
- $ set_operation_latency.unsigned_divide_32    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_subtract_16     : int  14 14 14 14 14 14 14 14 14 14 ...
- $ set_resource_constraint.unsigned_add_8      : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_parameter.PATTERN_SHARE_SHIFT           : Factor w/ 3 levels " TRUE","FALSE",..: 3 3 3 3 3 3 3 3 3 3 ...
- $ set_operation_latency.unsigned_divide_8     : int  1 1 1 1 1 1 1 7 7 7 ...
- $ set_resource_constraint.altfp_multiply_16   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_divide_32     : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.unsigned_divide_8   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_truncate_64     : int  3 3 3 3 3 3 3 0 0 0 ...
- $ set_operation_latency.unsigned_modulus_32   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.unsigned_add_8        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_operation_latency.altfp_extend_16       : int  2 2 2 2 2 2 2 1 1 1 ...
- $ set_resource_constraint.altfp_divide_8      : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.altfp_subtract_32   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.signed_modulus_8    : int  1 1 1 1 1 1 1 1 1 5 ...
- $ set_resource_constraint.signed_divide_64    : int  1 1 1 1 1 1 1 1 1 1 ...
- $ set_resource_constraint.shared_mem_dual_port: int  1 1 1 1 1 1 1 5 5 5 ...
- $ WNS                                         : num  1 1 Inf Inf 1.12 ...
- $ Cycles                                      : int  486 486 486 486 486 486 486 458 458 554 ...
- $ FMax                                        : num  15.7 15.7 15.7 15.7 15.7 15.7 15.7 15.9 15.9 38 ...
- $ LUs                                         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ Pins                                        : int  3 3 3 3 3 3 3 3 3 3 ...
- $ Regs                                        : int  3949 3949 3949 3949 3949 3949 3949 3968 3968 4299 ...
- $ Blocks                                      : int  1 1 1 1 1 1 1 1 1 1 ...
- $ RAM                                         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ DPS                                         : int  16 16 16 16 16 16 16 16 16 16 ...
-#+end_example
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
-library(GGally)
-hw_metrics = tail(names(data),n=9)
-hw_parameters = head(names(data),n=151-9)
-ggpairs(data, columns=hw_metrics)
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure2610ztH.png]]
-
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 1400 :session *R* 
-plot(data[c(sample(hw_parameters,size=5),hw_metrics)])
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure2610nWg.png]]
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 1400 :session *R* 
-ggpairs(data[c(sample(hw_parameters,size=5),hw_metrics)])
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure26100gm.png]]
-
-
-#+begin_src R :results output :session *R* :exports both
-lm(data=head(data[!names(data) %in% (hw_metrics[hw_metrics!="FMax"])]), 
-   FMax ~ .)
-#+end_src
-
-#+RESULTS:
-: Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
-:   les contrastes ne peuvent être appliqués qu'aux facteurs ayant au moins deux niveaux
-
-Damn, we need to get rid of "useless" parameters. Let's go dirty!
-#+begin_src R :results output :session *R* :exports both
-data_bak = data
-#+end_src
-
-#+RESULTS:
-
-#+begin_src R :results output :session *R* :exports both
-data=data_bak
-# data=data[c(sample(hw_parameters,size=10),hw_metrics)]
-#+end_src
-
-#+RESULTS:
-
-#+begin_src R :results output :session *R* :exports both
-fixed_param = c()
-for(i in names(data)) {
-    if(dim(unique(data[i]))[1]==1) { fixed_param = c(fixed_param,i) }
-}
-fixed_param;
-for(i in names(data)) {
-    data = data[!is.na(data[,i]),]
-    data = data[!is.infinite(data[,i]),]
-#    data[,i]=as.numeric(data[,i])
-}
-data = data[!names(data) %in% (c(fixed_param,hw_metrics[hw_metrics!="FMax"]))]
-dim(data)
-#+end_src
-
-#+RESULTS:
-: [1] "LUs"
-: [1] 317 143
-
-#+begin_src R :results output :session *R* :exports both
-summary(lm(data=data, FMax ~ .))
-#+end_src
-
-#+RESULTS:
-#+begin_example
-
-Call:
-lm(formula = FMax ~ ., data = data)
-
-Residuals:
-       Min         1Q     Median         3Q        Max 
--4.822e-13 -9.070e-15  0.000e+00  7.680e-15  1.801e-12 
-
-Coefficients: (66 not defined because of singularities)
-                                                 Estimate Std. Error    t value
-(Intercept)                                    -3.350e+01  3.918e-12 -8.550e+12
-X                                              -1.959e-15  4.425e-16 -4.427e+00
-set_operation_latency.altfp_divide_16           2.741e-01  2.699e-14  1.016e+13
-set_resource_constraint.signed_divide_16        3.297e+00  2.363e-13  1.395e+13
-set_operation_latency.mem_dual_port             2.306e+00  2.753e-13  8.378e+12
-set_operation_latency.altfp_truncate_16        -5.863e+00  4.866e-13 -1.205e+13
-set_resource_constraint.altfp_multiply_64      -3.912e+00  1.994e-13 -1.962e+13
-set_parameter.NO_ROMSFALSE                      4.187e+00  3.109e-13  1.347e+13
-set_resource_constraint.signed_multiply_8      -2.258e+00  1.740e-13 -1.298e+13
-set_operation_latency.altfp_fptosi              2.887e+00  2.297e-13  1.257e+13
-set_resource_constraint.unsigned_modulus_16    -2.169e+00  1.216e-13 -1.784e+13
-set_resource_constraint.unsigned_multiply_32    1.999e+00  9.936e-14  2.012e+13
-set_resource_constraint.altfp_add_8             1.224e+00  1.551e-13  7.891e+12
-set_operation_latency.unsigned_multiply_32      4.697e+00  2.916e-13  1.611e+13
-set_resource_constraint.unsigned_add_32         3.584e+00  2.549e-13  1.406e+13
-set_operation_latency.unsigned_divide_16       -4.621e+00  3.104e-13 -1.489e+13
-set_resource_constraint.signed_multiply_16      3.372e+00  2.927e-13  1.152e+13
-set_operation_latency.signed_modulus_32        -4.647e+00  2.282e-13 -2.036e+13
-set_operation_latency.signed_multiply_32        3.799e+00  1.495e-13  2.542e+13
-set_operation_latency.altfp_add_64             -3.168e-01  1.781e-14 -1.779e+13
-set_operation_latency.altfp_subtract_32         6.568e-01  2.457e-14  2.673e+13
-set_parameter.PS_MIN_SIZE                      -1.248e+00  5.167e-14 -2.414e+13
-set_resource_constraint.altfp_add_64            2.305e+00  1.566e-13  1.472e+13
-set_operation_latency.altfp_multiply_64         8.586e-01  5.604e-14  1.532e+13
-set_operation_latency.unsigned_multiply_8       2.663e+00  1.031e-13  2.582e+13
-set_operation_latency.unsigned_add_32          -2.404e+00  1.510e-13 -1.592e+13
-set_operation_latency.altfp_truncate_8          3.291e+00  2.624e-13  1.254e+13
-set_resource_constraint.signed_multiply_64     -1.978e+00  1.698e-13 -1.165e+13
-set_operation_latency.signed_divide_64         -8.317e-01  1.222e-13 -6.807e+12
-set_resource_constraint.altfp_subtract_16      -1.196e+00  1.421e-13 -8.415e+12
-set_parameter.MB_MINIMIZE_HWFALSE              -9.746e+00  2.943e-13 -3.311e+13
-set_parameter.PATTERN_SHARE_ADDFALSE           -3.516e-01  1.536e-13 -2.290e+12
-set_parameter.PATTERN_SHARE_ADDTRUE             2.426e-14  4.863e-14  4.990e-01
-set_resource_constraint.signed_add_16           4.671e+00  3.277e-13  1.425e+13
-set_parameter.MULTIPLIER_NO_CHAINFALSE         -6.361e+00  3.855e-13 -1.650e+13
-set_resource_constraint.unsigned_multiply_8    -6.640e-01  3.168e-14 -2.096e+13
-set_operation_latency.reg                      -9.704e-02  1.025e-13 -9.467e+11
-set_operation_latency.unsigned_modulus_64       3.998e+00  2.018e-13  1.981e+13
-set_resource_constraint.unsigned_divide_16      2.121e+00  1.674e-13  1.267e+13
-set_resource_constraint.unsigned_divide_64      2.000e+00  1.066e-13  1.877e+13
-set_resource_constraint.signed_divide_8         5.216e+00  4.076e-13  1.280e+13
-set_operation_latency.altfp_extend_32          -2.484e+00  1.352e-13 -1.837e+13
-set_resource_constraint.altfp_add_16            2.324e+00  1.143e-13  2.034e+13
-set_resource_constraint.signed_modulus_32       1.627e+00  1.954e-13  8.328e+12
-set_parameter.DONT_CHAIN_GET_ELEM_PTRFALSE      1.401e+00  1.424e-13  9.839e+12
-set_resource_constraint.unsigned_modulus_64    -4.417e+00  1.895e-13 -2.330e+13
-set_operation_latency.unsigned_modulus_8        9.075e+00  5.162e-13  1.758e+13
-set_resource_constraint.mem_dual_port          -8.059e+00  3.535e-13 -2.280e+13
-set_parameter.SDC_MULTIPUMPFALSE                5.620e+00  2.770e-13  2.029e+13
-set_operation_latency.signed_multiply_16       -7.908e-01  1.052e-13 -7.515e+12
-set_operation_latency.altfp_multiply_16         3.498e-01  4.716e-14  7.417e+12
-set_operation_latency.unsigned_modulus_16       1.220e+00  1.195e-13  1.021e+13
-set_resource_constraint.altfp_subtract_64       1.447e+00  1.867e-13  7.748e+12
-set_operation_latency.signed_add_8             -7.823e-01  5.439e-14 -1.438e+13
-set_operation_latency.unsigned_add_16          -9.417e-01  1.005e-13 -9.372e+12
-set_parameter.PATTERN_SHARE_SUBFALSE            4.180e+00  2.350e-13  1.779e+13
-set_parameter.PATTERN_SHARE_SUBTRUE             2.096e-15  4.523e-14  4.600e-02
-set_parameter.CLOCK_PERIOD                     -1.022e+00  7.080e-14 -1.443e+13
-set_resource_constraint.altfp_subtract_8        3.380e+00  1.711e-13  1.976e+13
-set_parameter.NO_LOOP_PIPELININGFALSE           1.173e+01  6.083e-13  1.928e+13
-set_operation_latency.altfp_divide_64           1.933e-03  3.803e-15  5.082e+11
-set_parameter.INCREMENTAL_SDCFALSE             -8.475e+00  2.873e-13 -2.950e+13
-set_operation_latency.signed_divide_8          -4.216e+00  1.338e-13 -3.151e+13
-set_resource_constraint.altfp_multiply_8        5.653e-01  7.867e-14  7.185e+12
-set_resource_constraint.unsigned_multiply_16    3.539e+00  1.550e-13  2.283e+13
-set_operation_latency.signed_modulus_64        -4.142e+00  2.579e-13 -1.606e+13
-set_operation_latency.unsigned_multiply_64      8.460e-01  9.711e-14  8.711e+12
-set_resource_constraint.unsigned_multiply_64    7.761e-01  1.073e-13  7.232e+12
-set_operation_latency.signed_add_32            -4.348e+00  3.093e-13 -1.406e+13
-set_parameter.DISABLE_REG_SHARINGFALSE          3.101e+00  1.713e-13  1.810e+13
-set_operation_latency.unsigned_divide_64        3.573e+00  1.341e-13  2.664e+13
-set_resource_constraint.unsigned_modulus_8      8.893e-02  1.006e-13  8.844e+11
-set_combine_basicblock                         -2.222e+00  3.434e-13 -6.470e+12
-set_parameter.ENABLE_PATTERN_SHARINGFALSE      -2.650e+00  1.986e-13 -1.334e+13
-set_parameter.PIPELINE_RESOURCE_SHARINGFALSE    9.754e+00  5.767e-13  1.691e+13
-set_parameter.PIPELINE_RESOURCE_SHARINGTRUE    -1.482e-13  4.372e-14 -3.389e+00
-set_parameter.MULTIPUMPINGFALSE                 5.025e+00  3.121e-13  1.610e+13
-set_resource_constraint.signed_add_32          -2.429e+00  1.703e-13 -1.426e+13
-set_operation_latency.altfp_add_32             -2.815e-02  2.073e-14 -1.358e+12
-set_resource_constraint.altfp_divide_64         1.199e+01  5.991e-13  2.002e+13
-set_operation_latency.signed_modulus_8         -1.588e+00  2.420e-13 -6.561e+12
-set_parameter.PIPELINE_ALLFALSE                        NA         NA         NA
-set_parameter.SDC_NO_CHAININGFALSE                     NA         NA         NA
-set_resource_constraint.altfp_add_32                   NA         NA         NA
-set_parameter.PS_MIN_WIDTH                             NA         NA         NA
-set_operation_latency.altfp_subtract_8                 NA         NA         NA
-set_operation_latency.signed_multiply_8                NA         NA         NA
-set_operation_latency.altfp_extend_64                  NA         NA         NA
-set_operation_latency.local_mem_dual_port              NA         NA         NA
-set_operation_latency.altfp_subtract_64                NA         NA         NA
-set_resource_constraint.signed_divide_32               NA         NA         NA
-set_resource_constraint.signed_multiply_32             NA         NA         NA
-set_operation_latency.signed_divide_16                 NA         NA         NA
-set_operation_latency.signed_multiply_64               NA         NA         NA
-set_parameter.PATTERN_SHARE_BITOPSFALSE                NA         NA         NA
-set_parameter.PATTERN_SHARE_BITOPSTRUE          2.143e-13  6.965e-14  3.077e+00
-set_resource_constraint.signed_add_8                   NA         NA         NA
-set_parameter.SDC_PRIORITYFALSE                        NA         NA         NA
-set_parameter.SDC_PRIORITYTRUE                 -2.206e-13  6.706e-14 -3.290e+00
-set_resource_constraint.altfp_multiply_32              NA         NA         NA
-set_resource_constraint.altfp_divide_16                NA         NA         NA
-set_resource_constraint.signed_modulus_16              NA         NA         NA
-set_operation_latency.signed_add_64                    NA         NA         NA
-set_resource_constraint.unsigned_modulus_32            NA         NA         NA
-set_operation_latency.altfp_multiply_8                 NA         NA         NA
-set_resource_constraint.signed_modulus_64              NA         NA         NA
-set_operation_latency.signed_comp_o                    NA         NA         NA
-set_parameter.PS_MAX_SIZE                              NA         NA         NA
-set_operation_latency.signed_comp_u                    NA         NA         NA
-set_parameter.DUAL_PORT_BINDINGFALSE                   NA         NA         NA
-set_parameter.DUAL_PORT_BINDINGTRUE             3.661e-14  6.362e-14  5.750e-01
-set_resource_constraint.unsigned_divide_32             NA         NA         NA
-set_operation_latency.altfp_multiply_32                NA         NA         NA
-set_operation_latency.altfp_add_16                     NA         NA         NA
-set_operation_latency.altfp_truncate_32                NA         NA         NA
-set_operation_latency.unsigned_add_64                  NA         NA         NA
-set_operation_latency.signed_add_16                    NA         NA         NA
-set_parameter.PS_BIT_DIFF_THRESHOLD                    NA         NA         NA
-set_operation_latency.altfp_add_8                      NA         NA         NA
-set_operation_latency.altfp_divide_32                  NA         NA         NA
-set_operation_latency.altfp_sitofp                     NA         NA         NA
-set_resource_constraint.unsigned_add_64                NA         NA         NA
-set_resource_constraint.signed_add_64                  NA         NA         NA
-set_operation_latency.signed_divide_32                 NA         NA         NA
-set_parameter.MODULO_SCHEDULERSDC_BACKTRACKING         NA         NA         NA
-set_parameter.MODULO_SCHEDULERSDC_GREEDY               NA         NA         NA
-set_resource_constraint.unsigned_add_16                NA         NA         NA
-set_operation_latency.altfp_divide_8                   NA         NA         NA
-set_parameter.EXPLICIT_LPM_MULTSFALSE                  NA         NA         NA
-set_parameter.MB_MAX_BACK_PASSES                       NA         NA         NA
-set_operation_latency.signed_modulus_16                NA         NA         NA
-set_operation_latency.unsigned_multiply_16             NA         NA         NA
-set_operation_latency.altfp_extend_8                   NA         NA         NA
-set_operation_latency.unsigned_divide_32               NA         NA         NA
-set_operation_latency.altfp_subtract_16                NA         NA         NA
-set_resource_constraint.unsigned_add_8                 NA         NA         NA
-set_parameter.PATTERN_SHARE_SHIFTFALSE                 NA         NA         NA
-set_parameter.PATTERN_SHARE_SHIFTTRUE           5.481e-14  5.077e-14  1.080e+00
-set_operation_latency.unsigned_divide_8                NA         NA         NA
-set_resource_constraint.altfp_multiply_16              NA         NA         NA
-set_resource_constraint.altfp_divide_32                NA         NA         NA
-set_resource_constraint.unsigned_divide_8              NA         NA         NA
-set_operation_latency.altfp_truncate_64                NA         NA         NA
-set_operation_latency.unsigned_modulus_32              NA         NA         NA
-set_operation_latency.unsigned_add_8                   NA         NA         NA
-set_operation_latency.altfp_extend_16                  NA         NA         NA
-set_resource_constraint.altfp_divide_8                 NA         NA         NA
-set_resource_constraint.altfp_subtract_32              NA         NA         NA
-set_resource_constraint.signed_modulus_8               NA         NA         NA
-set_resource_constraint.signed_divide_64               NA         NA         NA
-set_resource_constraint.shared_mem_dual_port           NA         NA         NA
-                                               Pr(>|t|)    
-(Intercept)                                     < 2e-16 ***
-X                                              1.47e-05 ***
-set_operation_latency.altfp_divide_16           < 2e-16 ***
-set_resource_constraint.signed_divide_16        < 2e-16 ***
-set_operation_latency.mem_dual_port             < 2e-16 ***
-set_operation_latency.altfp_truncate_16         < 2e-16 ***
-set_resource_constraint.altfp_multiply_64       < 2e-16 ***
-set_parameter.NO_ROMSFALSE                      < 2e-16 ***
-set_resource_constraint.signed_multiply_8       < 2e-16 ***
-set_operation_latency.altfp_fptosi              < 2e-16 ***
-set_resource_constraint.unsigned_modulus_16     < 2e-16 ***
-set_resource_constraint.unsigned_multiply_32    < 2e-16 ***
-set_resource_constraint.altfp_add_8             < 2e-16 ***
-set_operation_latency.unsigned_multiply_32      < 2e-16 ***
-set_resource_constraint.unsigned_add_32         < 2e-16 ***
-set_operation_latency.unsigned_divide_16        < 2e-16 ***
-set_resource_constraint.signed_multiply_16      < 2e-16 ***
-set_operation_latency.signed_modulus_32         < 2e-16 ***
-set_operation_latency.signed_multiply_32        < 2e-16 ***
-set_operation_latency.altfp_add_64              < 2e-16 ***
-set_operation_latency.altfp_subtract_32         < 2e-16 ***
-set_parameter.PS_MIN_SIZE                       < 2e-16 ***
-set_resource_constraint.altfp_add_64            < 2e-16 ***
-set_operation_latency.altfp_multiply_64         < 2e-16 ***
-set_operation_latency.unsigned_multiply_8       < 2e-16 ***
-set_operation_latency.unsigned_add_32           < 2e-16 ***
-set_operation_latency.altfp_truncate_8          < 2e-16 ***
-set_resource_constraint.signed_multiply_64      < 2e-16 ***
-set_operation_latency.signed_divide_64          < 2e-16 ***
-set_resource_constraint.altfp_subtract_16       < 2e-16 ***
-set_parameter.MB_MINIMIZE_HWFALSE               < 2e-16 ***
-set_parameter.PATTERN_SHARE_ADDFALSE            < 2e-16 ***
-set_parameter.PATTERN_SHARE_ADDTRUE            0.618352    
-set_resource_constraint.signed_add_16           < 2e-16 ***
-set_parameter.MULTIPLIER_NO_CHAINFALSE          < 2e-16 ***
-set_resource_constraint.unsigned_multiply_8     < 2e-16 ***
-set_operation_latency.reg                       < 2e-16 ***
-set_operation_latency.unsigned_modulus_64       < 2e-16 ***
-set_resource_constraint.unsigned_divide_16      < 2e-16 ***
-set_resource_constraint.unsigned_divide_64      < 2e-16 ***
-set_resource_constraint.signed_divide_8         < 2e-16 ***
-set_operation_latency.altfp_extend_32           < 2e-16 ***
-set_resource_constraint.altfp_add_16            < 2e-16 ***
-set_resource_constraint.signed_modulus_32       < 2e-16 ***
-set_parameter.DONT_CHAIN_GET_ELEM_PTRFALSE      < 2e-16 ***
-set_resource_constraint.unsigned_modulus_64     < 2e-16 ***
-set_operation_latency.unsigned_modulus_8        < 2e-16 ***
-set_resource_constraint.mem_dual_port           < 2e-16 ***
-set_parameter.SDC_MULTIPUMPFALSE                < 2e-16 ***
-set_operation_latency.signed_multiply_16        < 2e-16 ***
-set_operation_latency.altfp_multiply_16         < 2e-16 ***
-set_operation_latency.unsigned_modulus_16       < 2e-16 ***
-set_resource_constraint.altfp_subtract_64       < 2e-16 ***
-set_operation_latency.signed_add_8              < 2e-16 ***
-set_operation_latency.unsigned_add_16           < 2e-16 ***
-set_parameter.PATTERN_SHARE_SUBFALSE            < 2e-16 ***
-set_parameter.PATTERN_SHARE_SUBTRUE            0.963071    
-set_parameter.CLOCK_PERIOD                      < 2e-16 ***
-set_resource_constraint.altfp_subtract_8        < 2e-16 ***
-set_parameter.NO_LOOP_PIPELININGFALSE           < 2e-16 ***
-set_operation_latency.altfp_divide_64           < 2e-16 ***
-set_parameter.INCREMENTAL_SDCFALSE              < 2e-16 ***
-set_operation_latency.signed_divide_8           < 2e-16 ***
-set_resource_constraint.altfp_multiply_8        < 2e-16 ***
-set_resource_constraint.unsigned_multiply_16    < 2e-16 ***
-set_operation_latency.signed_modulus_64         < 2e-16 ***
-set_operation_latency.unsigned_multiply_64      < 2e-16 ***
-set_resource_constraint.unsigned_multiply_64    < 2e-16 ***
-set_operation_latency.signed_add_32             < 2e-16 ***
-set_parameter.DISABLE_REG_SHARINGFALSE          < 2e-16 ***
-set_operation_latency.unsigned_divide_64        < 2e-16 ***
-set_resource_constraint.unsigned_modulus_8      < 2e-16 ***
-set_combine_basicblock                          < 2e-16 ***
-set_parameter.ENABLE_PATTERN_SHARINGFALSE       < 2e-16 ***
-set_parameter.PIPELINE_RESOURCE_SHARINGFALSE    < 2e-16 ***
-set_parameter.PIPELINE_RESOURCE_SHARINGTRUE    0.000824 ***
-set_parameter.MULTIPUMPINGFALSE                 < 2e-16 ***
-set_resource_constraint.signed_add_32           < 2e-16 ***
-set_operation_latency.altfp_add_32              < 2e-16 ***
-set_resource_constraint.altfp_divide_64         < 2e-16 ***
-set_operation_latency.signed_modulus_8          < 2e-16 ***
-set_parameter.PIPELINE_ALLFALSE                      NA    
-set_parameter.SDC_NO_CHAININGFALSE                   NA    
-set_resource_constraint.altfp_add_32                 NA    
-set_parameter.PS_MIN_WIDTH                           NA    
-set_operation_latency.altfp_subtract_8               NA    
-set_operation_latency.signed_multiply_8              NA    
-set_operation_latency.altfp_extend_64                NA    
-set_operation_latency.local_mem_dual_port            NA    
-set_operation_latency.altfp_subtract_64              NA    
-set_resource_constraint.signed_divide_32             NA    
-set_resource_constraint.signed_multiply_32           NA    
-set_operation_latency.signed_divide_16               NA    
-set_operation_latency.signed_multiply_64             NA    
-set_parameter.PATTERN_SHARE_BITOPSFALSE              NA    
-set_parameter.PATTERN_SHARE_BITOPSTRUE         0.002345 ** 
-set_resource_constraint.signed_add_8                 NA    
-set_parameter.SDC_PRIORITYFALSE                      NA    
-set_parameter.SDC_PRIORITYTRUE                 0.001157 ** 
-set_resource_constraint.altfp_multiply_32            NA    
-set_resource_constraint.altfp_divide_16              NA    
-set_resource_constraint.signed_modulus_16            NA    
-set_operation_latency.signed_add_64                  NA    
-set_resource_constraint.unsigned_modulus_32          NA    
-set_operation_latency.altfp_multiply_8               NA    
-set_resource_constraint.signed_modulus_64            NA    
-set_operation_latency.signed_comp_o                  NA    
-set_parameter.PS_MAX_SIZE                            NA    
-set_operation_latency.signed_comp_u                  NA    
-set_parameter.DUAL_PORT_BINDINGFALSE                 NA    
-set_parameter.DUAL_PORT_BINDINGTRUE            0.565530    
-set_resource_constraint.unsigned_divide_32           NA    
-set_operation_latency.altfp_multiply_32              NA    
-set_operation_latency.altfp_add_16                   NA    
-set_operation_latency.altfp_truncate_32              NA    
-set_operation_latency.unsigned_add_64                NA    
-set_operation_latency.signed_add_16                  NA    
-set_parameter.PS_BIT_DIFF_THRESHOLD                  NA    
-set_operation_latency.altfp_add_8                    NA    
-set_operation_latency.altfp_divide_32                NA    
-set_operation_latency.altfp_sitofp                   NA    
-set_resource_constraint.unsigned_add_64              NA    
-set_resource_constraint.signed_add_64                NA    
-set_operation_latency.signed_divide_32               NA    
-set_parameter.MODULO_SCHEDULERSDC_BACKTRACKING       NA    
-set_parameter.MODULO_SCHEDULERSDC_GREEDY             NA    
-set_resource_constraint.unsigned_add_16              NA    
-set_operation_latency.altfp_divide_8                 NA    
-set_parameter.EXPLICIT_LPM_MULTSFALSE                NA    
-set_parameter.MB_MAX_BACK_PASSES                     NA    
-set_operation_latency.signed_modulus_16              NA    
-set_operation_latency.unsigned_multiply_16           NA    
-set_operation_latency.altfp_extend_8                 NA    
-set_operation_latency.unsigned_divide_32             NA    
-set_operation_latency.altfp_subtract_16              NA    
-set_resource_constraint.unsigned_add_8               NA    
-set_parameter.PATTERN_SHARE_SHIFTFALSE               NA    
-set_parameter.PATTERN_SHARE_SHIFTTRUE          0.281396    
-set_operation_latency.unsigned_divide_8              NA    
-set_resource_constraint.altfp_multiply_16            NA    
-set_resource_constraint.altfp_divide_32              NA    
-set_resource_constraint.unsigned_divide_8            NA    
-set_operation_latency.altfp_truncate_64              NA    
-set_operation_latency.unsigned_modulus_32            NA    
-set_operation_latency.unsigned_add_8                 NA    
-set_operation_latency.altfp_extend_16                NA    
-set_resource_constraint.altfp_divide_8               NA    
-set_resource_constraint.altfp_subtract_32            NA    
-set_resource_constraint.signed_modulus_8             NA    
-set_resource_constraint.signed_divide_64             NA    
-set_resource_constraint.shared_mem_dual_port         NA    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 1.316e-13 on 232 degrees of freedom
-Multiple R-squared:      1,	Adjusted R-squared:      1 
-F-statistic: 3.603e+28 on 84 and 232 DF,  p-value: < 2.2e-16
-#+end_example
-
-Hmmm, pretty hard to interpret.
-
-Let's look at something more specific for a change!
-
-#+begin_src R :results output :session *R* :exports both
-data=data_bak
-summary(lm(data=data,Regs~ set_operation_latency.signed_multiply_64))
-#+end_src
-
-#+RESULTS:
-#+begin_example
-
-Call:
-lm(formula = Regs ~ set_operation_latency.signed_multiply_64, 
-    data = data)
-
-Residuals:
-     Min       1Q   Median       3Q      Max 
--1490.06  -505.08    26.94    26.94  2578.74 
-
-Coefficients:
-                                         Estimate Std. Error t value Pr(>|t|)
-(Intercept)                               3534.26      47.16   74.94   <2e-16
-set_operation_latency.signed_multiply_64   387.80      18.78   20.65   <2e-16
-                                            
-(Intercept)                              ***
-set_operation_latency.signed_multiply_64 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 834.8 on 524 degrees of freedom
-Multiple R-squared:  0.4487,	Adjusted R-squared:  0.4477 
-F-statistic: 426.5 on 1 and 524 DF,  p-value: < 2.2e-16
-#+end_example
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
-library(ggplot2)
-ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_multiply_64, color=set_operation_latency.signed_add_64)) + 
-    geom_jitter(aes(x=as.factor(set_operation_latency.signed_multiply_64))) + 
-    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_multiply_64)), method="lm", formula=y~x+I(1/(x+1))) +
-    theme_bw() 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure2610OKP.png]]
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
-library(ggplot2)
-ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_add_64, color=set_operation_latency.signed_multiply_64)) + 
-    geom_jitter(aes(x=as.factor(set_operation_latency.signed_add_64))) + 
-    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_add_64)), method="lm", formula=y~x) +
-    theme_bw() 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure2610Czn.png]]
-
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
-library(ggplot2)
-ggplot(data=data[data$set_operation_latency.signed_multiply_64 ==1,], aes(y=Regs, x=set_operation_latency.signed_add_64)) + 
-    geom_jitter(aes(x=as.factor(set_operation_latency.signed_add_64))) + 
-    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_add_64)), method="lm", formula=y~x) +
-    theme_bw() 
-#+end_src
-
-#+RESULTS:
-[[file:/tmp/babel-2610olo/figure2610P9t.png]]
-
-In the end, it's very hard to know what's good, why such or such
-parameter was used, etc.
-
-- We discussed about the difficulties in multi-dimension setups:
-  https://blog.acolyer.org/2017/10/31/same-stats-different-graphs-generating-datasets-with-varied-appearance-and-identical-statistics-through-simulated-annealing/
-- The analysis (lm or aov) is really hard when mixing factors and
-  continuous variables.
-- It's possible to sort parameters by importance (for aov) but I'm not
-  sure how to do this in a systematic way in such a high dimension.
-
 *** [2017-12-01 Fri]
 - Finish the Reconfig poster
 - Converge to final Reconfig presentation
@@ -1562,18 +344,655 @@ https://github.com/phrb/slides-reconfig-2017-autotuning/raw/master/src/presentat
   it together.
 - The same could be done for GPU experiments.
 *** [2017-12-07 Thu]
-- Creating data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
+**** Creating a Data Frame for FPGA Autotuning Samples :R:Code:FPGA:Autotuning:
+***** Installing R Dependencies
+The next code block install all =R= dependencies.
+We are not using =ggplot2= to create the =csv= files,
+but it will be used later for plotting.
+
+We are installing =rjson= because part of the data files were generated
+by OpenTuner in the =JSON= format.  The other packages are from Arnaud's
+[[https://github.com/alegrand/SMPE#learning-r][guidelines]] for the SMPE course.
+
+#+HEADER: :results output :exports both
+#+BEGIN_SRC R
+install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally"),
+                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
+#+END_SRC
+
+#+RESULTS:
+: g++  -I/usr/include/R/ -DNDEBUG   -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c dump.cpp -o dump.o
+: gcc -I/usr/include/R/ -DNDEBUG   -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c parser.c -o parser.o
+: g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o rjson.so dump.o parser.o -L/usr/lib64/R/lib -lR
+: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c RcppExports.cpp -o RcppExports.o
+: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c fill.cpp -o fill.o
+: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c melt.cpp -o melt.o
+: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c simplifyPieces.cpp -o simplifyPieces.o
+: g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o tidyr.so RcppExports.o fill.o melt.o simplifyPieces.o -L/usr/lib64/R/lib -lR
+
+***** Generating =csv= Files with the Data
+Make sure you have the data:
+
+#+BEGIN_SRC sh
+git clone https://github.com/phrb/legup-tuner.git
+#+END_SRC
+
+#+RESULTS:
+
+Then, export the directory to the =repository_dir= variable:
+
+#+name: repository_dir
+#+begin_src sh :results output :exports both
+pwd | tr -d "\n"
+#+end_src
+
+#+RESULTS: repository_dir
+: /home/phrb/org/journal
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src R
+print(repository_dir)
+#+end_src
+
+#+RESULTS:
+: [1] "/home/phrb/org/journal"
+
+First, we configure libraries and initialize variables:
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :var repository_dir=repository_dir
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
+#+begin_src R
+
+library(tidyr)
+library(dplyr)
+library(jsonlite)
+
+runs         <- 10
+tuning_time  <- 5400
+
+repository   <- paste(repository_dir, "/legup-tuner", sep = "")
+results      <- "post_place_and_route/py/results"
+
+output_dir   <- paste(repository, results, "r_scripts/data", sep = "/")
+
+experiments  <- c("default_stratixV_perf", "default_stratixV_perflat",
+                  "default_stratixV_area", "default_stratixV_balanced")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+txt_measurements <- c("log_details.txt", "best_cycles_log.txt",
+                      "best_fmax_log.txt", "best_lu_log.txt",
+                      "best_pins_log.txt", "best_regs_log.txt",
+                      "best_block_log.txt", "best_ram_log.txt",
+                      "best_dps_log.txt")
+
+json_configurations <- "best_log.json"
+
+headers <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs", "Blocks",
+             "RAM", "DPS")
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+#+end_example
+
+Then, we define the =cbind.fill= function, which merges columns and
+fills missing rows with 'NA'.  This happens in this dataset because of
+unsynchronized logging, where the last configuration was saved twice
+in one of the log files. Will require to later clean the lines with
+'NA's.
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
+#+begin_src R
+#
+# Function from:
+#
+#    https://stackoverflow.com/questions/7962267/cbind-a-df-with-an-empty-df-cbind-fill
+#
+#
+cbind.fill <- function(...){
+    nm <- list(...)
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow))
+    do.call(cbind, lapply(nm, function (x)
+        rbind(x, matrix(, n-nrow(x), ncol(x)))))
+}
+
+#+end_src
+
+#+RESULTS:
+
+Now we defined the =generate_csv_files= function,
+which will load all data and create easily-importable
+=csv= files:
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
+#+begin_src R
+generate_csv_files <- function() {
+    dir.create(output_dir)
+
+    for (experiment in experiments) {
+        dir.create(paste(output_dir, strsplit(experiment, "_")[[1]][3], sep = "/"))
+
+        for (application in applications) {
+            data <- data.frame()
+
+            for (iteration in 1:runs) {
+                target_file <- (paste(repository, results, experiment,
+                                    paste(application, tuning_time, iteration,
+                                            sep = "_"), json_configurations,
+                                    sep = "/"))
+
+                if (file.exists(target_file)) {
+                    configuration <- fromJSON(target_file)
+                }
+
+                columns <- data.frame()
+
+                for (measurement in txt_measurements) {
+                    target_file <- paste(repository, results, experiment,
+                                        paste(application, tuning_time, iteration,
+                                            sep = "_"), measurement,
+                                        sep = "/")
+
+                    if (file.exists(target_file)) {
+                        new_column <- read.table(target_file, header = FALSE)[2]
+
+                        if (ncol(columns) == 0) {
+                            columns <- new_column
+                        } else {
+                            columns = cbind.fill(columns, new_column)
+                        }
+                    }
+                }
+
+                if (ncol(columns) != 0) {
+                    colnames(columns) <- headers
+
+                    columns = cbind.fill(configuration, columns)
+
+                    if (nrow(data) == 0) {
+                        data <- columns
+                    } else {
+                        data = bind_rows(as.data.frame(data),
+                                        as.data.frame(columns))
+                    }
+                }
+            }
+
+            data <- data[complete.cases(data), ]
+
+            write.csv(data, file = paste(paste(output_dir, strsplit(experiment,
+                                                                    "_")[[1]][3],
+                                            application, sep = "/"), ".csv",
+                                        sep = ""))
+        }
+    }
+}
+
+#+end_src
+
+#+RESULTS:
+
+Now, we can simply run the =generate_csv_files= function:
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_csv_files.r
+#+begin_src R
+generate_csv_files()
+#+end_src
+
+#+RESULTS:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
 **** Arnaud's Lecture on Linear Regression
 The slides and code are hosted at
 [[https://github.com/alegrand/SMPE][GitHub]].
 *** [2017-12-08 Fri]
 - Finish the data frames for FPGA data ([[Creating a Data Frame for FPGA Autotuning Samples][Main Section]])
-- Initial FPGA Data Analysis ([[Analysing FPGA Autotuning Samples][Main Section]])
-- Ask for help to complete ADUM Registration
+**** Analysing FPGA Autotuning Samples            :R:Code:FPGA:Autotuning:
+The generated =csv= files, made in [[Creating a Data Frame for FPGA Autotuning Samples][this section]], live in the [[https://github.com/phrb/legup-tuner/tree/master/post_place_and_route/py/results/r_scripts/data][repository]],
+and are organized by *experiment* and CHStone *application*. The
+*experiments* are the autotuning runs targeting different optimization
+objectives. The *applications* are the different programs that were
+autotuned.
+
+It makes sense to combine data from different *experiments*, for a
+same *application*, because the search space is the same and the
+individual hardware metrics refer to the same FPGA circuit.
+
+The =WNS= column is not directly comparable between different
+*experiments*, even for the same *application*, because it represents a
+different computation over the absolute metric values for each
+*application*.  To compare =WNS= columns it would be necessary to
+recompute =WNS= with different weights using the other hardware metrics.
+
+Combining data from different *applications* would be more complicated.
+The search spaces are not the same, but the *target FPGA* is the same.
+We could try to understand some property of the hardware by looking
+at the variability of the hardware metrics.
+
+***** Multivariate Analysis
+Implementing some ideas from [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html][The Little Book of R for Multivariate
+Analysis]].
+
+****** Introduction
+To run the code in this section you first need to clone the repository
+to get the data and the R scripts:
+
+#+BEGIN_SRC sh
+git clone https://github.com/phrb/legup-tuner.git
+#+END_SRC
+
+#+RESULTS:
+
+Then, export the directory to the =repository_dir= variable:
+
+#+name: repository_dir
+#+begin_src sh :results output :exports both
+pwd | tr -d "\n"
+#+end_src
+
+#+RESULTS: repository_dir
+: /home/phrb/org/journal
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src R
+print(repository_dir)
+#+end_src
+
+#+RESULTS:
+: [1] "/home/phrb/org/journal"
+
+****** Summary Statistics
+First, we will combine all *experiments* with the *dfdiv* application. In
+this case, the =WNS= columns are not directly comparable so I am not
+removing the rows where ~WNS == Inf~. This indicates a penalty that
+happened when there was some problem during HLS, synthesis, or
+testing. The following script, hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/mean_sd.r][GitHub]], will print the *mean*
+and *standard deviation* for the FPGA *hardware metrics* and *WNS*.
+
+First, let's define the necessary variables and import the
+=dplyr= library:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :var repository_dir=repository_dir
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+BEGIN_SRC R
+
+library(dplyr)
+
+csv_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+#+END_SRC
+
+#+RESULTS:
+
+
+Now, we load the data into two data frames. The =data= data frame
+contains all lines, including the ones with ~WNS == Inf~, the =clean_data=
+data frame contains the clean samples.  Note that we are merging all
+*experiments* for a single *application* in this case.
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+BEGIN_SRC R
+data       <- data.frame()
+clean_data <- data.frame()
+
+application <- applications[2]
+
+for (experiment in experiments) {
+    new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                               experiment, paste(application,
+                                                 ".csv",
+                                                 sep = ""),
+                               sep = "/"),
+                         header = TRUE, sep = ",")
+
+    new_data       <- as.data.frame(new_data)
+    new_clean_data <- new_data[is.finite(new_data$WNS),]
+
+    if (ncol(data) == 0) {
+        data <- new_data
+    } else {
+        data <- rbind(data, new_data)
+    }
+
+    if (ncol(clean_data) == 0) {
+        clean_data <- new_clean_data
+    } else {
+        clean_data <- rbind(clean_data, new_clean_data)
+    }
+}
+
+#+END_SRC
+
+#+RESULTS:
+
+Now, we get the indices of the =hardware_metrics= for which we want
+to compute the mean and standard deviation in this dataset:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+BEGIN_SRC R
+names <- c("WNS","RAM")
+
+idx <- match(names, names(data))
+
+#+END_SRC
+
+#+RESULTS:
+
+By looking at the data with the ~WNS == Inf~ rows we get wrong values
+for mean and standard deviation because repeated samples are in the
+data frame, strengthening their contribution contribution to the final
+values:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+BEGIN_SRC R
+print("Data with 'WNS == Inf' rows:")
+
+print("Mean:")
+sapply(data[idx[1]:idx[2]], mean)
+
+print("Standard Deviation:")
+sapply(data[idx[1]:idx[2]], sd)
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] "Data with 'WNS == Inf' rows:"
+[1] "Mean:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+         Inf  587.1083650   24.1486882    1.0000000    3.2813688 4153.5665399 
+      Blocks          RAM 
+   0.8992395    0.8992395
+[1] "Standard Deviation:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+         NaN  227.1528406   13.1032536    0.0000000    0.4500950 1123.2949061 
+      Blocks          RAM 
+   0.3012978    0.3012978
+#+end_example
+
+We can compute the correct values by using the =clean_data= data frame:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/mean_sd.r
+#+BEGIN_SRC R
+print("Data without 'WNS == Inf' rows:")
+
+print("Mean:")
+sapply(clean_data[idx[1]:idx[2]], mean)
+
+print("Standard Deviation:")
+sapply(clean_data[idx[1]:idx[2]], sd)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] "Data without 'WNS == Inf' rows:"
+[1] "Mean:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+   1.0651531  564.3596215   23.6492429    1.0000000    3.2492114 4032.5268139 
+      Blocks          RAM 
+   0.9116719    0.9116719
+[1] "Standard Deviation:"
+         WNS       Cycles         FMax          LUs         Pins         Regs 
+   0.3079517  207.3545319   12.8765244    0.0000000    0.4332403 1049.1423668 
+      Blocks          RAM 
+   0.2842201    0.2842201
+#+end_example
+
+****** Attempts at Computing Correlations
+Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#calculating-correlations-for-multivariate-data][this guide]] I attempted to compute and plot the largest
+correlations between *parameters* and *hardware metrics*.  The largest
+correlations might not be really signficant, because the relationship
+between variables might not be linear, as illustrated [[http://www.dummies.com/education/math/statistics/how-to-interpret-a-correlation-coefficient-r/][here]]. Therefore,
+the following script plots the 30 largest correlations, for all
+*applications* in all *experiments*, so that we can look at the
+relationships between variables. The script also generates =csv= files
+with the 120 strongest correlations. The script is hosted at
+[[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/correlations.r][GitHub]].
+
+First, we will import the dependencies, set the graphics output,
+and define paths:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :var repository_dir=repository_dir
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r
+#+begin_src R
+
+library(dplyr)
+
+setEPS()
+
+csv_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+plot_dir <- c(repository_dir,
+              "/legup-tuner/",
+              "post_place_and_route/py/results/r_scripts/",
+              "correlations")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+#+end_src
+
+#+RESULTS:
+
+Then we will define two functions. The =sorted_correlations= function
+gives us the sorted correlation matrices for *parameters* and *hardware
+metrics*. The =plot_application_correlations= function plots the strongest
+30 correlations between *parameters* and *hardware metrics*, and
+writes the 120 strongest correlations to =csv= files:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r
+#+begin_src R
+#
+# Function adapted from:
+#
+#   https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#calculating-correlations-for-multivariate-data
+#
+sorted_correlations <- function(data, datapoints) {
+    cormatrix <- cor(data)
+
+    diag(cormatrix) <- 0
+    cormatrix[lower.tri(cormatrix)] <- 0
+
+    fm <- as.data.frame(as.table(cormatrix))
+
+    names(fm) <- c("First.Variable", "Second.Variable","Correlation")
+
+    hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
+                          "Blocks", "RAM", "DPS")
+
+    #
+    # Restricting comparisons to correlations that contain a hardware metric
+    #
+    fm <- dplyr::filter(fm, grepl(paste(hardware_metrics, collapse = "|"),
+                                  fm$Second.Variable))
+
+    head(fm[order(abs(fm$Correlation), decreasing = T), ], n = datapoints)
+}
+
+plot_application_correlations <- function() {
+    dir.create(paste(plot_dir, collapse = ""))
+
+    for (application in applications) {
+        data       <- data.frame()
+        clean_data <- data.frame()
+
+        for (experiment in experiments) {
+            new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                                       experiment, paste(application,
+                                                         ".csv",
+                                                         sep = ""),
+                                       sep = "/"),
+                                 header = TRUE, sep = ",")
+
+            new_data <- as.data.frame(new_data)
+            new_data <- new_data[is.finite(new_data$WNS),]
+
+            if (ncol(data) == 0) {
+                data <- new_data
+            } else {
+                data <- rbind(data, new_data)
+            }
+        }
+
+        data  <- sapply(data, as.numeric)
+
+        correlation <- sorted_correlations(data, 120)
+
+        print(paste("Generating 120 strongest correlations for '", application,
+                    "'...", sep = ""))
+
+        write.csv(correlation, file = paste(paste(plot_dir, collapse = ""),
+                                            paste("correlations_", application,
+                                                  ".csv", sep = ""), sep = "/"))
+        print(paste("Generating scatter plots of the 30 strongest correlations for '",
+                    application, "'...", sep = ""))
+
+        print(paste(paste("CSV generated at ", 
+                          paste(plot_dir, collapse = ""),
+                          sep = ""), paste("correlations_", application,
+                                           ".csv", sep = ""),
+                    sep = "/"))
+
+        short_correlation <- correlation[1:30, ]
+
+        postscript(paste(paste(plot_dir, collapse = ""), paste("correlations_",
+                                                               application,
+                                                               ".eps",
+                                                               sep = ""),
+                         sep = "/"),
+                   width = 16, height = 11)
+
+        old.par <- par(mfrow = c(5, 6))
+
+        for (i in 1:nrow(short_correlation)) {
+            first  <- as.character(short_correlation[i, 'First.Variable'])
+            second <- as.character(short_correlation[i, 'Second.Variable'])
+
+            plot(data[, first], data[, second], xlab = first, ylab = second)
+        }
+
+        print(paste(paste("Plot generated at ",
+                          paste(plot_dir, collapse = ""),
+                          sep = ""), paste("correlations_", application,
+                                           ".eps", sep = ""),
+                    sep = "/"))
+
+        par(old.par)
+        dev.off()
+    }
+}
+
+#+end_src
+
+#+RESULTS:
+
+Now we can run =plot_application_correlations= and generate the files:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/correlations.r
+#+begin_src R
+plot_application_correlations()
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] "Generating 120 strongest correlations for 'dfadd'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfadd'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfadd.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfadd.eps"
+[1] "Generating 120 strongest correlations for 'dfdiv'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfdiv'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfdiv.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfdiv.eps"
+[1] "Generating 120 strongest correlations for 'dfmul'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfmul'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfmul.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfmul.eps"
+[1] "Generating 120 strongest correlations for 'sha'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'sha'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_sha.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_sha.eps"
+[1] "Generating 120 strongest correlations for 'motion'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'motion'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_motion.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_motion.eps"
+[1] "Generating 120 strongest correlations for 'adpcm'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'adpcm'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_adpcm.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_adpcm.eps"
+[1] "Generating 120 strongest correlations for 'dfsin'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'dfsin'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfsin.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfsin.eps"
+[1] "Generating 120 strongest correlations for 'aes'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'aes'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_aes.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_aes.eps"
+[1] "Generating 120 strongest correlations for 'blowfish'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'blowfish'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_blowfish.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_blowfish.eps"
+[1] "Generating 120 strongest correlations for 'gsm'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'gsm'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_gsm.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_gsm.eps"
+[1] "Generating 120 strongest correlations for 'mips'..."
+[1] "Generating scatter plots of the 30 strongest correlations for 'mips'..."
+[1] "CSV generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_mips.csv"
+[1] "Plot generated at /home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_mips.eps"
+There were 26 warnings (use warnings() to see them)
+#+end_example
+
+Open one of these =eps= files with:
+
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src sh
+evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/correlations/correlations_dfdiv.eps&
+#+end_src
+
+#+RESULTS:
+
 *** [2017-12-11 Mon]
-- Explore correlations between FPGA metrics and parameters ([[Attempts at Computing Correlations][Main Section]])
-- Use Vinicius' info to complete ADUM registration
-- Read [[file:~/Dropbox/papers/stochastic-search/schkufza2016stochastic.pdf][Schkufza]]'s paper
 **** Reading the [[file:~/Dropbox/papers/autotuning/cronsioe2013boast.pdf][BOAST]] paper
 - BOAST: Bringing Optimization through Automatic
   Source-to-source Transformations
@@ -1598,4 +1017,1246 @@ The slides and code are hosted at
     - Instruction cache misses
     - TLB data and instruction misses
     - Total CPU cycles
+**** Attempts at PCA ([[Analysing FPGA Autotuning Samples][Main Section]])               :R:Code:FPGA:Autotuning:
+Make sure you have the data:
+#+BEGIN_SRC sh
+git clone https://github.com/phrb/legup-tuner.git
+#+END_SRC
 
+#+RESULTS:
+
+Then, export the directory to the =repository_dir= variable:
+
+#+name: repository_dir
+#+begin_src sh :results output :exports both
+pwd | tr -d "\n"
+#+end_src
+
+#+RESULTS: repository_dir
+: /home/phrb/org/journal
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src R
+print(repository_dir)
+#+end_src
+
+#+RESULTS:
+: [1] "/home/phrb/org/journal"
+
+Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#principal-component-analysis][this guide]] I attempted to perform Principal Component
+Analysis for the data combining all *experiments* for all
+*applications*. The following script generates [[https://stat.ethz.ch/R-manual/R-devel/library/stats/html/screeplot.html][scree plots]] for the PCA
+of each *application*. The script is hosted at [[https://raw.githubusercontent.com/phrb/legup-tuner/master/post_place_and_route/py/results/r_scripts/pca.r][GitHub]].
+
+Initial setup:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :var repository_dir=repository_dir
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/pca.r
+#+BEGIN_SRC R
+
+library(dplyr)
+
+setEPS()
+
+csv_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+plot_dir <- c(repository_dir,
+              "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "scree_plots")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs", "Blocks",
+                      "RAM", "DPS")
+
+#+END_SRC
+
+#+RESULTS:
+
+Now, we define the =load_data= and the =plot_scree_pca= functions:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/pca.r
+#+BEGIN_SRC R
+load_data <- function(application, experiment) {
+    return(as.data.frame(read.csv(paste(paste(csv_dir, collapse = ""),
+                                        experiment, paste(application,
+                                                          ".csv",
+                                                          sep = ""),
+                                        sep = "/"),
+                                  header = TRUE, sep = ",")))
+}
+
+plot_scree_pca <- function() {
+    dir.create(paste(plot_dir, collapse = ""))
+
+    for (application in applications) {
+        data <- data.frame()
+
+        for (experiment in experiments) {
+            new_data <- load_data(application, experiment)
+            new_data <- new_data[is.finite(new_data$WNS),]
+
+            if (ncol(data) == 0) {
+                data <- new_data
+            } else {
+                data <- rbind(data, new_data)
+            }
+        }
+
+        headers <- names(data)
+        data  <- as.data.frame(sapply(data, as.numeric))
+
+        standardised_data <- as.data.frame(scale(data[, !(names(data) %in% hardware_metrics)]))
+
+        data.pca <- prcomp(t(na.omit(t(standardised_data))))
+
+        print(paste("Generating scree plots of PCA for '",
+                    application, "'...", sep = ""))
+
+        postscript(paste(paste(plot_dir, collapse = ""), paste("scree_",
+                                                               application,
+                                                               ".eps",
+                                                               sep = ""),
+                         sep = "/"),
+                   width = 16, height = 11)
+
+        screeplot(data.pca, type = "lines")
+
+        dev.off()
+    }
+}
+
+#+END_SRC
+
+#+RESULTS:
+
+Now, we run =plot_scree_pca= to generate the scree plots:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/pca.r
+#+begin_src R
+plot_scree_pca()
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] "Generating scree plots of PCA for 'dfadd'..."
+[1] "Generating scree plots of PCA for 'dfdiv'..."
+[1] "Generating scree plots of PCA for 'dfmul'..."
+[1] "Generating scree plots of PCA for 'sha'..."
+[1] "Generating scree plots of PCA for 'motion'..."
+[1] "Generating scree plots of PCA for 'adpcm'..."
+[1] "Generating scree plots of PCA for 'dfsin'..."
+[1] "Generating scree plots of PCA for 'aes'..."
+[1] "Generating scree plots of PCA for 'blowfish'..."
+[1] "Generating scree plots of PCA for 'gsm'..."
+[1] "Generating scree plots of PCA for 'mips'..."
+There were 15 warnings (use warnings() to see them)
+#+end_example
+
+Open one of these =eps= files with:
+
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src sh
+evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/scree_plots/scree_dfdiv.eps&
+#+end_src
+
+#+RESULTS:
+
+**** Looking at data with Arnaud. Not sure where we were heading though. :R:Code:FPGA:Autotuning:
+Make sure you have the data:
+#+BEGIN_SRC sh
+git clone https://github.com/phrb/legup-tuner.git
+#+END_SRC
+
+#+RESULTS:
+
+Then, export the directory to the =repository_dir= variable:
+
+#+name: repository_dir
+#+begin_src sh :results output :exports both
+pwd | tr -d "\n"
+#+end_src
+
+#+RESULTS: repository_dir
+: /home/phrb/org/journal
+
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src R
+print(repository_dir)
+#+end_src
+
+#+RESULTS:
+: [1] "/home/phrb/org/journal"
+
+Define the =load_data= function. This function receives lists of
+*experiments*, an *application* and a directory containing *csv* files with
+the data sets. The function returns a *data frame* with merged data for
+an *application* across all *experiments*:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+HEADER: :var repository_dir=repository_dir
+#+BEGIN_SRC R
+
+load_data <- function(application, experiments, csv_dir) {
+    data <- data.frame()
+
+    for (experiment in experiments) {
+        new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                                    experiment, paste(application,
+                                                        ".csv",
+                                                        sep = ""),
+                                    sep = "/"),
+                                header = TRUE, sep = ",")
+
+        new_data <- new_data[is.finite(new_data$WNS),]
+        new_data <- as.data.frame(new_data)
+
+        if (ncol(data) == 0) {
+            data <- new_data
+        } else {
+            data <- rbind(data, new_data)
+        }
+    }
+
+    headers <- names(data)
+    data    <- as.data.frame(sapply(data, as.numeric))
+    data    <- t(na.omit(t(data)))
+    return(as.data.frame(data))
+}
+
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R
+
+csv_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+plot_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "plots")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
+                      "Blocks", "RAM", "DPS")
+#+end_src
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R
+application <- applications[2]
+data        <- load_data(application, experiments, csv_dir)
+
+#+end_src
+
+#+RESULTS:
+: Warning message:
+: In lapply(X = X, FUN = FUN, ...) : NAs introduced by coercion
+
+Checking the data:
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R
+dim(data)
+str(data, list.len = 999)
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] 317 150
+'data.frame':	317 obs. of  150 variables:
+ $ X                                           : num  1 2 5 7 8 9 10 12 13 14 ...
+ $ set_operation_latency.altfp_divide_16       : num  33 33 33 33 33 33 33 33 33 33 ...
+ $ set_resource_constraint.signed_divide_16    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.mem_dual_port         : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.altfp_truncate_16     : num  3 3 3 3 3 3 4 4 4 4 ...
+ $ set_resource_constraint.altfp_multiply_64   : num  1 1 1 1 1 1 1 3 3 3 ...
+ $ set_parameter.NO_ROMS                       : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.signed_multiply_8   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_fptosi          : num  6 6 6 6 6 6 6 6 6 6 ...
+ $ set_resource_constraint.unsigned_modulus_16 : num  1 1 1 1 1 1 5 5 5 5 ...
+ $ set_resource_constraint.unsigned_multiply_32: num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.altfp_add_8         : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_multiply_32  : num  1 1 1 1 3 3 3 3 3 3 ...
+ $ set_resource_constraint.unsigned_add_32     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_divide_16    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_multiply_16  : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_modulus_32     : num  1 1 1 1 1 1 0 0 0 0 ...
+ $ set_operation_latency.signed_multiply_32    : num  1 1 1 1 1 1 5 5 5 5 ...
+ $ set_operation_latency.altfp_add_64          : num  14 14 14 14 14 14 14 4 4 2 ...
+ $ set_operation_latency.altfp_subtract_32     : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_parameter.PS_MIN_SIZE                   : num  1 1 1 1 1 1 1 1 1 4 ...
+ $ set_resource_constraint.altfp_add_64        : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_multiply_64     : num  11 11 11 11 11 11 11 11 11 11 ...
+ $ set_operation_latency.unsigned_multiply_8   : num  1 1 1 1 1 1 1 1 1 5 ...
+ $ set_operation_latency.unsigned_add_32       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_truncate_8      : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_resource_constraint.signed_multiply_64  : num  1 1 1 1 6 6 6 6 6 6 ...
+ $ set_operation_latency.signed_divide_64      : num  1 1 1 1 1 1 2 6 6 6 ...
+ $ set_resource_constraint.altfp_subtract_16   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.MB_MINIMIZE_HW                : num  2 2 2 2 2 2 2 2 2 1 ...
+ $ set_parameter.PATTERN_SHARE_ADD             : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_resource_constraint.signed_add_16       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.MULTIPLIER_NO_CHAIN           : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.unsigned_multiply_8 : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.reg                   : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.unsigned_modulus_64   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.unsigned_divide_16  : num  1 1 1 1 1 1 1 7 7 8 ...
+ $ set_resource_constraint.unsigned_divide_64  : num  1 1 1 1 1 1 7 7 7 7 ...
+ $ set_resource_constraint.signed_divide_8     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_extend_32       : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.altfp_add_16        : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_modulus_32   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.DONT_CHAIN_GET_ELEM_PTR       : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.unsigned_modulus_64 : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_modulus_8    : num  1 1 1 1 1 1 0 0 0 0 ...
+ $ set_resource_constraint.mem_dual_port       : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_parameter.SDC_MULTIPUMP                 : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.signed_multiply_16    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_multiply_16     : num  11 11 11 11 11 11 6 6 6 6 ...
+ $ set_operation_latency.unsigned_modulus_16   : num  1 1 1 1 4 4 6 6 6 6 ...
+ $ set_resource_constraint.altfp_subtract_64   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_add_8          : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_add_16       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.PATTERN_SHARE_SUB             : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_parameter.CLOCK_PERIOD                  : num  10 10 10 10 24 24 24 24 24 20 ...
+ $ set_resource_constraint.altfp_subtract_8    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.NO_LOOP_PIPELINING            : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.altfp_divide_64       : num  64 64 64 64 64 64 64 64 64 64 ...
+ $ set_parameter.INCREMENTAL_SDC               : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.signed_divide_8       : num  1 1 1 1 4 4 4 4 4 4 ...
+ $ set_resource_constraint.altfp_multiply_8    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.unsigned_multiply_16: num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_modulus_64     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_multiply_64  : num  1 1 1 1 1 1 3 3 3 3 ...
+ $ set_resource_constraint.unsigned_multiply_64: num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_add_32         : num  1 1 1 1 1 1 1 1 1 4 ...
+ $ set_parameter.DISABLE_REG_SHARING           : num  2 2 2 2 2 2 2 1 1 1 ...
+ $ set_operation_latency.unsigned_divide_64    : num  1 1 1 1 1 1 5 7 7 7 ...
+ $ set_resource_constraint.unsigned_modulus_8  : num  1 1 1 1 1 1 4 4 4 4 ...
+ $ set_combine_basicblock                      : num  0 0 0 0 0 0 0 0 0 0 ...
+ $ set_parameter.ENABLE_PATTERN_SHARING        : num  2 2 2 2 2 2 2 1 1 1 ...
+ $ set_parameter.PIPELINE_RESOURCE_SHARING     : num  1 1 1 1 1 1 2 2 2 2 ...
+ $ set_parameter.MULTIPUMPING                  : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.signed_add_32       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_add_32          : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_resource_constraint.altfp_divide_64     : num  1 1 1 1 3 3 2 2 2 2 ...
+ $ set_operation_latency.signed_modulus_8      : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.PIPELINE_ALL                  : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.altfp_add_32        : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.PS_MIN_WIDTH                  : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.altfp_subtract_8      : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_operation_latency.signed_multiply_8     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_extend_64       : num  2 2 2 2 7 7 7 7 7 7 ...
+ $ set_operation_latency.local_mem_dual_port   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_subtract_64     : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_resource_constraint.signed_divide_32    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_multiply_32  : num  1 1 1 1 1 1 7 6 6 6 ...
+ $ set_operation_latency.signed_divide_16      : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_multiply_64    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.PATTERN_SHARE_BITOPS          : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_resource_constraint.signed_add_8        : num  1 1 1 1 4 4 4 4 4 4 ...
+ $ set_parameter.SDC_PRIORITY                  : num  1 1 1 1 1 1 1 1 1 2 ...
+ $ set_resource_constraint.altfp_multiply_32   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.altfp_divide_16     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_modulus_16   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_add_64         : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.unsigned_modulus_32 : num  1 1 1 1 7 7 7 7 7 7 ...
+ $ set_operation_latency.altfp_multiply_8      : num  11 11 11 11 11 11 11 11 11 2 ...
+ $ set_resource_constraint.signed_modulus_64   : num  1 1 1 1 1 1 1 7 7 7 ...
+ $ set_operation_latency.signed_comp_o         : num  1 1 1 1 5 5 5 5 5 5 ...
+ $ set_parameter.PS_MAX_SIZE                   : num  10 10 10 10 10 10 10 10 10 10 ...
+ $ set_operation_latency.signed_comp_u         : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.DUAL_PORT_BINDING             : num  1 1 1 1 1 1 1 2 2 2 ...
+ $ set_resource_constraint.unsigned_divide_32  : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_multiply_32     : num  11 11 11 11 11 11 11 11 11 11 ...
+ $ set_operation_latency.altfp_add_16          : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_operation_latency.altfp_truncate_32     : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_operation_latency.unsigned_add_64       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_add_16         : num  1 1 1 1 1 1 1 2 2 6 ...
+ $ set_parameter.PS_BIT_DIFF_THRESHOLD         : num  10 10 10 10 10 10 10 10 10 14 ...
+ $ set_operation_latency.altfp_add_8           : num  14 14 14 14 14 14 14 14 14 1 ...
+ $ set_operation_latency.altfp_divide_32       : num  33 33 33 33 33 33 33 33 33 33 ...
+ $ set_operation_latency.altfp_sitofp          : num  6 6 6 6 6 6 6 6 6 6 ...
+ $ set_resource_constraint.unsigned_add_64     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_add_64       : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.signed_divide_32      : num  1 1 1 1 7 7 4 4 4 4 ...
+ $ set_parameter.MODULO_SCHEDULER              : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_resource_constraint.unsigned_add_16     : num  1 1 1 1 1 1 1 6 6 6 ...
+ $ set_operation_latency.altfp_divide_8        : num  33 33 33 33 33 33 33 33 33 33 ...
+ $ set_parameter.EXPLICIT_LPM_MULTS            : num  2 2 2 2 2 2 2 2 2 1 ...
+ $ set_parameter.MB_MAX_BACK_PASSES            : num  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+ $ set_operation_latency.signed_modulus_16     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_multiply_16  : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_extend_8        : num  2 2 2 2 2 2 2 2 2 2 ...
+ $ set_operation_latency.unsigned_divide_32    : num  1 1 1 1 1 1 1 1 1 6 ...
+ $ set_operation_latency.altfp_subtract_16     : num  14 14 14 14 14 14 14 14 14 14 ...
+ $ set_resource_constraint.unsigned_add_8      : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_parameter.PATTERN_SHARE_SHIFT           : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ set_operation_latency.unsigned_divide_8     : num  1 1 1 1 7 7 7 7 7 7 ...
+ $ set_resource_constraint.altfp_multiply_16   : num  1 1 1 1 1 1 1 8 8 8 ...
+ $ set_resource_constraint.altfp_divide_32     : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.unsigned_divide_8   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_truncate_64     : num  3 3 3 3 0 0 0 3 3 3 ...
+ $ set_operation_latency.unsigned_modulus_32   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.unsigned_add_8        : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_operation_latency.altfp_extend_16       : num  2 2 2 2 1 1 1 1 1 1 ...
+ $ set_resource_constraint.altfp_divide_8      : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.altfp_subtract_32   : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.signed_modulus_8    : num  1 1 1 1 1 1 5 5 5 5 ...
+ $ set_resource_constraint.signed_divide_64    : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ set_resource_constraint.shared_mem_dual_port: num  1 1 1 1 5 5 5 5 5 5 ...
+ $ WNS                                         : num  1 1 1.117 1.86 0.991 ...
+ $ Cycles                                      : num  486 486 486 486 458 458 554 602 602 794 ...
+ $ FMax                                        : num  15.7 15.7 15.7 15.7 15.9 ...
+ $ LUs                                         : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ Pins                                        : num  3 3 3 3 3 3 3 3 3 3 ...
+ $ Regs                                        : num  3949 3949 3949 3949 3968 ...
+ $ Blocks                                      : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ RAM                                         : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ DPS                                         : num  16 16 16 16 16 16 16 16 16 5 ...
+#+end_example
+
+Plotting =pairs= with =GGally=:
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 600 :height 400
+#+begin_src R
+library(GGally)
+
+hw_metrics    <- tail(names(data), n = 9)
+hw_parameters <- head(names(data), n = 151 - 9)
+
+dir.create(paste(plot_dir, collapse = ""))
+
+setEPS()
+
+postscript(paste(paste(plot_dir, collapse = ""), paste("ggpairs_",
+                                                       application,
+                                                       ".eps",
+                                                       sep = ""),
+                 sep = "/"),
+           width = 16, height = 16)
+
+ggpairs_plot <- ggpairs(data, columns = hw_metrics)
+
+print(ggpairs_plot)
+
+dev.off()
+
+ggpairs_plot
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure8765GtO.png]]
+
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src sh
+evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/plots/ggpairs_dfdiv.eps&
+#+end_src
+
+#+RESULTS:
+
+Checking correlations of 5 random *parameters* with the *hardware metrics*:
+
+#+HEADER: :results output graphics :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+HEADER: :exports both :width 1600 :height 1400 :session *R*
+#+begin_src R
+
+my_plot <- plot(data[c(sample(hw_parameters, size = 5), hw_metrics)])
+
+setEPS()
+
+postscript(paste(paste(plot_dir, collapse = ""), paste("random_5_corr_",
+                                                       application,
+                                                       ".eps",
+                                                       sep = ""),
+                 sep = "/"),
+           width = 16, height = 16)
+
+plot(data[c(sample(hw_parameters, size = 5), hw_metrics)])
+
+dev.off()
+
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure8765hJW.png]]
+
+#+HEADER: :var repository_dir=repository_dir
+#+begin_src sh
+evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/plots/random_5_corr_dfdiv.eps&
+#+end_src
+
+#+RESULTS:
+
+Plotting =ggpairs= for 5 random *parameters* and all *hardware metrics*:
+
+#+HEADER: :results output graphics :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :exports both :width 1600 :height 1400 :session *R*
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R
+ggpairs(data[c(sample(hw_parameters, size = 5), hw_metrics)])
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure87657rK.png]]
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output :session *R* :exports both
+lm(data = head(data[!names(data) %in% (hw_metrics[hw_metrics != "FMax"])]), 
+   FMax ~ .)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = FMax ~ ., data = head(data[!names(data) %in% (hw_metrics[hw_metrics != 
+    "FMax"])]))
+
+Coefficients:
+                                 (Intercept)  
+                                   1.560e+01  
+                                           X  
+                                  -1.973e-15  
+       set_operation_latency.altfp_divide_16  
+                                          NA  
+    set_resource_constraint.signed_divide_16  
+                                          NA  
+         set_operation_latency.mem_dual_port  
+                                          NA  
+     set_operation_latency.altfp_truncate_16  
+                                          NA  
+   set_resource_constraint.altfp_multiply_64  
+                                          NA  
+                       set_parameter.NO_ROMS  
+                                          NA  
+   set_resource_constraint.signed_multiply_8  
+                                          NA  
+          set_operation_latency.altfp_fptosi  
+                                          NA  
+ set_resource_constraint.unsigned_modulus_16  
+                                          NA  
+set_resource_constraint.unsigned_multiply_32  
+                                          NA  
+         set_resource_constraint.altfp_add_8  
+                                          NA  
+  set_operation_latency.unsigned_multiply_32  
+                                   1.000e-01  
+     set_resource_constraint.unsigned_add_32  
+                                          NA  
+    set_operation_latency.unsigned_divide_16  
+                                          NA  
+  set_resource_constraint.signed_multiply_16  
+                                          NA  
+     set_operation_latency.signed_modulus_32  
+                                          NA  
+    set_operation_latency.signed_multiply_32  
+                                          NA  
+          set_operation_latency.altfp_add_64  
+                                          NA  
+     set_operation_latency.altfp_subtract_32  
+                                          NA  
+                   set_parameter.PS_MIN_SIZE  
+                                          NA  
+        set_resource_constraint.altfp_add_64  
+                                          NA  
+     set_operation_latency.altfp_multiply_64  
+                                          NA  
+   set_operation_latency.unsigned_multiply_8  
+                                          NA  
+       set_operation_latency.unsigned_add_32  
+                                          NA  
+      set_operation_latency.altfp_truncate_8  
+                                          NA  
+  set_resource_constraint.signed_multiply_64  
+                                          NA  
+      set_operation_latency.signed_divide_64  
+                                          NA  
+   set_resource_constraint.altfp_subtract_16  
+                                          NA  
+                set_parameter.MB_MINIMIZE_HW  
+                                          NA  
+             set_parameter.PATTERN_SHARE_ADD  
+                                          NA  
+       set_resource_constraint.signed_add_16  
+                                          NA  
+           set_parameter.MULTIPLIER_NO_CHAIN  
+                                          NA  
+ set_resource_constraint.unsigned_multiply_8  
+                                          NA  
+                   set_operation_latency.reg  
+                                          NA  
+   set_operation_latency.unsigned_modulus_64  
+                                          NA  
+  set_resource_constraint.unsigned_divide_16  
+                                          NA  
+  set_resource_constraint.unsigned_divide_64  
+                                          NA  
+     set_resource_constraint.signed_divide_8  
+                                          NA  
+       set_operation_latency.altfp_extend_32  
+                                          NA  
+        set_resource_constraint.altfp_add_16  
+                                          NA  
+   set_resource_constraint.signed_modulus_32  
+                                          NA  
+       set_parameter.DONT_CHAIN_GET_ELEM_PTR  
+                                          NA  
+ set_resource_constraint.unsigned_modulus_64  
+                                          NA  
+    set_operation_latency.unsigned_modulus_8  
+                                          NA  
+       set_resource_constraint.mem_dual_port  
+                                          NA  
+                 set_parameter.SDC_MULTIPUMP  
+                                          NA  
+    set_operation_latency.signed_multiply_16  
+                                          NA  
+     set_operation_latency.altfp_multiply_16  
+                                          NA  
+   set_operation_latency.unsigned_modulus_16  
+                                          NA  
+   set_resource_constraint.altfp_subtract_64  
+                                          NA  
+          set_operation_latency.signed_add_8  
+                                          NA  
+       set_operation_latency.unsigned_add_16  
+                                          NA  
+             set_parameter.PATTERN_SHARE_SUB  
+                                          NA  
+                  set_parameter.CLOCK_PERIOD  
+                                          NA  
+    set_resource_constraint.altfp_subtract_8  
+                                          NA  
+            set_parameter.NO_LOOP_PIPELINING  
+                                          NA  
+       set_operation_latency.altfp_divide_64  
+                                          NA  
+               set_parameter.INCREMENTAL_SDC  
+                                          NA  
+       set_operation_latency.signed_divide_8  
+                                          NA  
+    set_resource_constraint.altfp_multiply_8  
+                                          NA  
+set_resource_constraint.unsigned_multiply_16  
+                                          NA  
+     set_operation_latency.signed_modulus_64  
+                                          NA  
+  set_operation_latency.unsigned_multiply_64  
+                                          NA  
+set_resource_constraint.unsigned_multiply_64  
+                                          NA  
+         set_operation_latency.signed_add_32  
+                                          NA  
+           set_parameter.DISABLE_REG_SHARING  
+                                          NA  
+    set_operation_latency.unsigned_divide_64  
+                                          NA  
+  set_resource_constraint.unsigned_modulus_8  
+                                          NA  
+                      set_combine_basicblock  
+                                          NA  
+        set_parameter.ENABLE_PATTERN_SHARING  
+                                          NA  
+     set_parameter.PIPELINE_RESOURCE_SHARING  
+                                          NA  
+                  set_parameter.MULTIPUMPING  
+                                          NA  
+       set_resource_constraint.signed_add_32  
+                                          NA  
+          set_operation_latency.altfp_add_32  
+                                          NA  
+     set_resource_constraint.altfp_divide_64  
+                                          NA  
+      set_operation_latency.signed_modulus_8  
+                                          NA  
+                  set_parameter.PIPELINE_ALL  
+                                          NA  
+        set_resource_constraint.altfp_add_32  
+                                          NA  
+                  set_parameter.PS_MIN_WIDTH  
+                                          NA  
+      set_operation_latency.altfp_subtract_8  
+                                          NA  
+     set_operation_latency.signed_multiply_8  
+                                          NA  
+       set_operation_latency.altfp_extend_64  
+                                          NA  
+   set_operation_latency.local_mem_dual_port  
+                                          NA  
+     set_operation_latency.altfp_subtract_64  
+                                          NA  
+    set_resource_constraint.signed_divide_32  
+                                          NA  
+  set_resource_constraint.signed_multiply_32  
+                                          NA  
+      set_operation_latency.signed_divide_16  
+                                          NA  
+    set_operation_latency.signed_multiply_64  
+                                          NA  
+          set_parameter.PATTERN_SHARE_BITOPS  
+                                          NA  
+        set_resource_constraint.signed_add_8  
+                                          NA  
+                  set_parameter.SDC_PRIORITY  
+                                          NA  
+   set_resource_constraint.altfp_multiply_32  
+                                          NA  
+     set_resource_constraint.altfp_divide_16  
+                                          NA  
+   set_resource_constraint.signed_modulus_16  
+                                          NA  
+         set_operation_latency.signed_add_64  
+                                          NA  
+ set_resource_constraint.unsigned_modulus_32  
+                                          NA  
+      set_operation_latency.altfp_multiply_8  
+                                          NA  
+   set_resource_constraint.signed_modulus_64  
+                                          NA  
+         set_operation_latency.signed_comp_o  
+                                          NA  
+                   set_parameter.PS_MAX_SIZE  
+                                          NA  
+         set_operation_latency.signed_comp_u  
+                                          NA  
+             set_parameter.DUAL_PORT_BINDING  
+                                          NA  
+  set_resource_constraint.unsigned_divide_32  
+                                          NA  
+     set_operation_latency.altfp_multiply_32  
+                                          NA  
+          set_operation_latency.altfp_add_16  
+                                          NA  
+     set_operation_latency.altfp_truncate_32  
+                                          NA  
+       set_operation_latency.unsigned_add_64  
+                                          NA  
+         set_operation_latency.signed_add_16  
+                                          NA  
+         set_parameter.PS_BIT_DIFF_THRESHOLD  
+                                          NA  
+           set_operation_latency.altfp_add_8  
+                                          NA  
+       set_operation_latency.altfp_divide_32  
+                                          NA  
+          set_operation_latency.altfp_sitofp  
+                                          NA  
+     set_resource_constraint.unsigned_add_64  
+                                          NA  
+       set_resource_constraint.signed_add_64  
+                                          NA  
+      set_operation_latency.signed_divide_32  
+                                          NA  
+              set_parameter.MODULO_SCHEDULER  
+                                          NA  
+     set_resource_constraint.unsigned_add_16  
+                                          NA  
+        set_operation_latency.altfp_divide_8  
+                                          NA  
+            set_parameter.EXPLICIT_LPM_MULTS  
+                                          NA  
+            set_parameter.MB_MAX_BACK_PASSES  
+                                          NA  
+     set_operation_latency.signed_modulus_16  
+                                          NA  
+  set_operation_latency.unsigned_multiply_16  
+                                          NA  
+        set_operation_latency.altfp_extend_8  
+                                          NA  
+    set_operation_latency.unsigned_divide_32  
+                                          NA  
+     set_operation_latency.altfp_subtract_16  
+                                          NA  
+      set_resource_constraint.unsigned_add_8  
+                                          NA  
+           set_parameter.PATTERN_SHARE_SHIFT  
+                                          NA  
+     set_operation_latency.unsigned_divide_8  
+                                          NA  
+   set_resource_constraint.altfp_multiply_16  
+                                          NA  
+     set_resource_constraint.altfp_divide_32  
+                                          NA  
+   set_resource_constraint.unsigned_divide_8  
+                                          NA  
+     set_operation_latency.altfp_truncate_64  
+                                          NA  
+   set_operation_latency.unsigned_modulus_32  
+                                          NA  
+        set_operation_latency.unsigned_add_8  
+                                          NA  
+       set_operation_latency.altfp_extend_16  
+                                          NA  
+      set_resource_constraint.altfp_divide_8  
+                                          NA  
+   set_resource_constraint.altfp_subtract_32  
+                                          NA  
+    set_resource_constraint.signed_modulus_8  
+                                          NA  
+    set_resource_constraint.signed_divide_64  
+                                          NA  
+set_resource_constraint.shared_mem_dual_port  
+                                          NA
+#+end_example
+
+Damn, we need to get rid of "useless" parameters. Let's go dirty!
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output :session *R* :exports both
+data_bak = data
+#+end_src
+
+#+RESULTS:
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output :session *R* :exports both
+fixed_param = c()
+for(i in names(data)) {
+    if(dim(unique(data[i]))[1]==1) { fixed_param = c(fixed_param,i) }
+}
+fixed_param;
+for(i in names(data)) {
+    data = data[!is.na(data[,i]),]
+    data = data[!is.infinite(data[,i]),]
+#    data[,i]=as.numeric(data[,i])
+}
+data = data[!names(data) %in% (c(fixed_param,hw_metrics[hw_metrics!="FMax"]))]
+dim(data)
+#+end_src
+
+#+RESULTS:
+: [1] "LUs"
+: [1] 317 142
+
+#+begin_src R :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+summary(lm(data=data, FMax ~ .))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = FMax ~ ., data = data)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.963e-13 -7.930e-15  0.000e+00  5.570e-15  1.260e-12 
+
+Coefficients: (57 not defined because of singularities)
+                                               Estimate Std. Error    t value
+(Intercept)                                   1.581e+00  2.729e-12  5.793e+11
+X                                            -9.689e-16  3.156e-16 -3.070e+00
+set_operation_latency.altfp_divide_16        -3.087e-01  7.230e-15 -4.269e+13
+set_resource_constraint.signed_divide_16     -1.202e+00  1.366e-13 -8.801e+12
+set_operation_latency.mem_dual_port           1.964e+00  3.386e-13  5.800e+12
+set_operation_latency.altfp_truncate_16      -3.941e+00  4.183e-13 -9.422e+12
+set_resource_constraint.altfp_multiply_64    -4.192e+00  1.871e-13 -2.241e+13
+set_parameter.NO_ROMS                         3.347e+00  3.166e-13  1.057e+13
+set_resource_constraint.signed_multiply_8    -3.607e+00  1.911e-13 -1.887e+13
+set_operation_latency.altfp_fptosi            1.555e+00  1.446e-13  1.075e+13
+set_resource_constraint.unsigned_modulus_16  -3.621e+00  2.579e-13 -1.404e+13
+set_resource_constraint.unsigned_multiply_32  2.731e+00  1.126e-13  2.426e+13
+set_resource_constraint.altfp_add_8           1.139e+00  1.447e-13  7.868e+12
+set_operation_latency.unsigned_multiply_32    1.589e+00  1.124e-13  1.414e+13
+set_resource_constraint.unsigned_add_32       5.163e+00  2.250e-13  2.294e+13
+set_operation_latency.unsigned_divide_16      3.895e-01  6.612e-14  5.890e+12
+set_resource_constraint.signed_multiply_16   -9.574e-01  1.920e-13 -4.987e+12
+set_operation_latency.signed_modulus_32      -1.024e+00  1.608e-13 -6.365e+12
+set_operation_latency.signed_multiply_32      4.624e+00  2.302e-13  2.009e+13
+set_operation_latency.altfp_add_64           -2.901e-01  1.859e-14 -1.560e+13
+set_operation_latency.altfp_subtract_32       7.665e-01  2.858e-14  2.682e+13
+set_parameter.PS_MIN_SIZE                    -8.925e-01  3.009e-14 -2.966e+13
+set_resource_constraint.altfp_add_64          1.079e+00  6.164e-14  1.750e+13
+set_operation_latency.altfp_multiply_64       9.609e-01  7.588e-14  1.266e+13
+set_operation_latency.unsigned_multiply_8     1.576e+00  5.901e-14  2.671e+13
+set_operation_latency.unsigned_add_32         6.328e-01  8.368e-14  7.562e+12
+set_operation_latency.altfp_truncate_8       -5.091e-01  8.641e-14 -5.892e+12
+set_resource_constraint.signed_multiply_64    2.921e+00  1.041e-13  2.805e+13
+set_operation_latency.signed_divide_64        1.680e+00  1.898e-13  8.852e+12
+set_resource_constraint.altfp_subtract_16     1.062e+00  1.029e-13  1.032e+13
+set_parameter.MB_MINIMIZE_HW                 -8.907e+00  2.462e-13 -3.617e+13
+set_parameter.PATTERN_SHARE_ADD               1.436e-14  1.734e-14  8.280e-01
+set_resource_constraint.signed_add_16         3.049e+00  3.845e-13  7.932e+12
+set_parameter.MULTIPLIER_NO_CHAIN            -1.438e+00  3.435e-13 -4.185e+12
+set_resource_constraint.unsigned_multiply_8  -4.986e-01  3.056e-14 -1.632e+13
+set_operation_latency.reg                    -2.187e+00  1.998e-13 -1.095e+13
+set_operation_latency.unsigned_modulus_64     3.020e+00  1.467e-13  2.059e+13
+set_resource_constraint.unsigned_divide_16   -1.317e-01  1.146e-13 -1.149e+12
+set_resource_constraint.unsigned_divide_64    1.421e+00  9.922e-14  1.432e+13
+set_resource_constraint.signed_divide_8       4.760e+00  3.682e-13  1.293e+13
+set_operation_latency.altfp_extend_32         1.896e-01  9.549e-14  1.986e+12
+set_resource_constraint.altfp_add_16          3.600e+00  2.127e-13  1.693e+13
+set_resource_constraint.signed_modulus_32     4.788e-02  1.395e-13  3.432e+11
+set_parameter.DONT_CHAIN_GET_ELEM_PTR         4.045e-01  1.077e-13  3.756e+12
+set_resource_constraint.unsigned_modulus_64  -3.451e+00  1.106e-13 -3.119e+13
+set_operation_latency.unsigned_modulus_8      5.268e+00  2.087e-13  2.525e+13
+set_resource_constraint.mem_dual_port        -7.728e+00  4.528e-13 -1.707e+13
+set_parameter.SDC_MULTIPUMP                   9.133e+00  5.994e-13  1.524e+13
+set_operation_latency.signed_multiply_16     -4.332e+00  1.514e-13 -2.861e+13
+set_operation_latency.altfp_multiply_16       6.019e-01  4.157e-14  1.448e+13
+set_operation_latency.unsigned_modulus_16     2.620e-01  9.755e-14  2.686e+12
+set_resource_constraint.altfp_subtract_64    -1.872e-01  1.431e-13 -1.308e+12
+set_operation_latency.signed_add_8           -1.996e+00  7.013e-14 -2.846e+13
+set_operation_latency.unsigned_add_16         1.579e+00  2.192e-13  7.206e+12
+set_parameter.PATTERN_SHARE_SUB              -6.206e-15  1.613e-14 -3.850e-01
+set_parameter.CLOCK_PERIOD                    8.830e-02  1.979e-14  4.461e+12
+set_resource_constraint.altfp_subtract_8      4.483e+00  1.675e-13  2.676e+13
+set_parameter.NO_LOOP_PIPELINING              3.606e+00  2.862e-13  1.260e+13
+set_operation_latency.altfp_divide_64        -5.857e-02  4.056e-15 -1.444e+13
+set_parameter.INCREMENTAL_SDC                -1.171e+01  7.271e-13 -1.611e+13
+set_operation_latency.signed_divide_8        -8.171e+00  2.727e-13 -2.996e+13
+set_resource_constraint.altfp_multiply_8      2.154e+00  2.474e-13  8.706e+12
+set_resource_constraint.unsigned_multiply_16  1.640e+00  1.904e-13  8.614e+12
+set_operation_latency.signed_modulus_64      -1.904e+00  1.261e-13 -1.509e+13
+set_operation_latency.unsigned_multiply_64    1.710e+00  1.295e-13  1.320e+13
+set_resource_constraint.unsigned_multiply_64 -2.886e+00  1.000e-13 -2.886e+13
+set_operation_latency.signed_add_32          -7.264e-01  8.704e-14 -8.346e+12
+set_parameter.DISABLE_REG_SHARING             2.740e+00  1.436e-13  1.908e+13
+set_operation_latency.unsigned_divide_64      5.914e+00  2.269e-13  2.607e+13
+set_resource_constraint.unsigned_modulus_8   -2.024e+00  2.198e-13 -9.208e+12
+set_combine_basicblock                        2.966e+00  3.145e-13  9.430e+12
+set_parameter.ENABLE_PATTERN_SHARING         -1.907e+00  3.565e-13 -5.348e+12
+set_parameter.PIPELINE_RESOURCE_SHARING      -4.787e-14  1.559e-14 -3.071e+00
+set_parameter.MULTIPUMPING                    1.365e+00  6.111e-13  2.234e+12
+set_resource_constraint.signed_add_32        -2.808e+00  1.308e-13 -2.148e+13
+set_operation_latency.altfp_add_32           -2.171e-01  6.039e-14 -3.595e+12
+set_resource_constraint.altfp_divide_64       2.453e+00  3.338e-13  7.350e+12
+set_operation_latency.signed_modulus_8       -9.201e-01  1.639e-13 -5.612e+12
+set_parameter.PIPELINE_ALL                    7.456e+00  3.900e-13  1.912e+13
+set_resource_constraint.altfp_add_32         -1.890e+00  2.377e-13 -7.952e+12
+set_parameter.PS_MIN_WIDTH                   -4.041e-01  3.927e-14 -1.029e+13
+set_operation_latency.altfp_subtract_8               NA         NA         NA
+set_operation_latency.signed_multiply_8              NA         NA         NA
+set_operation_latency.altfp_extend_64                NA         NA         NA
+set_operation_latency.local_mem_dual_port            NA         NA         NA
+set_operation_latency.altfp_subtract_64              NA         NA         NA
+set_resource_constraint.signed_divide_32             NA         NA         NA
+set_resource_constraint.signed_multiply_32           NA         NA         NA
+set_operation_latency.signed_divide_16               NA         NA         NA
+set_operation_latency.signed_multiply_64             NA         NA         NA
+set_parameter.PATTERN_SHARE_BITOPS            6.478e-14  2.484e-14  2.608e+00
+set_resource_constraint.signed_add_8                 NA         NA         NA
+set_parameter.SDC_PRIORITY                   -7.256e-14  2.391e-14 -3.034e+00
+set_resource_constraint.altfp_multiply_32            NA         NA         NA
+set_resource_constraint.altfp_divide_16              NA         NA         NA
+set_resource_constraint.signed_modulus_16            NA         NA         NA
+set_operation_latency.signed_add_64                  NA         NA         NA
+set_resource_constraint.unsigned_modulus_32          NA         NA         NA
+set_operation_latency.altfp_multiply_8               NA         NA         NA
+set_resource_constraint.signed_modulus_64            NA         NA         NA
+set_operation_latency.signed_comp_o                  NA         NA         NA
+set_parameter.PS_MAX_SIZE                            NA         NA         NA
+set_operation_latency.signed_comp_u                  NA         NA         NA
+set_parameter.DUAL_PORT_BINDING               1.558e-14  2.269e-14  6.870e-01
+set_resource_constraint.unsigned_divide_32           NA         NA         NA
+set_operation_latency.altfp_multiply_32              NA         NA         NA
+set_operation_latency.altfp_add_16                   NA         NA         NA
+set_operation_latency.altfp_truncate_32              NA         NA         NA
+set_operation_latency.unsigned_add_64                NA         NA         NA
+set_operation_latency.signed_add_16                  NA         NA         NA
+set_parameter.PS_BIT_DIFF_THRESHOLD                  NA         NA         NA
+set_operation_latency.altfp_add_8                    NA         NA         NA
+set_operation_latency.altfp_divide_32                NA         NA         NA
+set_operation_latency.altfp_sitofp                   NA         NA         NA
+set_resource_constraint.unsigned_add_64              NA         NA         NA
+set_resource_constraint.signed_add_64                NA         NA         NA
+set_operation_latency.signed_divide_32               NA         NA         NA
+set_parameter.MODULO_SCHEDULER                       NA         NA         NA
+set_resource_constraint.unsigned_add_16              NA         NA         NA
+set_operation_latency.altfp_divide_8                 NA         NA         NA
+set_parameter.EXPLICIT_LPM_MULTS                     NA         NA         NA
+set_parameter.MB_MAX_BACK_PASSES                     NA         NA         NA
+set_operation_latency.signed_modulus_16              NA         NA         NA
+set_operation_latency.unsigned_multiply_16           NA         NA         NA
+set_operation_latency.altfp_extend_8                 NA         NA         NA
+set_operation_latency.unsigned_divide_32             NA         NA         NA
+set_operation_latency.altfp_subtract_16              NA         NA         NA
+set_resource_constraint.unsigned_add_8               NA         NA         NA
+set_parameter.PATTERN_SHARE_SHIFT             2.626e-14  1.810e-14  1.450e+00
+set_operation_latency.unsigned_divide_8              NA         NA         NA
+set_resource_constraint.altfp_multiply_16            NA         NA         NA
+set_resource_constraint.altfp_divide_32              NA         NA         NA
+set_resource_constraint.unsigned_divide_8            NA         NA         NA
+set_operation_latency.altfp_truncate_64              NA         NA         NA
+set_operation_latency.unsigned_modulus_32            NA         NA         NA
+set_operation_latency.unsigned_add_8                 NA         NA         NA
+set_operation_latency.altfp_extend_16                NA         NA         NA
+set_resource_constraint.altfp_divide_8               NA         NA         NA
+set_resource_constraint.altfp_subtract_32            NA         NA         NA
+set_resource_constraint.signed_modulus_8             NA         NA         NA
+set_resource_constraint.signed_divide_64             NA         NA         NA
+set_resource_constraint.shared_mem_dual_port         NA         NA         NA
+                                             Pr(>|t|)    
+(Intercept)                                   < 2e-16 ***
+X                                             0.00240 ** 
+set_operation_latency.altfp_divide_16         < 2e-16 ***
+set_resource_constraint.signed_divide_16      < 2e-16 ***
+set_operation_latency.mem_dual_port           < 2e-16 ***
+set_operation_latency.altfp_truncate_16       < 2e-16 ***
+set_resource_constraint.altfp_multiply_64     < 2e-16 ***
+set_parameter.NO_ROMS                         < 2e-16 ***
+set_resource_constraint.signed_multiply_8     < 2e-16 ***
+set_operation_latency.altfp_fptosi            < 2e-16 ***
+set_resource_constraint.unsigned_modulus_16   < 2e-16 ***
+set_resource_constraint.unsigned_multiply_32  < 2e-16 ***
+set_resource_constraint.altfp_add_8           < 2e-16 ***
+set_operation_latency.unsigned_multiply_32    < 2e-16 ***
+set_resource_constraint.unsigned_add_32       < 2e-16 ***
+set_operation_latency.unsigned_divide_16      < 2e-16 ***
+set_resource_constraint.signed_multiply_16    < 2e-16 ***
+set_operation_latency.signed_modulus_32       < 2e-16 ***
+set_operation_latency.signed_multiply_32      < 2e-16 ***
+set_operation_latency.altfp_add_64            < 2e-16 ***
+set_operation_latency.altfp_subtract_32       < 2e-16 ***
+set_parameter.PS_MIN_SIZE                     < 2e-16 ***
+set_resource_constraint.altfp_add_64          < 2e-16 ***
+set_operation_latency.altfp_multiply_64       < 2e-16 ***
+set_operation_latency.unsigned_multiply_8     < 2e-16 ***
+set_operation_latency.unsigned_add_32         < 2e-16 ***
+set_operation_latency.altfp_truncate_8        < 2e-16 ***
+set_resource_constraint.signed_multiply_64    < 2e-16 ***
+set_operation_latency.signed_divide_64        < 2e-16 ***
+set_resource_constraint.altfp_subtract_16     < 2e-16 ***
+set_parameter.MB_MINIMIZE_HW                  < 2e-16 ***
+set_parameter.PATTERN_SHARE_ADD               0.40852    
+set_resource_constraint.signed_add_16         < 2e-16 ***
+set_parameter.MULTIPLIER_NO_CHAIN             < 2e-16 ***
+set_resource_constraint.unsigned_multiply_8   < 2e-16 ***
+set_operation_latency.reg                     < 2e-16 ***
+set_operation_latency.unsigned_modulus_64     < 2e-16 ***
+set_resource_constraint.unsigned_divide_16    < 2e-16 ***
+set_resource_constraint.unsigned_divide_64    < 2e-16 ***
+set_resource_constraint.signed_divide_8       < 2e-16 ***
+set_operation_latency.altfp_extend_32         < 2e-16 ***
+set_resource_constraint.altfp_add_16          < 2e-16 ***
+set_resource_constraint.signed_modulus_32     < 2e-16 ***
+set_parameter.DONT_CHAIN_GET_ELEM_PTR         < 2e-16 ***
+set_resource_constraint.unsigned_modulus_64   < 2e-16 ***
+set_operation_latency.unsigned_modulus_8      < 2e-16 ***
+set_resource_constraint.mem_dual_port         < 2e-16 ***
+set_parameter.SDC_MULTIPUMP                   < 2e-16 ***
+set_operation_latency.signed_multiply_16      < 2e-16 ***
+set_operation_latency.altfp_multiply_16       < 2e-16 ***
+set_operation_latency.unsigned_modulus_16     < 2e-16 ***
+set_resource_constraint.altfp_subtract_64     < 2e-16 ***
+set_operation_latency.signed_add_8            < 2e-16 ***
+set_operation_latency.unsigned_add_16         < 2e-16 ***
+set_parameter.PATTERN_SHARE_SUB               0.70076    
+set_parameter.CLOCK_PERIOD                    < 2e-16 ***
+set_resource_constraint.altfp_subtract_8      < 2e-16 ***
+set_parameter.NO_LOOP_PIPELINING              < 2e-16 ***
+set_operation_latency.altfp_divide_64         < 2e-16 ***
+set_parameter.INCREMENTAL_SDC                 < 2e-16 ***
+set_operation_latency.signed_divide_8         < 2e-16 ***
+set_resource_constraint.altfp_multiply_8      < 2e-16 ***
+set_resource_constraint.unsigned_multiply_16  < 2e-16 ***
+set_operation_latency.signed_modulus_64       < 2e-16 ***
+set_operation_latency.unsigned_multiply_64    < 2e-16 ***
+set_resource_constraint.unsigned_multiply_64  < 2e-16 ***
+set_operation_latency.signed_add_32           < 2e-16 ***
+set_parameter.DISABLE_REG_SHARING             < 2e-16 ***
+set_operation_latency.unsigned_divide_64      < 2e-16 ***
+set_resource_constraint.unsigned_modulus_8    < 2e-16 ***
+set_combine_basicblock                        < 2e-16 ***
+set_parameter.ENABLE_PATTERN_SHARING          < 2e-16 ***
+set_parameter.PIPELINE_RESOURCE_SHARING       0.00239 ** 
+set_parameter.MULTIPUMPING                    < 2e-16 ***
+set_resource_constraint.signed_add_32         < 2e-16 ***
+set_operation_latency.altfp_add_32            < 2e-16 ***
+set_resource_constraint.altfp_divide_64       < 2e-16 ***
+set_operation_latency.signed_modulus_8        < 2e-16 ***
+set_parameter.PIPELINE_ALL                    < 2e-16 ***
+set_resource_constraint.altfp_add_32          < 2e-16 ***
+set_parameter.PS_MIN_WIDTH                    < 2e-16 ***
+set_operation_latency.altfp_subtract_8             NA    
+set_operation_latency.signed_multiply_8            NA    
+set_operation_latency.altfp_extend_64              NA    
+set_operation_latency.local_mem_dual_port          NA    
+set_operation_latency.altfp_subtract_64            NA    
+set_resource_constraint.signed_divide_32           NA    
+set_resource_constraint.signed_multiply_32         NA    
+set_operation_latency.signed_divide_16             NA    
+set_operation_latency.signed_multiply_64           NA    
+set_parameter.PATTERN_SHARE_BITOPS            0.00969 ** 
+set_resource_constraint.signed_add_8               NA    
+set_parameter.SDC_PRIORITY                    0.00269 ** 
+set_resource_constraint.altfp_multiply_32          NA    
+set_resource_constraint.altfp_divide_16            NA    
+set_resource_constraint.signed_modulus_16          NA    
+set_operation_latency.signed_add_64                NA    
+set_resource_constraint.unsigned_modulus_32        NA    
+set_operation_latency.altfp_multiply_8             NA    
+set_resource_constraint.signed_modulus_64          NA    
+set_operation_latency.signed_comp_o                NA    
+set_parameter.PS_MAX_SIZE                          NA    
+set_operation_latency.signed_comp_u                NA    
+set_parameter.DUAL_PORT_BINDING               0.49292    
+set_resource_constraint.unsigned_divide_32         NA    
+set_operation_latency.altfp_multiply_32            NA    
+set_operation_latency.altfp_add_16                 NA    
+set_operation_latency.altfp_truncate_32            NA    
+set_operation_latency.unsigned_add_64              NA    
+set_operation_latency.signed_add_16                NA    
+set_parameter.PS_BIT_DIFF_THRESHOLD                NA    
+set_operation_latency.altfp_add_8                  NA    
+set_operation_latency.altfp_divide_32              NA    
+set_operation_latency.altfp_sitofp                 NA    
+set_resource_constraint.unsigned_add_64            NA    
+set_resource_constraint.signed_add_64              NA    
+set_operation_latency.signed_divide_32             NA    
+set_parameter.MODULO_SCHEDULER                     NA    
+set_resource_constraint.unsigned_add_16            NA    
+set_operation_latency.altfp_divide_8               NA    
+set_parameter.EXPLICIT_LPM_MULTS                   NA    
+set_parameter.MB_MAX_BACK_PASSES                   NA    
+set_operation_latency.signed_modulus_16            NA    
+set_operation_latency.unsigned_multiply_16         NA    
+set_operation_latency.altfp_extend_8               NA    
+set_operation_latency.unsigned_divide_32           NA    
+set_operation_latency.altfp_subtract_16            NA    
+set_resource_constraint.unsigned_add_8             NA    
+set_parameter.PATTERN_SHARE_SHIFT             0.14832    
+set_operation_latency.unsigned_divide_8            NA    
+set_resource_constraint.altfp_multiply_16          NA    
+set_resource_constraint.altfp_divide_32            NA    
+set_resource_constraint.unsigned_divide_8          NA    
+set_operation_latency.altfp_truncate_64            NA    
+set_operation_latency.unsigned_modulus_32          NA    
+set_operation_latency.unsigned_add_8               NA    
+set_operation_latency.altfp_extend_16              NA    
+set_resource_constraint.altfp_divide_8             NA    
+set_resource_constraint.altfp_subtract_32          NA    
+set_resource_constraint.signed_modulus_8           NA    
+set_resource_constraint.signed_divide_64           NA    
+set_resource_constraint.shared_mem_dual_port       NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 9.384e-14 on 232 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:      1 
+F-statistic: 7.084e+28 on 84 and 232 DF,  p-value: < 2.2e-16
+#+end_example
+
+Hmmm, pretty hard to interpret.
+
+Let's look at something more specific for a change!
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output :session *R* :exports both
+data=data_bak
+summary(lm(data=data,Regs~ set_operation_latency.signed_multiply_64))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = Regs ~ set_operation_latency.signed_multiply_64, 
+    data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1381.48  -411.48    61.52   135.52  2730.82 
+
+Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)
+(Intercept)                               3382.18      50.62   66.82   <2e-16
+set_operation_latency.signed_multiply_64   431.30      21.40   20.16   <2e-16
+                                            
+(Intercept)                              ***
+set_operation_latency.signed_multiply_64 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 694.4 on 315 degrees of freedom
+Multiple R-squared:  0.5633,	Adjusted R-squared:  0.5619 
+F-statistic: 406.3 on 1 and 315 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library(ggplot2)
+ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_multiply_64, color=set_operation_latency.signed_add_64)) + 
+    geom_jitter(aes(x=as.factor(set_operation_latency.signed_multiply_64))) + 
+    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_multiply_64)), method="lm", formula=y~x+I(1/(x+1))) +
+    theme_bw() 
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure8765vNv.png]]
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library(ggplot2)
+ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_add_64, color=set_operation_latency.signed_multiply_64)) + 
+    geom_jitter(aes(x=as.factor(set_operation_latency.signed_add_64))) + 
+    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_add_64)), method="lm", formula=y~x) +
+    theme_bw() 
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure87658X1.png]]
+
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
+library(ggplot2)
+ggplot(data=data[data$set_operation_latency.signed_multiply_64 ==1,], aes(y=Regs, x=set_operation_latency.signed_add_64)) + 
+    geom_jitter(aes(x=as.factor(set_operation_latency.signed_add_64))) + 
+    geom_smooth(aes(x=as.numeric(set_operation_latency.signed_add_64)), method="lm", formula=y~x) +
+    theme_bw() 
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-8765Jw8/figure8765uhE.png]]
+
+In the end, it's very hard to know what's good, why such or such
+parameter was used, etc.
+
+- We discussed about the difficulties in multi-dimension setups:
+  https://blog.acolyer.org/2017/10/31/same-stats-different-graphs-generating-datasets-with-varied-appearance-and-identical-statistics-through-simulated-annealing/
+- The analysis (lm or aov) is really hard when mixing factors and
+  continuous variables.
+- It's possible to sort parameters by importance (for aov) but I'm not
+  sure how to do this in a systematic way in such a high dimension.
+*** [2017-12-12 Tue]
+- Cleaning up older entries
+- Now using git submodules for code
+- Now tangling code blocks into scripts
+- Use Vinicius' info to complete ADUM registration
+- Read [[file:~/Dropbox/papers/stochastic-search/schkufza2016stochastic.pdf][Schkufza]]'s paper
