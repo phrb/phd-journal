@@ -2445,10 +2445,15 @@ Now we can run =plot_correlations= and generate the files.  We will
 order the correlation matrices using 3 correlation coefficients:
 
 1. [[https://en.wikipedia.org/wiki/Pearson_correlation_coefficient][Pearson's]]
+   
    Default =R= method. Checks for linear relationships.
+
 2. [[https://en.wikipedia.org/wiki/Spearman%2527s_rank_correlation_coefficient][Spearman's]]
+
    Check for monotonic relationships.
+
 3. [[https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient][Kendall's]]
+
    Works for factors? Need to understand better.
 
 To plot the 10 largest correlations, run:
