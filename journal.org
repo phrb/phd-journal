@@ -3036,6 +3036,68 @@ Joining, by = c("First.Variable", "Second.Variable")
                             First.Variable Second.Variable
 1               set_parameter.MULTIPUMPING            Pins
 2                                   Blocks             RAM
+**** Discussions with Arnaud and Brice
+- Read Steven's reports: https://hal.inria.fr/hal-01579422
+- Introduction to Experiment Design and in particular to screening:
+  https://github.com/alegrand/SMPE/blob/master/lectures/5_design_of_experiments.pdf
+- Reading Jain's book entitled "The Art of Computer Systems
+  Performance Analysis" could be a good thing too.
+- correlations can be fixed for non-linear relations but the measure
+  monotony. If the relation is quadratic, this notion of correlation
+  is completely irrelevant.
+
+Particular difficulties
+- Data is messy:
+  - some metrics are perfectly related
+  - some metrics have only two possible values
+  - some metrics have very few possible values
+  - some parameters seem to be correlated to each others as we got NAs
+    in the regression and a perfect (over)fit.
+  - parameter space is biased by the learning algorithm
+- High parameter dimension:
+  - A good sample is anyway not possible. This means the initial
+    sample may strongly bias our analysis as many large areas of the
+    space will not be covered.
+  - Having indications of which parameters are the most influent is
+    generally done through 2-level factorial designs.
+    - This misses possible non linear (concave or convex) relations,
+      which may be important here.
+    - With so many dimensions only saturated screening designs would
+      have a chance to provide some relevant feedback. One would then
+      completely ignore interactions.
+      they 
+- Quantile regression: most techniques (anova, linear model, or even
+  correlations...) to analyze the experiments focus on the average
+  behavior whereas we are rather looking for minimas, hence quantile
+  regression. Such regression can be hard to use and may not be very
+  robust in high dimension.
+- Pareto optimization:
+  - We still do not know what the space looks like
+
+TODO:
+- Clean the data again:
+  - remove metrics with only one value (LUs) linked metrics (Blocks
+    and RAM) and probably even binary metrics as it does not fit
+    really well in a multicriteria optimization framework
+  - Ensure we do minimization (e.g., Fmax = -Fmax or replace cycles
+    and Fmax by an estimation of the wall-clock time)
+  - We should probably keeep the makespan (Cycles/Fmax), Regs, DSP.
+- Characterize the Pareto border: i.e. for each entry, check wheter
+  there exists an other one which is better on all metrics. Then we
+  can colorize our simplfied ggpair with this Pareto-dominated value.
+- Try to clean further but for parameters
+  - Get the search space specification to know whether some parameters
+    are supposed to change or not.
+  - Identify which parameters are binary and tag them accordingly
+    (with factors being true or false).
+  - Identify which parameters are actually (unordered) factors and tag
+    them accordingly.
+- Do all these cleanups first manually, step by step and then into a
+  single dedicated reading function.
+- Regarding reading, you may want to have a look at the tidyverse with
+  readr, magrittr and
+  such. https://www.rstudio.org/links/data_wrangling_cheat_sheet
+- Maybe we could try to reobtain some data.
 3 set_operation_latency.unsigned_divide_64            FMax
 4             set_parameter.MB_MINIMIZE_HW             DPS
 #+end_example
