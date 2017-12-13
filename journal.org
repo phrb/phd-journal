@@ -2518,8 +2518,6 @@ Joining, by = c("First.Variable", "Second.Variable")
 #+end_example
 
 *** [2017-12-13 Wed]
-- Use Vinicius' info to complete ADUM registration
-- Read [[file:~/Dropbox/papers/stochastic-search/schkufza2016stochastic.pdf][Schkufza]]'s paper
 **** Plotting More Correlations ([[More Attempts at Correlations][Continued from Here]]) :R:Code:FPGA:Autotuning:DataVis:
 ***** Setup
 Make sure you have the data:
@@ -2931,8 +2929,7 @@ Joining, by = c("First.Variable", "Second.Variable")
 - Correlations can be fixed for non-linear relations but the measure
   monotony. If the relation is quadratic, this notion of correlation
   is completely irrelevant.
-
-Particular difficulties
+***** Particular difficulties
 - Data is messy:
   - some metrics are perfectly related
   - some metrics have only two possible values
@@ -2960,7 +2957,7 @@ Particular difficulties
 - Pareto optimization:
   - We still do not know what the space looks like
 
-TODO:
+***** TODO:
 - Clean the data again:
   - remove metrics with only one value (LUs) linked metrics (Blocks
     and RAM) and probably even binary metrics as it does not fit
