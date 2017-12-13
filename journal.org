@@ -4,9 +4,10 @@
 #+TITLE:  Pedro's Journal
 #+AUTHOR:      Pedro H R Bruel
 #+LANGUAGE:    en
-#+TAGS: LIG(L) HOME(H) Europe(E) Blog(B) noexport(n) Stats(S)
-#+TAGS: Epistemology(E) Vulgarization(V) Teaching(T) R(R) OrgMode(O) Python(P)
-#+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A)
+#+TAGS: noexport(n) Stats(S)
+#+TAGS: Teaching(T) R(R) OrgMode(O) Python(P)
+#+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A) Arnaud(r)
+#+TAGS: DataVis(v)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
@@ -14,6 +15,26 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+
+* Setup
+
+Make sure you have the data:
+
+#+BEGIN_SRC sh :results output
+git submodule init legup-tuner
+git submodule update legup-tuner
+#+END_SRC
+
+#+RESULTS:
+
+
+Export your path to =repository_dir= variable:
+
+#+name: repository_dir
+#+begin_src sh :results output :exports both
+pwd | tr -d "\n"
+#+end_src
+
 
 * 2017
 ** November 
@@ -371,23 +392,7 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally"),
 : g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o tidyr.so RcppExports.o fill.o melt.o simplifyPieces.o -L/usr/lib64/R/lib -lR
 
 ***** Generating =csv= Files with the Data
-Make sure you have the data:
-
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
-
 #+RESULTS:
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
 
 #+HEADER: :results output :exports both :session *R*
 #+HEADER: :var repository_dir=repository_dir
@@ -1017,7 +1022,7 @@ evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/cor
     - Instruction cache misses
     - TLB data and instruction misses
     - Total CPU cycles
-**** Attempts at PCA ([[Analysing FPGA Autotuning Samples][Main Section]])               :R:Code:FPGA:Autotuning:
+**** Attempts at PCA ([[Analysing FPGA Autotuning Samples][Main Section]])       :R:Code:FPGA:Autotuning:DataVis:
 Make sure you have the data:
 #+BEGIN_SRC sh
 git clone https://github.com/phrb/legup-tuner.git
@@ -2257,7 +2262,7 @@ parameter was used, etc.
 - Cleaning up older entries
 - Now using git submodules for code
 - Now tangling code blocks into scripts
-**** More Attempts at Correlations
+**** More Attempts at Correlations        :R:Code:FPGA:Autotuning:DataVis:
 ***** Setup
 Make sure you have the data:
 
@@ -2616,7 +2621,7 @@ Joining, by = c("First.Variable", "Second.Variable")
 *** [2017-12-13 Wed]
 - Use Vinicius' info to complete ADUM registration
 - Read [[file:~/Dropbox/papers/stochastic-search/schkufza2016stochastic.pdf][Schkufza]]'s paper
-**** Plotting More Correlations ([[More Attempts at Correlations][Continued from Here]])
+**** Plotting More Correlations ([[More Attempts at Correlations][Continued from Here]]) :R:Code:FPGA:Autotuning:DataVis:
 ***** Setup
 Make sure you have the data:
 
@@ -3036,7 +3041,11 @@ Joining, by = c("First.Variable", "Second.Variable")
                             First.Variable Second.Variable
 1               set_parameter.MULTIPUMPING            Pins
 2                                   Blocks             RAM
-**** Discussions with Arnaud and Brice
+3 set_operation_latency.unsigned_divide_64            FMax
+4             set_parameter.MB_MINIMIZE_HW             DPS
+#+end_example
+
+**** Discussions with Arnaud and Brice :DOE:FPGA:Autotuning:Arnaud:DataVis:
 - Read Steven's reports: https://hal.inria.fr/hal-01579422
 - Introduction to Experiment Design and in particular to screening:
   https://github.com/alegrand/SMPE/blob/master/lectures/5_design_of_experiments.pdf
@@ -3098,8 +3107,3 @@ TODO:
   readr, magrittr and
   such. https://www.rstudio.org/links/data_wrangling_cheat_sheet
 - Maybe we could try to reobtain some data.
-3 set_operation_latency.unsigned_divide_64            FMax
-4             set_parameter.MB_MINIMIZE_HW             DPS
-#+end_example
-
-
