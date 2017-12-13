@@ -1,0 +1,4 @@
+[submodule "legup-tuner"]
+	path = legup-tuner
+	url = https://github.com/phrb/legup-tuner.git
+	branch = master
