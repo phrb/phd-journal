@@ -2928,7 +2928,7 @@ Joining, by = c("First.Variable", "Second.Variable")
   https://github.com/alegrand/SMPE/blob/master/lectures/5_design_of_experiments.pdf
 - Reading Jain's book entitled "The Art of Computer Systems
   Performance Analysis" could be a good thing too.
-- correlations can be fixed for non-linear relations but the measure
+- Correlations can be fixed for non-linear relations but the measure
   monotony. If the relation is quadratic, this notion of correlation
   is completely irrelevant.
 
