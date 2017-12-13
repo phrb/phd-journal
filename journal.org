@@ -17,16 +17,12 @@
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
 * Setup
+Cloning the =legup-tuner= repository:
 
-Make sure you have the data:
-
+#+NAME: update_legup_tuner
 #+BEGIN_SRC sh :results output
-git submodule init legup-tuner
-git submodule update legup-tuner
+git clone https://github.com/phrb/legup-tuner.git || (cd legup-tuner && git pull)
 #+END_SRC
-
-#+RESULTS:
-
 
 Export your path to =repository_dir= variable:
 
@@ -34,7 +30,6 @@ Export your path to =repository_dir= variable:
 #+begin_src sh :results output :exports both
 pwd | tr -d "\n"
 #+end_src
-
 
 * 2017
 ** November 
@@ -392,8 +387,6 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally"),
 : g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o tidyr.so RcppExports.o fill.o melt.o simplifyPieces.o -L/usr/lib64/R/lib -lR
 
 ***** Generating =csv= Files with the Data
-#+RESULTS:
-
 #+HEADER: :results output :exports both :session *R*
 #+HEADER: :var repository_dir=repository_dir
 #+begin_src R
@@ -601,30 +594,7 @@ Analysis]].
 To run the code in this section you first need to clone the repository
 to get the data and the R scripts:
 
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
-
-#+RESULTS:
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
-
-#+HEADER: :results output :exports both :session *R*
-#+HEADER: :var repository_dir=repository_dir
-#+begin_src R
-print(repository_dir)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/phrb/org/journal"
+#+call: update_legup_tuner()
 
 ****** Summary Statistics
 First, we will combine all *experiments* with the *dfdiv* application. In
@@ -657,6 +627,18 @@ applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+#+end_example
 
 
 Now, we load the data into two data frames. The =data= data frame
@@ -1024,30 +1006,11 @@ evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/cor
     - Total CPU cycles
 **** Attempts at PCA ([[Analysing FPGA Autotuning Samples][Main Section]])       :R:Code:FPGA:Autotuning:DataVis:
 Make sure you have the data:
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
+
+#+call: update_legup_tuner()
 
 #+RESULTS:
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
-
-#+HEADER: :results output :exports both :session *R*
-#+HEADER: :var repository_dir=repository_dir
-#+begin_src R
-print(repository_dir)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/phrb/org/journal"
+: Already up to date.
 
 Following [[https://little-book-of-r-for-multivariate-analysis.readthedocs.io/en/latest/src/multivariateanalysis.html#principal-component-analysis][this guide]] I attempted to perform Principal Component
 Analysis for the data combining all *experiments* for all
@@ -1180,30 +1143,11 @@ evince $repository_dir/legup-tuner/post_place_and_route/py/results/r_scripts/scr
 
 **** Looking at data with Arnaud. Not sure where we were heading though. :R:Code:FPGA:Autotuning:
 Make sure you have the data:
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-#+END_SRC
+
+#+call: update_legup_tuner()
 
 #+RESULTS:
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
-
-#+HEADER: :results output :exports both :session *R*
-#+HEADER: :var repository_dir=repository_dir
-#+begin_src R
-print(repository_dir)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/phrb/org/journal"
+: Already up to date.
 
 Define the =load_data= function. This function receives lists of
 *experiments*, an *application* and a directory containing *csv* files with
@@ -1484,7 +1428,7 @@ ggpairs_plot
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure8765GtO.png]]
+[[file:/tmp/babel-4788SYS/figure47883XC.png]]
 
 #+HEADER: :var repository_dir=repository_dir
 #+begin_src sh
@@ -1518,7 +1462,7 @@ dev.off()
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure8765hJW.png]]
+[[file:/tmp/babel-4788SYS/figure4788EiI.png]]
 
 #+HEADER: :var repository_dir=repository_dir
 #+begin_src sh
@@ -1537,7 +1481,7 @@ ggpairs(data[c(sample(hw_parameters, size = 5), hw_metrics)])
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure87657rK.png]]
+[[file:/tmp/babel-4788SYS/figure4788RsO.png]]
 
 #+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
 #+begin_src R :results output :session *R* :exports both
@@ -2225,7 +2169,7 @@ ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_multiply_64, color=
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure8765vNv.png]]
+[[file:/tmp/babel-4788SYS/figure4788e2U.png]]
 
 #+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
@@ -2236,7 +2180,7 @@ ggplot(data=data, aes(y=Regs, x=set_operation_latency.signed_add_64, color=set_o
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure87658X1.png]]
+[[file:/tmp/babel-4788SYS/figure4788rAb.png]]
 
 #+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/generate_plots.r
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session *R* 
@@ -2247,7 +2191,7 @@ ggplot(data=data[data$set_operation_latency.signed_multiply_64 ==1,], aes(y=Regs
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-8765Jw8/figure8765uhE.png]]
+[[file:/tmp/babel-4788SYS/figure47884Kh.png]]
 
 In the end, it's very hard to know what's good, why such or such
 parameter was used, etc.
@@ -2266,32 +2210,7 @@ parameter was used, etc.
 ***** Setup
 Make sure you have the data:
 
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-cd legup-tuner && git pull
-#+END_SRC
-
-#+RESULTS:
-: Already up to date.
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
-
-#+HEADER: :results output :exports both :session *R*
-#+HEADER: :var repository_dir=repository_dir
-#+begin_src R
-print(repository_dir)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/phrb/org/journal"
+#+CALL: update_legup_tuner()
 
 Import dependencies, set the graphics output, and define paths:
 
@@ -2323,32 +2242,12 @@ applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
 hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
                       "Blocks", "RAM", "DPS")
 
-dir.create(paste(plot_dir, collapse = ""))
+dir.create(paste(plot_dir, collapse = ""), showWarnings = FALSE)
 
 #+end_src
 
 #+RESULTS:
-#+begin_example
 
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-Attaching package: ‘GGally’
-
-The following object is masked from ‘package:dplyr’:
-
-    nasa
-Warning message:
-In dir.create(paste(plot_dir, collapse = "")) :
-  '/home/phrb/org/journal/legup-tuner/post_place_and_route/py/results/r_scripts/correlations' already exists
-#+end_example
 
 ***** Pearson, Spearman and Kendall Correlations
 The =sorted_correlations= function filters correlation matrices, getting
@@ -2625,32 +2524,10 @@ Joining, by = c("First.Variable", "Second.Variable")
 ***** Setup
 Make sure you have the data:
 
-#+BEGIN_SRC sh
-git clone https://github.com/phrb/legup-tuner.git
-cd legup-tuner && git pull
-#+END_SRC
+#+CALL: update_legup_tuner()
 
 #+RESULTS:
 : Already up to date.
-
-Then, export the directory to the =repository_dir= variable:
-
-#+name: repository_dir
-#+begin_src sh :results output :exports both
-pwd | tr -d "\n"
-#+end_src
-
-#+RESULTS: repository_dir
-: /home/phrb/org/journal
-
-#+HEADER: :results output :exports both :session *R*
-#+HEADER: :var repository_dir=repository_dir
-#+begin_src R
-print(repository_dir)
-#+end_src
-
-#+RESULTS:
-: [1] "/home/phrb/org/journal"
 
 Import dependencies, set the graphics output, and define paths:
 
@@ -3046,7 +2923,7 @@ Joining, by = c("First.Variable", "Second.Variable")
 #+end_example
 
 **** Discussions with Arnaud and Brice :DOE:FPGA:Autotuning:Arnaud:DataVis:
-- Read Steven's reports: https://hal.inria.fr/hal-01579422
+- Read [[ https://hal.inria.fr/hal-01579422][Steven's reports]]
 - Introduction to Experiment Design and in particular to screening:
   https://github.com/alegrand/SMPE/blob/master/lectures/5_design_of_experiments.pdf
 - Reading Jain's book entitled "The Art of Computer Systems
