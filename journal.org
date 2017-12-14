@@ -3113,7 +3113,6 @@ the =plotly= library for the 3D plot.
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-#plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
 p <- plot_ly(data, x = ~MKS, y = ~Regs, z = ~DPS, color = ~set_operation_latency.unsigned_divide_64) %>%
      add_markers() %>%
      layout(scene = list(xaxis = list(title = 'MKS'),
