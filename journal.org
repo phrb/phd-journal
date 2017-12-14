@@ -17,7 +17,17 @@
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
 * Setup
-Cloning the =legup-tuner= repository:
+Installing *R* dependencies:
+
+#+NAME: install_r_deps
+#+HEADER: :results output :exports both :session *R*
+#+BEGIN_SRC R
+install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally",
+                   "plotly"),
+                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
+#+END_SRC
+
+Cloning and updating the =legup-tuner= repository:
 
 #+NAME: update_legup_tuner
 #+BEGIN_SRC sh :results output
@@ -30,14 +40,6 @@ Export your path to =repository_dir= variable:
 #+begin_src sh :results output :exports both
 pwd | tr -d "\n"
 #+end_src
-
-#+NAME: install_r_deps
-#+HEADER: :results output :exports both :session *R*
-#+BEGIN_SRC R
-install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally",
-                   "plotly"),
-                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
-#+END_SRC
 
 * 2017
 ** November 
@@ -3040,23 +3042,6 @@ load_data <- function(application, experiments) {
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Loading required package: ggplot2
-
-Attaching package: ‘plotly’
-
-The following object is masked from ‘package:ggplot2’:
-
-    last_plot
-
-The following object is masked from ‘package:stats’:
-
-    filter
-
-The following object is masked from ‘package:graphics’:
-
-    layout
-#+end_example
 
 First, remove all ~NA~ values:
 
@@ -3121,13 +3106,22 @@ tail(names(data), 8)
 : [7] "DPS"                                         
 : [8] "MKS"
 
+Now that we have only 3 *hardware metrics*, we can look at their relationships
+in 3D. The next code block generates a 3D scatter plot for *MKS*, *Regs* and
+*DPS*. The plot is interactive and will be opened in your browser. We will use
+the =plotly= library for the 3D plot.
+
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
+#plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
+p <- plot_ly(data, x = ~MKS, y = ~Regs, z = ~DPS) %>% add_markers() %>%
+     layout(scene = list(xaxis = list(title = 'MKS'),
+                         yaxis = list(title = 'Regs'),
+                         zaxis = list(title = 'DPS')))
+p
 #+END_SRC
 
 #+RESULTS:
-: Error: `z` must be a numeric matrix
 **** Seminar: Learning Nash Equilibria in Distributed Systems
 - Compares multi-agent learning in economics and computer science
   - Recommender Systems
@@ -3136,7 +3130,14 @@ plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
   - Update behaviour with information from experience
   - Uncoupled from other players' payoffs
 - Model
-  - Exploration/exploitation is "mood" based
+  - Exploration and exploitation are "mood" based
+    - "Moods" are agent states that control rates
+      of exploration, exploitation
+    - These states change according to changes in
+      payoffs
+- Conclusion
+  - Multi-agent learning achieves welfare maximizing equilibria, despite using
+    uncoupled strategies
 **** Arnaud's Lecture
 - *Thursdays*: 3:45pm to 5:15pm
 - *Amphi H Ensimag* (H building)
