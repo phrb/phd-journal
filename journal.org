@@ -31,6 +31,14 @@ Export your path to =repository_dir= variable:
 pwd | tr -d "\n"
 #+end_src
 
+#+NAME: install_r_deps
+#+HEADER: :results output :exports both :session *R*
+#+BEGIN_SRC R
+install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally",
+                   "plotly"),
+                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
+#+END_SRC
+
 * 2017
 ** November 
 *** [2017-11-28 Tue]
@@ -370,21 +378,7 @@ We are installing =rjson= because part of the data files were generated
 by OpenTuner in the =JSON= format.  The other packages are from Arnaud's
 [[https://github.com/alegrand/SMPE#learning-r][guidelines]] for the SMPE course.
 
-#+HEADER: :results output :exports both
-#+BEGIN_SRC R
-install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally"),
-                 repos = "https://mirror.ibcp.fr/pub/CRAN/")
-#+END_SRC
-
-#+RESULTS:
-: g++  -I/usr/include/R/ -DNDEBUG   -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c dump.cpp -o dump.o
-: gcc -I/usr/include/R/ -DNDEBUG   -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c parser.c -o parser.o
-: g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o rjson.so dump.o parser.o -L/usr/lib64/R/lib -lR
-: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c RcppExports.cpp -o RcppExports.o
-: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c fill.cpp -o fill.o
-: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c melt.cpp -o melt.o
-: g++  -I/usr/include/R/ -DNDEBUG  -I"/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/Rcpp/include" -D_FORTIFY_SOURCE=2   -fpic  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -fno-plt  -c simplifyPieces.cpp -o simplifyPieces.o
-: g++ -shared -L/usr/lib64/R/lib -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -o tidyr.so RcppExports.o fill.o melt.o simplifyPieces.o -L/usr/lib64/R/lib -lR
+#+CALL: install_r_deps()
 
 ***** Generating =csv= Files with the Data
 #+HEADER: :results output :exports both :session *R*
@@ -2981,3 +2975,169 @@ Joining, by = c("First.Variable", "Second.Variable")
   readr, magrittr and
   such. https://www.rstudio.org/links/data_wrangling_cheat_sheet
 - Maybe we could try to reobtain some data.
+*** [2017-12-14 Thu]
+- Configure ~spacemacs~
+- Ask Danilo for information for ADUM and Cotutelle
+**** Cleaning FPGA Datasets               :R:Code:FPGA:Autotuning:DataVis:
+#+call: update_legup_tuner()
+
+#+RESULTS:
+: Already up to date.
+
+Setting up variables
+
+#+HEADER: :results output :session *R* :exports both
+#+HEADER: :var repository_dir=repository_dir
+#+BEGIN_SRC R
+
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(plotly)
+
+csv_dir <- c(repository_dir,
+             "/legup-tuner/",
+             "post_place_and_route/py/results/r_scripts/",
+             "data")
+
+plot_dir <- c(repository_dir,
+              "/legup-tuner/",
+              "post_place_and_route/py/results/r_scripts/",
+              "correlations")
+
+experiments <- c("balanced", "area", "perf", "perflat")
+
+applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
+                  "dfsin", "aes", "blowfish", "gsm", "mips")
+
+hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
+                      "Blocks", "RAM", "DPS")
+
+load_data <- function(application, experiments) {
+    data       <- data.frame()
+
+    for (experiment in experiments) {
+        new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
+                                   experiment, paste(application,
+                                                     ".csv",
+                                                     sep = ""),
+                                   sep = "/"),
+                             header = TRUE, sep = ",")
+
+        new_data <- as.data.frame(new_data)
+
+        if (ncol(data) == 0) {
+            data <- new_data
+        } else {
+            data <- rbind(data, new_data)
+        }
+    }
+
+    data  <- as.data.frame(data)
+    return(data)
+}
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Loading required package: ggplot2
+
+Attaching package: ‘plotly’
+
+The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+The following object is masked from ‘package:graphics’:
+
+    layout
+#+end_example
+
+First, remove all ~NA~ values:
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+data <- load_data("dfdiv", experiments)
+data_bak = data
+
+dim(data)
+
+data <- data %>% drop_na()
+
+dim(data)
+#+END_SRC
+
+#+RESULTS:
+: [1] 526 151
+: [1] 526 151
+
+It seems this dataset has no ~NA~, which is weird since we found them in other
+settings. Now, let's remove ~Inf~ values:
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+data <- data[is.finite(data$WNS),]
+
+dim(data)
+#+END_SRC
+
+#+RESULTS:
+: [1] 317 151
+
+It seems we had a lot of ~Inf~ values for ~WNS~. To make it clear, ~Inf~ appears
+when there was an error during compilation, high-level synthesis or execution.
+
+Now, let's remove some *hardware metrics*. We will remove *WNS* because we could
+recompute it with the other metrics if needed. We will remove *Blocks* and *RAM*
+because they are correlated with *Regs*. We will remove *LUs* and *Pins* because
+they seem to assume only one or two values across the data set. Finally, we will
+remove *FMax* and *Cycles* but add *MKS*, the *makespan* or *wall-clock time*,
+computed as ~Cycles / (1000 * FMax)~.
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+data <- data %>% mutate(MKS = (Cycles / (1000 * FMax)))
+
+data <- select(data, -one_of(c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles",
+                               "FMax")))
+dim(data)
+
+tail(names(data), 8)
+#+END_SRC
+
+#+RESULTS:
+: [1] 317 145
+: [1] "set_resource_constraint.altfp_divide_8"      
+: [2] "set_resource_constraint.altfp_subtract_32"   
+: [3] "set_resource_constraint.signed_modulus_8"    
+: [4] "set_resource_constraint.signed_divide_64"    
+: [5] "set_resource_constraint.shared_mem_dual_port"
+: [6] "Regs"                                        
+: [7] "DPS"                                         
+: [8] "MKS"
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
+#+END_SRC
+
+#+RESULTS:
+: Error: `z` must be a numeric matrix
+**** Seminar: Learning Nash Equilibria in Distributed Systems
+- Compares multi-agent learning in economics and computer science
+  - Recommender Systems
+  - Online markets
+- Learning rules:
+  - Update behaviour with information from experience
+  - Uncoupled from other players' payoffs
+- Model
+  - Exploration/exploitation is "mood" based
+**** Arnaud's Lecture
+- *Thursdays*: 3:45pm to 5:15pm
+- *Amphi H Ensimag* (H building)
+- Today: DoE
