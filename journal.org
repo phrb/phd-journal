@@ -3114,7 +3114,8 @@ the =plotly= library for the 3D plot.
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
 #plot_ly(x = data$MKS, y = data$Regs, z = data$DPS) %>% add_surface()
-p <- plot_ly(data, x = ~MKS, y = ~Regs, z = ~DPS) %>% add_markers() %>%
+p <- plot_ly(data, x = ~MKS, y = ~Regs, z = ~DPS, color = ~set_operation_latency.unsigned_divide_64) %>%
+     add_markers() %>%
      layout(scene = list(xaxis = list(title = 'MKS'),
                          yaxis = list(title = 'Regs'),
                          zaxis = list(title = 'DPS')))
@@ -3142,3 +3143,25 @@ p
 - *Thursdays*: 3:45pm to 5:15pm
 - *Amphi H Ensimag* (H building)
 - Today: DoE
+***** Ideas for DoE-Inspired Autotuning:
+- Parallel and distributed "search" algorithms
+- Generate sets of experimental designs, such as 2^p:
+  - Generate experiments for different tuples of
+    parameters and metrics
+  - Generate experiments in blocks, to be performed
+    by different experimenters
+  - As shown by Arnaud, experiments should be represented
+    by matrices with parameter values
+- Distribute experiment blocks between algorithms:
+  - Search algorithms *perturb lines and columns* of the
+    experiment matrices, *instead of directly changing parameters*
+  - What can we get from incomplete experiments?
+  - Does autotuning stop if it finds a "good-enough" point?
+- Variability of experimental designs:
+  - Small designs:
+    - Finish fast
+    - Get statistics and generate new ones
+  - Large designs:
+    - Could be "bets" on certain relationships
+    - Could provide more robust statistics when finished
+  - How to determine how variable the designs should be?
