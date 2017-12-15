@@ -3135,7 +3135,6 @@ dir.create(paste(plot_dir, collapse = ""), showWarnings = FALSE)
 
 #+RESULTS:
 
-
 ***** Pearson, Spearman and Kendall Correlations
 The =sorted_correlations= function filters correlation matrices, getting
 only rows with one of the hardware metrics. Then, it sorts rows by
@@ -3843,31 +3842,49 @@ Joining, by = c("First.Variable", "Second.Variable")
   robust in high dimension.
 - Pareto optimization:
   - We still do not know what the space looks like
-
 ***** TODO:
-- Clean the data again:
-  - remove metrics with only one value (LUs) linked metrics (Blocks
-    and RAM) and probably even binary metrics as it does not fit
-    really well in a multicriteria optimization framework
-  - Ensure we do minimization (e.g., Fmax = -Fmax or replace cycles
-    and Fmax by an estimation of the wall-clock time)
-  - We should probably keeep the makespan (Cycles/Fmax), Regs, DSP.
-- Characterize the Pareto border: i.e. for each entry, check wheter
-  there exists an other one which is better on all metrics. Then we
-  can colorize our simplfied ggpair with this Pareto-dominated value.
-- Try to clean further but for parameters
-  - Get the search space specification to know whether some parameters
-    are supposed to change or not.
-  - Identify which parameters are binary and tag them accordingly
-    (with factors being true or false).
-  - Identify which parameters are actually (unordered) factors and tag
-    them accordingly.
+****** DONE Clean the data again
+CLOSED: [2017-12-15 Fri 15:17]
+:LOGBOOK:
+- State "DONE"       from              [2017-12-15 Fri 15:17]
+:END:
+- remove metrics with only one value (LUs) linked metrics (Blocks
+  and RAM) and probably even binary metrics as it does not fit really well in a
+  multicriteria optimization framework
+- Ensure we do minimization (e.g., Fmax = -Fmax or replace cycles
+  and Fmax by an estimation of the wall-clock time)
+- We should probably keeep the makespan (Cycles/Fmax), Regs, DSP.
+****** DONE Characterize the Pareto Border
+CLOSED: [2017-12-15 Fri 15:19]
+:LOGBOOK:
+- State "DONE"       from              [2017-12-15 Fri 15:19]
+:END:
+For each entry, check wheter there exists an other one which is better on all
+metrics. 
+****** STARTED Colorize GGpairs with Pareto Border
+:LOGBOOK:
+- State "STARTED"    from              [2017-12-15 Fri 15:19]
+:END:
+Then we can colorize our simplfied ggpair with this Pareto-dominated value.
+****** STARTED Try to clean data further, but for parameters
+:LOGBOOK:
+- State "STARTED"    from              [2017-12-15 Fri 15:19]
+:END:
+- Get the search space specification to know whether some parameters
+  are supposed to change or not.
+- Identify which parameters are binary and tag them accordingly
+  (with factors being true or false).
+- Identify which parameters are actually (unordered) factors and tag
+  them accordingly.
 - Do all these cleanups first manually, step by step and then into a
   single dedicated reading function.
 - Regarding reading, you may want to have a look at the tidyverse with
   readr, magrittr and
   such. https://www.rstudio.org/links/data_wrangling_cheat_sheet
-- Maybe we could try to reobtain some data.
+****** TODO Maybe we could try to reobtain some data.
+:LOGBOOK:
+- State "TODO"       from              [2017-12-15 Fri 15:20]
+:END:
 *** [2017-12-14 Thu]
 - Configure ~spacemacs~
 - Ask Danilo for information for ADUM and Cotutelle
@@ -4111,7 +4128,7 @@ load_data <- function(application, experiments) {
 
 #+RESULTS:
 
-***** Looking at Clean Data
+**** Looking at Clean Data
 Now that we have only 3 *hardware metrics*, we can look at their relationships
 in 3D. The next code block generates a 3D scatter plot for *MKS*, *Regs* and
 *DPS*. The plot is interactive and will be opened in your browser. We will use
