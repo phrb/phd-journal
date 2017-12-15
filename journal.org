@@ -15,16 +15,32 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
- #+STARTUP: inlineimages
 
 * Setup
+** Julia
+#+END_SRC
+#+NAME: update_julia_pkg
+#+HEADER:  :results output :session *julia*
+#+BEGIN_SRC julia
+Pkg.update()
+#+END_SRC
+
+#+RESULTS: update_julia_pkg
+: INFO: Updating METADATA...
+: INFO: Updating Plots master...
+: INFO: Updating PyPlot master...
+: INFO: Updating SortingAlgorithms master...
+: INFO: Computing changes...
+: INFO: No packages to install, update or remove
+
+** R
 Installing *R* dependencies:
 
 #+NAME: install_r_deps
 #+HEADER: :results output :exports both :session *R*
 #+BEGIN_SRC R
 install.packages(c("ggplot2", "dplyr", "tidyr", "rjson", "GGally",
-                   "plotly", "rPref"),
+                 "plotly", "rPref"),
                  repos = "https://mirror.ibcp.fr/pub/CRAN/")
 #+END_SRC
 
@@ -918,6 +934,7 @@ The downloaded source packages are in
 	‘/tmp/RtmpDcsxEu/downloaded_packages’
 #+end_example
 
+** Modifying and Analysing the FPGA Data Set
 Cloning and updating the =legup-tuner= repository:
 
 #+NAME: update_legup_tuner
@@ -4246,6 +4263,41 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+CALL: define_load_data()
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘GGally’
+
+The following object is masked from ‘package:dplyr’:
+
+    nasa
+Loading required package: ggplot2
+Stackoverflow is a great place to get help:
+http://stackoverflow.com/tags/ggplot2.
+
+Attaching package: ‘plotly’
+
+The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+The following object is masked from ‘package:graphics’:
+
+    layout
+#+end_example
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4266,14 +4318,12 @@ ggplot(data, aes(x = MKS, y = Regs)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5642vO7/figure5642gQ2.png]]
+[[file:/tmp/babel-2158skE/figure2158x7V.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-library(rPref)
-
 data <- load_data("dfdiv", experiments)
 
 criterion <- low(MKS) * low(DPS) 
@@ -4287,14 +4337,12 @@ ggplot(data, aes(x = MKS, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5642vO7/figure564254X.png]]
+[[file:/tmp/babel-2158skE/figure2158-Fc.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-library(rPref)
-
 data <- load_data("dfdiv", experiments)
 
 criterion <- low(Regs) * low(DPS) 
@@ -4308,4 +4356,4 @@ ggplot(data, aes(x = Regs, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5642vO7/figure5642gXq.png]]
+[[file:/tmp/babel-2158skE/figure2158LQi.png]]
