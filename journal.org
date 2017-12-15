@@ -4019,6 +4019,10 @@ data_bak = data
 - *Amphi H Ensimag* (H building)
 - Today: DoE
 ***** Ideas for DoE-Inspired Autotuning:
+- *Question:*
+  - Is there a metric for expressing how the accuracy of estimates
+    made from incomplete experimental designs changes as experiments are
+    completed?
 - Parallel and distributed "search" algorithms
 - Generate sets of experimental designs, such as 2^p:
   - Generate experiments for different tuples of
