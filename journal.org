@@ -18,7 +18,47 @@
 
 * Setup
 ** Julia
+#+NAME: install_julia_deps
+#+HEADER: :results output :session *julia*
+#+BEGIN_SRC julia
+Pkg.add("Plots")
+Pkg.add("Lint")
+Pkg.add("Gadfly")
+Pkg.add("ProfileView")
+Pkg.add("CSV")
+Pkg.add("StatsBase")
+Pkg.add("StatsModels")
+Pkg.add("GLM")
+Pkg.add("RDatasets")
 #+END_SRC
+
+#+RESULTS: install_julia_deps
+#+begin_example
+INFO: Package Plots is already installed
+INFO: Package Lint is already installed
+INFO: Package Gadfly is already installed
+INFO: Cloning cache of Gtk from https://github.com/JuliaGraphics/Gtk.jl.git
+INFO: Cloning cache of GtkReactive from https://github.com/JuliaGizmos/GtkReactive.jl.git
+INFO: Cloning cache of IntervalSets from https://github.com/JuliaMath/IntervalSets.jl.git
+INFO: Cloning cache of ProfileView from https://github.com/timholy/ProfileView.jl.git
+INFO: Cloning cache of Reactive from https://github.com/JuliaGizmos/Reactive.jl.git
+INFO: Cloning cache of RoundingIntegers from https://github.com/JuliaMath/RoundingIntegers.jl.git
+INFO: Installing Gtk v0.13.1
+INFO: Installing GtkReactive v0.4.0
+INFO: Installing IntervalSets v0.1.1
+INFO: Installing ProfileView v0.3.0
+INFO: Installing Reactive v0.6.0
+INFO: Installing RoundingIntegers v0.0.3
+INFO: Building Cairo
+INFO: Building Gtk
+INFO: Package database updated
+INFO: Package CSV is already installed
+INFO: Package StatsBase is already installed
+INFO: Package StatsModels is already installed
+INFO: Package GLM is already installed
+INFO: Package RDatasets is already installed
+#+end_example
+
 #+NAME: update_julia_pkg
 #+HEADER:  :results output :session *julia*
 #+BEGIN_SRC julia
@@ -27,9 +67,8 @@ Pkg.update()
 
 #+RESULTS: update_julia_pkg
 : INFO: Updating METADATA...
-: INFO: Updating Plots master...
-: INFO: Updating PyPlot master...
-: INFO: Updating SortingAlgorithms master...
+: WARNING: Package ASTInterpreter: skipping update (dirty)...
+: INFO: Updating Gallium master...
 : INFO: Computing changes...
 : INFO: No packages to install, update or remove
 
@@ -4079,7 +4118,7 @@ data_bak = data
     - Could provide more robust statistics when finished
   - How to determine how variable the designs should be?
 *** [2017-12-15 Fri]
-**** Continue work on [[Cleaning FPGA Datasets][Cleaning FPGA Datasets]]
+**** Continue work on [[Cleaning FPGA Datasets][Cleaning FPGA Datasets]] :R:Code:FPGA:Autotuning:DataVis:
 ***** Clean Data Reading Function
 #+HEADER: :results output :session *R* :exports both
 #+HEADER: :var repository_dir=repository_dir
@@ -4145,7 +4184,7 @@ load_data <- function(application, experiments) {
 
 #+RESULTS:
 
-**** Looking at Clean Data
+**** Looking at Clean Data                :R:Code:FPGA:Autotuning:DataVis:
 Now that we have only 3 *hardware metrics*, we can look at their relationships
 in 3D. The next code block generates a 3D scatter plot for *MKS*, *Regs* and
 *DPS*. The plot is interactive and will be opened in your browser. We will use
@@ -4159,6 +4198,39 @@ the =plotly= library for the 3D plot.
 #+CALL: define_load_data()
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘GGally’
+
+The following object is masked from ‘package:dplyr’:
+
+    nasa
+Loading required package: ggplot2
+
+Attaching package: ‘plotly’
+
+The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+The following object is masked from ‘package:graphics’:
+
+    layout
+#+end_example
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
@@ -4217,7 +4289,7 @@ ggplot(uniques, aes(x = Distinct.Values, y = Parameters)) +
 #+END_SRC 
 
 #+RESULTS:
-[[file:/tmp/babel-5642vO7/figure5642RSK.png]]
+[[file:/tmp/babel-2401hm4/figure2401_6H.png]]
 
 I wanted to check which is the only *parameter* that has 25
 distinct values:
@@ -4252,7 +4324,7 @@ p
 It does not seem to be "strongly responsible" for the behaviour of any of the
 metrics...
 
-**** Computing the Pareto Border
+**** Computing the Pareto Border          :R:Code:FPGA:Autotuning:DataVis:
 We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for computing the Pareto border.
 
 #+CALL: update_legup_tuner()
@@ -4263,41 +4335,6 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+CALL: define_load_data()
 
 #+RESULTS:
-#+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-Attaching package: ‘GGally’
-
-The following object is masked from ‘package:dplyr’:
-
-    nasa
-Loading required package: ggplot2
-Stackoverflow is a great place to get help:
-http://stackoverflow.com/tags/ggplot2.
-
-Attaching package: ‘plotly’
-
-The following object is masked from ‘package:ggplot2’:
-
-    last_plot
-
-The following object is masked from ‘package:stats’:
-
-    filter
-
-The following object is masked from ‘package:graphics’:
-
-    layout
-#+end_example
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4318,7 +4355,26 @@ ggplot(data, aes(x = MKS, y = Regs)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2158skE/figure2158x7V.png]]
+[[file:/tmp/babel-2401hm4/figure2401OHc.png]]
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(rPref)
+
+data <- load_data("dfdiv", experiments)
+
+criterion <- low(MKS) * low(Regs) 
+
+pareto <- psel(data, criterion, top = nrow(data)) 
+
+ggplot(pareto, aes(x = MKS, y = Regs, color = factor(.level))) + 
+       geom_point(size = 3) 
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure2401oic.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4337,7 +4393,26 @@ ggplot(data, aes(x = MKS, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2158skE/figure2158-Fc.png]]
+[[file:/tmp/babel-2401hm4/figure2401bRi.png]]
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(rPref)
+
+data <- load_data("dfdiv", experiments)
+
+criterion <- low(MKS) * low(DPS) 
+
+pareto <- psel(data, criterion, top = nrow(data)) 
+
+ggplot(pareto, aes(x = MKS, y = DPS, color = factor(.level))) + 
+       geom_point(size = 3) 
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure2401OVE.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4356,4 +4431,144 @@ ggplot(data, aes(x = Regs, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2158skE/figure2158LQi.png]]
+[[file:/tmp/babel-2401hm4/figure24011lu.png]]
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(rPref)
+
+data <- load_data("dfdiv", experiments)
+
+criterion <- low(Regs) * low(DPS) 
+
+pareto <- psel(data, criterion, top = nrow(data)) 
+
+ggplot(pareto, aes(x = Regs, y = DPS, color = factor(.level))) + 
+       geom_point(size = 3) 
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure24011zW.png]]
+
+*** [2017-12-18 Mon]
+**** Configuring Julia in OrgMode
+I created some Julia setup functions that install a few interesting
+packages. For Julia to be more useful I will use the stable version in this
+Journal.
+
+#+CALL: install_julia_deps()
+
+#+CALL: update_julia_pkg()
+
+***** Testing Plotting with Gadfly 
+
+#+HEADER: :results output graphics :session *julia* :exports both
+#+HEADER: :file "/tmp/gadfly_test.png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC julia
+using Gadfly
+using RDatasets
+
+iris = dataset("datasets", "iris")
+p = plot(iris, x=:SepalLength, y=:SepalWidth, Geom.point);
+img = PNG("/tmp/gadfly_test.png", 6inch, 4inch)
+draw(img, p)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/gadfly_test.png]]
+**** Looking Further at Clean Data ([[Looking at Clean Data][Continued]])
+#+CALL: update_legup_tuner()
+
+#+RESULTS:
+: Already up to date.
+
+#+CALL: define_load_data()
+
+#+RESULTS:
+
+#+NAME: define_parameter_cleaning_functions
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+count_uniques <- function(x, n) {
+  uniques <- length(unique(x))
+  if (uniques >= n) {
+      return(uniques)
+  } else {
+      return(NA)
+  }
+}
+
+clear_uniques <- function(x, y) {
+    uniques <- as.data.frame(y)
+    return(c(x, dim(na.omit(uniques))[1]))
+}
+
+plot_uniques <- function(range, data) {
+    uniques <- sapply(range,
+                      function(x) clear_uniques(x, 
+                                                apply(data, 2,
+                                                      function(y) count_uniques(y,
+                                                                                x))))
+    uniques <- as.data.frame(t(uniques))
+    names(uniques) <- c("Distinct.Values", "Parameters")
+
+    ggplot(uniques, aes(x = Distinct.Values, y = Parameters)) +
+          geom_point() + geom_line() +
+          scale_x_continuous(breaks = seq(min(uniques$Distinct.Values),
+                                          max(uniques$Distinct.Values),
+                                          by = 2)) +
+          scale_y_continuous(breaks = seq(min(uniques$Parameters),
+                                          max(uniques$Parameters),
+                                          by = 10))
+}
+
+get_parameters_with_values <- function(threshold, data) {
+    uniques <- apply(data, 2, function(y) count_uniques(y, threshold))
+    uniques <- na.omit(uniques)
+    parameters <- names(uniques)
+    return(parameters[!(parameters %in% c("MKS", "Regs", "DPS", "X"))])
+}
+#+END_SRC 
+
+#+RESULTS: define_parameter_cleaning_functions
+
+Looking at parameter "variability" for all parameters in the dataset:
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+plot_uniques(c(1:26), data)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure2401aXP.png]]
+
+Let's focus, arbitrarily, in the parameters with no less than *11* distinct
+values:
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 800
+#+BEGIN_SRC R
+names <- get_parameters_with_values(11, data)
+
+setEPS()
+
+postscript("/tmp/ggpairs_few_metrics.eps", width = 16, height = 16)
+
+ggpairs_plot <- ggpairs(data, columns = c(c("MKS", "DPS", "Regs"), names))
+
+print(ggpairs_plot)
+
+dev.off()
+
+ggpairs_plot
+
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure2401PIj.png]]
