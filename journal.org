@@ -3899,49 +3899,6 @@ Joining, by = c("First.Variable", "Second.Variable")
   robust in high dimension.
 - Pareto optimization:
   - We still do not know what the space looks like
-***** TODO:
-****** DONE Clean the data again
-CLOSED: [2017-12-15 Fri 15:17]
-:LOGBOOK:
-- State "DONE"       from              [2017-12-15 Fri 15:17]
-:END:
-- remove metrics with only one value (LUs) linked metrics (Blocks
-  and RAM) and probably even binary metrics as it does not fit really well in a
-  multicriteria optimization framework
-- Ensure we do minimization (e.g., Fmax = -Fmax or replace cycles
-  and Fmax by an estimation of the wall-clock time)
-- We should probably keeep the makespan (Cycles/Fmax), Regs, DSP.
-****** DONE Characterize the Pareto Border
-CLOSED: [2017-12-15 Fri 15:19]
-:LOGBOOK:
-- State "DONE"       from              [2017-12-15 Fri 15:19]
-:END:
-For each entry, check wheter there exists an other one which is better on all
-metrics. 
-****** STARTED Colorize GGpairs with Pareto Border
-:LOGBOOK:
-- State "STARTED"    from              [2017-12-15 Fri 15:19]
-:END:
-Then we can colorize our simplfied ggpair with this Pareto-dominated value.
-****** STARTED Try to clean data further, but for parameters
-:LOGBOOK:
-- State "STARTED"    from              [2017-12-15 Fri 15:19]
-:END:
-- Get the search space specification to know whether some parameters
-  are supposed to change or not.
-- Identify which parameters are binary and tag them accordingly
-  (with factors being true or false).
-- Identify which parameters are actually (unordered) factors and tag
-  them accordingly.
-- Do all these cleanups first manually, step by step and then into a
-  single dedicated reading function.
-- Regarding reading, you may want to have a look at the tidyverse with
-  readr, magrittr and
-  such. https://www.rstudio.org/links/data_wrangling_cheat_sheet
-****** TODO Maybe we could try to reobtain some data.
-:LOGBOOK:
-- State "TODO"       from              [2017-12-15 Fri 15:20]
-:END:
 *** [2017-12-14 Thu]
 - Configure ~spacemacs~
 - Ask Danilo for information for ADUM and Cotutelle
@@ -4601,6 +4558,40 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+CALL: define_load_data()
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘GGally’
+
+The following object is masked from ‘package:dplyr’:
+
+    nasa
+Loading required package: ggplot2
+
+Attaching package: ‘plotly’
+
+The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+The following object is masked from ‘package:graphics’:
+
+    layout
+#+end_example
+
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4608,50 +4599,80 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+BEGIN_SRC R
 library(rPref)
 
-data <- load_data("dfsin", experiments)
+data <- load_data("dfdiv", experiments)
 
 criterion <- low(Regs) * low(DPS) * low(MKS)
 
 pareto <- psel(data, criterion, top = nrow(data)) 
 
+pareto <- pareto[with(pareto, order(X)), ]
+
 ggplot(pareto, aes(x = MKS, y = Regs, color = (.level == 1))) + 
-       geom_point(size = 3)
+       geom_point(size = 3) +
+       geom_point(data = pareto[1 ,],
+                  aes(x = MKS, y = Regs),
+                  color = "black",
+                  shape = 2,
+                  size = 5)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401FPa.png]]
+[[file:/tmp/babel-23794ZtA/figure23794TR2.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 800
 #+BEGIN_SRC R
-ggplot(pareto, aes(x = MKS, y = DPS, color = factor(.level))) + 
-       geom_point(size = 3) 
+ggplot(pareto, aes(x = MKS, y = DPS, color = (.level == 1))) + 
+       geom_point(size = 3)  +
+       geom_point(data = pareto[1 ,],
+                  aes(x = MKS, y = DPS),
+                  color = "black",
+                  shape = 2,
+                  size = 5)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401fjm.png]]
+[[file:/tmp/babel-23794ZtA/figure23794FbF.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 800
 #+BEGIN_SRC R
-ggplot(pareto, aes(x = Regs, y = DPS, color = factor(.level))) + 
-       geom_point(size = 3) 
+ggplot(pareto, aes(x = Regs, y = DPS, color = (.level == 1))) + 
+       geom_point(size = 3)  +
+       geom_point(data = pareto[1 ,],
+                  aes(x = Regs, y = DPS),
+                  color = "black",
+                  shape = 2,
+                  size = 5)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure240153y.png]]
+[[file:/tmp/babel-23794ZtA/figure23794SlL.png]]
 
 Generating a 3D plot:
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS, color = ~(.level == 1), colors = "Set1") %>%
+p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS, color = ~(.level == 1),
+             colors = "Set1") %>%
      add_markers() %>%
-     layout(scene = list(xaxis = list(title = 'MKS'),
+     layout(scene = list(annotations = list(list(x = pareto[1, "MKS"],
+                                                 y = pareto[1, "Regs"],
+                                                 z = pareto[1, "DPS"],
+                                                 text = "Starting Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1)),
+                         xaxis = list(title = 'MKS'),
                          yaxis = list(title = 'Regs'),
                          zaxis = list(title = 'DSP')))
+
 p
 #+END_SRC
 
@@ -4680,12 +4701,3 @@ p
 - John Kitchin's group at CMU: Async Org Mode Calls
 - Grigori Fursin: Multi-objective compiler auto-tuning using mobile phones
   - Check [[http://mescal.imag.fr/membres/arnaud.legrand/teaching/2013/PC_11_linalg.pdf][this presentation]]
-***** Tasks
-1) Plot the default configuration (starting point)
-   in a different color
-2) Look at the behaviour of the other applications:
-   - Are there two or three metrics to optimize, like
-     in the "dfdiv" application, or there are more?
-3) Are only one or two parameters responsible for the
-   points in the Pareto Border?
-    
