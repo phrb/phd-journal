@@ -72,6 +72,77 @@ Pkg.update()
 : INFO: Computing changes...
 : INFO: No packages to install, update or remove
 
+*** NODAL Development                                          :Code:NODAL:
+**** Installing NODAL in Julia Nightly
+[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org][Julia]]
+language. The idea is to provide tools for the implementation of
+parallel and distributed autotuners for various problem domains.
+***** Download Julia Nightly
+****** [[https://julialang.org/downloads][Download Generic Binary]] 
+****** Downloading from the CLI
+You can run the following to install the latest *Julia* version:
+#+BEGIN_SRC bash
+cd ~ && mkdir .bin && cd .bin
+wget https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz
+tar xvf julia-latest-linux64.tar.gz
+mv julia-* julia
+rm julia-latest-linux64.tar.gz
+#+END_SRC
+This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
+You can use it like that or add an =alias= to your shell.
+***** Installing the unregistered version
+This will not be needed after registering NODAL to METADATA.
+****** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
+****** Julia Commands
+#+BEGIN_SRC julia
+Pkg.clone("https://github.com/phrb/NODAL.jl")
+Pkg.build("NODAL")
+Pkg.test("NODAL")
+#+END_SRC
+***** Installing from the Julia package manager
+****** Julia commands
+#+BEGIN_SRC julia
+Pkg.add("NODAL")
+Pkg.build("NODAL")
+Pkg.test("NODAL")
+#+END_SRC
+**** Setting up a new Release
+***** Using Attobot
+[[https://github.com/attobot][Attobot]] integrates with *GitHub* to automatically register a new package
+or a package version to *Julia*'s =METADATA= package repository.  Attobot
+only needs a new *GitHub* release to work.
+***** Using *Julia*'s =PkgDev=
+Check the [[https://docs.julialang.org/en/latest/manual/packages/#Tagging-and-Publishing-Your-Package-1][documentation]] to learn how to register and publish user
+packages to =METADATA=.
+**** Development Workflow
+The process of fixing an [[https://github.com/phrb/NODAL.jl/issues][issue]] or submitting a new
+feature is:
+0. Fork [[https://github.com/phrb/NODAL.jl][NODAL on GitHub]]
+   
+   You will need a GitHub account for this.
+
+1. Make sure you have the latest version
+   #+BEGIN_SRC bash
+git checkout master
+git fetch
+   #+END_SRC
+
+   New branches must be made from the =dev= branch:
+   #+BEGIN_SRC bash
+git checkout dev
+   #+END_SRC
+2. Checkout a new branch
+   #+BEGIN_SRC bash
+git checkout -b fix-or-feature
+   #+END_SRC
+3. Write code and commit to your new branch
+   
+   Make sure you write short and descriptive commit
+   messages. Something similar to [[https://udacity.github.io/git-styleguide/][Udacity's guidelines]] is preferred
+   but not strictly necessary.
+
+4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= bran
+
 ** R
 Installing *R* dependencies:
 
@@ -1134,76 +1205,6 @@ Questions and execution flow related to the
 
 - What are the arrays =proba_strat= & =y_strat=?
 
-*** NODAL Development                                          :Code:NODAL:
-**** Installing NODAL in Julia Nightly
-[[https://github.com/phrb/NODAL.jl][NODAL]] is the autotuning library I am developing in the [[https://julialang.org][Julia]]
-language. The idea is to provide tools for the implementation of
-parallel and distributed autotuners for various problem domains.
-***** Download Julia Nightly
-****** [[https://julialang.org/downloads][Download Generic Binary]] 
-****** Downloading from the CLI
-You can run the following to install the latest *Julia* version:
-#+BEGIN_SRC bash
-cd ~ && mkdir .bin && cd .bin
-wget https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz
-tar xvf julia-latest-linux64.tar.gz
-mv julia-* julia
-rm julia-latest-linux64.tar.gz
-#+END_SRC
-This will put the *Julia* binary at =~/.bin/julia/bin/julia=.
-You can use it like that or add an =alias= to your shell.
-***** Installing the unregistered version
-This will not be needed after registering NODAL to METADATA.
-****** [[https://docs.julialang.org/en/latest/manual/packages/#Installing-Unregistered-Packages-1][Documentation]]
-****** Julia Commands
-#+BEGIN_SRC julia
-Pkg.clone("https://github.com/phrb/NODAL.jl")
-Pkg.build("NODAL")
-Pkg.test("NODAL")
-#+END_SRC
-***** Installing from the Julia package manager
-****** Julia commands
-#+BEGIN_SRC julia
-Pkg.add("NODAL")
-Pkg.build("NODAL")
-Pkg.test("NODAL")
-#+END_SRC
-**** Setting up a new Release
-***** Using Attobot
-[[https://github.com/attobot][Attobot]] integrates with *GitHub* to automatically register a new package
-or a package version to *Julia*'s =METADATA= package repository.  Attobot
-only needs a new *GitHub* release to work.
-***** Using *Julia*'s =PkgDev=
-Check the [[https://docs.julialang.org/en/latest/manual/packages/#Tagging-and-Publishing-Your-Package-1][documentation]] to learn how to register and publish user
-packages to =METADATA=.
-**** Development Workflow
-The process of fixing an [[https://github.com/phrb/NODAL.jl/issues][issue]] or submitting a new
-feature is:
-0. Fork [[https://github.com/phrb/NODAL.jl][NODAL on GitHub]]
-   
-   You will need a GitHub account for this.
-
-1. Make sure you have the latest version
-   #+BEGIN_SRC bash
-git checkout master
-git fetch
-   #+END_SRC
-
-   New branches must be made from the =dev= branch:
-   #+BEGIN_SRC bash
-git checkout dev
-   #+END_SRC
-2. Checkout a new branch
-   #+BEGIN_SRC bash
-git checkout -b fix-or-feature
-   #+END_SRC
-3. Write code and commit to your new branch
-   
-   Make sure you write short and descriptive commit
-   messages. Something similar to [[https://udacity.github.io/git-styleguide/][Udacity's guidelines]] is preferred
-   but not strictly necessary.
-
-4. Open a [[https://github.com/phrb/NODAL.jl/pulls][pull request]] to the =dev= bran
 *** [2017-12-01 Fri]
 - Finish the Reconfig poster
 - Converge to final Reconfig presentation
@@ -3863,7 +3864,7 @@ Joining, by = c("First.Variable", "Second.Variable")
 #+end_example
 
 **** Discussions with Arnaud and Brice :DOE:FPGA:Autotuning:Arnaud:DataVis:
-- Read [[ https://hal.inria.fr/hal-01579422][Steven's reports]]
+- Read [[https://hal.inria.fr/hal-01579422][Steven's reports]]
 - Introduction to Experiment Design and in particular to screening:
   https://github.com/alegrand/SMPE/blob/master/lectures/5_design_of_experiments.pdf
 - Reading Jain's book entitled "The Art of Computer Systems
@@ -4047,6 +4048,20 @@ they seem to assume only one or two values across the data set. Finally, we will
 remove *FMax* and *Cycles* but add *MKS*, the *makespan* or *wall-clock time*,
 computed as ~Cycles / (1000 * FMax)~.
 
+In fact, we should look at the correlations between *hardware metrics*
+to decide what to keep and what to leave behind:
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 800
+#+BEGIN_SRC R
+ggpairs(data, columns = hardware_metrics,
+        mapping = ggplot2::aes(alpha = .1))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2401hm4/figure2401t1n.png]]
+
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
 data <- data %>% mutate(MKS = (Cycles / (1000 * FMax)))
@@ -4150,7 +4165,7 @@ hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
                       "Blocks", "RAM", "DPS")
 
 load_data <- function(application, experiments) {
-    data       <- data.frame()
+    data <- data.frame()
 
     for (experiment in experiments) {
         new_data <- read.csv(paste(paste(csv_dir, collapse = ""),
@@ -4542,11 +4557,12 @@ Looking at parameter "variability" for all parameters in the dataset:
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
+data <- load_data("sha", experiments)
 plot_uniques(c(1:26), data)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401aXP.png]]
+[[file:/tmp/babel-2401hm4/figure24013KB.png]]
 
 Let's focus, arbitrarily, in the parameters with no less than *11* distinct
 values:
@@ -4561,7 +4577,8 @@ setEPS()
 
 postscript("/tmp/ggpairs_few_metrics.eps", width = 16, height = 16)
 
-ggpairs_plot <- ggpairs(data, columns = c(c("MKS", "DPS", "Regs"), names))
+ggpairs_plot <- ggpairs(data, columns = c(c("MKS", "DPS", "Regs"), names),
+                        mapping = ggplot2::aes(alpha = .1))
 
 print(ggpairs_plot)
 
@@ -4572,7 +4589,7 @@ ggpairs_plot
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401PIj.png]]
+[[file:/tmp/babel-2401hm4/figure2401r6N.png]]
 **** Computing Pareto Border for the 3 Metrics ([[Computing the Pareto Border][Continued]])
 We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for computing the Pareto border.
 
@@ -4591,18 +4608,18 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+BEGIN_SRC R
 library(rPref)
 
-data <- load_data("dfdiv", experiments)
+data <- load_data("dfsin", experiments)
 
 criterion <- low(Regs) * low(DPS) * low(MKS)
 
 pareto <- psel(data, criterion, top = nrow(data)) 
 
-ggplot(pareto, aes(x = MKS, y = Regs, color = factor(.level))) + 
-       geom_point(size = 3) 
+ggplot(pareto, aes(x = MKS, y = Regs, color = (.level == 1))) + 
+       geom_point(size = 3)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure24012tp.png]]
+[[file:/tmp/babel-2401hm4/figure2401FPa.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4613,7 +4630,7 @@ ggplot(pareto, aes(x = MKS, y = DPS, color = factor(.level))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401PWL.png]]
+[[file:/tmp/babel-2401hm4/figure2401fjm.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4624,15 +4641,13 @@ ggplot(pareto, aes(x = Regs, y = DPS, color = factor(.level))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401pxL.png]]
+[[file:/tmp/babel-2401hm4/figure240153y.png]]
 
 Generating a 3D plot:
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-data <- load_data("dfdiv", experiments)
-
-p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS, color = ~factor(.level)) %>%
+p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS, color = ~(.level == 1), colors = "Set1") %>%
      add_markers() %>%
      layout(scene = list(xaxis = list(title = 'MKS'),
                          yaxis = list(title = 'Regs'),
@@ -4641,10 +4656,6 @@ p
 #+END_SRC
 
 #+RESULTS:
-: Warning message:
-: In RColorBrewer::brewer.pal(N, "Set2") :
-:   n too large, allowed maximum for palette Set2 is 8
-: Returning the palette you asked for with that many colors
 
 **** Seminar: Autotuning MPI Collectives using Performance Guidelines
 - MPI Benchmark: Ohio State University Micro-Benchmarks (OSU)
@@ -4664,4 +4675,17 @@ p
   - User links the library to their MPI code
   - Selects optimized functions according to problem and
     user memory constraints
-  - Repository in [[github.com/hunsa][GitHub]]
+  - Repository in https://github.com/hunsa/pgmpi
+**** Looking at Pareto Border with Arnaud
+- John Kitchin's group at CMU: Async Org Mode Calls
+- Grigori Fursin: Multi-objective compiler auto-tuning using mobile phones
+  - Check [[http://mescal.imag.fr/membres/arnaud.legrand/teaching/2013/PC_11_linalg.pdf][this presentation]]
+***** Tasks
+1) Plot the default configuration (starting point)
+   in a different color
+2) Look at the behaviour of the other applications:
+   - Are there two or three metrics to optimize, like
+     in the "dfdiv" application, or there are more?
+3) Are only one or two parameters responsible for the
+   points in the Pareto Border?
+    
