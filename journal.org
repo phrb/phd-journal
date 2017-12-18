@@ -4660,3 +4660,8 @@ p
   - Obtain distribution of run-time measurements for different
     message sizes
   - Apply statistical tests
+- PGMPITuneLib:
+  - User links the library to their MPI code
+  - Selects optimized functions according to problem and
+    user memory constraints
+  - Repository in [[github.com/hunsa][GitHub]]
