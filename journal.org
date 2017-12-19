@@ -4121,7 +4121,7 @@ applications <- c("dfadd", "dfdiv", "dfmul", "sha", "motion", "adpcm",
 hardware_metrics <- c("WNS", "Cycles", "FMax", "LUs", "Pins", "Regs",
                       "Blocks", "RAM", "DPS")
 
-load_data <- function(application, experiments) {
+load_data <- function(application, experiments, removed_columns) {
     data <- data.frame()
 
     for (experiment in experiments) {
@@ -4145,8 +4145,7 @@ load_data <- function(application, experiments) {
     data <- data %>% drop_na()
     data <- data[is.finite(data$WNS),]
     data <- data %>% mutate(MKS = (Cycles / (1000 * FMax)))
-    data <- select(data, -one_of(c("WNS", "Blocks", "RAM", "LUs", "Pins",
-                                   "Cycles", "FMax")))
+    data <- select(data, -one_of(removed_columns))
     return(data)
 }
 
@@ -4206,7 +4205,8 @@ The following object is masked from ‘package:graphics’:
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-data <- load_data("dfdiv", experiments)
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data("dfdiv", experiments, removed)
 
 p <- plot_ly(data, x = ~MKS, y = ~Regs, z = ~DPS, color = ~set_operation_latency.unsigned_divide_64) %>%
      add_markers() %>%
@@ -4261,7 +4261,7 @@ ggplot(uniques, aes(x = Distinct.Values, y = Parameters)) +
 #+END_SRC 
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401_6H.png]]
+[[file:/tmp/babel-8816rvR/figure8816VGs.png]]
 
 I wanted to check which is the only *parameter* that has 25
 distinct values:
@@ -4314,7 +4314,8 @@ We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for co
 #+BEGIN_SRC R
 library(rPref)
 
-data <- load_data("dfdiv", experiments)
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data("dfdiv", experiments, removed)
 
 criterion <- low(MKS) * low(Regs) 
 
@@ -4327,16 +4328,12 @@ ggplot(data, aes(x = MKS, y = Regs)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401OHc.png]]
+[[file:/tmp/babel-8816rvR/figure8816x4W.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-library(rPref)
-
-data <- load_data("dfdiv", experiments)
-
 criterion <- low(MKS) * low(Regs) 
 
 pareto <- psel(data, criterion, top = nrow(data)) 
@@ -4346,14 +4343,12 @@ ggplot(pareto, aes(x = MKS, y = Regs, color = factor(.level))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401oic.png]]
+[[file:/tmp/babel-8816rvR/figure8816-Cd.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-data <- load_data("dfdiv", experiments)
-
 criterion <- low(MKS) * low(DPS) 
 
 pareto <- psel(data, criterion) 
@@ -4365,16 +4360,12 @@ ggplot(data, aes(x = MKS, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401bRi.png]]
+[[file:/tmp/babel-8816rvR/figure8816LNj.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-library(rPref)
-
-data <- load_data("dfdiv", experiments)
-
 criterion <- low(MKS) * low(DPS) 
 
 pareto <- psel(data, criterion, top = nrow(data)) 
@@ -4384,14 +4375,12 @@ ggplot(pareto, aes(x = MKS, y = DPS, color = factor(.level))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401OVE.png]]
+[[file:/tmp/babel-8816rvR/figure8816YXp.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-data <- load_data("dfdiv", experiments)
-
 criterion <- low(Regs) * low(DPS) 
 
 pareto <- psel(data, criterion) 
@@ -4403,16 +4392,12 @@ ggplot(data, aes(x = Regs, y = DPS)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure24011lu.png]]
+[[file:/tmp/babel-8816rvR/figure8816lhv.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-library(rPref)
-
-data <- load_data("dfdiv", experiments)
-
 criterion <- low(Regs) * low(DPS) 
 
 pareto <- psel(data, criterion, top = nrow(data)) 
@@ -4422,7 +4407,7 @@ ggplot(pareto, aes(x = Regs, y = DPS, color = factor(.level))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure24011zW.png]]
+[[file:/tmp/babel-8816rvR/figure8816k1E.png]]
 
 *** [2017-12-18 Mon]
 - An interesting read: [[https://docs.julialang.org/en/latest/manual/performance-tips/][Julia Performance Tips]] 
@@ -4464,6 +4449,7 @@ draw(img, p)
 
 #+NAME: define_parameter_cleaning_functions
 #+HEADER: :results output :session *R* :exports both
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/plot_parameter_variability.r
 #+BEGIN_SRC R
 count_uniques <- function(x, n) {
   uniques <- length(unique(x))
@@ -4514,12 +4500,13 @@ Looking at parameter "variability" for all parameters in the dataset:
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-data <- load_data("sha", experiments)
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data("sha", experiments, removed)
 plot_uniques(c(1:26), data)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure24013KB.png]]
+[[file:/tmp/babel-8816rvR/figure8816xqu.png]]
 
 Let's focus, arbitrarily, in the parameters with no less than *11* distinct
 values:
@@ -4542,11 +4529,10 @@ print(ggpairs_plot)
 dev.off()
 
 ggpairs_plot
-
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2401hm4/figure2401r6N.png]]
+[[file:/tmp/babel-8816rvR/figure8816w-D.png]]
 **** Computing Pareto Border for the 3 Metrics ([[Computing the Pareto Border][Continued]])
 We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for computing the Pareto border.
 
@@ -4599,7 +4585,8 @@ The following object is masked from ‘package:graphics’:
 #+BEGIN_SRC R
 library(rPref)
 
-data <- load_data("dfdiv", experiments)
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data("dfdiv", experiments, removed)
 
 criterion <- low(Regs) * low(DPS) * low(MKS)
 
@@ -4617,7 +4604,7 @@ ggplot(pareto, aes(x = MKS, y = Regs, color = (.level == 1))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-23794ZtA/figure23794TR2.png]]
+[[file:/tmp/babel-8816rvR/figure8816knc.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4633,7 +4620,7 @@ ggplot(pareto, aes(x = MKS, y = DPS, color = (.level == 1))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-23794ZtA/figure23794FbF.png]]
+[[file:/tmp/babel-8816rvR/figure8816xxi.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4649,7 +4636,7 @@ ggplot(pareto, aes(x = Regs, y = DPS, color = (.level == 1))) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-23794ZtA/figure23794SlL.png]]
+[[file:/tmp/babel-8816rvR/figure8816-7o.png]]
 
 Generating a 3D plot:
 
@@ -4678,6 +4665,41 @@ p
 
 #+RESULTS:
 
+#+NAME: define_plot_3D_pareto
+#+HEADER: :results output :exports both :session *R*
+#+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/plot_3D_pareto.r
+#+BEGIN_SRC R
+plot_3D_pareto <- function(data) {
+    criterion <- low(MKS) * low(Regs) * low(DPS)
+
+    pareto <- psel(data, criterion, top = nrow(data)) 
+
+    pareto <- pareto[with(pareto, order(X)), ]
+
+    p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS, color = ~(.level == 1),
+                colors = "Set1") %>%
+        add_markers() %>%
+        layout(scene = list(annotations = list(list(x = pareto[1, "MKS"],
+                                                    y = pareto[1, "Regs"],
+                                                    z = pareto[1, "DPS"],
+                                                    text = "Starting Point",
+                                                    textangle = 0,
+                                                    font = list(color = "black",
+                                                                size = 12),
+                                                    arrowcolor = "black",
+                                                    arrowsize = 3,
+                                                    arrowwidth = 1,
+                                                    arrowhead = 1)),
+                            xaxis = list(title = 'MKS'),
+                            yaxis = list(title = 'Regs'),
+                            zaxis = list(title = 'DSP')))
+
+    return(p)
+}
+#+END_SRC
+
+#+RESULTS: define_plot_3D_pareto
+
 **** Seminar: Autotuning MPI Collectives using Performance Guidelines
 - MPI Benchmark: Ohio State University Micro-Benchmarks (OSU)
   - For example, measures latency of ~MPIGather~ calls
@@ -4702,6 +4724,8 @@ p
 - Grigori Fursin: Multi-objective compiler auto-tuning using mobile phones
   - Check [[http://mescal.imag.fr/membres/arnaud.legrand/teaching/2013/PC_11_linalg.pdf][this presentation]]
 *** [2017-12-19 Tue]
+- Update NODAL for latest Julia version
+- Parametrize ~load_data~
 **** Read [[https://hal.inria.fr/hal-01579422][Steven's report]]
 ***** Case Study
 - Objective: Optimize a Laplacian kernel to minimize the time it takes
@@ -4719,4 +4743,67 @@ p
   - Even though there are configurations with +300x
     slowdown, they are much rarer than better configurations
   - *Question:* Could this be the case for most autotuning problems?
-**** Update NODAL for latest Julia version
+**** Looking at Other CHStone Applications
+#+CALL: update_legup_tuner()
+
+#+RESULTS:
+: Already up to date.
+
+#+CALL: define_load_data()
+
+#+RESULTS:
+
+#+CALL: define_parameter_cleaning_functions()
+
+#+RESULTS:
+
+#+CALL: define_plot_3D_pareto()
+
+#+RESULTS:
+
+Using our previously-defined utility functions, let's look at the data for the
+experiments with other CHStone applications:
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 800
+#+BEGIN_SRC R
+library(GGally)
+
+application <- "aes"
+
+data <- load_data(application, experiments, c("WNS", "FMax", "Cycles"))
+
+ggpairs(data, columns = tail(names(data), n = 7))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-8816rvR/figure8816S3Y.png]]
+
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data(application, experiments, c("WNS", "FMax", "Cycles"))
+
+plot_uniques(c(1:26), data)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-8816rvR/figure8816fBf.png]]
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+plot_3D_pareto(data)
+#+END_SRC
+
+#+RESULTS:
+
+By looking at the data for all applications, we can see that the *Blocks*,
+*RAM*, *LUs* and *Pins* have almost always one or two values, and are correlated
+in some cases. The *DSP* metric has more variability, but also presents a single
+value in some applications.
+
+Therefore, it seems reasonable to describe the optimization objective as
+minimizing *MKS*, *Regs* and *DSP*.
