@@ -4701,3 +4701,22 @@ p
 - John Kitchin's group at CMU: Async Org Mode Calls
 - Grigori Fursin: Multi-objective compiler auto-tuning using mobile phones
   - Check [[http://mescal.imag.fr/membres/arnaud.legrand/teaching/2013/PC_11_linalg.pdf][this presentation]]
+*** [2017-12-19 Tue]
+**** Read [[https://hal.inria.fr/hal-01579422][Steven's report]]
+***** Case Study
+- Objective: Optimize a Laplacian kernel to minimize the time it takes
+             to compute one pixel.
+- 7 Parameters
+- Warm-up effects on GPUs due to power consumption optimizations
+- Fixed tuning strategy:
+  - The strategy mentions points are taken at random at each step,
+    but shouldn't it in fact use the current algorithm?
+    - Example: "Sample 50 points at random", for the GA, would be
+      "evaluate 50 candidates"?
+- Good performance of Random-based search methods:
+  - In this search space, there is a high probability
+    of finding a configuration with small slowdown
+  - Even though there are configurations with +300x
+    slowdown, they are much rarer than better configurations
+  - *Question:* Could this be the case for most autotuning problems?
+**** Update NODAL for latest Julia version
