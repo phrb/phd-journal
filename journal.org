@@ -30,6 +30,7 @@ Pkg.add("StatsBase")
 Pkg.add("StatsModels")
 Pkg.add("GLM")
 Pkg.add("RDatasets")
+Pkg.add("IterTools")
 #+END_SRC
 
 #+RESULTS: install_julia_deps
@@ -4877,3 +4878,44 @@ minimizing *MKS*, *Regs* and *DSP*.
 - Reading about Factorial Designs in Montgomery's book as well
 **** Checking [[http://prof.beuth-hochschule.de/groemping/software/versuchsplanung/][Ulrike Grömping]]'s R packages for Experimental Design
 - Downloaded FrF2 [[https://cran.r-project.org/web/packages/FrF2/index.html][source from CRAN]]
+**** Generating 2^k Factorial Designs in Julia
+Here I will generate some simple 2^k factorial designs
+in Julia with mockup responses, and attempt to follow
+the examples in Chapter 17 of Jain's book.
+
+***** Section 17.3: Sign Table Method
+#+HEADER: :results output :exports both :session *julia*
+#+BEGIN_SRC julia
+using DataFrames, IterTools
+combinations = [p for p in product([-1, 1], [-1, 1])]
+
+sign_table = DataFrame(I  = ones(combinations, Int),
+                       A  = [p[1] for p in combinations],
+                       B  = [p[2] for p in combinations],
+                       AB = [p[1] * p[2] for p in combinations],
+                       Y  = [15, 45, 25, 75])
+
+
+dot(sign_table[:A], sign_table[:Y]) 
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+4-element Array{Tuple{Int64,Int64},1}:
+ (-1, -1)
+ (1, -1) 
+ (-1, 1) 
+ (1, 1)
+
+4×5 DataFrames.DataFrame
+│ Row │ I │ A  │ B  │ AB │ Y  │
+├─────┼───┼────┼────┼────┼────┤
+│ 1   │ 1 │ -1 │ -1 │ 1  │ 15 │
+│ 2   │ 1 │ 1  │ -1 │ -1 │ 45 │
+│ 3   │ 1 │ -1 │ 1  │ -1 │ 25 │
+│ 4   │ 1 │ 1  │ 1  │ 1  │ 75 │
+
+
+80
+#+end_example
