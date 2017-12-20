@@ -31,6 +31,7 @@ Pkg.add("StatsModels")
 Pkg.add("GLM")
 Pkg.add("RDatasets")
 Pkg.add("IterTools")
+Pkg.add("Missings")
 #+END_SRC
 
 #+RESULTS: install_julia_deps
@@ -4884,6 +4885,13 @@ in Julia with mockup responses, and attempt to follow
 the examples in Chapter 17 of Jain's book.
 
 ***** Section 17.3: Sign Table Method
+First, let's generate experiments for factors *A*, *B*, and their
+interaction *AB*, with response variable *Y* and identity column *I*.
+We are using the ~IterTools~ module for generating the combinations
+of factor values and the ~DataFrames~ module so we can use R-like
+data frame structures. The values for the response variable *Y*
+come from the example in Jain's book.
+
 #+HEADER: :results output :exports both :session *julia*
 #+BEGIN_SRC julia
 using DataFrames, IterTools
@@ -4895,8 +4903,14 @@ sign_table = DataFrame(I  = ones(combinations, Int),
                        AB = [p[1] * p[2] for p in combinations],
                        Y  = [15, 45, 25, 75])
 
+totals = [dot(sign_table[c], sign_table[:Y]) for c in
+             [n for n in names(sign_table)[1:end - 1]]]
 
-dot(sign_table[:A], sign_table[:Y]) 
+push!(totals, 0)
+push!(sign_table, totals)
+push!(sign_table, totals ./ 4)
+
+sign_table
 #+END_SRC
 
 #+RESULTS:
@@ -4916,6 +4930,29 @@ dot(sign_table[:A], sign_table[:Y])
 │ 3   │ 1 │ -1 │ 1  │ -1 │ 25 │
 │ 4   │ 1 │ 1  │ 1  │ 1  │ 75 │
 
+4-element Array{Int64,1}:
+ 160
+  80
+  40
+  20
 
-80
+5-element Array{Int64,1}:
+ 160
+  80
+  40
+  20
+   0
+
+
+
+6×5 DataFrames.DataFrame
+│ Row │ I   │ A  │ B  │ AB │ Y  │
+├─────┼─────┼────┼────┼────┼────┤
+│ 1   │ 1   │ -1 │ -1 │ 1  │ 15 │
+│ 2   │ 1   │ 1  │ -1 │ -1 │ 45 │
+│ 3   │ 1   │ -1 │ 1  │ -1 │ 25 │
+│ 4   │ 1   │ 1  │ 1  │ 1  │ 75 │
+│ 5   │ 160 │ 80 │ 40 │ 20 │ 0  │
+│ 6   │ 40  │ 20 │ 10 │ 5  │ 0  │
 #+end_example
+
