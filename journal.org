@@ -4870,3 +4870,10 @@ minimizing *MKS*, *Regs* and *DSP*.
     from incomplete experimental designs
   - Learn more about BOAST: install it, read the papers in the [[https://forge.imag.fr/projects/boast/][repository]]
 **** Reading Jain's The Art of Computer Systems Performance Analysis
+- 2^k Factorial Designs
+- 2^(k-p) Factorial Designs
+- Simple techniques for computing the impact of
+  each factor in the *variability* of each response.
+- Reading about Factorial Designs in Montgomery's book as well
+**** Checking [[http://prof.beuth-hochschule.de/groemping/software/versuchsplanung/][Ulrike Grömping]]'s R packages for Experimental Design
+- Downloaded FrF2 [[https://cran.r-project.org/web/packages/FrF2/index.html][source from CRAN]]
