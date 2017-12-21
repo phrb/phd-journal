@@ -4883,7 +4883,6 @@ minimizing *MKS*, *Regs* and *DSP*.
 Here I will generate some simple 2^k factorial designs
 in Julia with mockup responses, and attempt to follow
 the examples in Chapter 17 of Jain's book.
-
 ***** Section 17.3: Sign Table Method
 First, let's generate experiments for factors *A*, *B*, and their
 interaction *AB*, with response variable *Y* and identity column *I*.
@@ -4895,13 +4894,22 @@ come from the example in Jain's book.
 #+HEADER: :results output :exports both :session *julia*
 #+BEGIN_SRC julia
 using DataFrames, IterTools
-combinations = [p for p in product([-1, 1], [-1, 1])]
+
+factors = 2
+
+combinations = [p for p in product(repeat([[-1, 1]], inner = factors)...)]
+response     = [15, 45, 25, 75]
+
+factor_names = [:A, :B, :C]
+
+test = [s for s in product(repeat([factor_names], inner = length(factor_names))...)]
+test = sort([sort(t) for t in test])
 
 sign_table = DataFrame(I  = ones(combinations, Int),
                        A  = [p[1] for p in combinations],
                        B  = [p[2] for p in combinations],
                        AB = [p[1] * p[2] for p in combinations],
-                       Y  = [15, 45, 25, 75])
+                       Y  = response)
 
 totals = [dot(sign_table[c], sign_table[:Y]) for c in
              [n for n in names(sign_table)[1:end - 1]]]
@@ -4916,11 +4924,61 @@ sign_table
 #+RESULTS:
 #+begin_example
 
+
+2
+
 4-element Array{Tuple{Int64,Int64},1}:
  (-1, -1)
  (1, -1) 
  (-1, 1) 
  (1, 1)
+4-element Array{Int64,1}:
+ 15
+ 45
+ 25
+ 75
+
+3-element Array{Symbol,1}:
+ :A
+ :B
+ :C
+
+27-element Array{Tuple{Symbol,Symbol,Symbol},1}:
+ (:A, :A, :A)
+ (:B, :A, :A)
+ (:C, :A, :A)
+ (:A, :B, :A)
+ (:B, :B, :A)
+ (:C, :B, :A)
+ (:A, :C, :A)
+ (:B, :C, :A)
+ (:C, :C, :A)
+ (:A, :A, :B)
+ (:B, :A, :B)
+ (:C, :A, :B)
+ (:A, :B, :B)
+ (:B, :B, :B)
+ (:C, :B, :B)
+ (:A, :C, :B)
+ (:B, :C, :B)
+ (:C, :C, :B)
+ (:A, :A, :C)
+ (:B, :A, :C)
+ (:C, :A, :C)
+ (:A, :B, :C)
+ (:B, :B, :C)
+ (:C, :B, :C)
+ (:A, :C, :C)
+ (:B, :C, :C)
+ (:C, :C, :C)
+ERROR: MethodError: no method matching sort(::Tuple{Symbol,Symbol,Symbol})
+Closest candidates are:
+  sort(!Matched::AbstractUnitRange) at range.jl:842
+  sort(!Matched::Range) at range.jl:845
+  sort(!Matched::SparseVector{Tv,Ti}; kws...) where {Tv, Ti} at sparse/sparsevector.jl:1878
+  ...
+Stacktrace:
+ [1] collect(::Base.Generator{Array{Tuple{Symbol,Symbol,Symbol},1},Base.#sort}) at ./array.jl:475
 
 4×5 DataFrames.DataFrame
 │ Row │ I │ A  │ B  │ AB │ Y  │
@@ -4956,3 +5014,9 @@ sign_table
 │ 6   │ 40  │ 20 │ 10 │ 5  │ 0  │
 #+end_example
 
+*** [2017-12-21 Thu]
+**** Continue work on [[Generating 2^k Factorial Designs in Julia][Generating Designs in Julia]]
+**** Seminaire: François Tessier: TAPIOCA
+- Une bibliothèque d'agrégation de données pour les I/O
+  parallèles prenant en compte la topologie
+ 
