@@ -4483,7 +4483,8 @@ plot_uniques <- function(range, data) {
                                           by = 2)) +
           scale_y_continuous(breaks = seq(min(uniques$Parameters),
                                           max(uniques$Parameters),
-                                          by = 10))
+                                          by = 10),
+                             trans = "log")
 }
 
 get_parameters_with_values <- function(threshold, data) {
@@ -4758,10 +4759,6 @@ plot_3D_pareto <- function(data) {
 
 Attaching package: ‘dplyr’
 
-The following object is masked from ‘package:GGally’:
-
-    nasa
-
 The following objects are masked from ‘package:stats’:
 
     filter, lag
@@ -4769,6 +4766,12 @@ The following objects are masked from ‘package:stats’:
 The following objects are masked from ‘package:base’:
 
     intersect, setdiff, setequal, union
+
+Attaching package: ‘GGally’
+
+The following object is masked from ‘package:dplyr’:
+
+    nasa
 Loading required package: ggplot2
 
 Attaching package: ‘plotly’
@@ -4803,7 +4806,7 @@ experiments with other CHStone applications:
 #+BEGIN_SRC R
 library(GGally)
 
-application <- "aes"
+application <- "dfdiv"
 
 data <- load_data(application, experiments, c("WNS", "FMax", "Cycles"))
 
@@ -4811,7 +4814,7 @@ ggpairs(data, columns = tail(names(data), n = 7))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-857kci/figure857A9L.png]]
+[[file:/tmp/babel-19695p6/figure1969VfA.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4824,7 +4827,7 @@ plot_uniques(c(1:26), data)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-8816rvR/figure8816fBf.png]]
+[[file:/tmp/babel-19695p6/figure1969ipG.png]]
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
@@ -4894,16 +4897,10 @@ come from the example in Jain's book.
 #+HEADER: :results output :exports both :session *julia*
 #+BEGIN_SRC julia
 using DataFrames, IterTools
-
 factors = 2
+response = [15, 45, 25, 75]
 
 combinations = [p for p in product(repeat([[-1, 1]], inner = factors)...)]
-response     = [15, 45, 25, 75]
-
-factor_names = [:A, :B, :C]
-
-test = [s for s in product(repeat([factor_names], inner = length(factor_names))...)]
-test = sort([sort(t) for t in test])
 
 sign_table = DataFrame(I  = ones(combinations, Int),
                        A  = [p[1] for p in combinations],
@@ -4924,61 +4921,18 @@ sign_table
 #+RESULTS:
 #+begin_example
 
-
 2
-
-4-element Array{Tuple{Int64,Int64},1}:
- (-1, -1)
- (1, -1) 
- (-1, 1) 
- (1, 1)
 4-element Array{Int64,1}:
  15
  45
  25
  75
 
-3-element Array{Symbol,1}:
- :A
- :B
- :C
-
-27-element Array{Tuple{Symbol,Symbol,Symbol},1}:
- (:A, :A, :A)
- (:B, :A, :A)
- (:C, :A, :A)
- (:A, :B, :A)
- (:B, :B, :A)
- (:C, :B, :A)
- (:A, :C, :A)
- (:B, :C, :A)
- (:C, :C, :A)
- (:A, :A, :B)
- (:B, :A, :B)
- (:C, :A, :B)
- (:A, :B, :B)
- (:B, :B, :B)
- (:C, :B, :B)
- (:A, :C, :B)
- (:B, :C, :B)
- (:C, :C, :B)
- (:A, :A, :C)
- (:B, :A, :C)
- (:C, :A, :C)
- (:A, :B, :C)
- (:B, :B, :C)
- (:C, :B, :C)
- (:A, :C, :C)
- (:B, :C, :C)
- (:C, :C, :C)
-ERROR: MethodError: no method matching sort(::Tuple{Symbol,Symbol,Symbol})
-Closest candidates are:
-  sort(!Matched::AbstractUnitRange) at range.jl:842
-  sort(!Matched::Range) at range.jl:845
-  sort(!Matched::SparseVector{Tv,Ti}; kws...) where {Tv, Ti} at sparse/sparsevector.jl:1878
-  ...
-Stacktrace:
- [1] collect(::Base.Generator{Array{Tuple{Symbol,Symbol,Symbol},1},Base.#sort}) at ./array.jl:475
+4-element Array{Tuple{Int64,Int64},1}:
+ (-1, -1)
+ (1, -1) 
+ (-1, 1) 
+ (1, 1)
 
 4×5 DataFrames.DataFrame
 │ Row │ I │ A  │ B  │ AB │ Y  │
@@ -5015,8 +4969,8 @@ Stacktrace:
 #+end_example
 
 *** [2017-12-21 Thu]
-**** Continue work on [[Generating 2^k Factorial Designs in Julia][Generating Designs in Julia]]
+- Continue work on [[Generating 2^k Factorial Designs in Julia][Generating Designs in Julia]]
+- Arnaud's Lecture 2
 **** Seminaire: François Tessier: TAPIOCA
 - Une bibliothèque d'agrégation de données pour les I/O
   parallèles prenant en compte la topologie
- 
