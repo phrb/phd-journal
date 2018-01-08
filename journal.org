@@ -4974,3 +4974,11 @@ sign_table
 **** Seminaire: François Tessier: TAPIOCA
 - Une bibliothèque d'agrégation de données pour les I/O
   parallèles prenant en compte la topologie
+* 2018
+** January
+*** [2018-01-08 Mon]
+- Complete ADUM Registration
+  - Print documents needed to complete MSTII registration
+- Update CAF documents on website
+*** Reading the [[/home/phrb/code/boast/Paper2/BOAST.pdf][BOAST paper]]
+- [[file:~/Dropbox/papers/autotuning/castro2013adaptive.pdf][Castro's]] adaptive sampling approach
