@@ -4980,5 +4980,16 @@ sign_table
 - Complete ADUM Registration
   - Print documents needed to complete MSTII registration
 - Update CAF documents on website
-*** Reading the [[/home/phrb/code/boast/Paper2/BOAST.pdf][BOAST paper]]
+**** Reading the [[/home/phrb/code/boast/Paper2/BOAST.pdf][BOAST paper]]
 - [[file:~/Dropbox/papers/autotuning/castro2013adaptive.pdf][Castro's]] adaptive sampling approach
+*** [2018-01-09 Tue]
+**** Reading [[file:~/Dropbox/papers/autotuning/castro2013adaptive.pdf][Castro's]] adaptive sampling paper
+- Compares space-filling and adaptive sampling strategies
+**** Installing BOAST
+- Got an error from the =gem= installed version, complaining of
+  an undefined method called =make_tmpname=
+- Downloaded the code and commented some lines that undefined this method before 
+  redefining it inside a class. This could have happened because of my Ruby version.
+  - Ruby version: =2.5.0p0=
+  - Commented lines 12 and 15 of =CompiledRuntime.rb=
+- README example now works
