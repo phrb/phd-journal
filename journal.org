@@ -4993,3 +4993,17 @@ sign_table
   - Ruby version: =2.5.0p0=
   - Commented lines 12 and 15 of =CompiledRuntime.rb=
 - README example now works
+*** [2018-01-11 Thu]
+- Write two paragraphs on High-Level Synthesis for Alfredo's project
+**** LIG Keynote: Adaptive Resource Management for Next Generation Systems
+- Presenter: Martin Schulz
+- Rising complexity of architectures and applications
+  - Parallellism with programming models
+  - Incresing faults
+  - Energy levels
+- Tradeoff Performance vs. Energy
+  - Unnaceptable for HPC developers
+- Adagio Runtime
+- Is energy minimization the right objective?
+- Conductor
+- Intel GEOPM
