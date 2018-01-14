@@ -5007,3 +5007,5 @@ sign_table
 - Is energy minimization the right objective?
 - Conductor
 - Intel GEOPM
+**** Discussion with Steven
+- 
