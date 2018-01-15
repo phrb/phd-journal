@@ -5008,4 +5008,56 @@ sign_table
 - Conductor
 - Intel GEOPM
 **** Discussion with Steven
-- 
+- I presented him the FPGA experiments and what we have been doing so far
+- Steven shared his [[https://github.com/swhatelse/M2_internship][M2 journal]] repository so I can get implementation
+  details
+- He mentioned one of the things we wanted to try in his work
+  but did not have time to were [[https://en.wikipedia.org/wiki/Optimal_design][optimal designs]], specifically
+  D-optimal designs
+*** [2018-01-15 Mon]
+**** Some test functions for optimization
+*Objective*: write simple test functions for comparing different experimental
+designs in a setting restricted to a budget of point evaluations.
+
+#+HEADER: :session *julia*
+#+HEADER: :results output :exports both
+#+BEGIN_SRC julia
+function sphere(values::Array{Float64, 1})
+    sum(v * v for v in values)
+end
+
+# Warm-up
+sphere(zeros(8))
+
+@time sphere(zeros(8))
+
+function rosenbrock(values::Array{Float64, 1})
+    sum([(100 * ((values[i + 1] - (values[i] ^ 2)) ^ 2)) + ((values[i] - 1) ^ 2) for i = 1:length(values) - 1])
+end
+
+# Warm-up
+rosenbrock(ones(8))
+
+@time rosenbrock(ones(8))
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+sphere (generic function with 2 methods)
+
+
+0.0
+
+  0.000005 seconds (9 allocations: 368 bytes)
+0.0
+
+rosenbrock (generic function with 1 method)
+
+
+0.0
+
+  0.000004 seconds (9 allocations: 512 bytes)
+0.0
+#+end_example
+
