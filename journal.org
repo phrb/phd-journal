@@ -5061,3 +5061,20 @@ rosenbrock (generic function with 1 method)
 0.0
 #+end_example
 
+Comparing Experimental Designs:
+
+- Select test function
+- Fix number of factors
+- Select factor limits
+- Fix budget of point evaluations
+  - Expensive-to-evaluate condition
+- Select an Experimental Design
+  - Full Factorial
+  - Fractional
+  - Optimal?
+  - ...
+- Perform experiments
+  - Save data such as:
+    - Time to complete
+    - Points evaluated
+    - Computed effects
