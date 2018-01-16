@@ -5141,8 +5141,6 @@ d1 <- add.response(d1, response, replace = TRUE)
 d1_aov <- aov(response ~ . + .^2, data = d1)
 
 summary(d1_aov)
-
-
 #+END_SRC
 
 #+RESULTS:
@@ -5173,3 +5171,75 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 This only works for factorial designs where factors have
 only 2 levels. The [[http://www1.beuth-hochschule.de/FB_II/reports/Report-2016-001.pdf][documentation]] of the =DoE.base= package
 shows how general factorial designs can be generated in =R=.
+
+#+HEADER: :session *R*
+#+HEADER: :results output :exports both
+#+BEGIN_SRC R
+library(DoE.base)
+
+map_interval <- function(interval, value) {
+    # Map [interval[1], interval[2]] to [-1, 1]
+    return(((value - interval[1]) * (2/(interval[2] - interval[1]))) - 1)
+}
+
+factors = 4
+runs = 2 ** factors
+
+levels = 10
+
+d1 <- fac.design(nlevels = rep(levels, factors), blocks = 1)
+
+absolute_limits <- rep(1.0, factors) * 3
+
+# Mapping [1, 2] -> [-1, 1]
+response <- sapply(1:length(d1$A), function (x) rosenbrock(absolute_limits * map_interval(c(1, levels), as.numeric(d1[x,]))))
+d1 <- add.response(d1, response, replace = TRUE)
+d1_aov <- aov(response ~ . + .^2, data = d1)
+#+END_SRC
+
+#+HEADER: :session *R*
+#+HEADER: :results output :exports both
+#+BEGIN_SRC R
+summary(d1_aov)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+              Df    Sum Sq   Mean Sq   F value Pr(>F)    
+A              9 9.320e+10 1.036e+10 4.618e+29 <2e-16 ***
+B              9 1.331e+11 1.479e+10 6.595e+29 <2e-16 ***
+C              9 1.331e+11 1.479e+10 6.595e+29 <2e-16 ***
+D              9 2.076e+10 2.307e+09 1.029e+29 <2e-16 ***
+A:B           81 1.530e+10 1.888e+08 8.422e+27 <2e-16 ***
+A:C           81 0.000e+00 0.000e+00 9.750e-01 0.5425    
+A:D           81 0.000e+00 0.000e+00 1.392e+00 0.0117 *  
+B:C           81 1.530e+10 1.888e+08 8.422e+27 <2e-16 ***
+B:D           81 0.000e+00 0.000e+00 9.340e-01 0.6474    
+C:D           81 1.530e+10 1.888e+08 8.422e+27 <2e-16 ***
+Residuals   9477 0.000e+00 0.000e+00                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+**** Meeting with HPE PUMA Team
+- This meeting will focus on DNN training and writes on PUMA
+- Aayush and John Paul are going to present and share their slides
+- John Paul presented work and questions related to PUMA writes
+  - He will share the paper he mentioned via e-mail
+***** DNN Training on PUMA
+- Aayush discussed possible changes to PUMA's architecture and instructions in
+  order to support training
+- His [[file:~/Dropbox/HPE_PUMA/dnn_training_slide1.pdf][short presentation]]
+***** Next Steps to MICRA
+- Aayush:
+  - Survey on enabling training on other architectures
+- Izzat:
+  - Collaborate with Aayush to understand how the advances to
+    enable training found on the literature could be applied to
+    the compiler software
+  - There is already a related work section on the Wiki,
+    linking to a spreadsheet with all read work
+  - Make a special spreadsheet for memristors
+- Dejan:
+  - Put the literature review on the Wiki so others can get up to
+    speed
