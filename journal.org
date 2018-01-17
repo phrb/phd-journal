@@ -5091,10 +5091,11 @@ using test functions for mathematical optimizaion for now.
 - Fix budget of point evaluations
   - Expensive-to-evaluate condition
 - Select an Experimental Design
-  - Full Factorial
-  - Fractional
-  - Optimal?
-  - ...
+  - Full & Fractional 2-Factor Factorial
+  - Full & Fractional Multi-Factor Factorial
+  - D-Optimal
+  - Screening + Response Surface Methods
+  - 2-Factor Factorial with Random Factors
 - Perform experiments
   - Save data such as:
     - Time to complete
@@ -5243,3 +5244,151 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 - Dejan:
   - Put the literature review on the Wiki so others can get up to
     speed
+*** [2018-01-17 Wed]
+**** Comparing General Factorial Experimental Designs in R
+The [[http://www1.beuth-hochschule.de/FB_II/reports/Report-2016-001.pdf][documentation]] of the =DoE.base= package shows how general factorial designs
+can be generated in =R=.
+
+Defining Rosenbrock:
+#+CALL: define_optimization_test_functions_R()
+
+#+RESULTS:
+
+Improve mapping function map arbitrary intervals:
+
+#+HEADER: :session *R*
+#+HEADER: :results output :exports both
+#+BEGIN_SRC R
+library(DoE.base)
+
+map_intervals <- function(interval_a, interval_b, value_a) {
+    return(((value_a - interval_a[1]) * ((interval_b[2] - interval_b[1]) / (interval_a[2] - interval_a[1]))) + interval_b[1])
+}
+
+factors = 2
+runs = 2 ** factors
+
+levels = 16
+
+d1 <- fac.design(nlevels = rep(levels, factors), blocks = 1)
+
+summary(d1)
+
+limits <- c(1.05, 0.95)
+
+response <- sapply(1:length(d1$A), function (x) rosenbrock(map_intervals(c(1, levels), limits, as.numeric(d1[x,]))))
+d1 <- add.response(d1, response, replace = TRUE)
+d1_aov <- aov(response ~ ., data = d1)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+creating full factorial with 256 runs ...
+Call:
+fac.design(nlevels = rep(levels, factors), blocks = 1)
+
+Experimental design of type  full factorial 
+256  runs
+
+Factor settings (scale ends):
+    A  B
+1   1  1
+2   2  2
+3   3  3
+4   4  4
+5   5  5
+6   6  6
+7   7  7
+8   8  8
+9   9  9
+10 10 10
+11 11 11
+12 12 12
+13 13 13
+14 14 14
+15 15 15
+16 16 16
+#+end_example
+
+Main effects plot:
+
+#+HEADER: :session *R*
+#+HEADER: :results output graphics :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+plot(d1)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-9460ux/figure946BfK.png]]
+
+#+HEADER: :session *R*
+#+HEADER: :results output :exports both
+#+BEGIN_SRC R
+summary.lm(d1_aov)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Call:
+aov.default(formula = response ~ ., data = d1)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.0156 -0.2033  0.0000  0.2033  1.0156 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  4.733e-01  2.519e-02  18.792   <2e-16 ***
+A.L         -8.315e-02  1.008e-01  -0.825    0.410    
+A.Q          1.348e+00  1.008e-01  13.377   <2e-16 ***
+A.C         -3.569e-02  1.008e-01  -0.354    0.723    
+A^4          2.322e-04  1.008e-01   0.002    0.998    
+A^5          3.074e-16  1.008e-01   0.000    1.000    
+A^6         -1.632e-15  1.008e-01   0.000    1.000    
+A^7          2.770e-15  1.008e-01   0.000    1.000    
+A^8         -2.388e-15  1.008e-01   0.000    1.000    
+A^9          3.599e-15  1.008e-01   0.000    1.000    
+A^10        -1.758e-15  1.008e-01   0.000    1.000    
+A^11         8.807e-16  1.008e-01   0.000    1.000    
+A^12         2.862e-17  1.008e-01   0.000    1.000    
+A^13        -1.445e-15  1.008e-01   0.000    1.000    
+A^14         4.339e-16  1.008e-01   0.000    1.000    
+A^15        -2.182e-16  1.008e-01   0.000    1.000    
+B.L          2.322e-02  1.008e-01   0.230    0.818    
+B.Q          3.359e-01  1.008e-01   3.334    0.001 ** 
+B.C         -1.249e-16  1.008e-01   0.000    1.000    
+B^4          1.110e-16  1.008e-01   0.000    1.000    
+B^5         -9.021e-17  1.008e-01   0.000    1.000    
+B^6         -1.024e-16  1.008e-01   0.000    1.000    
+B^7          4.025e-16  1.008e-01   0.000    1.000    
+B^8         -2.637e-16  1.008e-01   0.000    1.000    
+B^9          6.939e-16  1.008e-01   0.000    1.000    
+B^10        -2.498e-16  1.008e-01   0.000    1.000    
+B^11         5.551e-16  1.008e-01   0.000    1.000    
+B^12        -1.665e-16  1.008e-01   0.000    1.000    
+B^13        -2.810e-16  1.008e-01   0.000    1.000    
+B^14         3.747e-16  1.008e-01   0.000    1.000    
+B^15        -3.469e-16  1.008e-01   0.000    1.000    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.403 on 225 degrees of freedom
+Multiple R-squared:  0.459,	Adjusted R-squared:  0.3869 
+F-statistic: 6.364 on 30 and 225 DF,  p-value: < 2.2e-16
+#+end_example
+**** Questions on Experimental Designs
+- Can we get anything from trying to fit linear models
+  to potentially non-linear relationships?
+- Is it possible to compare multiple 2-level factorial
+  experimental designs in different intervals with a single
+  multi-level experimental design? Is it possible to combine
+  multiple 2-level factorial experimental designs?
+- How to generate and analyse 2-Factor Factorial with Random Factor designs?
+  - Look at the =lme4= =R= [[https://cran.r-project.org/web/packages/lme4/lme4.pdf][package documentation]]
+- How to effectively combine Screening and Response Surface Designs?
+- How to implement RSM?
+  - Look at the =rsm= =R= [[https://cran.r-project.org/web/packages/rsm/rsm.pdf][package documentation]]
+  
