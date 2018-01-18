@@ -5456,3 +5456,20 @@ F-statistic: 6.364 on 30 and 225 DF,  p-value: < 2.2e-16
   - Annotate starting and ending points for each scenario
 ***** Todo
 - Generate and run screening design with HLS in FPGA CHStone applications
+*** [2018-01-18 Thu]
+- Mandatory EDMSTII 1st year PhD Half-day Event
+**** Plackett-Burman Designs
+- What is the difference between a Hadamard Matrix and a Plackett-Burman design?
+
+#+HEADER: :session *R*
+#+HEADER: :results output
+#+BEGIN_SRC R
+library(FrF2)
+
+pb(104)
+
+#+END_SRC
+
+#+RESULTS:
+: Error in pb.list[[2]][[which(pb.list[[1]] == nruns)]] : 
+:   attempt to select less than one element in get1index
