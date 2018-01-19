@@ -6422,3 +6422,40 @@ Error in pb.list[[2]][[which(pb.list[[1]] == nruns)]] :
 128    1    1   -1   -1    1    1   -1   -1    1    1   -1   -1    1    1   -1
 class=design, type= FrF2
 #+end_example
+*** [2018-01-19 Fri]
+**** Screening & Fractional Factorial Designs
+From [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's book]], at page 321:
+
+The successful use of fractional factorial designs is based on three key ideas:
+
+1. The sparsity of effects principle. When there are several variables, the system or
+process is likely to be driven primarily by some of the main effects and low-order
+interactions.
+2. The projection property. Fractional factorial designs can be projected into stronger
+(larger) designs in the subset of significant factors.
+3. Sequential experimentation. It is possible to combine the runs of two (or more)
+fractional factorials to construct sequentially a larger design to estimate the factor
+effects and interactions of interest.
+***** Generating Fractional Factorial Designs in R
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(FrF2)
+
+factors = 7
+
+design = FrF2(nfactors = factors, nruns = factors + 1, randomize = FALSE)
+
+((sapply(as.data.frame(design), as.numeric) - 1) / 2) - 1
+
+#+END_SRC
+
+#+RESULTS:
+:         A    B    C    D    E    F    G
+: [1,] -1.0 -1.0 -1.0 -0.5 -0.5 -0.5 -1.0
+: [2,] -0.5 -1.0 -1.0 -1.0 -1.0 -0.5 -0.5
+: [3,] -1.0 -0.5 -1.0 -1.0 -0.5 -1.0 -0.5
+: [4,] -0.5 -0.5 -1.0 -0.5 -1.0 -1.0 -1.0
+: [5,] -1.0 -1.0 -0.5 -0.5 -1.0 -1.0 -0.5
+: [6,] -0.5 -1.0 -0.5 -1.0 -0.5 -1.0 -1.0
+: [7,] -1.0 -0.5 -0.5 -1.0 -1.0 -0.5 -1.0
+: [8,] -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5
