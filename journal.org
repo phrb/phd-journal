@@ -6436,26 +6436,21 @@ interactions.
 3. Sequential experimentation. It is possible to combine the runs of two (or more)
 fractional factorials to construct sequentially a larger design to estimate the factor
 effects and interactions of interest.
-***** Generating Fractional Factorial Designs in R
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-library(FrF2)
+**** Plackett-Burman, Hadamard & Skew Hadamard Matrices
+Plackett-Burman designs are generated using the
+[[https://en.wikipedia.org/wiki/Paley_construction][Paley construction]], which generates [[https://en.wikipedia.org/wiki/Hadamard_matrix][Hadamard matrices]]
+of size =N=, where =N= is a multiple of 4. For experiments
+with number of runs which are *powers of two*, Plackett-Burman
+designs are equivalent to *fractional factorial designs*.
 
-factors = 7
+The Paley construction generates [[https://en.wikipedia.org/wiki/Hadamard_matrix#Skew_Hadamard_matrices][skew Hadamard matrices]] for sizes
+=N= when =N - 1= is a multiple of 4.
 
-design = FrF2(nfactors = factors, nruns = factors + 1, randomize = FALSE)
+**** Generating "arbitrary" Hadamard Matrices
+- Look at the =survey= R [[https://cran.r-project.org/web/packages/survey/index.html][package]]
+  - The =paley= function generates Hadamard matrices
+    for primes =p= where =p - 1= is a multiple of 4. Now, it is necessary to
+    find out exactly how generate a Plackett-Burman design from a Hadamard
+    matrix built with the Paley construction.
+    
 
-((sapply(as.data.frame(design), as.numeric) - 1) / 2) - 1
-
-#+END_SRC
-
-#+RESULTS:
-:         A    B    C    D    E    F    G
-: [1,] -1.0 -1.0 -1.0 -0.5 -0.5 -0.5 -1.0
-: [2,] -0.5 -1.0 -1.0 -1.0 -1.0 -0.5 -0.5
-: [3,] -1.0 -0.5 -1.0 -1.0 -0.5 -1.0 -0.5
-: [4,] -0.5 -0.5 -1.0 -0.5 -1.0 -1.0 -1.0
-: [5,] -1.0 -1.0 -0.5 -0.5 -1.0 -1.0 -0.5
-: [6,] -0.5 -1.0 -0.5 -1.0 -0.5 -1.0 -1.0
-: [7,] -1.0 -0.5 -0.5 -1.0 -1.0 -0.5 -1.0
-: [8,] -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5
