@@ -6456,14 +6456,32 @@ The Paley construction generates [[https://en.wikipedia.org/wiki/Hadamard_matrix
 The =survey= [[https://cran.r-project.org/web/packages/survey/index.html][package]] provides a function for generating
 Hadamard matrices using the Paley construction. To obtain
 the Plackett-Burman design from a Hadamard matrix built using
-the Paley construction, 
+the Paley construction, we can remove the first row and rotate
+the matrix, or simply remove the first column.
 
+To check if a given design is a Plackett-Burman design,
+we will check for the following properties, obtained in
+the [[file:~/Dropbox/papers/design-of-experiments/plackett1946design.pdf][original Plackett-Burman paper]]:
 
+1. Each component is replicated at each of its values the
+   same number of times
+   - That is, the sum of elements in each column is zero
+2. Each pair of components occur together at every
+   combination of values the same number of times
+   - That is, the sum of each pair of columns will produce
+     a column with the same number of occurrences of =2= and
+     =-2=, and twice that number of occurrences of =0=
+3. The number of assemblies is divisible by the
+   square of the number of values
+   - This is guaranteed by the construction of the matrices,
+     which generates matrices with sizes multiple of 4
+
+We define the =is_plackett_burman= function to check these
+properties:
+
+#+NAME: define_is_plackett_burman
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-library(survey)
-library(FrF2)
-
 is_plackett_burman <- function(design) {
     sums <- c()
     for (column in names(design)) {
@@ -6494,76 +6512,91 @@ is_plackett_burman <- function(design) {
     }
     return(TRUE)
 }
+#+END_SRC
 
-is_plackett_burman
+#+RESULTS: define_is_plackett_burman
 
+Let's now check if generating a Plackett-Burman design by
+first generating a Hadamard matrix with the Paley construction
+obeys those properties. We will start with an experiment of 20 runs
+for 19 factors, and we will use =FrF2= as a sanity check:
 
-design <- pb(nruns = 12, randomize = FALSE)
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(survey)
+library(FrF2)
+
+design <- pb(nruns = 20, randomize = FALSE)
+design <- as.data.frame(design)
+design <- as.data.frame(lapply(design, function(x) as.numeric(as.character(x))))
 
 is_plackett_burman(design)
+dim(design)
 
-rotate <- function(x) t(apply(x, 2, rev))
-
-hadamard <- paley(prime = 11)[,-1]
-
+hadamard <- paley(prime = 19)[,-1]
 hadamard <- (2 * hadamard) - 1
-
 design <- as.data.frame(hadamard)
 
+is_plackett_burman(design)
+dim(design)
+#+END_SRC
+
+#+RESULTS:
+: [1] TRUE
+: [1] 20 19
+: [1] TRUE
+: [1] 20 19
+
+Now, note that =pb= also does not work for ~nruns = 4~, and
+that we can generate such a design using this method:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+design <- pb(nruns = 4, randomize = FALSE)
+#+END_SRC
+
+#+RESULTS:
+: Error in pb.list[[2]][[which(pb.list[[1]] == nruns)]] : 
+:   attempt to select less than one element in get1index
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+hadamard <- paley(prime = 3)[,-1]
+hadamard <- (2 * hadamard) - 1
+design <- as.data.frame(hadamard)
+
+is_plackett_burman(design)
 design
+#+END_SRC
+
+#+RESULTS:
+: [1] TRUE
+:   V1 V2 V3
+: 1  1  1  1
+: 2 -1 -1  1
+: 3 -1  1 -1
+: 4  1 -1 -1
+
+This method matches the Plackett-Burman design of size 4
+presented at the [[https://en.wikipedia.org/wiki/Plackett%25E2%2580%2593Burman_design][Wikipedia article]], albeit unsorted.
+
+With this method we can also generate screening designs for up to
+7919 factors using the =survey= package, or for as many factors as
+we want, provided we implement our own version of the code and find
+larger primes ~p~ such that ~(p + 1) % 4 == 0~.
+
+Unfortunately, I was not able to finish the run for 7919 factors.
+Maybe the algorithm is inneficient, maybe it is possible to improve it.
+For now, we can generate -- slowly -- the design for our 128 factors:
+
+#+HEADER: :output results :session *R*
+#+BEGIN_SRC R
+hadamard <- paley(prime = 131)[,-1]
+hadamard <- (2 * hadamard) - 1
+design <- as.data.frame(hadamard)
 
 is_plackett_burman(design)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-function(design) {
-    sums <- c()
-    for (column in names(design)) {
-        sums <- c(sums, sum(design[column]))
-    }
-
-    if (sum(sums) != 0) {
-        return(FALSE)
-    }
-
-    names_d <- names(design)
-    pairs <- data.frame()
-
-    for (column in names(design)) {
-        combinations <- names_d[names_d != column]
-
-        for (combination in combinations) {
-
-            sums <- design[column] + design[combination]
-            counts <- as.data.frame(table(sums))
-
-            if ((dim(counts)[1] != 3) ||
-               (counts[1, "Freq"] != counts[3, "Freq"]) ||
-               (counts[1, "Freq"] != counts[2, "Freq"] / 2)) {
-                return(FALSE)
-            }
-        }
-    }
-    return(TRUE)
-}
-Error in FUN(X[[i]], ...) : 
-  only defined on a data frame with all numeric variables
-In addition: Warning messages:
-1: In 1:nrow(x) %in% as.numeric(names(tab)) : NAs introduced by coercion
-2: In as.numeric(names(tab)) %in% 1:nrow(x) : NAs introduced by coercion
-   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
-1   1  1  1  1  1  1  1  1  1   1   1
-2  -1 -1  1 -1 -1 -1  1  1  1  -1   1
-3  -1  1 -1 -1 -1  1  1  1 -1   1  -1
-4   1 -1 -1 -1  1  1  1 -1  1  -1  -1
-5  -1 -1 -1  1  1  1 -1  1 -1  -1   1
-6  -1 -1  1  1  1 -1  1 -1 -1   1  -1
-7  -1  1  1  1 -1  1 -1 -1  1  -1  -1
-8   1  1  1 -1  1 -1 -1  1 -1  -1  -1
-9   1  1 -1  1 -1 -1  1 -1 -1  -1   1
-10  1 -1  1 -1 -1  1 -1 -1 -1   1   1
-11 -1  1 -1 -1  1 -1 -1 -1  1   1   1
-12  1 -1 -1  1 -1 -1 -1  1  1   1  -1
-[1] TRUE
-#+end_example
+: TRUE
