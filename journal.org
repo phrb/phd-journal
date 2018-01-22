@@ -6445,12 +6445,125 @@ designs are equivalent to *fractional factorial designs*.
 
 The Paley construction generates [[https://en.wikipedia.org/wiki/Hadamard_matrix#Skew_Hadamard_matrices][skew Hadamard matrices]] for sizes
 =N= when =N - 1= is a multiple of 4.
-
 **** Generating "arbitrary" Hadamard Matrices
 - Look at the =survey= R [[https://cran.r-project.org/web/packages/survey/index.html][package]]
   - The =paley= function generates Hadamard matrices
     for primes =p= where =p - 1= is a multiple of 4. Now, it is necessary to
     find out exactly how generate a Plackett-Burman design from a Hadamard
     matrix built with the Paley construction.
-    
+*** [2018-01-22 Mon]
+**** Generating Plackett-Burman Designs with =survey=
+The =survey= [[https://cran.r-project.org/web/packages/survey/index.html][package]] provides a function for generating
+Hadamard matrices using the Paley construction. To obtain
+the Plackett-Burman design from a Hadamard matrix built using
+the Paley construction, 
 
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(survey)
+library(FrF2)
+
+is_plackett_burman <- function(design) {
+    sums <- c()
+    for (column in names(design)) {
+        sums <- c(sums, sum(design[column]))
+    }
+
+    if (sum(sums) != 0) {
+        return(FALSE)
+    }
+
+    names_d <- names(design)
+    pairs <- data.frame()
+
+    for (column in names(design)) {
+        combinations <- names_d[names_d != column]
+
+        for (combination in combinations) {
+
+            sums <- design[column] + design[combination]
+            counts <- as.data.frame(table(sums))
+
+            if ((dim(counts)[1] != 3) ||
+               (counts[1, "Freq"] != counts[3, "Freq"]) ||
+               (counts[1, "Freq"] != counts[2, "Freq"] / 2)) {
+                return(FALSE)
+            }
+        }
+    }
+    return(TRUE)
+}
+
+is_plackett_burman
+
+
+design <- pb(nruns = 12, randomize = FALSE)
+
+is_plackett_burman(design)
+
+rotate <- function(x) t(apply(x, 2, rev))
+
+hadamard <- paley(prime = 11)[,-1]
+
+hadamard <- (2 * hadamard) - 1
+
+design <- as.data.frame(hadamard)
+
+design
+
+is_plackett_burman(design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+function(design) {
+    sums <- c()
+    for (column in names(design)) {
+        sums <- c(sums, sum(design[column]))
+    }
+
+    if (sum(sums) != 0) {
+        return(FALSE)
+    }
+
+    names_d <- names(design)
+    pairs <- data.frame()
+
+    for (column in names(design)) {
+        combinations <- names_d[names_d != column]
+
+        for (combination in combinations) {
+
+            sums <- design[column] + design[combination]
+            counts <- as.data.frame(table(sums))
+
+            if ((dim(counts)[1] != 3) ||
+               (counts[1, "Freq"] != counts[3, "Freq"]) ||
+               (counts[1, "Freq"] != counts[2, "Freq"] / 2)) {
+                return(FALSE)
+            }
+        }
+    }
+    return(TRUE)
+}
+Error in FUN(X[[i]], ...) : 
+  only defined on a data frame with all numeric variables
+In addition: Warning messages:
+1: In 1:nrow(x) %in% as.numeric(names(tab)) : NAs introduced by coercion
+2: In as.numeric(names(tab)) %in% 1:nrow(x) : NAs introduced by coercion
+   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+1   1  1  1  1  1  1  1  1  1   1   1
+2  -1 -1  1 -1 -1 -1  1  1  1  -1   1
+3  -1  1 -1 -1 -1  1  1  1 -1   1  -1
+4   1 -1 -1 -1  1  1  1 -1  1  -1  -1
+5  -1 -1 -1  1  1  1 -1  1 -1  -1   1
+6  -1 -1  1  1  1 -1  1 -1 -1   1  -1
+7  -1  1  1  1 -1  1 -1 -1  1  -1  -1
+8   1  1  1 -1  1 -1 -1  1 -1  -1  -1
+9   1  1 -1  1 -1 -1  1 -1 -1  -1   1
+10  1 -1  1 -1 -1  1 -1 -1 -1   1   1
+11 -1  1 -1 -1  1 -1 -1 -1  1   1   1
+12  1 -1 -1  1 -1 -1 -1  1  1   1  -1
+[1] TRUE
+#+end_example
