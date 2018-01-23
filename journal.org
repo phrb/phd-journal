@@ -6521,7 +6521,7 @@ first generating a Hadamard matrix with the Paley construction
 obeys those properties. We will start with an experiment of 20 runs
 for 19 factors, and we will use =FrF2= as a sanity check:
 
-#+HEADER: :results output :session *R*
+#+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
 library(survey)
 library(FrF2)
@@ -6550,7 +6550,7 @@ dim(design)
 Now, note that =pb= also does not work for ~nruns = 4~, and
 that we can generate such a design using this method:
 
-#+HEADER: :results output :session *R*
+#+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
 design <- pb(nruns = 4, randomize = FALSE)
 #+END_SRC
@@ -6559,7 +6559,7 @@ design <- pb(nruns = 4, randomize = FALSE)
 : Error in pb.list[[2]][[which(pb.list[[1]] == nruns)]] : 
 :   attempt to select less than one element in get1index
 
-#+HEADER: :results output :session *R*
+#+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
 hadamard <- paley(prime = 3)[,-1]
 hadamard <- (2 * hadamard) - 1
@@ -6587,16 +6587,444 @@ larger primes ~p~ such that ~(p + 1) % 4 == 0~.
 
 Unfortunately, I was not able to finish the run for 7919 factors.
 Maybe the algorithm is inneficient, maybe it is possible to improve it.
-For now, we can generate -- slowly -- the design for our 128 factors:
+For now, we can generate and check -- slowly -- the design
+for our 128 factors:
 
-#+HEADER: :output results :session *R*
+#+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
-hadamard <- paley(prime = 131)[,-1]
-hadamard <- (2 * hadamard) - 1
-design <- as.data.frame(hadamard)
+system.time(hadamard <- paley(prime = 131)[,-1])
+system.time(hadamard <- (2 * hadamard) - 1)
+system.time(design <- as.data.frame(hadamard))
 
-is_plackett_burman(design)
+system.time(is_plackett_burman(design))
 #+END_SRC
 
 #+RESULTS:
-: TRUE
+:    user  system elapsed 
+:   0.004   0.000   0.004
+:    user  system elapsed 
+:       0       0       0
+:    user  system elapsed 
+:   0.000   0.000   0.001
+:    user  system elapsed 
+:  13.221   0.000  13.222
+
+As noted by Arnaud, the =is_plackett_burman= function is the responsible for
+this massive slowdown, and the generation is actually fast:
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+system.time(hadamard <- paley(prime = 131)[,-1])
+system.time(hadamard <- (2 * hadamard) - 1)
+system.time(design <- as.data.frame(hadamard))
+#+END_SRC
+
+#+RESULTS:
+:    user  system elapsed 
+:   0.003   0.000   0.003
+:    user  system elapsed 
+:       0       0       0
+:    user  system elapsed 
+:   0.000   0.000   0.001
+
+*** [2018-01-23 Tue]
+**** Generating Primes where ~(p + 1) % 4 == 0~
+Simply generating primes is pretty fast:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using Primes
+
+function compute_primes()
+    @time prime_list = primes(7920)
+end
+
+compute_primes()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+compute_primes (generic function with 1 method)
+
+  0.000028 seconds (4 allocations: 10.375 KiB)
+1000-element Array{Int64,1}:
+    2
+    3
+    5
+    7
+   11
+   13
+   17
+   19
+   23
+   29
+   31
+   37
+   41
+   43
+   47
+   53
+   59
+   61
+   67
+   71
+   73
+   79
+   83
+    ⋮
+ 7703
+ 7717
+ 7723
+ 7727
+ 7741
+ 7753
+ 7757
+ 7759
+ 7789
+ 7793
+ 7817
+ 7823
+ 7829
+ 7841
+ 7853
+ 7867
+ 7873
+ 7877
+ 7879
+ 7883
+ 7901
+ 7907
+ 7919
+#+end_example
+
+I selected 7920 because 7919 is the largest prime the ~paley~ function
+from ~survey~ has precomputed.
+
+Let's implement the naive way to find all primes ~p~
+where ~(p + 1) % 4 == 0~:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+@time selected_primes = [p for p in primes(7920) if (p + 1) % 4 == 0]
+
+selected_primes
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  0.052702 seconds (20.29 k allocations: 1.133 MiB)
+504-element Array{Int64,1}:
+    3
+    7
+   11
+   19
+   23
+   31
+   43
+   47
+   59
+   67
+   71
+   79
+   83
+  103
+  107
+  127
+  131
+  139
+  151
+  163
+  167
+  179
+  191
+    ⋮
+ 7507
+ 7523
+ 7547
+ 7559
+ 7583
+ 7591
+ 7603
+ 7607
+ 7639
+ 7643
+ 7687
+ 7691
+ 7699
+ 7703
+ 7723
+ 7727
+ 7759
+ 7823
+ 7867
+ 7879
+ 7883
+ 7907
+ 7919
+
+504-element Array{Int64,1}:
+    3
+    7
+   11
+   19
+   23
+   31
+   43
+   47
+   59
+   67
+   71
+   79
+   83
+  103
+  107
+  127
+  131
+  139
+  151
+  163
+  167
+  179
+  191
+    ⋮
+ 7507
+ 7523
+ 7547
+ 7559
+ 7583
+ 7591
+ 7603
+ 7607
+ 7639
+ 7643
+ 7687
+ 7691
+ 7699
+ 7703
+ 7723
+ 7727
+ 7759
+ 7823
+ 7867
+ 7879
+ 7883
+ 7907
+ 7919
+#+end_example
+
+Trying to improve the performance, we will first get rid of the global
+variables. This gives us a ~2x speedup. Note that the number of
+allocations is still pretty high:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function first_primes_divisible_offset(factor::Int,
+                                       max_prime::Int,
+                                       offset::Int = 1)
+    [p for p in primes(max_prime) if (p + offset) % factor == 0]                                
+end
+
+function compute_primes()
+    @time new_selected_primes = first_primes_divisible_offset(4, 7920)
+end
+
+compute_primes()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+first_primes_divisible_offset (generic function with 2 methods)
+
+compute_primes (generic function with 1 method)
+
+  0.020402 seconds (450 allocations: 45.828 KiB)
+504-element Array{Int64,1}:
+    3
+    7
+   11
+   19
+   23
+   31
+   43
+   47
+   59
+   67
+   71
+   79
+   83
+  103
+  107
+  127
+  131
+  139
+  151
+  163
+  167
+  179
+  191
+    ⋮
+ 7507
+ 7523
+ 7547
+ 7559
+ 7583
+ 7591
+ 7603
+ 7607
+ 7639
+ 7643
+ 7687
+ 7691
+ 7699
+ 7703
+ 7723
+ 7727
+ 7759
+ 7823
+ 7867
+ 7879
+ 7883
+ 7907
+ 7919
+#+end_example
+
+We can try using a regular for instead of the comprehesion, using
+the ~@inbounds~ macro, and giving size hints to the compiler.
+This gives us a ~420x speedup:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function primes_divisible_offset(factor::Int,
+                                 offset::Int,
+                                 max_prime::Int)
+    all_primes = primes(max_prime)
+    selected_primes = Int[]
+
+    sizehint!(selected_primes, length(all_primes))
+
+    @inbounds for i = 1:length(all_primes)
+        (all_primes[i] + offset) % factor == 0 && push!(selected_primes, all_primes[i])
+    end
+
+    return selected_primes
+end
+
+function compute_primes()
+    @time new_selected_primes = primes_divisible_offset(4, 1, 7920)
+end
+
+compute_primes()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+primes_divisible_offset (generic function with 1 method)
+
+compute_primes (generic function with 1 method)
+
+  0.000048 seconds (6 allocations: 18.328 KiB)
+504-element Array{Int64,1}:
+    3
+    7
+   11
+   19
+   23
+   31
+   43
+   47
+   59
+   67
+   71
+   79
+   83
+  103
+  107
+  127
+  131
+  139
+  151
+  163
+  167
+  179
+  191
+    ⋮
+ 7507
+ 7523
+ 7547
+ 7559
+ 7583
+ 7591
+ 7603
+ 7607
+ 7639
+ 7643
+ 7687
+ 7691
+ 7699
+ 7703
+ 7723
+ 7727
+ 7759
+ 7823
+ 7867
+ 7879
+ 7883
+ 7907
+ 7919
+#+end_example
+
+**** The Paley Construction in Julia
+***** The Paley Construction in ~survey~
+First, let's understand better the Paley construction in
+~survey~:
+
+From the [[file:~/code/survey/R/paley.R][paley.R]] file, after initialization and error checks,
+we get:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+p <- 7 # Just for testing
+m <- outer(0:(p - 1), 0:(p - 1), "+") %% p
+
+m
+#+END_SRC
+
+#+RESULTS:
+:      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+: [1,]    0    1    2    3    4    5    6
+: [2,]    1    2    3    4    5    6    0
+: [3,]    2    3    4    5    6    0    1
+: [4,]    3    4    5    6    0    1    2
+: [5,]    4    5    6    0    1    2    3
+: [6,]    5    6    0    1    2    3    4
+: [7,]    6    0    1    2    3    4    5
+
+This line generates the offset matrix for comparing
+with the computed quadratic residues of the first step of
+the [[https://en.wikipedia.org/wiki/Paley_construction][Paley construction]]. Then, we compute the quadratic residues:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+res <- integer(1 + floor((p - 1) / 2))
+
+res[1] <- 0
+res[2] <- 1
+
+for(i in 2:floor((p - 1) / 2))
+    res[i + 1] <- (i * i) %% p
+
+res
+#+END_SRC
+
+#+RESULTS:
+: [1] 0 1 4 2
+
+With that we can compute the Jacobsthal matrix for this prime.
+This is done by simply substituting ~1~ for every element in
+the ~m~ matrix that is also a quadratic residue in ~res~, ~0~
+if the element is already zero, and ~-1~ otherwise.
+
+
+
