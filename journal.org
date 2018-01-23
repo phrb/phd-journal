@@ -6985,21 +6985,17 @@ we get:
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-p <- 7 # Just for testing
-m <- outer(0:(p - 1), 0:(p - 1), "+") %% p
+p <- 3 # Just for testing
+n <- outer(0:(p - 1), 0:(p - 1), "-") %% p
 
-m
+as.data.frame(n)
 #+END_SRC
 
 #+RESULTS:
-:      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
-: [1,]    0    1    2    3    4    5    6
-: [2,]    1    2    3    4    5    6    0
-: [3,]    2    3    4    5    6    0    1
-: [4,]    3    4    5    6    0    1    2
-: [5,]    4    5    6    0    1    2    3
-: [6,]    5    6    0    1    2    3    4
-: [7,]    6    0    1    2    3    4    5
+:   V1 V2 V3
+: 1  0  2  1
+: 2  1  0  2
+: 3  2  1  0
 
 This line generates the offset matrix for comparing
 with the computed quadratic residues of the first step of
@@ -7019,12 +7015,76 @@ res
 #+END_SRC
 
 #+RESULTS:
-: [1] 0 1 4 2
+: [1] 0 1 1
 
 With that we can compute the Jacobsthal matrix for this prime.
-This is done by simply substituting ~1~ for every element in
-the ~m~ matrix that is also a quadratic residue in ~res~, ~0~
-if the element is already zero, and ~-1~ otherwise.
+This is done by substituting ~-1~ for every element in
+the ~m~ matrix that is also a quadratic residue in ~res~,
+and ~1~ otherwise:
 
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+m <- n
+m[m %in% res] <- -1
+as.data.frame(m)
 
+m[m > 0] <- 1
+as.data.frame(m)
 
+rval <- cbind(1, rbind(1, m))
+
+as.data.frame(rval)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  V1 V2 V3
+1  1  2  1
+2  1  1  2
+3  2  1  1
+  V1 V2 V3
+1 -1 -1 -1
+2 -1 -1 -1
+3 -1 -1 -1
+  V1 V2 V3 V4
+1  1  1  1  1
+2  1 -1 -1 -1
+3  1 -1 -1 -1
+4  1 -1 -1 -1
+#+end_example
+
+Now, let's check if everything went OK:
+
+#+CALL: define_is_plackett_burman()
+
+#+RESULTS:
+
+#+NAME: define_is.hadamard
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+is.hadamard<-function(H){
+    return(ncol(rval) == nrow(rval) &&
+           all.equal(crossprod(rval), diag(ncol(rval)) * ncol(rval)) &&
+           all.equal(max(abs(rval)), 1) &&
+           sum(rval[-1, ]) == 0)
+}
+#+END_SRC
+
+#+RESULTS: define_is.hadamard
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+is.hadamard(rval)
+is_plackett_burman(rval)
+
+rval
+#+END_SRC
+
+#+RESULTS:
+: [1] FALSE
+: [1] TRUE
+:      [,1] [,2] [,3] [,4]
+: [1,]    1    1    1    1
+: [2,]    1   -1   -1   -1
+: [3,]    1   -1   -1   -1
+: [4,]    1   -1   -1   -1
