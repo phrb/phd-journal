@@ -6486,10 +6486,7 @@ is_plackett_burman <- function(design) {
     sums <- c()
     for (column in names(design)) {
         sums <- c(sums, sum(design[column]))
-    }
-
-    if (sum(sums) != 0) {
-        return(FALSE)
+        if(sum(design[column])!=0) { return(FALSE) }
     }
 
     names_d <- names(design)
