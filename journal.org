@@ -6887,7 +6887,7 @@ compute_primes (generic function with 1 method)
  7919
 #+end_example
 
-We can try using a regular for instead of the comprehesion, using
+We can try using a regular ~for~ instead of the comprehesion, using
 the ~@inbounds~ macro, and giving size hints to the compiler.
 This gives us a ~420x speedup:
 
@@ -6973,10 +6973,10 @@ compute_primes (generic function with 1 method)
 #+end_example
 
 **** The Paley Construction in Julia
-***** The Paley Construction in ~survey~
 First, let's understand better the Paley construction in
-~survey~:
+~survey~.
 
+***** The Paley Construction in ~survey~
 From the [[file:~/code/survey/R/paley.R][paley.R]] file, after initialization and error checks,
 we get:
 
