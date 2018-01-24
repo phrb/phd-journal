@@ -6645,7 +6645,7 @@ compute_primes()
 
 compute_primes (generic function with 1 method)
 
-  0.000028 seconds (4 allocations: 10.375 KiB)
+  0.000030 seconds (5 allocations: 10.391 KiB)
 1000-element Array{Int64,1}:
     2
     3
@@ -6711,7 +6711,7 @@ selected_primes
 
 #+RESULTS:
 #+begin_example
-  0.052702 seconds (20.29 k allocations: 1.133 MiB)
+  0.054427 seconds (20.16 k allocations: 1.112 MiB)
 504-element Array{Int64,1}:
     3
     7
@@ -6836,7 +6836,7 @@ first_primes_divisible_offset (generic function with 2 methods)
 
 compute_primes (generic function with 1 method)
 
-  0.020402 seconds (450 allocations: 45.828 KiB)
+  0.019856 seconds (451 allocations: 45.844 KiB)
 504-element Array{Int64,1}:
     3
     7
@@ -6921,7 +6921,7 @@ primes_divisible_offset (generic function with 1 method)
 
 compute_primes (generic function with 1 method)
 
-  0.000048 seconds (6 allocations: 18.328 KiB)
+  0.000048 seconds (7 allocations: 18.344 KiB)
 504-element Array{Int64,1}:
     3
     7
@@ -6972,8 +6972,8 @@ compute_primes (generic function with 1 method)
  7919
 #+end_example
 
-**** The Paley Construction in Julia
-First, let's understand better the Paley construction in
+**** The Paley Construction
+Let's understand better the Paley construction in
 ~survey~.
 
 ***** The Paley Construction in ~survey~
@@ -7044,9 +7044,13 @@ is.hadamard<-function(H){
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 is.hadamard(rval)
-is_plackett_burman(rval)
+is_plackett_burman(rval[, -1])
 #+END_SRC
 
 #+RESULTS:
 : [1] TRUE
 : [1] TRUE
+
+*** [2018-01-24 Wed]
+**** The Paley Construction in Julia
+Let's implement the Paley construction in Julia, in order
