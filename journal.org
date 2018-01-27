@@ -7341,8 +7341,8 @@ compute()
 #+RESULTS:
 : compute (generic function with 1 method)
 : 
-:   0.171292 seconds (1 allocation: 7.625 KiB)
-:   0.001785 seconds (2 allocations: 15.078 KiB)
-:   0.004906 seconds (2 allocations: 64 bytes)
-:  47.357948 seconds (27.14 M allocations: 157.285 GiB, 7.62% gc time)
+:   0.000006 seconds (1 allocation: 112 bytes)
+:   0.000001 seconds (2 allocations: 160 bytes)
+:   0.000001 seconds (2 allocations: 64 bytes)
+:   0.000017 seconds (266 allocations: 25.375 KiB)
 : true
