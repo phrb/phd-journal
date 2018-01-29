@@ -7489,7 +7489,7 @@ compute()
 :   0.000429 seconds (11 allocations: 155.219 KiB)
 :   0.080711 seconds (115.37 k allocations: 71.585 MiB, 72.83% gc time)
 : true
-*** Updating NODAL to Julia's latest version
+**** Updating NODAL to Julia's latest version
 - Compiled new Julia version
 - Re-built 'dev' and 'master' on Travis
 - Updated examples:
