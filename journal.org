@@ -6892,7 +6892,10 @@ the ~@inbounds~ macro, and giving size hints to the compiler.
 This gives us a ~420x speedup:
 
 #+HEADER: :results output :session *Julia*
+#+NAME: define_primes_divisible_offset
 #+BEGIN_SRC julia
+using Primes
+
 function primes_divisible_offset(factor::Int,
                                  offset::Int,
                                  max_prime::Int)
@@ -6907,7 +6910,15 @@ function primes_divisible_offset(factor::Int,
 
     return selected_primes
 end
+#+END_SRC
 
+#+RESULTS: define_primes_divisible_offset
+: 
+: 
+: primes_divisible_offset (generic function with 1 method)
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
 function compute_primes()
     @time new_selected_primes = primes_divisible_offset(4, 1, 7920)
 end
@@ -6917,8 +6928,6 @@ compute_primes()
 
 #+RESULTS:
 #+begin_example
-primes_divisible_offset (generic function with 1 method)
-
 compute_primes (generic function with 1 method)
 
   0.000048 seconds (7 allocations: 18.344 KiB)
@@ -6946,7 +6955,12 @@ compute_primes (generic function with 1 method)
   167
   179
   191
+  199
+  211
+  223
     ⋮
+ 7487
+ 7499
  7507
  7523
  7547
@@ -7196,7 +7210,6 @@ implemented a simlpe binary search function to improve the process of checking
 whether a given number is a quadratic residue. This enables us to
 generate very large designs in reasonable time.
 
-#+NAME: define_julia_paley
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 function binary_search(array::Array{Int, 1}, target::Int)
@@ -7250,7 +7263,7 @@ function paley(matrix::Matrix{Int})
 end
 #+END_SRC
 
-#+RESULTS: define_julia_paley
+#+RESULTS:
 : binary_search (generic function with 1 method)
 : 
 : paley (generic function with 1 method)
@@ -7346,3 +7359,140 @@ compute()
 :   0.000001 seconds (2 allocations: 64 bytes)
 :   0.000017 seconds (266 allocations: 25.375 KiB)
 : true
+*** [2018-01-29 Mon]
+**** Generating Plackett-Burman Designs in Julia
+We will piece together all the code snippets from the last
+days to define a Julia function for generating Plackett-Burman
+designs. This function should enter =NODAL=.
+
+Defining function for generating primes whose offset is
+divisible by some integer:
+
+#+CALL: define_primes_divisible_offset()
+
+#+RESULTS:
+: 
+: 
+: primes_divisible_offset (generic function with 1 method)
+
+Defining the function to check for Plackett-Burman properties:
+
+#+CALL: define_julia_is_plackett_burman()
+
+#+RESULTS:
+: 
+: 
+: is_plackett_burman (generic function with 1 method)
+
+We will re-write the Paley construction function so that it
+can fill a matrix with uneven dimensions. This will allow us
+to only allocate one matrix for the Plackett-Burman construction:
+
+#+NAME: define_julia_paley
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function binary_search(array::Array{Int, 1}, target::Int)
+    n::Int = length(array)
+
+    left::Int = 1
+    right::Int = n
+
+    @inbounds while left <= right
+        middle = (left + right) >>> 1
+
+        if array[middle] < target
+            left = middle + 1
+        elseif array[middle] > target
+            right = middle - 1
+        else
+            return true
+        end
+    end
+
+    return false
+end
+
+function paley(matrix::Matrix{Int})
+    dimension::Tuple{Int, Int} = size(matrix)
+
+    starting_row::Int = (dimension[1] == dimension[2] ? 1 : 2)
+    ending_row::Int = dimension[1]
+
+    prime::Int = dimension[2]
+
+    residues_length::Int = 1 + floor((prime - 1) / 2)    
+    residues::Array{Int, 1} = Array{Int, 1}(residues_length)
+
+    residues[1] = 0
+    residues[2] = 1
+
+    @inbounds for i = 2:(residues_length - 1)
+        residues[i + 1] = (i * i) % prime
+    end
+
+    sort!(residues)
+
+    @inbounds for i = starting_row:ending_row
+       @inbounds for j = 1:prime
+           offset_value::Int = (i + j - 1) % prime
+           if binary_search(residues, offset_value)
+               matrix[i, j] = -1
+           else
+               matrix[i, j] = 1
+           end
+       end
+    end
+
+    return matrix
+end
+#+END_SRC
+
+#+RESULTS: define_julia_paley
+: binary_search (generic function with 1 method)
+: 
+: paley (generic function with 1 method)
+
+#+NAME: define_julia_plackett_burman
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function plackett_burman(matrix_size::Int)
+    # Paley construction works for primes where (p + 1) % 4 == 0
+    # Therefore, 'factor::Int = 4' and 'offset::Int = 1' in the call
+    # to 'primes_divisible_offset':
+    p = primes_divisible_offset(4, 1, matrix_size)[end]
+
+    # The matrix for the Plackett-Burman design must have
+    # 'p + 1' rows and 'p' columns, corresponding to
+    # 'p + 1' experiments for 'p' factors.
+    A = Matrix{Int}(p + 1, p)
+    A[1, :] = ones(p)
+    paley(A)
+end
+#+END_SRC
+
+#+RESULTS: define_julia_plackett_burman
+: plackett_burman (generic function with 2 methods)
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function compute()
+    @time design = plackett_burman(150)
+    @time is_plackett_burman(design)
+end
+
+compute()
+#+END_SRC
+
+#+RESULTS:
+: compute (generic function with 1 method)
+: 
+:   0.000429 seconds (11 allocations: 155.219 KiB)
+:   0.080711 seconds (115.37 k allocations: 71.585 MiB, 72.83% gc time)
+: true
+*** Updating NODAL to Julia's latest version
+- Compiled new Julia version
+- Re-built 'dev' and 'master' on Travis
+- Updated examples:
+  - Improved syntax, remove global variables
+  - Fixed warnings derived from example code
+- Fixed deprecation warnings
