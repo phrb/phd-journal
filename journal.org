@@ -4136,6 +4136,8 @@ load_data <- function(application, experiments, removed_columns) {
 
         new_data <- as.data.frame(new_data)
 
+        new_data["experiment"] <- rep(experiment, nrow(new_data))
+
         if (ncol(data) == 0) {
             data <- new_data
         } else {
@@ -7486,9 +7488,10 @@ compute()
 #+RESULTS:
 : compute (generic function with 1 method)
 : 
-:   0.000429 seconds (11 allocations: 155.219 KiB)
-:   0.080711 seconds (115.37 k allocations: 71.585 MiB, 72.83% gc time)
+:   0.000874 seconds (11 allocations: 155.219 KiB)
+:   0.018235 seconds (115.37 k allocations: 71.585 MiB, 8.38% gc time)
 : true
+
 **** Updating NODAL to Julia's latest version
 - Compiled new Julia version
 - Re-built 'dev' and 'master' on Travis
@@ -7496,3 +7499,262 @@ compute()
   - Improved syntax, remove global variables
   - Fixed warnings derived from example code
 - Fixed deprecation warnings
+*** [2018-01-30 Tue]
+**** Improving the Pareto Border for the 3 Metrics
+We will use the [[http://www.p-roocks.de/rpref/index.php][rPref]] package for computing the Pareto border.
+
+#+CALL: update_legup_tuner()
+
+#+RESULTS:
+: Already up to date.
+
+#+CALL: define_load_data()
+
+#+RESULTS:
+
+Generating a 3D plot:
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+library(rPref)
+library(dplyr)
+
+removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
+data <- load_data("dfdiv", experiments, removed)
+
+criterion <- low(Regs) * low(DPS) * low(MKS)
+
+pareto <- psel(data, criterion, top = nrow(data)) 
+
+pareto <- pareto[with(pareto, order(X)), ]
+
+scenarios <- data.frame()
+
+for (target in c("area", "perf", "perflat", "balanced")) {
+    filtered_pareto <- filter(pareto, experiment == target)
+
+    best <- which.min(filtered_pareto$MKS + filtered_pareto$Regs + filtered_pareto$DPS)
+
+    scenarios["bestMKS", target] <- filtered_pareto[best, "MKS"]
+    scenarios["bestRegs", target] <- filtered_pareto[best, "Regs"]
+    scenarios["bestDPS", target] <- filtered_pareto[best, "DPS"]
+
+    scenarios["firstMKS", target] <- filtered_pareto[1, "MKS"]
+    scenarios["firstRegs", target] <- filtered_pareto[1, "Regs"]
+    scenarios["firstDPS", target] <- filtered_pareto[1, "DPS"]
+
+    scenarios["lastMKS", target] <- filtered_pareto[nrow(filtered_pareto), "MKS"]
+    scenarios["lastRegs", target] <- filtered_pareto[nrow(filtered_pareto), "Regs"]
+    scenarios["lastDPS", target] <- filtered_pareto[nrow(filtered_pareto), "DPS"]
+}
+
+print(scenarios)
+
+p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS,
+              color = ~(.level == 1), colors = "Set1") %>%
+    add_markers() %>%
+    layout(scene = list(annotations = list(list(x = scenarios["firstMKS", "area"],
+                                                y = scenarios["firstRegs", "area"],
+                                                z = scenarios["firstDPS", "area"],
+                                                text = "Global Starting Point",
+                                                textangle = 0,
+                                                font = list(color = "black",
+                                                            size = 12),
+                                                arrowcolor = "black",
+                                                arrowsize = 3,
+                                                arrowwidth = 1,
+                                                arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "area"],
+                                                 y = scenarios["lastRegs", "area"],
+                                                 z = scenarios["lastDPS", "area"],
+                                                 text = "Area Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "area"],
+                                                 y = scenarios["bestRegs", "area"],
+                                                 z = scenarios["bestDPS", "area"],
+                                                 text = "Area Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "balanced"],
+                                                 y = scenarios["lastRegs", "balanced"],
+                                                 z = scenarios["lastDPS", "balanced"],
+                                                 text = "Balanced Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "balanced"],
+                                                 y = scenarios["bestRegs", "balanced"],
+                                                 z = scenarios["bestDPS", "balanced"],
+                                                 text = "Balanced Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "perflat"],
+                                                 y = scenarios["lastRegs", "perflat"],
+                                                 z = scenarios["lastDPS", "perflat"],
+                                                 text = "Perflat Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "perflat"],
+                                                 y = scenarios["bestRegs", "perflat"],
+                                                 z = scenarios["bestDPS", "perflat"],
+                                                 text = "Perflat Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "perf"],
+                                                 y = scenarios["bestRegs", "perf"],
+                                                 z = scenarios["bestDPS", "perf"],
+                                                 text = "Perf Best & Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1)),
+                        xaxis = list(title = 'MKS'),
+                        yaxis = list(title = 'Regs'),
+                        zaxis = list(title = 'DSP')))
+
+print(p)
+
+p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS,
+              color = ~(experiment), colors = "Set2") %>%
+    add_markers() %>%
+    layout(scene = list(annotations = list(list(x = scenarios["firstMKS", "area"],
+                                                y = scenarios["firstRegs", "area"],
+                                                z = scenarios["firstDPS", "area"],
+                                                text = "Global Starting Point",
+                                                textangle = 0,
+                                                font = list(color = "black",
+                                                            size = 12),
+                                                arrowcolor = "black",
+                                                arrowsize = 3,
+                                                arrowwidth = 1,
+                                                arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "area"],
+                                                 y = scenarios["lastRegs", "area"],
+                                                 z = scenarios["lastDPS", "area"],
+                                                 text = "Area Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "area"],
+                                                 y = scenarios["bestRegs", "area"],
+                                                 z = scenarios["bestDPS", "area"],
+                                                 text = "Area Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "balanced"],
+                                                 y = scenarios["lastRegs", "balanced"],
+                                                 z = scenarios["lastDPS", "balanced"],
+                                                 text = "Balanced Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "balanced"],
+                                                 y = scenarios["bestRegs", "balanced"],
+                                                 z = scenarios["bestDPS", "balanced"],
+                                                 text = "Balanced Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["lastMKS", "perflat"],
+                                                 y = scenarios["lastRegs", "perflat"],
+                                                 z = scenarios["lastDPS", "perflat"],
+                                                 text = "Perflat Final Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "perflat"],
+                                                 y = scenarios["bestRegs", "perflat"],
+                                                 z = scenarios["bestDPS", "perflat"],
+                                                 text = "Perflat Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1),
+                                            list(x = scenarios["bestMKS", "perf"],
+                                                 y = scenarios["bestRegs", "perf"],
+                                                 z = scenarios["bestDPS", "perf"],
+                                                 text = "Perf Best & Best Point",
+                                                 textangle = 0,
+                                                 font = list(color = "black",
+                                                             size = 12),
+                                                 arrowcolor = "black",
+                                                 arrowsize = 3,
+                                                 arrowwidth = 1,
+                                                 arrowhead = 1)),
+                        xaxis = list(title = 'MKS'),
+                        yaxis = list(title = 'Regs'),
+                        zaxis = list(title = 'DSP')))
+
+print(p)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                  area         perf      perflat     balanced
+bestMKS   2.455752e-02 1.762809e-02 2.519768e-02 2.066028e-02
+bestRegs  3.123000e+03 3.187000e+03 2.919000e+03 2.432000e+03
+bestDPS   1.000000e+00 5.000000e+00 1.000000e+00 5.000000e+00
+firstMKS  3.095541e-02 3.095541e-02 3.095541e-02 3.095541e-02
+firstRegs 3.949000e+03 3.949000e+03 3.949000e+03 3.949000e+03
+firstDPS  1.600000e+01 1.600000e+01 1.600000e+01 1.600000e+01
+lastMKS   3.035936e-02 1.762809e-02 2.044542e-02 2.511900e-02
+lastRegs  3.743000e+03 3.187000e+03 2.953000e+03 5.533000e+03
+lastDPS   3.000000e+00 5.000000e+00 1.000000e+00 1.000000e+00
+#+end_example
