@@ -7783,7 +7783,7 @@ lastDPS   3.000000e+00 5.000000e+00 1.000000e+00 1.000000e+00
   - Aayush will share the papers he needs reviewed, so people can signup for papers
   - Next week could be a discussion of the reviews, and everyone could be involved deeper
 *** [2018-01-31 Wed]
-**** A Database for NODAL
+**** Keeping Track of Results in NODAL
 NODAL should have a database for keeping record of the results of the
 experiments and easing future analysis. A first approach is to use
 SQLite, which is very simple and just creates a database in a single
@@ -7807,7 +7807,8 @@ Two initial ideas:
      but execution in multiple machines would require a different strategy
    - Could be easier to use data gathered during tuning to steer experimental
      designs
-**** Using Indexed Tables & JuliaDB
+
+***** Using Indexed Tables & JuliaDB
 Creating a simple structure to represent a measurement
 that is uniquely identified by hashing a string composed of
 its parameter's values:
@@ -7822,9 +7823,11 @@ struct Measurement
     f3_value::Bool
     f4_value::String
     response::Float64
+    complete::Bool
     id::UInt64
 
-    Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, hash("$f1$f2$f3$f4$r"))
+    Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
+    Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
 end
 
 # Using meaningless dummy parameters:
@@ -7832,32 +7835,6 @@ parameters = [Measurement(1, 2.5, true, "--no-merge", 0.00234),
               Measurement(992, 5.621, true, "--merge", 0.8374),
               Measurement(5, 993.11, false, "--merge", 0.3312),
               Measurement(992, 5.621, false, "--no-merge", 123.1878)]
-
-#+RESULTS:
-: 
-: 
-: 
-: 
-: 
-: Measurement(1, 2.5, true, "--no-merge", 0.00234, 0xab4d328887093ea2)
-
-Storing these parameters in a table:
-
-#+HEADER: :results output :session *Julia*
-#+BEGIN_SRC julia
-names = fieldnames(Measurement)
-
-t_rows = []
-
-for name in names
-    t_row = []
-    for parameter in parameters
-        push!(t_row, getfield(parameter, name))
-    end
-    push!(t_row, t_rows)
-end
-
-t = table(t_rows..., names = names, pkey = :id)
 #+END_SRC
 
 #+RESULTS:
@@ -7868,38 +7845,119 @@ t = table(t_rows..., names = names, pkey = :id)
 
 
 4-element Array{Measurement,1}:
- Measurement(1, 2.5, true, "--no-merge", 0.00234, 0xab4d328887093ea2)     
- Measurement(992, 5.621, true, "--merge", 0.8374, 0x121809dcd536cf15)     
- Measurement(5, 993.11, false, "--merge", 0.3312, 0x5169276e04a63cb8)     
- Measurement(992, 5.621, false, "--no-merge", 123.188, 0x946a71add7685dd5)
+ Measurement(1, 2.5, true, "--no-merge", 0.00234, true, 0xf8ccde572b8c7264)     
+ Measurement(992, 5.621, true, "--merge", 0.8374, true, 0x5504c427f376c224)     
+ Measurement(5, 993.11, false, "--merge", 0.3312, true, 0xe9325075e908e878)     
+ Measurement(992, 5.621, false, "--no-merge", 123.188, true, 0xd0d5365d357790ee)
+#+end_example
 
+Storing these parameters in a table:
 
-ERROR: syntax: space not allowed after ":" used for quoting
-ERROR: syntax: space not allowed after ":" used for quoting
-ERROR: syntax: space not allowed after ":" used for quoting
-ERROR: syntax: space not allowed after ":" used for quoting
-ERROR: syntax: space not allowed after ":" used for quoting
-ERROR: syntax: space not allowed after ":" used for quoting
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+names = fieldnames(Measurement)
 
-ERROR: syntax: extra token "these" after end of expression
+t = table([[getfield(p, n) for p in parameters] for n in names]...,
+          names = names, pkey = :id)
+#+END_SRC
 
-
-
-6-element Array{Symbol,1}:
+#+RESULTS:
+#+begin_example
+7-element Array{Symbol,1}:
  :f1_value
  :f2_value
  :f3_value
  :f4_value
  :response
+ :complete
  :id
 
-0-element Array{Any,1}
+Table with 4 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
+992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
+5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
+1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+#+end_example
+
+We can check if a measurement is in the table without its ~response~ value. This
+prevents redundant computation of results.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+k = Measurement(5, 993.11, false, "--merge")
+
+t_query = filter(p -> p.id == k.id, t)
+
+length(rows(t_query)) > 0
+#+END_SRC
+
+#+RESULTS:
+: Measurement(5, 993.11, false, "--merge", -1.0, false, 0xe9325075e908e878)
+: 
+: Table with 1 rows, 7 columns:
+: f1_value  f2_value  f3_value  f4_value   response  complete  id
+: ───────────────────────────────────────────────────────────────────────────────
+: 5         993.11    false     "--merge"  0.3312    true      0xe9325075e908e878
+: 
+: true
+
+If the result was not previously computed, we get:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+k = Measurement(2, 9.263, false, "--merge")
+
+length(rows(filter(p -> p.id == k.id, t))) > 0
+#+END_SRC
+
+#+RESULTS:
+: Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
+: 
+: false
+
+Or maybe in an easier way:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+k = Measurement(2, 9.263, false, "--merge")
+
+k.id in select(t, :id)
+#+END_SRC
+
+#+RESULTS:
+: Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
+: 
+: false
+
+Growing the table:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+
+if !(k.id in select(t, :id))
+    push!(rows(t), @NT(f1_value = k.f1_value, f2_value = k.f2_value,
+                      f3_value = k.f3_value, f4_value = k.f4_value,
+                      response = k.response, complete = k.complete,
+                      id = k.id))
+    t = table(t, pkey = t.pkey, copy = false)
+end
+
+t
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
 
 
 
-ERROR: UndefVarError: T not defined
-Stacktrace:
- [1] NamedTuples._NT_f1__value_f2__value_f3__value_f4__value_response_id() at /home/phrb/.julia/v0.6/NamedTuples/src/NamedTuples.jl:136
- [2] #table#92(::Array{Symbol,1}, ::Array{Any,1}, ::Function) at /home/phrb/.julia/v0.6/IndexedTables/src/table.jl:254
- [3] (::IndexedTables.#kw##table)(::Array{Any,1}, ::IndexedTables.#table) at ./<missing>:0
+Table with 5 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
+992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
+5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
+1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+2         9.263     false     "--merge"     -1.0      false     0x10bad578d513d719
 #+end_example
