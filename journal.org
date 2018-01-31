@@ -7633,7 +7633,7 @@ p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS,
                                             list(x = scenarios["bestMKS", "perf"],
                                                  y = scenarios["bestRegs", "perf"],
                                                  z = scenarios["bestDPS", "perf"],
-                                                 text = "Perf Best & Best Point",
+                                                 text = "Perf Best & Last Points",
                                                  textangle = 0,
                                                  font = list(color = "black",
                                                              size = 12),
@@ -7730,7 +7730,7 @@ p <- plot_ly(pareto, x = ~MKS, y = ~Regs, z = ~DPS,
                                             list(x = scenarios["bestMKS", "perf"],
                                                  y = scenarios["bestRegs", "perf"],
                                                  z = scenarios["bestDPS", "perf"],
-                                                 text = "Perf Best & Best Point",
+                                                 text = "Perf Best & Last Points",
                                                  textangle = 0,
                                                  font = list(color = "black",
                                                              size = 12),
@@ -7757,4 +7757,149 @@ firstDPS  1.600000e+01 1.600000e+01 1.600000e+01 1.600000e+01
 lastMKS   3.035936e-02 1.762809e-02 2.044542e-02 2.511900e-02
 lastRegs  3.743000e+03 3.187000e+03 2.953000e+03 5.533000e+03
 lastDPS   3.000000e+00 5.000000e+00 1.000000e+00 1.000000e+00
+#+end_example
+**** Meeting with PUMA Team
+- Dejan requested I propose something I can contribute to in relation to autotuning,
+  since no one is in the position to do that
+  - Since the project is too oriented to architectural contributions, maybe this is the end
+    of my participation in this project?
+  - TODO: Find some tuning knobs or architectural configuration I can explore
+    - The paper might have hints at what could be done
+- Izzat thinks architecture must move first and then the rest will follow
+- Aayush: Matrix-matrix multiplication assume matrices are constant
+  - Aayush is looking into what would be needed to implement non-constant multiplication
+- Next sesion will be in two weeks, Dejan will not be participating
+  - Maybe someone could record the meeting so Dejan can follow up
+  - Aayush and Izzat will present short updates
+- Aayush does not have a target venue in mind for next steps in the analog domain
+  - Looking at operations that have tunable knobs
+  - Mix-precision training
+  - Aayush could invite architecture people from his group to participate in the project
+- Izzat asks: What is the main requisite that is holding the project back?
+  - Aayush answers that people can complete the review on training,
+    that is, the main requisite is the literature review
+  - Izzat said more people could be involved in the literature review since it is
+    easily parallelizable, that is, each person could look at one or two papers
+  - Aayush will share the papers he needs reviewed, so people can signup for papers
+  - Next week could be a discussion of the reviews, and everyone could be involved deeper
+*** [2018-01-31 Wed]
+**** A Database for NODAL
+NODAL should have a database for keeping record of the results of the
+experiments and easing future analysis. A first approach is to use
+SQLite, which is very simple and just creates a database in a single
+file in disk. It is also possible to create an in-memory database
+which is later written to disk. Another approach would be to use
+the new JuliaDB package, which seems to fit well in distributed
+systems.
+
+Two initial ideas:
+
+1. Each technique uses an individual in-memory database to store its
+   results, which are later stored in a global database in disk
+   - Could be easier to run in multiple machines since all results
+     would be stored later, minimizing interprocess communication
+     during execution
+   - Until databases are synchronized, there is no way to use the
+     data techniques in different machines gathered
+   - Parallel writing to individual databases is trivial to implement
+2. All techniques write results to a common database in disk
+   - Parallel writing could be queued in each single machine,
+     but execution in multiple machines would require a different strategy
+   - Could be easier to use data gathered during tuning to steer experimental
+     designs
+**** Using Indexed Tables & JuliaDB
+Creating a simple structure to represent a measurement
+that is uniquely identified by hashing a string composed of
+its parameter's values:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using JuliaDB
+
+struct Measurement
+    f1_value::Int64
+    f2_value::Float64
+    f3_value::Bool
+    f4_value::String
+    response::Float64
+    id::UInt64
+
+    Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, hash("$f1$f2$f3$f4$r"))
+end
+
+# Using meaningless dummy parameters:
+parameters = [Measurement(1, 2.5, true, "--no-merge", 0.00234),
+              Measurement(992, 5.621, true, "--merge", 0.8374),
+              Measurement(5, 993.11, false, "--merge", 0.3312),
+              Measurement(992, 5.621, false, "--no-merge", 123.1878)]
+
+#+RESULTS:
+: 
+: 
+: 
+: 
+: 
+: Measurement(1, 2.5, true, "--no-merge", 0.00234, 0xab4d328887093ea2)
+
+Storing these parameters in a table:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+names = fieldnames(Measurement)
+
+t_rows = []
+
+for name in names
+    t_row = []
+    for parameter in parameters
+        push!(t_row, getfield(parameter, name))
+    end
+    push!(t_row, t_rows)
+end
+
+t = table(t_rows..., names = names, pkey = :id)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+
+
+
+4-element Array{Measurement,1}:
+ Measurement(1, 2.5, true, "--no-merge", 0.00234, 0xab4d328887093ea2)     
+ Measurement(992, 5.621, true, "--merge", 0.8374, 0x121809dcd536cf15)     
+ Measurement(5, 993.11, false, "--merge", 0.3312, 0x5169276e04a63cb8)     
+ Measurement(992, 5.621, false, "--no-merge", 123.188, 0x946a71add7685dd5)
+
+
+ERROR: syntax: space not allowed after ":" used for quoting
+ERROR: syntax: space not allowed after ":" used for quoting
+ERROR: syntax: space not allowed after ":" used for quoting
+ERROR: syntax: space not allowed after ":" used for quoting
+ERROR: syntax: space not allowed after ":" used for quoting
+ERROR: syntax: space not allowed after ":" used for quoting
+
+ERROR: syntax: extra token "these" after end of expression
+
+
+
+6-element Array{Symbol,1}:
+ :f1_value
+ :f2_value
+ :f3_value
+ :f4_value
+ :response
+ :id
+
+0-element Array{Any,1}
+
+
+
+ERROR: UndefVarError: T not defined
+Stacktrace:
+ [1] NamedTuples._NT_f1__value_f2__value_f3__value_f4__value_response_id() at /home/phrb/.julia/v0.6/NamedTuples/src/NamedTuples.jl:136
+ [2] #table#92(::Array{Symbol,1}, ::Array{Any,1}, ::Function) at /home/phrb/.julia/v0.6/IndexedTables/src/table.jl:254
+ [3] (::IndexedTables.#kw##table)(::Array{Any,1}, ::IndexedTables.#table) at ./<missing>:0
 #+end_example
