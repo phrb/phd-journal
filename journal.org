@@ -6551,6 +6551,36 @@ that we can generate such a design using this method:
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
+design <- pb(nruns = 16, randomize = FALSE)
+design
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Screening 15 factors in 16 runs involves perfect aliasing of 
+ pairwise interactions of the first six factors with the last factor.
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+1  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+2   1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+3  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+4   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+5  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+6   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+7  -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+8   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+9  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+10  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+11 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+12  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+13 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+14  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+15 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+16  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+class=design, type= pb
+#+end_example
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
 design <- pb(nruns = 4, randomize = FALSE)
 #+END_SRC
 
@@ -7522,6 +7552,8 @@ library(dplyr)
 removed <- c("WNS", "Blocks", "RAM", "LUs", "Pins", "Cycles", "FMax")
 data <- load_data("dfdiv", experiments, removed)
 
+dim(data)
+
 criterion <- low(Regs) * low(DPS) * low(MKS)
 
 pareto <- psel(data, criterion, top = nrow(data)) 
@@ -7747,6 +7779,7 @@ print(p)
 
 #+RESULTS:
 #+begin_example
+[1] 317 146
                   area         perf      perflat     balanced
 bestMKS   2.455752e-02 1.762809e-02 2.519768e-02 2.066028e-02
 bestRegs  3.123000e+03 3.187000e+03 2.919000e+03 2.432000e+03
@@ -7807,7 +7840,7 @@ Two initial ideas:
      but execution in multiple machines would require a different strategy
    - Could be easier to use data gathered during tuning to steer experimental
      designs
-
+     
 ***** Using Indexed Tables & JuliaDB
 Creating a simple structure to represent a measurement
 that is uniquely identified by hashing a string composed of
@@ -7931,16 +7964,18 @@ k.id in select(t, :id)
 : 
 : false
 
-Growing the table:
+Now we can grow the table and re-sort it by primary key.
+Check [[https://discourse.julialang.org/t/how-to-add-row-to-juliadb-table/7637][this discourse thread]] for the procedure.
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-
 if !(k.id in select(t, :id))
     push!(rows(t), @NT(f1_value = k.f1_value, f2_value = k.f2_value,
                       f3_value = k.f3_value, f4_value = k.f4_value,
                       response = k.response, complete = k.complete,
                       id = k.id))
+
+    # Sorting 't' by its primary key
     t = table(t, pkey = t.pkey, copy = false)
 end
 
@@ -7951,13 +7986,391 @@ t
 #+begin_example
 
 
-
 Table with 5 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+2         9.263     false     "--merge"     -1.0      false     0x10bad578d513d719
+992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
+992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
+5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
+1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+#+end_example
+**** Meeting with Arnaud and Brice
+Notes taken by Arnaud:
+***** Discussions
+- Pedro played with PB designs, implemented them in Julia and made his
+  framework ready for parallel exploration of the space with pb designs.
+- Pedro read several papers on screening designs. There seems to be
+  more than just balancing of 1 and -1 in pb designs. Maybe the way
+  the aliasing is spread but none of us had the time to fully
+  understand what it means. It may be good at some point to read more
+  thoroughly the literature.
+- The new Pareto plot seem to indicate that either:
+  - either the exploration is not good
+  - or many factors have absolutely no impact.
+  Or both. Some ranges are quite large which may indicate some
+  parameters have a large effect while others have none. we will know
+  for sure from new experiments.
+
+Things to do, ideas for the follow-up of the thesis?
+- We're waiting for the HP agreement to have access again to the FPGA
+  software and run new experiments.
+- [[https://openresearchsoftware.metajnl.com/][Journal of Open Research
+Software]] presenting the Julia
+  framework. Why not? Although I'm not the best one for "software
+  engineering" papers. The positive point is it will be reviewed but
+  it will take some time to write and I don't know the impact.
+- Proposing an auto-tuning library (as a service) rather an
+  auto-tuning framework.
+- Learn more about screening designs
+  - the subtleties of generating with two levels and how aliasing
+    spreads
+    -
+http://www.rsc.org/images/Experimental-design-and-optimisation-4-Plackett-Burman-designs-55_tcm18-232212.pdf
+  - with more than two levels.
+    -
+http://www.functionbay.co.kr/documentation/onlinehelp/default.htm#!Documents/plackettandburmandesign.htm
+- Investigating another class of optimization/space: the follow-up of
+  Steven with BOAST. There were no compilation flag optimisation, only
+  the "shape" of the kernel were considered. The space is much smaller
+  but the optimization is also very different as we have more
+  interactions between parameters and we definitely need quantile
+  regression rather than classical (expected/mean) linear regression.
+- GPU compiler flags optimization. Pedro worked on that at some point
+  and it could be worth revisiting this with the DoE perspective.
+
+***** Playing with R to see the effect of missing values in the design
+#+begin_src R :results output :session *R* :exports both
+library(FrF2)
+
+df = pb(20)
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T
+1  -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1
+2  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+3   1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1
+4  -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1
+5   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1
+6  -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1
+7   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1
+8  -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1
+9   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1
+10  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1
+11  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1
+12 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1
+13 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1
+14 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1
+15  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1
+16  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1
+17 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1
+18  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1
+19  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1
+20 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1
+class=design, type= pb
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+df$Response = as.numeric(df$A) * 10 + as.numeric(df$K) * 20 +
+rnorm(length(df$A))
+
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T Response
+1  -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 30.25367
+2  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 29.82534
+3   1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1 60.25237
+4  -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 30.23092
+5   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1 59.67246
+6  -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 50.49005
+7   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1 59.89293
+8  -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 48.87047
+9   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1 39.00359
+10  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1 58.99971
+11  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1 39.69902
+12 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 48.93797
+13 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 48.96195
+14 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 49.80587
+15  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1 40.03233
+16  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1 40.75935
+17 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 31.97930
+18  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1 39.11118
+19  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1 59.74408
+20 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 29.74950
+class=design, type= pb
+#+end_example
+
+#+begin_src R :results output :session *R* :exports both
+reg = lm(data = df, Response ~ .)
+
+summary(reg)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm.default(formula = Response ~ ., data = df)
+
+Residuals:
+ALL 20 residuals are 0: no residual degrees of freedom!
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)
+(Intercept) 44.813601         NA      NA       NA
+A1           4.903099         NA      NA       NA
+B1          -0.050754         NA      NA       NA
+C1           0.035971         NA      NA       NA
+D1           0.258685         NA      NA       NA
+E1          -0.001708         NA      NA       NA
+F1           0.018693         NA      NA       NA
+G1           0.292801         NA      NA       NA
+H1          -0.052042         NA      NA       NA
+J1           0.319897         NA      NA       NA
+K1           9.749184         NA      NA       NA
+L1          -0.152393         NA      NA       NA
+M1          -0.093988         NA      NA       NA
+N1          -0.015386         NA      NA       NA
+O1          -0.011397         NA      NA       NA
+P1          -0.035026         NA      NA       NA
+Q1          -0.257190         NA      NA       NA
+R1           0.273815         NA      NA       NA
+S1          -0.005305         NA      NA       NA
+T1          -0.188695         NA      NA       NA
+
+Residual standard error: NaN on 0 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:    NaN 
+F-statistic:   NaN on 19 and 0 DF,  p-value: NA
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file"figure" ".png") :exports both :width 600 :height 400 :session *R*
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-1900fOu/figure1900kJV.png]]
+
+
+
+#+begin_src R :results output :session *R* :exports both
+#reg=lm(data=df[-c(6,18,15),], Response ~ .)
+df2 = df
+df2[c(6,13,25), ]$Response = NA;
+reg = lm(data = df2, Response ~ .)
+
+summary(reg)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm.default(formula = Response ~ ., data = df2)
+
+Residuals:
+ALL 18 residuals are 0: no residual degrees of freedom!
+
+Coefficients: (2 not defined because of singularities)
+             Estimate Std. Error t value Pr(>|t|)
+(Intercept) 44.808297         NA      NA       NA
+A1           4.908404         NA      NA       NA
+B1           0.137942         NA      NA       NA
+C1          -0.152725         NA      NA       NA
+D1           0.069990         NA      NA       NA
+E1           0.003597         NA      NA       NA
+F1          -0.170003         NA      NA       NA
+G1           0.287497         NA      NA       NA
+H1           0.136653         NA      NA       NA
+J1           0.325202         NA      NA       NA
+K1           9.743879         NA      NA       NA
+L1          -0.157697         NA      NA       NA
+M1          -0.282683         NA      NA       NA
+N1          -0.204081         NA      NA       NA
+O1           0.177298         NA      NA       NA
+P1          -0.040330         NA      NA       NA
+Q1          -0.068495         NA      NA       NA
+R1           0.268510         NA      NA       NA
+S1                 NA         NA      NA       NA
+T1                 NA         NA      NA       NA
+
+Residual standard error: NaN on 0 degrees of freedom
+  (7 observations deleted due to missingness)
+Multiple R-squared:      1,	Adjusted R-squared:    NaN 
+F-statistic:   NaN on 17 and 0 DF,  p-value: NA
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file"figure" ".png") :exports both :width 600 :height 400 :session *R*
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-1900fOu/figure1900Yyt.png]]
+
+** February
+*** [2018-02-01 Thu]
+**** IndexedTables and Channels in Julia
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using JuliaDB
+
+struct Measurement
+    f1_value::Int64
+    f2_value::Float64
+    f3_value::Bool
+    f4_value::String
+    response::Float64
+    complete::Bool
+    id::UInt64
+
+    Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
+    Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
+end
+
+function init_dummy_table()
+    # Using meaningless dummy parameters:
+    parameters = [Measurement(1, 2.5, true, "--no-merge", 0.00234),
+                  Measurement(992, 5.621, true, "--merge", 0.8374),
+                  Measurement(5, 993.11, false, "--merge", 0.3312),
+                  Measurement(992, 5.621, false, "--no-merge", 123.1878)]
+
+    names = fieldnames(Measurement)
+
+    return table([[getfield(p, n) for p in parameters] for n in names]...,
+                 names = names, pkey = :id)
+end
+
+function add_unique_entry(t::NextTable, entry::Measurement)
+    if !(entry.id in select(t, :id))
+        row_expr = "@NT("
+        
+        for name in fieldnames(Measurement)
+            value = getfield(entry, name)
+            if typeof(value) == String
+                row_expr *= "$name = \"$value\", "
+            else
+                row_expr *= "$name = $value, "
+            end
+        end
+
+        row_expr = chop(chop(row_expr))
+        row_expr *= ")"
+
+        push!(rows(t), eval(parse(row_expr)))
+
+        fields_expr::Array{Any} = Array{Any}()
+        
+        for name in fieldnames(Measurement)
+            push!(fields_expr, Expr(:=, name, entry.name))
+        end
+
+        row_expr = Expr(:macrocall, :@NT, fields_expr...)
+
+        # Sorting 't' by its primary key
+        t = table(t, pkey = t.pkey, copy = false)
+        return true
+    else
+        return false
+    end
+end
+
+t = init_dummy_table()
+
+k = Measurement(2, 9.263, false, "--merge")
+
+add_unique_entry(t, k)
+
+t
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+
+
+init_dummy_table (generic function with 1 method)
+
+add_unique_entry (generic function with 2 methods)
+
+Table with 4 rows, 7 columns:
 f1_value  f2_value  f3_value  f4_value      response  complete  id
 ──────────────────────────────────────────────────────────────────────────────────
 992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
 992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
 5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
 1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+
+Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
+
+Expr
+  head: Symbol macrocall
+  args: Array{Any}((8,))
+    1: Symbol @NT
+    2: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol f1_value
+        2: Int64 2
+      typ: Any
+    3: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol f2_value
+        2: Float64 9.263
+      typ: Any
+    4: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol f3_value
+        2: Bool false
+      typ: Any
+    5: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol f4_value
+        2: String "--merge"
+      typ: Any
+    6: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol response
+        2: Float64 -1.0
+      typ: Any
+    7: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol complete
+        2: Bool false
+      typ: Any
+    8: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol id
+        2: Int64 1205510565222668057
+      typ: Any
+  typ: Any
+true
+
+Table with 5 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
 2         9.263     false     "--merge"     -1.0      false     0x10bad578d513d719
+992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
+992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
+5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
+1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
 #+end_example
+
+**** POLARIS Meeting
+- https://tinyurl.com/polaris-inria
+- Ask a permanent for access to:
+  - POLARIS website
+  - OSE
+- Journée au vert
+  - Lundi-Mardi 5-6 Mars 2018
