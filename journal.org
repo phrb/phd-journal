@@ -8215,75 +8215,184 @@ MEPlot(reg)
 ** February
 *** [2018-02-01 Thu]
 **** IndexedTables and Channels in Julia
+Making things more clear, let's define functions for initializing a dummy
+~Measurement~ table. More importantly, we will define a function for adding a
+unique entry to a table using the names defined in a given object, in this case
+a ~Measurement~, as column names, and the object's values for each name as row
+values. As before, we will use the hash of values as primary key for this table.
+
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-using JuliaDB
+addprocs()
 
-struct Measurement
-    f1_value::Int64
-    f2_value::Float64
-    f3_value::Bool
-    f4_value::String
-    response::Float64
-    complete::Bool
-    id::UInt64
+import JuliaDB
 
-    Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
-    Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
-end
+@everywhere begin
+    using JuliaDB
 
-function init_dummy_table()
-    # Using meaningless dummy parameters:
-    parameters = [Measurement(1, 2.5, true, "--no-merge", 0.00234),
-                  Measurement(992, 5.621, true, "--merge", 0.8374),
-                  Measurement(5, 993.11, false, "--merge", 0.3312),
-                  Measurement(992, 5.621, false, "--no-merge", 123.1878)]
+    mutable struct Measurement
+        f1_value::Int64
+        f2_value::Float64
+        f3_value::Bool
+        f4_value::String
+        response::Float64
+        complete::Bool
+        id::UInt64
 
-    names = fieldnames(Measurement)
+        Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
+        Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
+    end
 
-    return table([[getfield(p, n) for p in parameters] for n in names]...,
-                 names = names, pkey = :id)
-end
+    function random_measurement()
+        Measurement(rand(1:512), randexp(), bitrand()[1], rand(["--merge", "--no-merge"]), randexp())
+    end
 
-function add_unique_entry(t::NextTable, entry::Measurement)
-    if !(entry.id in select(t, :id))
-        row_expr = "@NT("
-        
-        for name in fieldnames(Measurement)
-            value = getfield(entry, name)
-            if typeof(value) == String
-                row_expr *= "$name = \"$value\", "
-            else
-                row_expr *= "$name = $value, "
+    function init_dummy_table()
+        n = rand(4:10)
+
+        parameters = Array{Measurement, 1}(n)
+
+        # Generating meaningless, random parameters
+        for i = 1:n
+            parameters[i] = random_measurement()
+        end
+
+        names = fieldnames(Measurement)
+
+        return table([[getfield(p, n) for p in parameters] for n in names]...,
+                    names = names, pkey = :id)
+    end
+
+    function contains(t::NextTable, entry::Measurement)
+        return entry.id in select(t, :id)
+    end
+
+    function add_complete_unique_entry!(t::NextTable, entry::Measurement)
+        if entry.complete && !contains(t, entry)
+            row_expr::Expr = :@NT
+
+            for name in fieldnames(Measurement)
+                push!(row_expr.args, Expr(Symbol("="), name, getfield(entry, name)))
             end
+
+            push!(rows(t), eval(row_expr))
+
+            # Sorting 't' by its primary key
+            t = table(t, pkey = t.pkey, copy = false)
         end
 
-        row_expr = chop(chop(row_expr))
-        row_expr *= ")"
-
-        push!(rows(t), eval(parse(row_expr)))
-
-        fields_expr::Array{Any} = Array{Any}()
-        
-        for name in fieldnames(Measurement)
-            push!(fields_expr, Expr(:=, name, entry.name))
-        end
-
-        row_expr = Expr(:macrocall, :@NT, fields_expr...)
-
-        # Sorting 't' by its primary key
-        t = table(t, pkey = t.pkey, copy = false)
-        return true
-    else
-        return false
+        t
     end
 end
+#+END_SRC
 
+#+RESULTS:
+: ESS
+: 4-element Array{Int64,1}:
+:  2
+:  3
+:  4
+:  5
+: 
+: 
+: 
+
+Let's initialize the dummy table and attempt to add a new, incomplete
+measurement. Note that the entry is not added.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
 t = init_dummy_table()
 
 k = Measurement(2, 9.263, false, "--merge")
 
-add_unique_entry(t, k)
+add_complete_unique_entry!(t, k)
+
+contains(t, k)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Table with 5 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
+222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
+80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
+14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
+170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+
+Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
+
+Table with 5 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
+222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
+80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
+14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
+170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+
+false
+#+end_example
+
+Suppose we obtained the response value for ~k~, let's modify it and add it to the
+table:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+k.response = randexp()
+k.complete = true
+
+add_complete_unique_entry!(t, k)
+
+contains(t, k)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+0.4627107030142332
+true
+
+Table with 6 rows, 7 columns:
+f1_value  f2_value  f3_value  f4_value      response  complete  id
+──────────────────────────────────────────────────────────────────────────────────
+500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
+2         9.263     false     "--merge"     0.462711  true      0x10bad578d513d719
+222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
+80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
+14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
+170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+
+true
+#+end_example
+
+***** Working with Channels
+Suppose two Julia processes are computing distinct sets of measurements. Since measurements
+do not overlap we don't need to check a centralized table for the existance of a certain
+measurement. After measurement is complete, or after set intervals, processes can report
+their tables to be joined to the central table.
+
+Assuming no repeated measurements, this is how we would launch computations in multiple
+processes and merge all tables in a central process:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+@everywhere function measure(channel::RemoteChannel)
+    put!(channel, init_dummy_table())
+end
+
+results = RemoteChannel(() -> Channel(32))
+
+for p in workers()
+    @async remote_do(measure, p, results)
+end
+
+t = take!(results)
+
+for i = 1:length(workers()) - 1
+    t = merge(t, take!(results))   
+end
 
 t
 #+END_SRC
@@ -8292,80 +8401,60 @@ t
 #+begin_example
 
 
+RemoteChannel{Channel{Any}}(1, 1, 43)
 
 
-init_dummy_table (generic function with 1 method)
 
-add_unique_entry (generic function with 2 methods)
-
-Table with 4 rows, 7 columns:
+Table with 8 rows, 7 columns:
 f1_value  f2_value  f3_value  f4_value      response  complete  id
 ──────────────────────────────────────────────────────────────────────────────────
-992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
-992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
-5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
-1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+284       0.991463  true      "--no-merge"  1.2685    true      0x129d19b801a8ead2
+269       4.32212   false     "--no-merge"  1.62855   true      0x4a65d8e4ac97bdd6
+200       1.14347   false     "--merge"     0.72428   true      0x548f61b7e54fe88a
+226       1.95219   false     "--no-merge"  1.36004   true      0x55d05162c2464ae0
+229       1.02689   false     "--no-merge"  3.59456   true      0x7124db4d6f6314cf
+112       1.23332   false     "--no-merge"  2.31077   true      0x9308e108cdf39400
+24        0.219878  true      "--no-merge"  1.10291   true      0xa73e54b6f587a0e7
+314       0.290156  true      "--no-merge"  0.595531  true      0xbaccff6695e0d16d
 
-Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
 
-Expr
-  head: Symbol macrocall
-  args: Array{Any}((8,))
-    1: Symbol @NT
-    2: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol f1_value
-        2: Int64 2
-      typ: Any
-    3: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol f2_value
-        2: Float64 9.263
-      typ: Any
-    4: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol f3_value
-        2: Bool false
-      typ: Any
-    5: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol f4_value
-        2: String "--merge"
-      typ: Any
-    6: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol response
-        2: Float64 -1.0
-      typ: Any
-    7: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol complete
-        2: Bool false
-      typ: Any
-    8: Expr
-      head: Symbol =
-      args: Array{Any}((2,))
-        1: Symbol id
-        2: Int64 1205510565222668057
-      typ: Any
-  typ: Any
-true
 
-Table with 5 rows, 7 columns:
-f1_value  f2_value  f3_value  f4_value      response  complete  id
-──────────────────────────────────────────────────────────────────────────────────
-2         9.263     false     "--merge"     -1.0      false     0x10bad578d513d719
-992       5.621     true      "--merge"     0.8374    true      0x5504c427f376c224
-992       5.621     false     "--no-merge"  123.188   true      0xd0d5365d357790ee
-5         993.11    false     "--merge"     0.3312    true      0xe9325075e908e878
-1         2.5       true      "--no-merge"  0.00234   true      0xf8ccde572b8c7264
+Table with 28 rows, 7 columns:
+f1_value  f2_value   f3_value  f4_value      response  complete  id
+───────────────────────────────────────────────────────────────────────────────────
+284       0.991463   true      "--no-merge"  1.2685    true      0x129d19b801a8ead2
+183       2.03363    false     "--no-merge"  0.963443  true      0x1cb9e7b41f90c3b8
+343       0.420127   true      "--merge"     0.761186  true      0x3cf033b8268c0674
+226       0.104664   true      "--merge"     0.807771  true      0x44cd685e8920be73
+377       4.35339    false     "--merge"     1.84101   true      0x489705678c28791c
+269       4.32212    false     "--no-merge"  1.62855   true      0x4a65d8e4ac97bdd6
+200       1.14347    false     "--merge"     0.72428   true      0x548f61b7e54fe88a
+226       1.95219    false     "--no-merge"  1.36004   true      0x55d05162c2464ae0
+289       0.123307   false     "--merge"     0.462046  true      0x5a9d7c139808d6ce
+250       3.20498    false     "--merge"     0.374636  true      0x5ebdbec42059437a
+111       1.1393     true      "--no-merge"  0.434333  true      0x65284002168d37d3
+131       3.29708    true      "--no-merge"  1.24814   true      0x65f877b676efc9fc
+229       1.02689    false     "--no-merge"  3.59456   true      0x7124db4d6f6314cf
+322       0.0224792  false     "--merge"     0.593247  true      0x7e47994e6291b490
+467       2.38309    false     "--merge"     0.67555   true      0x817a70be05985ccc
+408       0.729748   true      "--no-merge"  0.278457  true      0x8204005bdacd7a6b
+112       1.23332    false     "--no-merge"  2.31077   true      0x9308e108cdf39400
+468       0.273213   true      "--merge"     0.486187  true      0x9a2553ab11c27b73
+68        1.94288    false     "--no-merge"  0.589714  true      0x9bad16064299be3f
+24        0.219878   true      "--no-merge"  1.10291   true      0xa73e54b6f587a0e7
+172       1.19805    false     "--merge"     2.67302   true      0xa861ff388d2549f1
+378       0.91934    false     "--merge"     0.152135  true      0xaa34124ad9e20340
+94        1.43515    true      "--no-merge"  2.80272   true      0xb395654be0d25aa6
+314       0.290156   true      "--no-merge"  0.595531  true      0xbaccff6695e0d16d
+300       0.181096   false     "--merge"     0.122076  true      0xceb5264c94a694c7
+37        1.29263    true      "--merge"     0.929354  true      0xcf6a68e63a3f2e1c
+351       0.0859942  false     "--no-merge"  1.71037   true      0xd5daf4d3367a356a
+39        0.774815   true      "--no-merge"  1.7763    true      0xffd90fa72a8d8c77
 #+end_example
+
+Obviously, workers would check for repeated measurements during generation of new measurements,
+and not simply create dummy random tables like this. The central table should also check for
+repeated entries in a cleaning step.
 
 **** POLARIS Meeting
 - https://tinyurl.com/polaris-inria
@@ -8374,3 +8463,4 @@ f1_value  f2_value  f3_value  f4_value      response  complete  id
   - OSE
 - Journée au vert
   - Lundi-Mardi 5-6 Mars 2018
+    
