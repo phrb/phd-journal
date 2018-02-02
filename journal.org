@@ -6925,6 +6925,7 @@ This gives us a ~420x speedup:
 
 #+HEADER: :results output :session *Julia*
 #+NAME: define_primes_divisible_offset
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 using Primes
 
@@ -7243,6 +7244,7 @@ whether a given number is a quadratic residue. This enables us to
 generate very large designs in reasonable time.
 
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 function binary_search(array::Array{Int, 1}, target::Int)
     n::Int = length(array)
@@ -7330,6 +7332,7 @@ Let's check for the validity of the designs created with our function:
 
 #+NAME: define_julia_is_plackett_burman
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 using StatsBase
 
@@ -7422,6 +7425,7 @@ to only allocate one matrix for the Plackett-Burman construction:
 
 #+NAME: define_julia_paley
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 function binary_search(array::Array{Int, 1}, target::Int)
     n::Int = length(array)
@@ -8221,8 +8225,14 @@ unique entry to a table using the names defined in a given object, in this case
 a ~Measurement~, as column names, and the object's values for each name as row
 values. As before, we will use the hash of values as primary key for this table.
 
+#+NAME: startup_distributed_tables
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle doe_utils/distributed_experiments_concept.jl
 #+BEGIN_SRC julia
+if length(workers()) > 1
+    rmprocs(workers())
+end
+
 addprocs()
 
 import JuliaDB
@@ -8283,19 +8293,26 @@ import JuliaDB
 
         t
     end
+
+    function measure(channel::RemoteChannel)
+        put!(channel, init_dummy_table())
+    end
 end
 #+END_SRC
 
-#+RESULTS:
-: ESS
-: 4-element Array{Int64,1}:
-:  2
-:  3
-:  4
-:  5
-: 
-: 
-: 
+#+RESULTS: startup_distributed_tables
+#+begin_example
+Task (done) @0x00007fa4ae4fdf90
+
+4-element Array{Int64,1}:
+ 6
+ 7
+ 8
+ 9
+
+
+
+#+end_example
 
 Let's initialize the dummy table and attempt to add a new, incomplete
 measurement. Note that the entry is not added.
@@ -8313,25 +8330,33 @@ contains(t, k)
 
 #+RESULTS:
 #+begin_example
-Table with 5 rows, 7 columns:
+Table with 9 rows, 7 columns:
 f1_value  f2_value  f3_value  f4_value      response  complete  id
 ──────────────────────────────────────────────────────────────────────────────────
-500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
-222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
-80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
-14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
-170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+38        0.193098  true      "--merge"     1.59589   true      0x2059aeb577a4992b
+141       0.986257  true      "--merge"     2.90147   true      0x30231ace7f091ef0
+427       1.17486   true      "--no-merge"  0.250161  true      0x709d921441a95b4f
+92        0.57061   false     "--merge"     0.528176  true      0x79a391495a933127
+257       0.520253  true      "--merge"     0.987173  true      0x7e8c8ebfaeff634d
+52        2.57561   false     "--merge"     0.207802  true      0x847661511f04aabf
+310       0.518026  true      "--no-merge"  0.987956  true      0x9676046bd2651988
+304       0.240112  true      "--merge"     0.67181   true      0xc14b535f385c959f
+166       0.458236  false     "--no-merge"  0.587674  true      0xcc228bc9aa58f9e4
 
 Measurement(2, 9.263, false, "--merge", -1.0, false, 0x10bad578d513d719)
 
-Table with 5 rows, 7 columns:
+Table with 9 rows, 7 columns:
 f1_value  f2_value  f3_value  f4_value      response  complete  id
 ──────────────────────────────────────────────────────────────────────────────────
-500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
-222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
-80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
-14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
-170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+38        0.193098  true      "--merge"     1.59589   true      0x2059aeb577a4992b
+141       0.986257  true      "--merge"     2.90147   true      0x30231ace7f091ef0
+427       1.17486   true      "--no-merge"  0.250161  true      0x709d921441a95b4f
+92        0.57061   false     "--merge"     0.528176  true      0x79a391495a933127
+257       0.520253  true      "--merge"     0.987173  true      0x7e8c8ebfaeff634d
+52        2.57561   false     "--merge"     0.207802  true      0x847661511f04aabf
+310       0.518026  true      "--no-merge"  0.987956  true      0x9676046bd2651988
+304       0.240112  true      "--merge"     0.67181   true      0xc14b535f385c959f
+166       0.458236  false     "--no-merge"  0.587674  true      0xcc228bc9aa58f9e4
 
 false
 #+end_example
@@ -8351,18 +8376,22 @@ contains(t, k)
 
 #+RESULTS:
 #+begin_example
-0.4627107030142332
+0.8340079134870472
 true
 
-Table with 6 rows, 7 columns:
+Table with 10 rows, 7 columns:
 f1_value  f2_value  f3_value  f4_value      response  complete  id
 ──────────────────────────────────────────────────────────────────────────────────
-500       0.135492  true      "--merge"     0.21438   true      0x0a15031966559483
-2         9.263     false     "--merge"     0.462711  true      0x10bad578d513d719
-222       0.864467  false     "--merge"     1.33574   true      0x2e0adbdd16ae2aa5
-80        0.314129  true      "--no-merge"  0.68325   true      0x3df7720927026450
-14        1.42237   true      "--merge"     1.85681   true      0x7271ccd06b76fd13
-170       3.87081   true      "--no-merge"  2.35692   true      0x9403da01338d140b
+2         9.263     false     "--merge"     0.834008  true      0x10bad578d513d719
+38        0.193098  true      "--merge"     1.59589   true      0x2059aeb577a4992b
+141       0.986257  true      "--merge"     2.90147   true      0x30231ace7f091ef0
+427       1.17486   true      "--no-merge"  0.250161  true      0x709d921441a95b4f
+92        0.57061   false     "--merge"     0.528176  true      0x79a391495a933127
+257       0.520253  true      "--merge"     0.987173  true      0x7e8c8ebfaeff634d
+52        2.57561   false     "--merge"     0.207802  true      0x847661511f04aabf
+310       0.518026  true      "--no-merge"  0.987956  true      0x9676046bd2651988
+304       0.240112  true      "--merge"     0.67181   true      0xc14b535f385c959f
+166       0.458236  false     "--no-merge"  0.587674  true      0xcc228bc9aa58f9e4
 
 true
 #+end_example
@@ -8401,55 +8430,78 @@ t
 #+begin_example
 
 
-RemoteChannel{Channel{Any}}(1, 1, 43)
+RemoteChannel{Channel{Any}}(1, 1, 40)
 
 
 
-Table with 8 rows, 7 columns:
-f1_value  f2_value  f3_value  f4_value      response  complete  id
-──────────────────────────────────────────────────────────────────────────────────
-284       0.991463  true      "--no-merge"  1.2685    true      0x129d19b801a8ead2
-269       4.32212   false     "--no-merge"  1.62855   true      0x4a65d8e4ac97bdd6
-200       1.14347   false     "--merge"     0.72428   true      0x548f61b7e54fe88a
-226       1.95219   false     "--no-merge"  1.36004   true      0x55d05162c2464ae0
-229       1.02689   false     "--no-merge"  3.59456   true      0x7124db4d6f6314cf
-112       1.23332   false     "--no-merge"  2.31077   true      0x9308e108cdf39400
-24        0.219878  true      "--no-merge"  1.10291   true      0xa73e54b6f587a0e7
-314       0.290156  true      "--no-merge"  0.595531  true      0xbaccff6695e0d16d
-
-
-
-Table with 28 rows, 7 columns:
+Table with 9 rows, 7 columns:
 f1_value  f2_value   f3_value  f4_value      response  complete  id
 ───────────────────────────────────────────────────────────────────────────────────
-284       0.991463   true      "--no-merge"  1.2685    true      0x129d19b801a8ead2
-183       2.03363    false     "--no-merge"  0.963443  true      0x1cb9e7b41f90c3b8
-343       0.420127   true      "--merge"     0.761186  true      0x3cf033b8268c0674
-226       0.104664   true      "--merge"     0.807771  true      0x44cd685e8920be73
-377       4.35339    false     "--merge"     1.84101   true      0x489705678c28791c
-269       4.32212    false     "--no-merge"  1.62855   true      0x4a65d8e4ac97bdd6
-200       1.14347    false     "--merge"     0.72428   true      0x548f61b7e54fe88a
-226       1.95219    false     "--no-merge"  1.36004   true      0x55d05162c2464ae0
-289       0.123307   false     "--merge"     0.462046  true      0x5a9d7c139808d6ce
-250       3.20498    false     "--merge"     0.374636  true      0x5ebdbec42059437a
-111       1.1393     true      "--no-merge"  0.434333  true      0x65284002168d37d3
-131       3.29708    true      "--no-merge"  1.24814   true      0x65f877b676efc9fc
-229       1.02689    false     "--no-merge"  3.59456   true      0x7124db4d6f6314cf
-322       0.0224792  false     "--merge"     0.593247  true      0x7e47994e6291b490
-467       2.38309    false     "--merge"     0.67555   true      0x817a70be05985ccc
-408       0.729748   true      "--no-merge"  0.278457  true      0x8204005bdacd7a6b
-112       1.23332    false     "--no-merge"  2.31077   true      0x9308e108cdf39400
-468       0.273213   true      "--merge"     0.486187  true      0x9a2553ab11c27b73
-68        1.94288    false     "--no-merge"  0.589714  true      0x9bad16064299be3f
-24        0.219878   true      "--no-merge"  1.10291   true      0xa73e54b6f587a0e7
-172       1.19805    false     "--merge"     2.67302   true      0xa861ff388d2549f1
-378       0.91934    false     "--merge"     0.152135  true      0xaa34124ad9e20340
-94        1.43515    true      "--no-merge"  2.80272   true      0xb395654be0d25aa6
-314       0.290156   true      "--no-merge"  0.595531  true      0xbaccff6695e0d16d
-300       0.181096   false     "--merge"     0.122076  true      0xceb5264c94a694c7
-37        1.29263    true      "--merge"     0.929354  true      0xcf6a68e63a3f2e1c
-351       0.0859942  false     "--no-merge"  1.71037   true      0xd5daf4d3367a356a
-39        0.774815   true      "--no-merge"  1.7763    true      0xffd90fa72a8d8c77
+282       0.533323   true      "--no-merge"  0.49751   true      0x0363723a72e66764
+484       0.348535   false     "--merge"     0.30735   true      0x0a2a40204093afb0
+435       0.318843   false     "--no-merge"  0.887813  true      0x245d07250c1791f0
+337       2.13031    true      "--no-merge"  1.20018   true      0x2c5bfdb71cb9c176
+195       0.0305376  true      "--no-merge"  0.71332   true      0x5e8b48e0f8829612
+367       0.134364   false     "--no-merge"  0.151851  true      0x9a5ef9a0db01b1b4
+424       4.00509    true      "--merge"     0.371395  true      0xa9c87d3ea87798e7
+404       0.168736   false     "--merge"     0.48096   true      0xc1b81b37614579b0
+194       2.82079    true      "--no-merge"  0.515405  true      0xd44f6773fc6efb00
+
+
+
+Table with 54 rows, 7 columns:
+f1_value  f2_value    f3_value  f4_value      response   complete  id
+─────────────────────────────────────────────────────────────────────────────────────
+383       2.50828     true      "--no-merge"  0.493274   true      0x00567e8b149d6764
+282       0.533323    true      "--no-merge"  0.49751    true      0x0363723a72e66764
+484       0.348535    false     "--merge"     0.30735    true      0x0a2a40204093afb0
+432       2.72323     true      "--no-merge"  0.447859   true      0x10e69998197d3d4b
+393       0.104914    false     "--merge"     1.29973    true      0x13ac4dca555bbb9f
+506       3.77133     true      "--merge"     2.19816    true      0x19b258ef7ccf14ba
+280       0.705403    false     "--merge"     0.791397   true      0x1c2cea7f050d07ab
+435       0.318843    false     "--no-merge"  0.887813   true      0x245d07250c1791f0
+337       2.13031     true      "--no-merge"  1.20018    true      0x2c5bfdb71cb9c176
+107       0.0616653   true      "--no-merge"  1.40766    true      0x37900a05de2ffbeb
+490       0.0545033   false     "--no-merge"  0.297057   true      0x3ccc2185d34e8bdc
+388       0.423003    false     "--no-merge"  0.285466   true      0x3e4e86948f929b20
+226       0.167104    true      "--no-merge"  0.684276   true      0x5a7a7d6cb5509deb
+411       2.05808     false     "--merge"     0.843146   true      0x5c9d3b8c10f6bdd8
+195       0.0305376   true      "--no-merge"  0.71332    true      0x5e8b48e0f8829612
+426       0.668689    true      "--merge"     2.01037    true      0x64eef3bdb50d3f86
+76        1.41415     false     "--merge"     1.55965    true      0x67ef2d803d0f775a
+395       1.02713     true      "--merge"     0.294564   true      0x6ccce7bea11f7c40
+421       0.218675    false     "--no-merge"  0.444635   true      0x6eb5747953b5ed95
+390       0.227741    true      "--merge"     0.828888   true      0x79b213aba6ae4a79
+368       0.493577    false     "--no-merge"  0.581821   true      0x7f1f1b9913791129
+407       0.272852    true      "--merge"     0.626909   true      0x7fdc3bcc6c47fa9d
+402       0.233224    false     "--merge"     0.330767   true      0x8137135068367beb
+412       0.886558    false     "--merge"     1.00748    true      0x85183cb53e083794
+470       0.116018    false     "--no-merge"  1.73099    true      0x913c884d726bc81b
+⋮
+397       0.10941     true      "--merge"     1.30336    true      0x9d905d348fae2782
+332       1.3396      false     "--merge"     1.29031    true      0x9dc7d252d07feef7
+363       0.00723561  false     "--no-merge"  0.493997   true      0xa9527fc4f0a6db9f
+424       4.00509     true      "--merge"     0.371395   true      0xa9c87d3ea87798e7
+85        2.59126     true      "--merge"     2.09594    true      0xb2a5e118495468cb
+182       1.41895     false     "--merge"     0.235964   true      0xb5fbcca132dfa685
+148       2.53847     true      "--merge"     0.190615   true      0xb9330657a89c410e
+87        1.71622     true      "--no-merge"  1.07069    true      0xbbc9162ef5005ba7
+404       0.168736    false     "--merge"     0.48096    true      0xc1b81b37614579b0
+47        1.3565      true      "--merge"     0.182086   true      0xc4c537a649c0881e
+354       2.37112     false     "--merge"     4.06       true      0xc6961123d3c63595
+81        0.934288    true      "--no-merge"  1.93671    true      0xc9282d738c826bf0
+94        0.0252242   false     "--no-merge"  0.759726   true      0xcabff86ac94d81ba
+238       0.166296    true      "--merge"     0.384877   true      0xcb3d82c87570d646
+35        0.389046    true      "--no-merge"  0.192987   true      0xd1c0bdfbfa747a0f
+194       2.82079     true      "--no-merge"  0.515405   true      0xd44f6773fc6efb00
+358       0.0414458   true      "--merge"     0.534009   true      0xd57689ba09b0a2ca
+411       0.467605    true      "--merge"     0.257621   true      0xd5b0276f13204594
+365       0.0401457   false     "--merge"     1.74944    true      0xdca8a9208f7f2523
+435       1.52373     false     "--no-merge"  2.24847    true      0xe470186aa2521da1
+408       1.49526     true      "--no-merge"  3.74246    true      0xe4b8708adea64edb
+458       0.490276    false     "--merge"     0.269367   true      0xf0c6995ccdd5081c
+394       0.141915    false     "--merge"     0.0737769  true      0xf32c1a0726c0f37d
+104       0.395381    false     "--no-merge"  1.99718    true      0xffa3dcce29eb1ed2
 #+end_example
 
 Obviously, workers would check for repeated measurements during generation of new measurements,
@@ -8464,3 +8516,197 @@ repeated entries in a cleaning step.
 - Journée au vert
   - Lundi-Mardi 5-6 Mars 2018
     
+*** [2018-02-02 Fri]
+- Finished the OFII process
+**** Saving a JuliaDB table to disk
+Defining useful functions:
+
+#+CALL: startup_distributed_tables()
+
+#+RESULTS:
+#+begin_example
+Task (done) @0x00007fa4b0343c70
+
+4-element Array{Int64,1}:
+ 10
+ 11
+ 12
+ 13
+
+
+
+#+end_example
+
+Now, let's write the computed tables to a ~csv~ file:
+
+#+HEADER: :results output :session *Julia*
+#+HEADER: :tangle doe_utils/distributed_experiments_concept.jl
+#+BEGIN_SRC julia
+using FileIO
+
+results = RemoteChannel(() -> Channel(32))
+
+for p in workers()
+    @async remote_do(measure, p, results)
+end
+
+t = take!(results)
+
+for i = 1:length(workers()) - 1
+    t = merge(t, take!(results))
+end
+
+t
+
+FileIO.save("./test.csv", t)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+RemoteChannel{Channel{Any}}(1, 1, 43)
+
+
+
+Table with 5 rows, 7 columns:
+f1_value  f2_value   f3_value  f4_value      response  complete  id
+───────────────────────────────────────────────────────────────────────────────────
+491       1.8934     false     "--merge"     2.58991   true      0x0b54674d56bbc67f
+460       1.56159    true      "--no-merge"  0.621704  true      0x9c0df4dc8f00c33c
+338       0.265022   true      "--no-merge"  1.6651    true      0xabeccc452d5ecec5
+275       0.0792945  true      "--no-merge"  0.968435  true      0xb8a0e51e6f83a45b
+208       0.207947   false     "--merge"     0.168493  true      0xeb654e38230a2ee8
+
+
+
+Table with 24 rows, 7 columns:
+f1_value  f2_value   f3_value  f4_value      response   complete  id
+────────────────────────────────────────────────────────────────────────────────────
+3         0.466884   true      "--merge"     1.26028    true      0x047a056f1c422c20
+491       1.8934     false     "--merge"     2.58991    true      0x0b54674d56bbc67f
+457       1.12631    true      "--no-merge"  0.0496524  true      0x0b77ee18965d37c6
+315       0.0848518  false     "--no-merge"  3.40648    true      0x1440cca65e7bacd1
+185       0.636221   true      "--no-merge"  1.168      true      0x2050a2ab047cc318
+189       0.723873   true      "--merge"     0.817965   true      0x23fca485b531c11c
+74        0.634778   false     "--no-merge"  1.50434    true      0x368a09274e3ac91d
+369       0.81215    false     "--merge"     1.89922    true      0x4569ea338499e27a
+334       0.443634   true      "--no-merge"  2.58926    true      0x4dbbae51cdc22ca0
+93        1.7604     true      "--merge"     0.364559   true      0x4dc67039030da1a3
+477       0.947876   true      "--no-merge"  0.42444    true      0x4fb323909358be22
+110       1.65974    false     "--no-merge"  0.25735    true      0x5f3741933b936726
+426       1.258      false     "--merge"     0.282177   true      0x65a5b6a0ab044671
+245       0.0805777  false     "--no-merge"  1.58031    true      0x79fdf6a8cc5bb04b
+183       1.32509    true      "--no-merge"  0.5031     true      0x878283cee583a431
+223       2.76347    true      "--merge"     2.31278    true      0x90e41af9c0b04d71
+460       1.56159    true      "--no-merge"  0.621704   true      0x9c0df4dc8f00c33c
+338       0.265022   true      "--no-merge"  1.6651     true      0xabeccc452d5ecec5
+466       0.668824   false     "--merge"     6.5149     true      0xb7902dfbd72a235a
+275       0.0792945  true      "--no-merge"  0.968435   true      0xb8a0e51e6f83a45b
+294       0.71041    false     "--merge"     0.210697   true      0xbbcb3ff947bdd2c0
+208       0.207947   false     "--merge"     0.168493   true      0xeb654e38230a2ee8
+330       0.839523   false     "--merge"     1.34819    true      0xf51383992db99cb2
+348       0.193002   true      "--no-merge"  0.980365   true      0xf7e7150446bff13e
+
+#+end_example
+**** Computing Distributed Plackett-Burman Experiments
+#+CALL: define_primes_divisible_offset()
+
+#+RESULTS:
+: 
+: 
+: primes_divisible_offset (generic function with 1 method)
+
+#+CALL: define_julia_paley()
+
+#+RESULTS:
+: binary_search (generic function with 1 method)
+: 
+: paley (generic function with 1 method)
+
+#+CALL: define_julia_plackett_burman()
+
+#+RESULTS:
+: plackett_burman (generic function with 1 method)
+
+#+NAME: julia_clean_rmprocs_addprocs
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+if length(workers()) > 1
+    rmprocs(workers())
+end
+
+addprocs()
+#+END_SRC
+
+#+NAME: define_juliadb_table_utils
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+import JuliaDB
+
+@everywhere begin
+    using JuliaDB
+
+    mutable struct Measurement
+        f1_value::Int64
+        f2_value::Float64
+        f3_value::Bool
+        f4_value::String
+        response::Float64
+        complete::Bool
+        id::UInt64
+
+        Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
+        Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
+    end
+
+    function random_measurement()
+        Measurement(rand(1:512), randexp(), bitrand()[1], rand(["--merge", "--no-merge"]), randexp())
+    end
+
+    function init_dummy_table()
+        n = rand(4:10)
+
+        parameters = Array{Measurement, 1}(n)
+
+        # Generating meaningless, random parameters
+        for i = 1:n
+            parameters[i] = random_measurement()
+        end
+
+        names = fieldnames(Measurement)
+
+        return table([[getfield(p, n) for p in parameters] for n in names]...,
+                    names = names, pkey = :id)
+    end
+
+    function contains(t::NextTable, entry::Measurement)
+        return entry.id in select(t, :id)
+    end
+
+    function add_complete_unique_entry!(t::NextTable, entry::Measurement)
+        if entry.complete && !contains(t, entry)
+            row_expr::Expr = :@NT
+
+            for name in fieldnames(Measurement)
+                push!(row_expr.args, Expr(Symbol("="), name, getfield(entry, name)))
+            end
+
+            push!(rows(t), eval(row_expr))
+
+            # Sorting 't' by its primary key
+            t = table(t, pkey = t.pkey, copy = false)
+        end
+
+        t
+    end
+
+    function measure(channel::RemoteChannel)
+        put!(channel, init_dummy_table())
+    end
+end
+#+END_SRC
+
+#+RESULTS: define_juliadb_tables
+: 
+: 
