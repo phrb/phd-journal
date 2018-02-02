@@ -8610,6 +8610,8 @@ f1_value  f2_value   f3_value  f4_value      response   complete  id
 
 #+end_example
 **** Computing Distributed Plackett-Burman Experiments
+Needed calls:
+
 #+CALL: define_primes_divisible_offset()
 
 #+RESULTS:
@@ -8629,15 +8631,32 @@ f1_value  f2_value   f3_value  f4_value      response   complete  id
 #+RESULTS:
 : plackett_burman (generic function with 1 method)
 
+Utility to clean workspace and re-add processes:
+
 #+NAME: julia_clean_rmprocs_addprocs
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
+workspace()
+
 if length(workers()) > 1
     rmprocs(workers())
 end
 
 addprocs()
 #+END_SRC
+
+#+RESULTS: julia_clean_rmprocs_addprocs
+: 
+: 
+: Task (done) @0x00007fa4ae505510
+: 
+: 4-element Array{Int64,1}:
+:  14
+:  15
+:  16
+:  17
+
+Utilities for creating tables from arbitrary measurements:
 
 #+NAME: define_juliadb_table_utils
 #+HEADER: :results output :session *Julia*
@@ -8648,65 +8667,104 @@ import JuliaDB
     using JuliaDB
 
     mutable struct Measurement
-        f1_value::Int64
-        f2_value::Float64
-        f3_value::Bool
-        f4_value::String
+        parameters::Dict{Symbol, Any}
         response::Float64
         complete::Bool
         id::UInt64
 
-        Measurement(f1, f2, f3, f4, r) = new(f1, f2, f3, f4, r, true, hash("$f1$f2$f3$f4"))
-        Measurement(f1, f2, f3, f4) = new(f1, f2, f3, f4, -1, false, hash("$f1$f2$f3$f4"))
+        Measurement(parameters, r) = new(parameters, r, true, hash(string(collect(values(parameters))...)))
+        Measurement(parameters) = new(parameters, -1, false, hash(string(collect(values(parameters))...)))
     end
 
-    function random_measurement()
-        Measurement(rand(1:512), randexp(), bitrand()[1], rand(["--merge", "--no-merge"]), randexp())
-    end
+    function init_table(measurement::Measurement)
+        parameters = collect(keys(measurement.parameters))
+        measurement_names = [name for name in fieldnames(measurement) if name != :parameters]
 
-    function init_dummy_table()
-        n = rand(4:10)
+        column_names = vcat(parameters, measurement_names)
 
-        parameters = Array{Measurement, 1}(n)
-
-        # Generating meaningless, random parameters
-        for i = 1:n
-            parameters[i] = random_measurement()
-        end
-
-        names = fieldnames(Measurement)
-
-        return table([[getfield(p, n) for p in parameters] for n in names]...,
-                    names = names, pkey = :id)
+        row_values = vcat(collect(values(measurement.parameters)),
+                          [getfield(measurement, f) for f in measurement_names])
+                          
+        return table([[r] for r in row_values]..., names = column_names, pkey = :id)
     end
 
     function contains(t::NextTable, entry::Measurement)
         return entry.id in select(t, :id)
     end
 
-    function add_complete_unique_entry!(t::NextTable, entry::Measurement)
-        if entry.complete && !contains(t, entry)
-            row_expr::Expr = :@NT
+    #function add_complete_unique_entry!(t::NextTable, entry::Measurement)
+    #    if entry.complete && !contains(t, entry)
+    #        row_expr::Expr = :@NT
 
-            for name in fieldnames(Measurement)
-                push!(row_expr.args, Expr(Symbol("="), name, getfield(entry, name)))
-            end
+    #        for name in fieldnames(Measurement)
+    #            push!(row_expr.args, Expr(Symbol("="), name, getfield(entry, name)))
+    #        end
 
-            push!(rows(t), eval(row_expr))
+    #        push!(rows(t), eval(row_expr))
 
-            # Sorting 't' by its primary key
-            t = table(t, pkey = t.pkey, copy = false)
-        end
+    #        # Sorting 't' by its primary key
+    #        t = table(t, pkey = t.pkey, copy = false)
+    #    end
 
-        t
-    end
-
-    function measure(channel::RemoteChannel)
-        put!(channel, init_dummy_table())
-    end
+    #    t
+    #end
 end
 #+END_SRC
 
-#+RESULTS: define_juliadb_tables
+#+RESULTS: define_juliadb_table_utils
 : 
 : 
+
+Now we can create tables with different kinds of measurements:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+parameters = Dict{Symbol, Any}([(:f1, 2.33), (:f2, 3),
+                                (:f3, "--merge"),
+                                (:f4, false), (:f5, 993.3)])
+
+m = Measurement(parameters, 3312.93)
+
+init_table(m)
+
+parameters = Dict{Symbol, Any}([(:size_i, 32), (:size_j, 64),
+                                (:method, "NEWTON"),
+                                (:unroll, false), (:block_size, 4),
+                                (:cores, 2)])
+
+m = Measurement(parameters, 0.0112)
+
+init_table(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Dict{Symbol,Any} with 5 entries:
+  :f1 => 2.33
+  :f3 => "--merge"
+  :f5 => 993.3
+  :f2 => 3
+  :f4 => false
+
+Measurement(Dict{Symbol,Any}(Pair{Symbol,Any}(:f1, 2.33),Pair{Symbol,Any}(:f3, "--merge"),Pair{Symbol,Any}(:f5, 993.3),Pair{Symbol,Any}(:f2, 3),Pair{Symbol,Any}(:f4, false)), 3312.93, true, 0xfbcf741c072a0fae)
+
+Table with 1 rows, 8 columns:
+f1    f3         f5     f2  f4     response  complete  id
+─────────────────────────────────────────────────────────────────────────
+2.33  "--merge"  993.3  3   false  3312.93   true      0xfbcf741c072a0fae
+
+Dict{Symbol,Any} with 6 entries:
+  :cores      => 2
+  :method     => "NEWTON"
+  :unroll     => false
+  :size_j     => 64
+  :block_size => 4
+  :size_i     => 32
+
+Measurement(Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 2),Pair{Symbol,Any}(:method, "NEWTON"),Pair{Symbol,Any}(:unroll, false),Pair{Symbol,Any}(:size_j, 64),Pair{Symbol,Any}(:block_size, 4),Pair{Symbol,Any}(:size_i, 32)), 0.0112, true, 0xa58eff5496b97835)
+
+Table with 1 rows, 9 columns:
+cores  method    unroll  size_j  block_size  size_i  response  complete  id
+───────────────────────────────────────────────────────────────────────────────────────────
+2      "NEWTON"  false   64      4           32      0.0112    true      0xa58eff5496b97835
+#+end_example
