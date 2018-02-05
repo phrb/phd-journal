@@ -8680,16 +8680,20 @@ import FileIO
         Measurement(parameters) = new(parameters, -1, false, hash(string(collect(values(parameters))...)))
     end
 
-    function init_table(measurement::Measurement)
-        parameters = collect(keys(measurement.parameters))
-        measurement_names = [name for name in fieldnames(measurement) if name != :parameters]
+    function init_table(measurements::Array{Measurement, 1})
+        rows = Array{Any, 1}()
 
+        parameters = collect(keys(measurements[1].parameters))
+        measurement_names = [name for name in fieldnames(measurements[1]) if name != :parameters]
         column_names = vcat(parameters, measurement_names)
 
-        row_values = vcat(collect(values(measurement.parameters)),
-                          [getfield(measurement, f) for f in measurement_names])
-                          
-        return table([[r] for r in row_values]..., names = column_names, pkey = :id)
+        for measurement in measurements
+            push!(rows, vcat(collect(values(measurement.parameters)),
+                             [getfield(measurement, f) for f in measurement_names]))
+        end
+
+        return table([[r[i] for r in rows] for i = 1:length(rows[1])]...,
+                     names = column_names, pkey = :id)
     end
 
     function contains(t::NextTable, entry::Measurement)
@@ -8730,6 +8734,7 @@ end
 #+RESULTS: define_juliadb_table_utils
 : 
 : 
+: 
 
 Now we can create tables with different kinds of measurements:
 
@@ -8741,7 +8746,7 @@ parameters = Dict{Symbol, Any}([(:f1, 2.33), (:f2, 3),
 
 m = Measurement(parameters, 3312.93)
 
-init_table(m)
+init_table([m])
 
 parameters = Dict{Symbol, Any}([(:size_i, 32), (:size_j, 64),
                                 (:method, "NEWTON"),
@@ -8750,7 +8755,7 @@ parameters = Dict{Symbol, Any}([(:size_i, 32), (:size_j, 64),
 
 m = Measurement(parameters, 0.0112)
 
-t = init_table(m)
+t = init_table([m])
 
 parameters = Dict{Symbol, Any}([(:size_i, 64), (:size_j, 32),
                                 (:method, "DEEPL"),
@@ -8760,6 +8765,21 @@ parameters = Dict{Symbol, Any}([(:size_i, 64), (:size_j, 32),
 m = Measurement(parameters, 0.3202)
 
 add_complete_unique_entry!(t, m)
+
+parameters = [Dict{Symbol, Any}([(:size_i, 32), (:size_j, 64),
+                                 (:method, "NEWTON"),
+                                 (:unroll, false), (:block_size, 4),
+                                 (:cores, 2)]),
+              Dict{Symbol, Any}([(:size_i, 64), (:size_j, 32),
+                                 (:method, "DEEPL"),
+                                 (:unroll, true), (:block_size, 2),
+                                 (:cores, 4)])]
+
+m = [Measurement(p, rand()) for p in parameters]
+
+t = init_table(m)
+
+println(t[2])
 #+END_SRC
 
 #+RESULTS:
@@ -8808,6 +8828,22 @@ cores  method    unroll  size_j  block_size  size_i  response  complete  id
 ───────────────────────────────────────────────────────────────────────────────────────────
 4      "DEEPL"   true    32      2           64      0.3202    true      0x16a9e93579991a67
 2      "NEWTON"  false   64      4           32      0.0112    true      0xa58eff5496b97835
+
+2-element Array{Dict{Symbol,Any},1}:
+ Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 2),Pair{Symbol,Any}(:method, "NEWTON"),Pair{Symbol,Any}(:unroll, false),Pair{Symbol,Any}(:size_j, 64),Pair{Symbol,Any}(:block_size, 4),Pair{Symbol,Any}(:size_i, 32))
+ Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 4),Pair{Symbol,Any}(:method, "DEEPL"),Pair{Symbol,Any}(:unroll, true),Pair{Symbol,Any}(:size_j, 32),Pair{Symbol,Any}(:block_size, 2),Pair{Symbol,Any}(:size_i, 64))
+
+2-element Array{Measurement,1}:
+ Measurement(Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 2),Pair{Symbol,Any}(:method, "NEWTON"),Pair{Symbol,Any}(:unroll, false),Pair{Symbol,Any}(:size_j, 64),Pair{Symbol,Any}(:block_size, 4),Pair{Symbol,Any}(:size_i, 32)), 0.51671, true, 0xa58eff5496b97835)
+ Measurement(Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 4),Pair{Symbol,Any}(:method, "DEEPL"),Pair{Symbol,Any}(:unroll, true),Pair{Symbol,Any}(:size_j, 32),Pair{Symbol,Any}(:block_size, 2),Pair{Symbol,Any}(:size_i, 64)), 0.844448, true, 0x16a9e93579991a67)
+
+Table with 2 rows, 9 columns:
+cores  method    unroll  size_j  block_size  size_i  response  complete  id
+───────────────────────────────────────────────────────────────────────────────────────────
+4      "DEEPL"   true    32      2           64      0.844448  true      0x16a9e93579991a67
+2      "NEWTON"  false   64      4           32      0.51671   true      0xa58eff5496b97835
+
+(cores = 2, method = "NEWTON", unroll = false, size_j = 64, block_size = 4, size_i = 32, response = 0.5167097013794679, complete = true, id = 0xa58eff5496b97835)
 #+end_example
 *** [2018-02-05 Mon]
 **** Task List for FPGA & GPU Experiments
@@ -8816,20 +8852,25 @@ CLOSED: [2018-02-05 Mon 09:43]
 :LOGBOOK:
 - State "DONE"       from              [2018-02-05 Mon 09:43]
 :END:
-***** TODO Configure access to GTX-980 at CCSL
+***** DONE Configure access to GTX-980 at CCSL
+CLOSED: [2018-02-05 Mon 16:01]
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2018-02-05 Mon 16:01]
 - State "TODO"       from              [2018-02-05 Mon 09:45]
 :END:
 - Install Julia 0.6.2
   - Install necessary packages
 - Check CUDA version
 - Check disk quota
-***** TODO Adapt search space from CUDA autotuner to perform experiments
+***** DONE Adapt search space from CUDA autotuner to perform experiments
+CLOSED: [2018-02-05 Mon 16:10]
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2018-02-05 Mon 16:10]
 - State "TODO"       from              [2018-02-05 Mon 09:45]
 :END:
-***** TODO Write script to generate commands from designs
+***** STARTED Write script to generate commands from designs
 :LOGBOOK:
+- State "STARTED"    from "TODO"       [2018-02-05 Mon 16:10]
 - State "TODO"       from              [2018-02-05 Mon 09:45]
 :END:
 ***** TODO Write script to log system state periodically
@@ -8914,6 +8955,31 @@ function generate_design(factors::Array{Factor, 1})
 end
 
 function generate_experiments(design::Array{Int, 2}, factors::Array{Factor, 1})
+    design_size = size(design)
+    factors_length = length(factors)
+
+    measurements = Array{Measurement, 1}()
+
+    for i = 1:design_size[2]
+        levels = Dict{Symbol, Any}()
+
+        for j = 1:factors_length
+            if design[i, j] == 1
+                levels[Symbol(factors[j].name)] = factors[j].max
+            else
+                levels[Symbol(factors[j].name)] = factors[j].min
+            end
+        end
+
+        push!(measurements, Measurement(levels))
+    end
+
+    init_table(measurements)
+end
+
+function generate_commands(experiments::NextTable)
+    for row in experiments
+    end
 end
 
 #+END_SRC
@@ -8936,6 +9002,8 @@ generate_search_space (generic function with 1 method)
 generate_design (generic function with 1 method)
 
 generate_experiments (generic function with 1 method)
+
+generate_commands (generic function with 1 method)
 #+end_example
 
 #+HEADER: :results output :session *Julia*
@@ -8944,6 +9012,9 @@ generate_experiments (generic function with 1 method)
 function run_experiments()
     factors = generate_search_space("../parameters/nvcc_flags.json")
     design = generate_design(factors)
+    experiments = generate_experiments(design, factors)
+
+    save_to_disk(experiments, "./experiments.csv")
 end
 
 run_experiments()
@@ -8953,25 +9024,23 @@ run_experiments()
 #+begin_example
 run_experiments (generic function with 1 method)
 
-20×19 Array{Int64,2}:
-  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1
-  1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1
-  1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1
- -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1
- -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1
- -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1
- -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1
-  1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1
- -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1
-  1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1
- -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1
-  1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1
-  1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1
-  1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1
-  1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1
- -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1
- -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1
-  1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1
- -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1
- -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
+Symbol[Symbol(" --use_fast_math"), Symbol("-Xptxas --opt-level="), Symbol(" --gpu-architecture="), Symbol(" --ftz="), Symbol("-Xptxas --def-store-cache="), Symbol("-Xptxas --force-store-cache="), Symbol("-Xptxas --force-load-cache="), Symbol("-Xptxas --allow-expensive-optimizations="), Symbol(" --fmad="), Symbol("-Xptxas --fmad="), Symbol(" --optimize="), Symbol("-Xnvlink --preserve-relocs"), Symbol(" --relocatable-device-code="), Symbol(" --prec-div="), Symbol("-Xptxas --def-load-cache="), Symbol("-Xptxas --maxrregcount="), Symbol(" --prec-sqrt="), Symbol(" --no-align-double"), :response, :complete, :id]
 #+end_example
