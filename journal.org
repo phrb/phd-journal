@@ -6923,9 +6923,9 @@ We can try using a regular ~for~ instead of the comprehesion, using
 the ~@inbounds~ macro, and giving size hints to the compiler.
 This gives us a ~420x speedup:
 
-#+HEADER: :results output :session *Julia*
 #+NAME: define_primes_divisible_offset
-#+HEADER: :tangle doe_utils/plackett_burman.jl
+#+HEADER: :results output :session *Julia*
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
 #+BEGIN_SRC julia
 using Primes
 
@@ -7332,7 +7332,7 @@ Let's check for the validity of the designs created with our function:
 
 #+NAME: define_julia_is_plackett_burman
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle doe_utils/plackett_burman.jl
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
 #+BEGIN_SRC julia
 using StatsBase
 
@@ -7425,7 +7425,7 @@ to only allocate one matrix for the Plackett-Burman construction:
 
 #+NAME: define_julia_paley
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle doe_utils/plackett_burman.jl
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
 #+BEGIN_SRC julia
 function binary_search(array::Array{Int, 1}, target::Int)
     n::Int = length(array)
@@ -7490,6 +7490,7 @@ end
 
 #+NAME: define_julia_plackett_burman
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
 #+BEGIN_SRC julia
 function plackett_burman(matrix_size::Int)
     # Paley construction works for primes where (p + 1) % 4 == 0
@@ -8227,7 +8228,7 @@ values. As before, we will use the hash of values as primary key for this table.
 
 #+NAME: startup_distributed_tables
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle doe_utils/distributed_experiments_concept.jl
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/distributed_experiments_concept.jl
 #+BEGIN_SRC julia
 if length(workers()) > 1
     rmprocs(workers())
@@ -8609,7 +8610,7 @@ f1_value  f2_value   f3_value  f4_value      response   complete  id
 348       0.193002   true      "--no-merge"  0.980365   true      0xf7e7150446bff13e
 
 #+end_example
-**** Computing Distributed Plackett-Burman Experiments
+**** JuliaDB Table Utilities for DoE
 Needed calls:
 
 #+CALL: define_primes_divisible_offset()
@@ -8648,23 +8649,26 @@ addprocs()
 #+RESULTS: julia_clean_rmprocs_addprocs
 : 
 : 
-: Task (done) @0x00007fa4ae505510
+: 
 : 
 : 4-element Array{Int64,1}:
-:  14
-:  15
-:  16
-:  17
+:  2
+:  3
+:  4
+:  5
 
 Utilities for creating tables from arbitrary measurements:
 
 #+NAME: define_juliadb_table_utils
 #+HEADER: :results output :session *Julia*
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/table_utils.jl
 #+BEGIN_SRC julia
 import JuliaDB
+import FileIO
 
 @everywhere begin
     using JuliaDB
+    using FileIO
 
     mutable struct Measurement
         parameters::Dict{Symbol, Any}
@@ -8692,22 +8696,34 @@ import JuliaDB
         return entry.id in select(t, :id)
     end
 
-    #function add_complete_unique_entry!(t::NextTable, entry::Measurement)
-    #    if entry.complete && !contains(t, entry)
-    #        row_expr::Expr = :@NT
+    function add_complete_unique_entry!(t::NextTable, entry::Measurement)
+        if entry.complete && !contains(t, entry)
+            row_expr::Expr = :@NT
 
-    #        for name in fieldnames(Measurement)
-    #            push!(row_expr.args, Expr(Symbol("="), name, getfield(entry, name)))
-    #        end
+            for name in fieldnames(Measurement)
+                if name == :parameters
+                    for key in keys(entry.parameters)
+                        push!(row_expr.args, Expr(Symbol("="), key,
+                                                  entry.parameters[key]))
+                    end
+                else
+                    push!(row_expr.args, Expr(Symbol("="), name,
+                                              getfield(entry, name)))
+                end
+            end
 
-    #        push!(rows(t), eval(row_expr))
+            push!(rows(t), eval(row_expr))
 
-    #        # Sorting 't' by its primary key
-    #        t = table(t, pkey = t.pkey, copy = false)
-    #    end
+            # Sorting 't' by its primary key
+            t = table(t, pkey = t.pkey, copy = false)
+        end
 
-    #    t
-    #end
+        t
+    end
+
+    function save_to_disk(t::NextTable, filename::String)
+        FileIO.save(filename, t)
+    end
 end
 #+END_SRC
 
@@ -8734,7 +8750,16 @@ parameters = Dict{Symbol, Any}([(:size_i, 32), (:size_j, 64),
 
 m = Measurement(parameters, 0.0112)
 
-init_table(m)
+t = init_table(m)
+
+parameters = Dict{Symbol, Any}([(:size_i, 64), (:size_j, 32),
+                                (:method, "DEEPL"),
+                                (:unroll, true), (:block_size, 2),
+                                (:cores, 4)])
+
+m = Measurement(parameters, 0.3202)
+
+add_complete_unique_entry!(t, m)
 #+END_SRC
 
 #+RESULTS:
@@ -8767,4 +8792,186 @@ Table with 1 rows, 9 columns:
 cores  method    unroll  size_j  block_size  size_i  response  complete  id
 ───────────────────────────────────────────────────────────────────────────────────────────
 2      "NEWTON"  false   64      4           32      0.0112    true      0xa58eff5496b97835
+
+Dict{Symbol,Any} with 6 entries:
+  :cores      => 4
+  :method     => "DEEPL"
+  :unroll     => true
+  :size_j     => 32
+  :block_size => 2
+  :size_i     => 64
+
+Measurement(Dict{Symbol,Any}(Pair{Symbol,Any}(:cores, 4),Pair{Symbol,Any}(:method, "DEEPL"),Pair{Symbol,Any}(:unroll, true),Pair{Symbol,Any}(:size_j, 32),Pair{Symbol,Any}(:block_size, 2),Pair{Symbol,Any}(:size_i, 64)), 0.3202, true, 0x16a9e93579991a67)
+
+Table with 2 rows, 9 columns:
+cores  method    unroll  size_j  block_size  size_i  response  complete  id
+───────────────────────────────────────────────────────────────────────────────────────────
+4      "DEEPL"   true    32      2           64      0.3202    true      0x16a9e93579991a67
+2      "NEWTON"  false   64      4           32      0.0112    true      0xa58eff5496b97835
+#+end_example
+*** [2018-02-05 Mon]
+**** Task List for FPGA & GPU Experiments
+***** DONE Generate larger plackett-burman sizes in julia
+CLOSED: [2018-02-05 Mon 09:43]
+:LOGBOOK:
+- State "DONE"       from              [2018-02-05 Mon 09:43]
+:END:
+***** TODO Configure access to GTX-980 at CCSL
+:LOGBOOK:
+- State "TODO"       from              [2018-02-05 Mon 09:45]
+:END:
+- Install Julia 0.6.2
+  - Install necessary packages
+- Check CUDA version
+- Check disk quota
+***** TODO Adapt search space from CUDA autotuner to perform experiments
+:LOGBOOK:
+- State "TODO"       from              [2018-02-05 Mon 09:45]
+:END:
+***** TODO Write script to generate commands from designs
+:LOGBOOK:
+- State "TODO"       from              [2018-02-05 Mon 09:45]
+:END:
+***** TODO Write script to log system state periodically
+:LOGBOOK:
+- State "TODO"       from              [2018-02-05 Mon 09:46]
+:END:
+- CPU, memory, GPU, network usage
+***** DONE Select target program (from Rodinia?)
+CLOSED: [2018-02-05 Mon 10:34]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2018-02-05 Mon 10:34]
+- State "TODO"       from              [2018-02-05 Mon 09:47]
+:END:
+***** TODO Use GCC parameters?
+:LOGBOOK:
+- State "TODO"       from              [2018-02-05 Mon 09:47]
+:END:
+**** Generating Experiments from Designs
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+cd("autotuning_screening_experiment/src/screening")
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *Julia*
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/screening.jl
+#+BEGIN_SRC julia
+using JSON
+
+include("plackett_burman.jl")
+include("table_utils.jl")
+
+abstract type Enumeration end
+abstract type Flag end
+abstract type Numeric end
+
+struct Factor
+    t::Type
+    name::String
+    min::String
+    max::String
+end
+
+function generate_search_space(filename::String)
+    json_data       = JSON.parsefile(filename)
+    parameter_types = ["flags", "enumeration_parameters", "numeric_parameters"]
+    parameters      = Array{Factor, 1}()
+
+    for key in keys(json_data)
+        prefix = json_data[key]["prefix"]
+        for parameter_type in parameter_types
+            if !(isempty(json_data[key][parameter_type]))
+                if parameter_type == "flags"
+                    for parameter in json_data[key][parameter_type]
+                        push!(parameters, Factor(Flag, "$prefix $parameter",
+                                                 "on", "off"))
+                    end
+                elseif parameter_type == "enumeration_parameters"
+                    for parameter in json_data[key][parameter_type]
+                        push!(parameters, Factor(Enumeration, 
+                                                 "$prefix $(parameter[1])",
+                                                 "$(parameter[2][1])",
+                                                 "$(parameter[2][end])"))
+                    end
+                else
+                    for parameter in json_data[key][parameter_type]
+                        push!(parameters, Factor(Numeric,
+                                                 "$prefix $(parameter[1])",
+                                                 "$(parameter[2]["min"])",
+                                                 "$(parameter[2]["max"])"))
+                    end
+                end
+            end
+        end
+    end
+    return parameters
+end
+
+function generate_design(factors::Array{Factor, 1})
+    plackett_burman(length(factors) + 2)
+end
+
+function generate_experiments(design::Array{Int, 2}, factors::Array{Factor, 1})
+end
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+plackett_burman (generic function with 1 method)
+
+
+
+
+
+
+
+
+generate_search_space (generic function with 1 method)
+
+generate_design (generic function with 1 method)
+
+generate_experiments (generic function with 1 method)
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+HEADER: :tangle autotuning_screening_experiment/src/screening/screening.jl
+#+BEGIN_SRC julia
+function run_experiments()
+    factors = generate_search_space("../parameters/nvcc_flags.json")
+    design = generate_design(factors)
+end
+
+run_experiments()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+run_experiments (generic function with 1 method)
+
+20×19 Array{Int64,2}:
+  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1
+  1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1
+  1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1
+ -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1
+ -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1
+ -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1
+ -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1
+  1  -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1
+ -1   1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1
+  1  -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1
+ -1   1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1
+  1   1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1
+  1   1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1
+  1   1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1
+  1  -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1
+ -1  -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1
+ -1   1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1
+  1  -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1
+ -1  -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1
+ -1   1   1  -1  -1  -1  -1   1  -1   1  -1   1   1   1   1  -1  -1   1  -1
 #+end_example
