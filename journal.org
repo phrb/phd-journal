@@ -8906,7 +8906,7 @@ the experimental design and running it:
 #+HEADER: :results output :session *Julia*
 #+HEADER: :tangle autotuning_screening_experiment/src/screening/screening.jl
 #+BEGIN_SRC julia
-using JSON, CSV
+using JSON, CSV, DataFrames
 
 include("plackett_burman.jl")
 include("table_utils.jl")
@@ -9060,8 +9060,79 @@ function generate_flags(experiments::DataFrame)
     flag_dict
 end
 
-function log_state(run_id::UInt)
+function log_state()
+    log_path = "../../data"
+
+    cpu = open("$log_path/cpu.txt", "a")
+    gpu = open("$log_path/gpu.txt", "a")
+
+    cpu_load = open("$log_path/cpu_load.txt", "a")
+    gpu_load = open("$log_path/gpu_load.txt", "a")
+
+    hw = open("$log_path/hw.txt", "a")
+    uname = open("$log_path/uname.txt", "a")
+
+    write(cpu, readstring(`lscpu`))
+    write(cpu, readstring(`cat /proc/cpuinfo`))
+
+    write(hw, readstring(`lshw`))
+    write(hw, readstring(`lspci`))
+
+    write(gpu, readstring(`nvidia-smi`))
+
+    write(uname, readstring(`uname -a`))
+
+    write(cpu_load, readstring(`date`))
+    write(cpu_load, readstring(`ps aux`))
+
+    write(gpu_load, readstring(`date`))
+    write(gpu_load, readstring(`nvidia-smi`))
+
+    close(cpu)
+    close(gpu)
+
+    close(cpu_load)
+    close(gpu_load)
+
+    close(hw)
+    close(uname)
 end
+
+function log_state(run_id::UInt)
+    log_path = "../../data"
+
+    cpu = open("$log_path/cpu.txt", "a")
+    gpu = open("$log_path/gpu.txt", "a")
+
+    cpu_load = open("$log_path/cpu_load.txt", "a")
+    gpu_load = open("$log_path/gpu_load.txt", "a")
+
+    hw = open("$log_path/hw.txt", "a")
+    uname = open("$log_path/uname.txt", "a")
+
+    measurements = open("$log_path/measurements.txt", "a")
+
+    write(cpu_load, readstring(`date`))
+    write(cpu_load, readstring(`ps aux`))
+
+    write(gpu_load, readstring(`date`))
+    write(gpu_load, readstring(`nvidia-smi`))
+
+    write(measurements, "$run_id ")
+    write(measurements, readstring(`date`))
+
+    close(cpu)
+    close(gpu)
+
+    close(cpu_load)
+    close(gpu_load)
+
+    close(hw)
+    close(uname)
+
+    close(measurements)
+end
+
 
 function compile_with_flags(flags::String)
     environment = copy(ENV)
@@ -9075,9 +9146,9 @@ function compile_with_flags(flags::String)
     run(c)
 end
 
-function measure(experiments::NextTable, id::UInt,
-                 data::Nullable{NextTable}, replications::Int)
-    measurement = filter(p->p.id == id, experiments)[1]
+function measure(experiments::DataFrame, id::UInt,
+                 data::DataFrame, replications::Int)
+    measurement = experiments[experiments[:id] .== id, :]
 
     for i = 1:replications
       directory = "../gaussian/"
@@ -9086,13 +9157,12 @@ function measure(experiments::NextTable, id::UInt,
 
       println(response)
 
-      measurement = NamedTuples.delete(measurement, :response)
-      measurement = NamedTuples.setindex(measurement, :response, response)
+      measurement[:response] = response
 
-      if isnull(data)
-          data = table(measurement)
+      if isempty(data)
+          data = measurement
       else
-          push!(rows(data), measurement)
+          append!(data, measurement)
       end
     end
 
@@ -9128,9 +9198,12 @@ generate_flags (generic function with 2 methods)
 
 log_state (generic function with 2 methods)
 
+log_state (generic function with 2 methods)
+
+
 compile_with_flags (generic function with 1 method)
 
-measure (generic function with 2 methods)
+measure (generic function with 3 methods)
 #+end_example
 
 #+HEADER: :results output :session *Julia*
@@ -9148,6 +9221,8 @@ function run_experiments()
     replications = 5
 
     data = DataFrame()
+
+    log_state()
 
     for (id, flag) in flags
         log_state(id)
@@ -9170,5 +9245,6 @@ run_experiments()
 **** Resume work on [[Generating Experiments from Designs]]
 - Finish functions for generating commands
 - Tweak search space for new CUDA version
+- Switch to the better-suited DataFrames for screening
 - Test dry-runs at remote machine
 - Start work on functions for logging system state
