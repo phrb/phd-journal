@@ -1046,7 +1046,7 @@ The downloaded source packages are in
 	‘/tmp/RtmpDcsxEu/downloaded_packages’
 #+end_example
 
-** Modifying and Analysing the FPGA Data Set
+** Modifying & Analysing the FPGA Data Set
 Cloning and updating the =legup-tuner= repository:
 
 #+NAME: update_legup_tuner
@@ -1061,6 +1061,12 @@ Export your path to =repository_dir= variable:
 pwd | tr -d "\n"
 #+end_src
 
+** Updating & Cloning Repositories
+*** GPU Autotuning Screening Experiment
+#+NAME: update_screening_experiment
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/autotuning_screening_experiment.git || (cd autotuning_screening_experiment && git pull)
+#+END_SRC
 * 2017
 ** November 
 *** [2017-11-28 Tue]
@@ -8888,7 +8894,7 @@ CLOSED: [2018-02-05 Mon 10:34]
 :LOGBOOK:
 - State "TODO"       from              [2018-02-05 Mon 09:47]
 :END:
-**** Generating Experiments from Designs
+**** Generating Experiments from Designs & Running Them
 If you started the Julia process on this journal's root directory,
 run the following:
 
@@ -8898,7 +8904,6 @@ cd("autotuning_screening_experiment/src/screening")
 #+END_SRC
 
 #+RESULTS:
-: ESS
 
 Now we define functions for loading the search space, generating
 the experimental design and running it:
@@ -8983,7 +8988,7 @@ function generate_experiments(design::Array{Int, 2}, factors::Array{Factor, 1})
 
     measurements = Array{Measurement, 1}()
 
-    for i = 1:design_size[2]
+    for i = 1:design_size[1]
         levels = Dict{Symbol, Any}()
 
         for j = 1:factors_length
@@ -8998,6 +9003,17 @@ function generate_experiments(design::Array{Int, 2}, factors::Array{Factor, 1})
     end
 
     init_dataframe(measurements)
+end
+
+
+function factor_dataframe(factors::Array{Factor, 1})
+    data = DataFrame()
+
+    for name in fieldnames(Factor)
+        data[name] = [getfield(f, name) for f in factors]
+    end
+
+    data
 end
 
 function generate_flags(experiments::NextTable)
@@ -9156,8 +9172,6 @@ function measure(experiments::DataFrame, id::UInt,
         c = Cmd(`./run.sh`, dir = directory)
         response = @elapsed run(c)
 
-        println(response)
-
         measurement[:response] = response
         measurement[:complete] = true
 
@@ -9194,6 +9208,9 @@ init_dataframe (generic function with 1 method)
 
 generate_experiments (generic function with 1 method)
 
+
+factor_dataframe (generic function with 1 method)
+
 generate_flags (generic function with 2 methods)
 
 generate_flags (generic function with 2 methods)
@@ -9205,8 +9222,12 @@ log_state (generic function with 2 methods)
 
 compile_with_flags (generic function with 1 method)
 
-measure (generic function with 3 methods)
+measure (generic function with 1 method)
 #+end_example
+
+Now we can launch the experiments. This next code block will attempt to launch
+the experiments in a local machine. The local machine must have a GPU.
+I intend to improve the workflow for this.
 
 #+HEADER: :results output :session *Julia*
 #+HEADER: :tangle autotuning_screening_experiment/src/screening/screening.jl
@@ -9217,6 +9238,23 @@ function run_experiments()
     experiments = generate_experiments(design, factors)
 
     CSV.write("./experiments.csv", experiments)
+
+    factor_names = [Symbol(f.name) for f in factors]
+
+    i = 1
+    while length(factor_names) != size(design, 2)
+        factor_names = vcat(factor_names, [Symbol(string("dummy", i))])
+        i += 1
+    end
+
+    screening_design = DataFrame(design)
+    screening_design = names!(screening_design, factor_names)
+
+    CSV.write("./screening_design.csv", screening_design)
+
+    factor_df = factor_dataframe(factors)
+
+    CSV.write("./factors.csv", factor_df)
 
     flags = generate_flags(experiments)
 
@@ -9241,13 +9279,70 @@ run_experiments()
 #+RESULTS:
 : run_experiments (generic function with 1 method)
 : 
-: Dict(0xfe66af48c262af2c=>"--use_fast_math -Xptxas --opt-level=0  --gpu-architecture=\"sm_52\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"true\"  --optimize=3 -Xnvlink --preserve-relocs  --relocatable-device-code=\"false\"  --prec-div=\"false\" -Xptxas --maxrregcount=128  --prec-sqrt=\"true\"",0x65254aeaf31bc341=>"-Xptxas --opt-level=3  --gpu-architecture=\"sm_30\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"false\"  --optimize=0 -Xnvlink --preserve-relocs  --relocatable-device-code=\"true\"  --prec-div=\"false\" -Xptxas --maxrregcount=128  --prec-sqrt=\"true\"  --no-align-double",0xa9fa0e6a30707ff2=>"--use_fast_math -Xptxas --opt-level=3  --gpu-architecture=\"sm_52\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"true\"  --optimize=3 -Xnvlink --preserve-relocs  --relocatable-device-code=\"true\"  --prec-div=\"true\" -Xptxas --maxrregcount=16  --prec-sqrt=\"false\"",0x5b23fdab05901b0d=>"-Xptxas --opt-level=0  --gpu-architecture=\"sm_30\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"false\"  --optimize=0 -Xnvlink --preserve-relocs  --relocatable-device-code=\"false\"  --prec-div=\"true\" -Xptxas --maxrregcount=16  --prec-sqrt=\"false\"",0x908ff3ef201c9737=>"--use_fast_math -Xptxas --opt-level=0  --gpu-architecture=\"sm_52\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"false\"  --optimize=0 -Xnvlink --preserve-relocs  --relocatable-device-code=\"false\"  --prec-div=\"false\" -Xptxas --maxrregcount=16  --prec-sqrt=\"true\"  --no-align-double",0x4092890845cda65d=>"-Xptxas --opt-level=3  --gpu-architecture=\"sm_52\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"true\"  --optimize=0  --relocatable-device-code=\"true\"  --prec-div=\"false\" -Xptxas --maxrregcount=16  --prec-sqrt=\"false\"  --no-align-double",0x697e2869ffed9d9f=>"-Xptxas --opt-level=3  --gpu-architecture=\"sm_52\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"false\"  --optimize=3  --relocatable-device-code=\"false\"  --prec-div=\"false\" -Xptxas --maxrregcount=128  --prec-sqrt=\"false\"",0x7da512dc57b677b0=>"--use_fast_math -Xptxas --opt-level=3  --gpu-architecture=\"sm_30\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"false\"  --optimize=3  --relocatable-device-code=\"true\"  --prec-div=\"false\" -Xptxas --maxrregcount=16  --prec-sqrt=\"true\"",0x2633034131592d7f=>"-Xptxas --opt-level=0  --gpu-architecture=\"sm_52\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"true\"  --optimize=3 -Xnvlink --preserve-relocs  --relocatable-device-code=\"true\"  --prec-div=\"true\" -Xptxas --maxrregcount=16  --prec-sqrt=\"true\"  --no-align-double",0xe245d30eade4cca9=>"--use_fast_math -Xptxas --opt-level=0  --gpu-architecture=\"sm_30\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"false\"  --optimize=3 -Xnvlink --preserve-relocs  --relocatable-device-code=\"true\"  --prec-div=\"false\" -Xptxas --maxrregcount=128  --prec-sqrt=\"false\"  --no-align-double",0x7a140e45812da6d1=>"--use_fast_math -Xptxas --opt-level=3  --gpu-architecture=\"sm_52\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"false\"  --optimize=0  --relocatable-device-code=\"false\"  --prec-div=\"true\" -Xptxas --maxrregcount=16  --prec-sqrt=\"true\"  --no-align-double",0xad0a083312fad9bc=>"-Xptxas --opt-level=0  --gpu-architecture=\"sm_52\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"true\"  --optimize=0  --relocatable-device-code=\"true\"  --prec-div=\"false\" -Xptxas --maxrregcount=128  --prec-sqrt=\"true\"",0x5c4ed7be1ed4dd48=>"-Xptxas --opt-level=0  --gpu-architecture=\"sm_52\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"false\"  --optimize=3  --relocatable-device-code=\"false\"  --prec-div=\"true\" -Xptxas --maxrregcount=128  --prec-sqrt=\"false\"  --no-align-double",0xdf0498ad058fa3f4=>"-Xptxas --opt-level=0  --gpu-architecture=\"sm_30\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"false\"  --optimize=3  --relocatable-device-code=\"true\"  --prec-div=\"true\" -Xptxas --maxrregcount=16  --prec-sqrt=\"true\"",0xc3276aa696f80981=>"--use_fast_math -Xptxas --opt-level=0  --gpu-architecture=\"sm_30\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"true\"  --optimize=0  --relocatable-device-code=\"false\"  --prec-div=\"false\" -Xptxas --maxrregcount=16  --prec-sqrt=\"false\"",0x567f696594cd3f97=>"--use_fast_math -Xptxas --opt-level=3  --gpu-architecture=\"sm_52\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"false\"  --optimize=0 -Xnvlink --preserve-relocs  --relocatable-device-code=\"true\"  --prec-div=\"true\" -Xptxas --maxrregcount=128  --prec-sqrt=\"false\"",0x2b47ab7954ee3102=>"-Xptxas --opt-level=3  --gpu-architecture=\"sm_30\"  --ftz=\"true\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"true\"  --optimize=3 -Xnvlink --preserve-relocs  --relocatable-device-code=\"false\"  --prec-div=\"false\" -Xptxas --maxrregcount=16  --prec-sqrt=\"false\"  --no-align-double",0x16ae1b71a43fabaa=>"--use_fast_math -Xptxas --opt-level=3  --gpu-architecture=\"sm_30\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cg\" -Xptxas --force-load-cache=\"ca\" -Xptxas --allow-expensive-optimizations=\"true\" -Xptxas --fmad=\"true\"  --optimize=3  --relocatable-device-code=\"false\"  --prec-div=\"true\" -Xptxas --maxrregcount=128  --prec-sqrt=\"true\"  --no-align-double",0x394c9a244d33a640=>"--use_fast_math -Xptxas --opt-level=0  --gpu-architecture=\"sm_30\"  --ftz=\"false\" -Xptxas --force-store-cache=\"cs\" -Xptxas --force-load-cache=\"lu\" -Xptxas --allow-expensive-optimizations=\"false\" -Xptxas --fmad=\"true\"  --optimize=0  --relocatable-device-code=\"true\"  --prec-div=\"true\" -Xptxas --maxrregcount=128  --prec-sqrt=\"false\"  --no-align-double")
-: 5
+: CSV.Sink(    CSV.Options:
+:         delim: ','
+:         quotechar: '"'
+:         escapechar: '\\'
+:         null: ""
+:         dateformat: dateformat"yyyy-mm-dd", IOBuffer(data=UInt8[...], readable=true, writable=true, seekable=true, append=false, size=0, maxsize=Inf, ptr=1, mark=-1), "./factors.csv", 23, true, String["t", "name", "min", "max"], false)
+
 *** [2018-02-06 Tue]
-**** Resume work on [[Generating Experiments from Designs]]
+**** Resume work on [[Generating Experiments from Designs & Running Them]]
 - Finish functions for generating commands
 - Tweak search space for new CUDA version
 - Switch to the better-suited DataFrames for screening
 - Test dry-runs at remote machine
 - Finish functions for logging system state
 - Gather data over night at remote machine
+*** [2018-02-07 Wed]
+**** Analysing Data from the GPU Autotuning Screening Experiment
+First make sure you have the data:
+
+#+CALL: update_screening_experiment()
+
+#+RESULTS:
+: Already up to date.
+
+Now we load the screening experiment and the results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(plotly)
+
+experiment_dir <- "autotuning_screening_experiment/data/3_replications/"
+
+factors_file <- paste(experiment_dir, "factors.csv", sep = "")
+results_file <- paste(experiment_dir, "results.csv", sep = "")
+
+factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
+results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+n <- c(make.names(trimws(factors$name, which = c("left"))),
+       "response", "complete", "id")
+
+ordered_results <- results[n]
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+results_no_replication <- results[rownames(unique(results["id"])), ]
+
+reg = lm(data = ordered_results, response ~ .)
+
+summary(reg)
+#+END_SRC
+
+#+RESULTS:
+: Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
+:   contrasts can be applied only to factors with 2 or more levels
+: Error in summary(reg) : object 'reg' not found
