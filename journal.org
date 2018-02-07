@@ -9310,15 +9310,16 @@ Now we load the screening experiment and the results:
 library(dplyr)
 library(tidyr)
 library(GGally)
-library(plotly)
 
 experiment_dir <- "autotuning_screening_experiment/data/3_replications/"
 
 factors_file <- paste(experiment_dir, "factors.csv", sep = "")
 results_file <- paste(experiment_dir, "results.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening.csv", sep = "")
 
 factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
 results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
 #+END_SRC
 
 #+RESULTS:
@@ -9343,7 +9344,12 @@ names(factors_t) <- factors$names
 
 factors_t
 
-head(ordered_results)
+ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
+ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
+ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
+ordered_results = ordered_results[names(ordered_results)!="complete"]
+ordered_results = ordered_results[names(ordered_results)!="id"]
+
 reg = lm(data = ordered_results, response ~ .)
 
 summary(reg)
@@ -9381,49 +9387,53 @@ t    "Enumeration"                  "Numeric"
 name "-Xptxas --force-store-cache=" "-Xptxas --maxrregcount="
 min  "cg"                           "16"                     
 max  "cs"                           "63"
-  X.Xnvlink...preserve.relocs X..no.align.double X..use_fast_math X..ftz.
-1                         off                off              off    true
-2                         off                off              off    true
-3                         off                off              off    true
-4                          on                off               on   false
-5                          on                off               on   false
-6                          on                off               on   false
-  X..prec.sqrt. X..gpu.architecture. X..optimize. X..relocatable.device.code.
-1          true                sm_52            0                        true
-2          true                sm_52            0                        true
-3          true                sm_52            0                        true
-4         false                sm_52            3                        true
-5         false                sm_52            3                        true
-6         false                sm_52            3                        true
-  X..prec.div. X.Xptxas...allow.expensive.optimizations. X.Xptxas...fmad.
-1        false                                     false             true
-2        false                                     false             true
-3        false                                     false             true
-4         true                                     false             true
-5         true                                     false             true
-6         true                                     false             true
-  X.Xptxas...force.load.cache. X.Xptxas...opt.level.
-1                           ca                     0
-2                           ca                     0
-3                           ca                     0
-4                           ca                     3
-5                           ca                     3
-6                           ca                     3
-  X.Xptxas...force.store.cache. X.Xptxas...maxrregcount.  response complete
-1                            cg                       63 30.808385     true
-2                            cg                       63 30.808482     true
-3                            cg                       63 30.782086     true
-4                            cs                       16  8.043973     true
-5                            cs                       16  8.043273     true
-6                            cs                       16  8.037448     true
-            id
-1 5.492321e+18
-2 5.492321e+18
-3 5.492321e+18
-4 1.224812e+19
-5 1.224812e+19
-6 1.224812e+19
-Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
-  contrasts can be applied only to factors with 2 or more levels
-Error in summary(reg) : object 'reg' not found
+
+Call:
+lm(formula = response ~ ., data = ordered_results)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.56269 -0.22200  0.09112  0.20055  0.57672 
+
+Coefficients:
+                                               Estimate Std. Error  t value
+(Intercept)                                    33.57297    0.17497  191.883
+X.Xnvlink...preserve.relocson                  -0.30019    0.08748   -3.431
+X..no.align.doubleon                           -0.27509    0.08748   -3.145
+X..use_fast_mathon                              0.17998    0.08748    2.057
+X..ftz.true                                    -0.20382    0.08748   -2.330
+X..prec.sqrt.true                              -0.57012    0.08748   -6.517
+X..gpu.architecture.sm_52                      -1.04361    0.08748  -11.929
+X..optimize.3                                  -0.32285    0.08748   -3.690
+X..relocatable.device.code.true                 0.09499    0.08748    1.086
+X..prec.div.true                                0.21469    0.08748    2.454
+X.Xptxas...allow.expensive.optimizations.true  -0.13169    0.08748   -1.505
+X.Xptxas...fmad.true                           -0.25843    0.08748   -2.954
+X.Xptxas...force.load.cache.lu                  0.28753    0.08748    3.287
+X.Xptxas...opt.level.3                        -23.89300    0.08748 -273.117
+X.Xptxas...force.store.cache.cs                -0.11205    0.08748   -1.281
+X.Xptxas...maxrregcount.63                     -0.35766    0.08748   -4.088
+                                              Pr(>|t|)    
+(Intercept)                                    < 2e-16 ***
+X.Xnvlink...preserve.relocson                 0.001317 ** 
+X..no.align.doubleon                          0.002978 ** 
+X..use_fast_mathon                            0.045610 *  
+X..ftz.true                                   0.024469 *  
+X..prec.sqrt.true                             5.86e-08 ***
+X..gpu.architecture.sm_52                     2.21e-15 ***
+X..optimize.3                                 0.000614 ***
+X..relocatable.device.code.true               0.283463    
+X..prec.div.true                              0.018155 *  
+X.Xptxas...allow.expensive.optimizations.true 0.139383    
+X.Xptxas...fmad.true                          0.005020 ** 
+X.Xptxas...force.load.cache.lu                0.001996 ** 
+X.Xptxas...opt.level.3                         < 2e-16 ***
+X.Xptxas...force.store.cache.cs               0.206980    
+X.Xptxas...maxrregcount.63                    0.000182 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3388 on 44 degrees of freedom
+Multiple R-squared:  0.9994,	Adjusted R-squared:  0.9992 
+F-statistic:  4991 on 15 and 44 DF,  p-value: < 2.2e-16
 #+end_example
