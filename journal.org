@@ -9328,7 +9328,7 @@ results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
 n <- c(make.names(trimws(factors$name, which = c("left"))),
        "response", "complete", "id")
 
-ordered_results <- results[n]
+ordered_results <- as.data.frame(results[n])
 #+END_SRC
 
 #+RESULTS:
@@ -9337,12 +9337,93 @@ ordered_results <- results[n]
 #+BEGIN_SRC R
 results_no_replication <- results[rownames(unique(results["id"])), ]
 
+factors_t <- t(factors)
+
+names(factors_t) <- factors$names
+
+factors_t
+
+head(ordered_results)
 reg = lm(data = ordered_results, response ~ .)
 
 summary(reg)
 #+END_SRC
 
 #+RESULTS:
-: Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
-:   contrasts can be applied only to factors with 2 or more levels
-: Error in summary(reg) : object 'reg' not found
+#+begin_example
+     [,1]                         [,2]                 [,3]              
+t    "Flag"                       "Flag"               "Flag"            
+name "-Xnvlink --preserve-relocs" " --no-align-double" " --use_fast_math"
+min  "on"                         "on"                 "on"              
+max  "off"                        "off"                "off"             
+     [,4]          [,5]            [,6]                   [,7]          
+t    "Enumeration" "Enumeration"   "Enumeration"          "Enumeration" 
+name " --ftz="     " --prec-sqrt=" " --gpu-architecture=" " --optimize="
+min  "true"        "true"          "sm_30"                "0"           
+max  "false"       "false"         "sm_52"                "3"           
+     [,8]                          [,9]          
+t    "Enumeration"                 "Enumeration" 
+name " --relocatable-device-code=" " --prec-div="
+min  "true"                        "true"        
+max  "false"                       "false"       
+     [,10]                                      [,11]            
+t    "Enumeration"                              "Enumeration"    
+name "-Xptxas --allow-expensive-optimizations=" "-Xptxas --fmad="
+min  "true"                                     "true"           
+max  "false"                                    "false"          
+     [,12]                         [,13]                 
+t    "Enumeration"                 "Enumeration"         
+name "-Xptxas --force-load-cache=" "-Xptxas --opt-level="
+min  "ca"                          "0"                   
+max  "lu"                          "3"                   
+     [,14]                          [,15]                    
+t    "Enumeration"                  "Numeric"                
+name "-Xptxas --force-store-cache=" "-Xptxas --maxrregcount="
+min  "cg"                           "16"                     
+max  "cs"                           "63"
+  X.Xnvlink...preserve.relocs X..no.align.double X..use_fast_math X..ftz.
+1                         off                off              off    true
+2                         off                off              off    true
+3                         off                off              off    true
+4                          on                off               on   false
+5                          on                off               on   false
+6                          on                off               on   false
+  X..prec.sqrt. X..gpu.architecture. X..optimize. X..relocatable.device.code.
+1          true                sm_52            0                        true
+2          true                sm_52            0                        true
+3          true                sm_52            0                        true
+4         false                sm_52            3                        true
+5         false                sm_52            3                        true
+6         false                sm_52            3                        true
+  X..prec.div. X.Xptxas...allow.expensive.optimizations. X.Xptxas...fmad.
+1        false                                     false             true
+2        false                                     false             true
+3        false                                     false             true
+4         true                                     false             true
+5         true                                     false             true
+6         true                                     false             true
+  X.Xptxas...force.load.cache. X.Xptxas...opt.level.
+1                           ca                     0
+2                           ca                     0
+3                           ca                     0
+4                           ca                     3
+5                           ca                     3
+6                           ca                     3
+  X.Xptxas...force.store.cache. X.Xptxas...maxrregcount.  response complete
+1                            cg                       63 30.808385     true
+2                            cg                       63 30.808482     true
+3                            cg                       63 30.782086     true
+4                            cs                       16  8.043973     true
+5                            cs                       16  8.043273     true
+6                            cs                       16  8.037448     true
+            id
+1 5.492321e+18
+2 5.492321e+18
+3 5.492321e+18
+4 1.224812e+19
+5 1.224812e+19
+6 1.224812e+19
+Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
+  contrasts can be applied only to factors with 2 or more levels
+Error in summary(reg) : object 'reg' not found
+#+end_example
