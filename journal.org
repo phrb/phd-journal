@@ -9327,12 +9327,41 @@ screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 n <- c(make.names(trimws(factors$name, which = c("left"))),
-       "response", "complete", "id")
+       "response")
 
 ordered_results <- as.data.frame(results[n])
+
+ordered_results$dummy1 <- screening$dummy1
+ordered_results$dummy2 <- screening$dummy2
+ordered_results$dummy3 <- screening$dummy3
+ordered_results$dummy4 <- screening$dummy4
+
+names(ordered_results)
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+ [1] "X.Xnvlink...preserve.relocs"              
+ [2] "X..no.align.double"                       
+ [3] "X..use_fast_math"                         
+ [4] "X..ftz."                                  
+ [5] "X..prec.sqrt."                            
+ [6] "X..gpu.architecture."                     
+ [7] "X..optimize."                             
+ [8] "X..relocatable.device.code."              
+ [9] "X..prec.div."                             
+[10] "X.Xptxas...allow.expensive.optimizations."
+[11] "X.Xptxas...fmad."                         
+[12] "X.Xptxas...force.load.cache."             
+[13] "X.Xptxas...opt.level."                    
+[14] "X.Xptxas...force.store.cache."            
+[15] "X.Xptxas...maxrregcount."                 
+[16] "response"                                 
+[17] "dummy1"                                   
+[18] "dummy2"                                   
+[19] "dummy3"                                   
+[20] "dummy4"
+#+end_example
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -9341,12 +9370,6 @@ results_no_replication <- results[rownames(unique(results["id"])), ]
 ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
 ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
 ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
-ordered_results = ordered_results[names(ordered_results)!="complete"]
-ordered_results = ordered_results[names(ordered_results)!="id"]
-
-reg = lm(data = ordered_results, response ~ .)
-
-summary(reg)
 
 reg = aov(data = ordered_results, response ~ .)
 
@@ -9355,72 +9378,27 @@ summary(reg)
 
 #+RESULTS:
 #+begin_example
-
-Call:
-lm.default(formula = response ~ ., data = ordered_results)
-
-Residuals:
-     Min       1Q   Median       3Q      Max 
--0.56269 -0.22200  0.09112  0.20055  0.57672 
-
-Coefficients:
-                                               Estimate Std. Error  t value
-(Intercept)                                    33.57297    0.17497  191.883
-X.Xnvlink...preserve.relocson                  -0.30019    0.08748   -3.431
-X..no.align.doubleon                           -0.27509    0.08748   -3.145
-X..use_fast_mathon                              0.17998    0.08748    2.057
-X..ftz.true                                    -0.20382    0.08748   -2.330
-X..prec.sqrt.true                              -0.57012    0.08748   -6.517
-X..gpu.architecture.sm_52                      -1.04361    0.08748  -11.929
-X..optimize.3                                  -0.32285    0.08748   -3.690
-X..relocatable.device.code.true                 0.09499    0.08748    1.086
-X..prec.div.true                                0.21469    0.08748    2.454
-X.Xptxas...allow.expensive.optimizations.true  -0.13169    0.08748   -1.505
-X.Xptxas...fmad.true                           -0.25843    0.08748   -2.954
-X.Xptxas...force.load.cache.lu                  0.28753    0.08748    3.287
-X.Xptxas...opt.level.3                        -23.89300    0.08748 -273.117
-X.Xptxas...force.store.cache.cs                -0.11205    0.08748   -1.281
-X.Xptxas...maxrregcount.63                     -0.35766    0.08748   -4.088
-                                              Pr(>|t|)    
-(Intercept)                                    < 2e-16 ***
-X.Xnvlink...preserve.relocson                 0.001317 ** 
-X..no.align.doubleon                          0.002978 ** 
-X..use_fast_mathon                            0.045610 *  
-X..ftz.true                                   0.024469 *  
-X..prec.sqrt.true                             5.86e-08 ***
-X..gpu.architecture.sm_52                     2.21e-15 ***
-X..optimize.3                                 0.000614 ***
-X..relocatable.device.code.true               0.283463    
-X..prec.div.true                              0.018155 *  
-X.Xptxas...allow.expensive.optimizations.true 0.139383    
-X.Xptxas...fmad.true                          0.005020 ** 
-X.Xptxas...force.load.cache.lu                0.001996 ** 
-X.Xptxas...opt.level.3                         < 2e-16 ***
-X.Xptxas...force.store.cache.cs               0.206980    
-X.Xptxas...maxrregcount.63                    0.000182 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 0.3388 on 44 degrees of freedom
-Multiple R-squared:  0.9994,	Adjusted R-squared:  0.9992 
-F-statistic:  4991 on 15 and 44 DF,  p-value: < 2.2e-16
                                           Df Sum Sq Mean Sq   F value   Pr(>F)
-X.Xnvlink...preserve.relocs                1      1       1    11.774 0.001317
-X..no.align.double                         1      1       1     9.888 0.002978
-X..use_fast_math                           1      0       0     4.233 0.045610
-X..ftz.                                    1      1       1     5.428 0.024469
-X..prec.sqrt.                              1      5       5    42.470 5.86e-08
-X..gpu.architecture.                       1     16      16   142.310 2.21e-15
-X..optimize.                               1      2       2    13.619 0.000614
-X..relocatable.device.code.                1      0       0     1.179 0.283463
-X..prec.div.                               1      1       1     6.022 0.018155
-X.Xptxas...allow.expensive.optimizations.  1      0       0     2.266 0.139383
-X.Xptxas...fmad.                           1      1       1     8.726 0.005020
-X.Xptxas...force.load.cache.               1      1       1    10.803 0.001996
-X.Xptxas...opt.level.                      1   8563    8563 74592.708  < 2e-16
-X.Xptxas...force.store.cache.              1      0       0     1.640 0.206980
-X.Xptxas...maxrregcount.                   1      2       2    16.714 0.000182
-Residuals                                 44      5       0                   
+X.Xnvlink...preserve.relocs                1      1       1    12.088 0.001237
+X..no.align.double                         1      1       1    10.151 0.002796
+X..use_fast_math                           1      0       0     4.345 0.043542
+X..ftz.                                    1      1       1     5.572 0.023210
+X..prec.sqrt.                              1      5       5    43.600 6.72e-08
+X..gpu.architecture.                       1     16      16   146.095 6.23e-15
+X..optimize.                               1      2       2    13.982 0.000578
+X..relocatable.device.code.                1      0       0     1.210 0.277829
+X..prec.div.                               1      1       1     6.182 0.017177
+X.Xptxas...allow.expensive.optimizations.  1      0       0     2.326 0.135072
+X.Xptxas...fmad.                           1      1       1     8.958 0.004717
+X.Xptxas...force.load.cache.               1      1       1    11.090 0.001874
+X.Xptxas...opt.level.                      1   8563    8563 76576.505  < 2e-16
+X.Xptxas...force.store.cache.              1      0       0     1.684 0.201824
+X.Xptxas...maxrregcount.                   1      2       2    17.159 0.000173
+dummy1                                     1      0       0     0.454 0.504427
+dummy2                                     1      0       0     0.033 0.857705
+dummy3                                     1      0       0     1.863 0.179955
+dummy4                                     1      0       0     2.821 0.100818
+Residuals                                 40      4       0                   
                                              
 X.Xnvlink...preserve.relocs               ** 
 X..no.align.double                        ** 
@@ -9437,6 +9415,10 @@ X.Xptxas...force.load.cache.              **
 X.Xptxas...opt.level.                     ***
 X.Xptxas...force.store.cache.                
 X.Xptxas...maxrregcount.                  ***
+dummy1                                       
+dummy2                                       
+dummy3                                       
+dummy4                                       
 Residuals                                    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
