@@ -9315,7 +9315,7 @@ experiment_dir <- "autotuning_screening_experiment/data/3_replications/"
 
 factors_file <- paste(experiment_dir, "factors.csv", sep = "")
 results_file <- paste(experiment_dir, "results.csv", sep = "")
-screening_file <- paste(experiment_dir, "screening.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening_design.csv", sep = "")
 
 factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
 results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
@@ -9338,12 +9338,6 @@ ordered_results <- as.data.frame(results[n])
 #+BEGIN_SRC R
 results_no_replication <- results[rownames(unique(results["id"])), ]
 
-factors_t <- t(factors)
-
-names(factors_t) <- factors$names
-
-factors_t
-
 ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
 ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
 ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
@@ -9353,43 +9347,17 @@ ordered_results = ordered_results[names(ordered_results)!="id"]
 reg = lm(data = ordered_results, response ~ .)
 
 summary(reg)
+
+reg = aov(data = ordered_results, response ~ .)
+
+summary(reg)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-     [,1]                         [,2]                 [,3]              
-t    "Flag"                       "Flag"               "Flag"            
-name "-Xnvlink --preserve-relocs" " --no-align-double" " --use_fast_math"
-min  "on"                         "on"                 "on"              
-max  "off"                        "off"                "off"             
-     [,4]          [,5]            [,6]                   [,7]          
-t    "Enumeration" "Enumeration"   "Enumeration"          "Enumeration" 
-name " --ftz="     " --prec-sqrt=" " --gpu-architecture=" " --optimize="
-min  "true"        "true"          "sm_30"                "0"           
-max  "false"       "false"         "sm_52"                "3"           
-     [,8]                          [,9]          
-t    "Enumeration"                 "Enumeration" 
-name " --relocatable-device-code=" " --prec-div="
-min  "true"                        "true"        
-max  "false"                       "false"       
-     [,10]                                      [,11]            
-t    "Enumeration"                              "Enumeration"    
-name "-Xptxas --allow-expensive-optimizations=" "-Xptxas --fmad="
-min  "true"                                     "true"           
-max  "false"                                    "false"          
-     [,12]                         [,13]                 
-t    "Enumeration"                 "Enumeration"         
-name "-Xptxas --force-load-cache=" "-Xptxas --opt-level="
-min  "ca"                          "0"                   
-max  "lu"                          "3"                   
-     [,14]                          [,15]                    
-t    "Enumeration"                  "Numeric"                
-name "-Xptxas --force-store-cache=" "-Xptxas --maxrregcount="
-min  "cg"                           "16"                     
-max  "cs"                           "63"
 
 Call:
-lm(formula = response ~ ., data = ordered_results)
+lm.default(formula = response ~ ., data = ordered_results)
 
 Residuals:
      Min       1Q   Median       3Q      Max 
@@ -9436,4 +9404,66 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual standard error: 0.3388 on 44 degrees of freedom
 Multiple R-squared:  0.9994,	Adjusted R-squared:  0.9992 
 F-statistic:  4991 on 15 and 44 DF,  p-value: < 2.2e-16
+                                          Df Sum Sq Mean Sq   F value   Pr(>F)
+X.Xnvlink...preserve.relocs                1      1       1    11.774 0.001317
+X..no.align.double                         1      1       1     9.888 0.002978
+X..use_fast_math                           1      0       0     4.233 0.045610
+X..ftz.                                    1      1       1     5.428 0.024469
+X..prec.sqrt.                              1      5       5    42.470 5.86e-08
+X..gpu.architecture.                       1     16      16   142.310 2.21e-15
+X..optimize.                               1      2       2    13.619 0.000614
+X..relocatable.device.code.                1      0       0     1.179 0.283463
+X..prec.div.                               1      1       1     6.022 0.018155
+X.Xptxas...allow.expensive.optimizations.  1      0       0     2.266 0.139383
+X.Xptxas...fmad.                           1      1       1     8.726 0.005020
+X.Xptxas...force.load.cache.               1      1       1    10.803 0.001996
+X.Xptxas...opt.level.                      1   8563    8563 74592.708  < 2e-16
+X.Xptxas...force.store.cache.              1      0       0     1.640 0.206980
+X.Xptxas...maxrregcount.                   1      2       2    16.714 0.000182
+Residuals                                 44      5       0                   
+                                             
+X.Xnvlink...preserve.relocs               ** 
+X..no.align.double                        ** 
+X..use_fast_math                          *  
+X..ftz.                                   *  
+X..prec.sqrt.                             ***
+X..gpu.architecture.                      ***
+X..optimize.                              ***
+X..relocatable.device.code.                  
+X..prec.div.                              *  
+X.Xptxas...allow.expensive.optimizations.    
+X.Xptxas...fmad.                          ** 
+X.Xptxas...force.load.cache.              ** 
+X.Xptxas...opt.level.                     ***
+X.Xptxas...force.store.cache.                
+X.Xptxas...maxrregcount.                  ***
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+library(FrF2)
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-9891UXv/figure9891xc1.png]]
+**** Meeting with Arnaud & Brice
+0:20 minutes to run 20 combinations of parameters with 3 replications.
+open tuner =1:30 but it was running 10 replications
+
+- TODO You may want to redo the XP with O2/O3 instead of O0/O3. Hopefully, the conclusions should not be that different (except for the impact of -O of course). Some parameters may actually become more ineffective.
+- Next step: set the factors that are significant to their best levels 
+- Then we're left with three different kind of factors that may cal for different kind of experiments as we don't know how to do them all at once. In any cases, we should set the most important factors to their best level and explore the rest of the subspace:
+       - unsignificant factors that may become significant when setting the other factors to their best level. We may want to screen again.
+       - TODO maxrregcount is integer and may have a tradeoff.
+           - min values =16 and max value =63. It looks like setting to 63 improves a bit but we have no idea of what happens in the middle. So try with max value = (16+63)/2.
+           - randomize the 9 other factors (say 8 combinations) and replicate the combination for all three min/middle/max values.
+       - force.load.cache and force.store.cache have more than 2 levels (4     or 5) and there is no clear order. 
+          - we could try the Addelman and Kempthorne approach with s=5^1. Up to 11 factors with 50 combinations but 11 factors is way too much. Could we go with less than 25 combinations ? Because all
+          - maybe we could use s=2^2=4 levels and project to mix classical 2-level with 4 level factors (although the 5th level of one factor would have to be dropped).
+          - I don't know whether this kind of design is mentionned in the Montgomery.
+- Read the 1961 paper by Addelman and Kempthorne.
+- Pull the best solution of open tuner:
+
