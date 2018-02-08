@@ -10444,3 +10444,8 @@ MEPlot(reg)
 **** POLARIS Meeting
 - As last time, the pad is at https://tinyurl.com/polaris-inria
 - Deciding "high-level" titles and themes for presentations
+**** Some References on Optimal Multi-Level Supersaturated Designs 
+- https://projecteuclid.org/download/pdfview_1/euclid.ssu/1244555797
+- https://www.sciencedirect.com/science/article/pii/S0378375812003084
+- https://www.springer.com/gp/book/9780387319919
+- https://projecteuclid.org/download/pdfview_1/euclid.aos/1140191674
