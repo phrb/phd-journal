@@ -10445,7 +10445,26 @@ MEPlot(reg)
 - As last time, the pad is at https://tinyurl.com/polaris-inria
 - Deciding "high-level" titles and themes for presentations
 **** Some References on Optimal Multi-Level Supersaturated Designs 
-- https://projecteuclid.org/download/pdfview_1/euclid.ssu/1244555797
-- https://www.sciencedirect.com/science/article/pii/S0378375812003084
-- https://www.springer.com/gp/book/9780387319919
-- https://projecteuclid.org/download/pdfview_1/euclid.aos/1140191674
+I was looking into works that cited that Addelman and Kempthorne paper and found
+that one way to name those kinds of designs is "Optimal Multi-Level
+Supersaturated".
+
+Searching by that term I found some more recent references which I believe will
+take some time to digest, but that present some ways to construct those designs:
+
+https://projecteuclid.org/download/pdfview_1/euclid.aos/1140191674
+https://projecteuclid.org/download/pdfview_1/euclid.ssu/1244555797
+
+Those works also seem to present ways to measure optimality for those designs,
+but I still haven't read them.
+
+There is also a reference which seems interesting by its abstract, but I was not
+able to find it yet:
+
+https://www.sciencedirect.com/science/article/pii/S0378375812003084
+
+I also found this book on factorial designs which I did not know of, but that
+does not seem to discuss Addelman Kempthorne designs directly. It could be
+useful for me to study more about DoE in general.
+
+https://www.springer.com/gp/book/9780387319919 
