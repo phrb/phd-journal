@@ -9336,33 +9336,9 @@ n <- c(make.names(trimws(factors$name, which = c("left"))),
        "response")
 
 ordered_results <- as.data.frame(results[n])
-
-names(ordered_results)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
- [1] "X.Xnvlink...preserve.relocs"              
- [2] "X..no.align.double"                       
- [3] "X..use_fast_math"                         
- [4] "X..ftz."                                  
- [5] "X..prec.sqrt."                            
- [6] "X..gpu.architecture."                     
- [7] "X..optimize."                             
- [8] "X..relocatable.device.code."              
- [9] "X..prec.div."                             
-[10] "X.Xptxas...allow.expensive.optimizations."
-[11] "X.Xptxas...fmad."                         
-[12] "X.Xptxas...force.load.cache."             
-[13] "X.Xptxas...opt.level."                    
-[14] "X.Xptxas...force.store.cache."            
-[15] "X.Xptxas...maxrregcount."                 
-[16] "dummy1"                                   
-[17] "dummy2"                                   
-[18] "dummy3"                                   
-[19] "dummy4"                                   
-[20] "response"
-#+end_example
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -9370,16 +9346,62 @@ ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
 ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
 ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
 
-reg = lm(data = ordered_results, response ~ .)
+reg = aov(data = ordered_results, response ~ .)
 
-summary(reg)
+summary.aov(reg)
+
+summary.lm(reg)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
+                                          Df Sum Sq Mean Sq   F value   Pr(>F)
+X.Xnvlink...preserve.relocs                1 0.0000  0.0000     0.037  0.84803
+X..no.align.double                         1 0.0002  0.0002     2.308  0.13661
+X..use_fast_math                           1 0.0000  0.0000     0.637  0.42939
+X..ftz.                                    1 0.0000  0.0000     0.150  0.70053
+X..prec.sqrt.                              1 0.0007  0.0007     9.865  0.00317
+X..gpu.architecture.                       1 0.0036  0.0036    48.928 1.91e-08
+X..optimize.                               1 0.0017  0.0017    23.422 1.97e-05
+X..relocatable.device.code.                1 0.0001  0.0001     0.764  0.38728
+X..prec.div.                               1 0.0000  0.0000     0.249  0.62053
+X.Xptxas...allow.expensive.optimizations.  1 0.0002  0.0002     2.428  0.12705
+X.Xptxas...fmad.                           1 0.0001  0.0001     1.764  0.19170
+X.Xptxas...force.load.cache.               1 1.1981  1.1981 16252.071  < 2e-16
+X.Xptxas...opt.level.                      1 0.0000  0.0000     0.069  0.79473
+X.Xptxas...force.store.cache.              1 0.0002  0.0002     2.249  0.14159
+X.Xptxas...maxrregcount.                   1 0.0000  0.0000     0.123  0.72781
+dummy1                                     1 0.0005  0.0005     6.979  0.01171
+dummy2                                     1 0.0005  0.0005     6.161  0.01736
+dummy3                                     1 0.0000  0.0000     0.313  0.57906
+dummy4                                     1 0.0001  0.0001     1.240  0.27205
+Residuals                                 40 0.0029  0.0001                   
+                                             
+X.Xnvlink...preserve.relocs                  
+X..no.align.double                           
+X..use_fast_math                             
+X..ftz.                                      
+X..prec.sqrt.                             ** 
+X..gpu.architecture.                      ***
+X..optimize.                              ***
+X..relocatable.device.code.                  
+X..prec.div.                                 
+X.Xptxas...allow.expensive.optimizations.    
+X.Xptxas...fmad.                             
+X.Xptxas...force.load.cache.              ***
+X.Xptxas...opt.level.                        
+X.Xptxas...force.store.cache.                
+X.Xptxas...maxrregcount.                     
+dummy1                                    *  
+dummy2                                    *  
+dummy3                                       
+dummy4                                       
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Call:
-lm.default(formula = response ~ ., data = ordered_results)
+aov.default(formula = response ~ ., data = ordered_results)
 
 Residuals:
       Min        1Q    Median        3Q       Max 
@@ -9441,7 +9463,38 @@ MEPlot(reg)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-885ZvB/figure885Hmu.png]]
+[[file:/tmp/babel-885ZvB/figure885TEK.png]]
+
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+reg = aov(data = ordered_results, response ~ X..prec.sqrt. + X..gpu.architecture. + X..optimize. + X.Xptxas...force.load.cache. + dummy1 + dummy2 + dummy3 + dummy4)
+
+summary.aov(reg)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                             Df Sum Sq Mean Sq   F value   Pr(>F)    
+X..prec.sqrt.                 1 0.0007  0.0007     9.908  0.00275 ** 
+X..gpu.architecture.          1 0.0036  0.0036    49.142 5.25e-09 ***
+X..optimize.                  1 0.0017  0.0017    23.524 1.20e-05 ***
+X.Xptxas...force.load.cache.  1 1.1981  1.1981 16323.419  < 2e-16 ***
+dummy1                        1 0.0005  0.0005     7.010  0.01076 *  
+dummy2                        1 0.0005  0.0005     6.188  0.01618 *  
+dummy3                        1 0.0000  0.0000     0.314  0.57756    
+dummy4                        1 0.0001  0.0001     1.246  0.26959    
+Residuals                    51 0.0037  0.0001                       
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure8856ic.png]]
 
 **** Meeting with Arnaud & Brice
 0:20 minutes to run 20 combinations of parameters with 3 replications.
@@ -9476,8 +9529,10 @@ open tuner =1:30 but it was running 10 replications
 *** [2018-02-08 Thu]
 **** Next Steps on Screening Experimental Designs
 From our last meeting @ [2018-02-07 Wed]:
-***** TODO Use 02/03 as levels instead of O0/03
+***** DONE Use 02/03 as levels instead of O0/03
+CLOSED: [2018-02-08 Thu 14:16]
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2018-02-08 Thu 14:16]
 - State "TODO"       from              [2018-02-08 Thu 10:57]
 :END:
 ***** TODO Set significant factors to best levels, explore other factors
@@ -9500,6 +9555,556 @@ From our last meeting @ [2018-02-07 Wed]:
 :LOGBOOK:
 - State "TODO"       from              [2018-02-08 Thu 11:05]
 :END:
+**** Exploring ~force_load_cache~
+We will now look at what happens when we change the levels for the ~force-load-cache~ parameter.
+This is the only parameter that is an integer, and the CUDA documentation explicitly mentions
+it can be a tradeoff, so we want to know what happens in the middle.
+
+First make sure you have the data:
+
+#+CALL: update_screening_experiment()
+
+#+RESULTS:
+: Already up to date.
+
+Now we load the screening experiment and the results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(FrF2)
+
+experiment_dir <- "autotuning_screening_experiment/data/3_replications_half_maxrregs/"
+
+factors_file <- paste(experiment_dir, "factors.csv", sep = "")
+results_file <- paste(experiment_dir, "results.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening_design.csv", sep = "")
+
+factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
+results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+n <- c(make.names(trimws(factors$name, which = c("left"))),
+       "response")
+
+ordered_results <- as.data.frame(results[n])
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
+ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
+ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
+
+reg = aov(data = ordered_results, response ~ .)
+
+summary.aov(reg)
+
+summary.lm(reg)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                                          Df Sum Sq Mean Sq  F value   Pr(>F)
+X.Xnvlink...preserve.relocs                1 0.0000  0.0000    0.057 0.812640
+X..no.align.double                         1 0.0005  0.0005    1.087 0.303487
+X..use_fast_math                           1 0.0001  0.0001    0.118 0.732949
+X..ftz.                                    1 0.0011  0.0011    2.389 0.130094
+X..prec.sqrt.                              1 0.0001  0.0001    0.305 0.584076
+X..gpu.architecture.                       1 0.0065  0.0065   13.782 0.000625
+X..optimize.                               1 0.0016  0.0016    3.287 0.077347
+X..relocatable.device.code.                1 0.0004  0.0004    0.883 0.353026
+X..prec.div.                               1 0.0007  0.0007    1.512 0.226092
+X.Xptxas...allow.expensive.optimizations.  1 0.0002  0.0002    0.414 0.523648
+X.Xptxas...fmad.                           1 0.0000  0.0000    0.050 0.823950
+X.Xptxas...force.load.cache.               1 1.2202  1.2202 2584.826  < 2e-16
+X.Xptxas...opt.level.                      1 0.0001  0.0001    0.183 0.670871
+X.Xptxas...force.store.cache.              1 0.0000  0.0000    0.041 0.840385
+X.Xptxas...maxrregcount.                   1 0.0006  0.0006    1.314 0.258568
+dummy1                                     1 0.0010  0.0010    2.166 0.148912
+dummy2                                     1 0.0000  0.0000    0.063 0.802355
+dummy3                                     1 0.0000  0.0000    0.000 0.991567
+dummy4                                     1 0.0000  0.0000    0.092 0.763130
+Residuals                                 40 0.0189  0.0005                  
+                                             
+X.Xnvlink...preserve.relocs                  
+X..no.align.double                           
+X..use_fast_math                             
+X..ftz.                                      
+X..prec.sqrt.                                
+X..gpu.architecture.                      ***
+X..optimize.                              .  
+X..relocatable.device.code.                  
+X..prec.div.                                 
+X.Xptxas...allow.expensive.optimizations.    
+X.Xptxas...fmad.                             
+X.Xptxas...force.load.cache.              ***
+X.Xptxas...opt.level.                        
+X.Xptxas...force.store.cache.                
+X.Xptxas...maxrregcount.                     
+dummy1                                       
+dummy2                                       
+dummy3                                       
+dummy4                                       
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Call:
+aov.default(formula = response ~ ., data = ordered_results)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.030785 -0.007653 -0.001010  0.003820  0.056044 
+
+Coefficients:
+                                                Estimate Std. Error t value
+(Intercept)                                    8.068e+00  1.122e-02 719.079
+X.Xnvlink...preserve.relocson                 -1.338e-03  5.610e-03  -0.239
+X..no.align.doubleon                           5.848e-03  5.610e-03   1.042
+X..use_fast_mathon                             1.928e-03  5.610e-03   0.344
+X..ftz.true                                   -8.670e-03  5.610e-03  -1.546
+X..prec.sqrt.true                              3.096e-03  5.610e-03   0.552
+X..gpu.architecture.sm_52                     -2.083e-02  5.610e-03  -3.712
+X..optimize.3                                 -1.017e-02  5.610e-03  -1.813
+X..relocatable.device.code.true                5.271e-03  5.610e-03   0.940
+X..prec.div.true                               6.897e-03  5.610e-03   1.229
+X.Xptxas...allow.expensive.optimizations.true  3.609e-03  5.610e-03   0.643
+X.Xptxas...fmad.true                          -1.256e-03  5.610e-03  -0.224
+X.Xptxas...force.load.cache.lu                 2.852e-01  5.610e-03  50.841
+X.Xptxas...opt.level.3                         2.402e-03  5.610e-03   0.428
+X.Xptxas...force.store.cache.cs               -1.137e-03  5.610e-03  -0.203
+X.Xptxas...maxrregcount.39                     6.429e-03  5.610e-03   1.146
+dummy1                                         4.128e-03  2.805e-03   1.472
+dummy2                                         7.068e-04  2.805e-03   0.252
+dummy3                                         2.983e-05  2.805e-03   0.011
+dummy4                                         8.511e-04  2.805e-03   0.303
+                                              Pr(>|t|)    
+(Intercept)                                    < 2e-16 ***
+X.Xnvlink...preserve.relocson                 0.812640    
+X..no.align.doubleon                          0.303487    
+X..use_fast_mathon                            0.732949    
+X..ftz.true                                   0.130094    
+X..prec.sqrt.true                             0.584076    
+X..gpu.architecture.sm_52                     0.000625 ***
+X..optimize.3                                 0.077347 .  
+X..relocatable.device.code.true               0.353026    
+X..prec.div.true                              0.226092    
+X.Xptxas...allow.expensive.optimizations.true 0.523648    
+X.Xptxas...fmad.true                          0.823950    
+X.Xptxas...force.load.cache.lu                 < 2e-16 ***
+X.Xptxas...opt.level.3                        0.670871    
+X.Xptxas...force.store.cache.cs               0.840385    
+X.Xptxas...maxrregcount.39                    0.258568    
+dummy1                                        0.148912    
+dummy2                                        0.802355    
+dummy3                                        0.991567    
+dummy4                                        0.763130    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.02173 on 40 degrees of freedom
+Multiple R-squared:  0.9849,	Adjusted R-squared:  0.9778 
+F-statistic: 137.5 on 19 and 40 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+me_plot <- MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure885hIj.png]]
+
+**** Exploring ~maxrregcount~
+We will now look at what happens when we change the levels for the ~maxrregcount~ parameter.
+This is the only parameter that is an integer, and the CUDA documentation explicitly mentions
+it can be a tradeoff, so we want to know what happens in the middle.
+
+First make sure you have the data:
+
+#+CALL: update_screening_experiment()
+
+#+RESULTS:
+: Already up to date.
+
+Now we load the screening experiment and the results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(FrF2)
+
+experiment_dir <- "autotuning_screening_experiment/data/3_replications_half_maxrregs/"
+
+factors_file <- paste(experiment_dir, "factors.csv", sep = "")
+results_file <- paste(experiment_dir, "results.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening_design.csv", sep = "")
+
+factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
+results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+n <- c(make.names(trimws(factors$name, which = c("left"))),
+       "response")
+
+ordered_results <- as.data.frame(results[n])
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
+ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
+ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
+
+reg = aov(data = ordered_results, response ~ .)
+
+summary.aov(reg)
+
+summary.lm(reg)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                                          Df Sum Sq Mean Sq  F value   Pr(>F)
+X.Xnvlink...preserve.relocs                1 0.0000  0.0000    0.057 0.812640
+X..no.align.double                         1 0.0005  0.0005    1.087 0.303487
+X..use_fast_math                           1 0.0001  0.0001    0.118 0.732949
+X..ftz.                                    1 0.0011  0.0011    2.389 0.130094
+X..prec.sqrt.                              1 0.0001  0.0001    0.305 0.584076
+X..gpu.architecture.                       1 0.0065  0.0065   13.782 0.000625
+X..optimize.                               1 0.0016  0.0016    3.287 0.077347
+X..relocatable.device.code.                1 0.0004  0.0004    0.883 0.353026
+X..prec.div.                               1 0.0007  0.0007    1.512 0.226092
+X.Xptxas...allow.expensive.optimizations.  1 0.0002  0.0002    0.414 0.523648
+X.Xptxas...fmad.                           1 0.0000  0.0000    0.050 0.823950
+X.Xptxas...force.load.cache.               1 1.2202  1.2202 2584.826  < 2e-16
+X.Xptxas...opt.level.                      1 0.0001  0.0001    0.183 0.670871
+X.Xptxas...force.store.cache.              1 0.0000  0.0000    0.041 0.840385
+X.Xptxas...maxrregcount.                   1 0.0006  0.0006    1.314 0.258568
+dummy1                                     1 0.0010  0.0010    2.166 0.148912
+dummy2                                     1 0.0000  0.0000    0.063 0.802355
+dummy3                                     1 0.0000  0.0000    0.000 0.991567
+dummy4                                     1 0.0000  0.0000    0.092 0.763130
+Residuals                                 40 0.0189  0.0005                  
+                                             
+X.Xnvlink...preserve.relocs                  
+X..no.align.double                           
+X..use_fast_math                             
+X..ftz.                                      
+X..prec.sqrt.                                
+X..gpu.architecture.                      ***
+X..optimize.                              .  
+X..relocatable.device.code.                  
+X..prec.div.                                 
+X.Xptxas...allow.expensive.optimizations.    
+X.Xptxas...fmad.                             
+X.Xptxas...force.load.cache.              ***
+X.Xptxas...opt.level.                        
+X.Xptxas...force.store.cache.                
+X.Xptxas...maxrregcount.                     
+dummy1                                       
+dummy2                                       
+dummy3                                       
+dummy4                                       
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Call:
+aov.default(formula = response ~ ., data = ordered_results)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.030785 -0.007653 -0.001010  0.003820  0.056044 
+
+Coefficients:
+                                                Estimate Std. Error t value
+(Intercept)                                    8.068e+00  1.122e-02 719.079
+X.Xnvlink...preserve.relocson                 -1.338e-03  5.610e-03  -0.239
+X..no.align.doubleon                           5.848e-03  5.610e-03   1.042
+X..use_fast_mathon                             1.928e-03  5.610e-03   0.344
+X..ftz.true                                   -8.670e-03  5.610e-03  -1.546
+X..prec.sqrt.true                              3.096e-03  5.610e-03   0.552
+X..gpu.architecture.sm_52                     -2.083e-02  5.610e-03  -3.712
+X..optimize.3                                 -1.017e-02  5.610e-03  -1.813
+X..relocatable.device.code.true                5.271e-03  5.610e-03   0.940
+X..prec.div.true                               6.897e-03  5.610e-03   1.229
+X.Xptxas...allow.expensive.optimizations.true  3.609e-03  5.610e-03   0.643
+X.Xptxas...fmad.true                          -1.256e-03  5.610e-03  -0.224
+X.Xptxas...force.load.cache.lu                 2.852e-01  5.610e-03  50.841
+X.Xptxas...opt.level.3                         2.402e-03  5.610e-03   0.428
+X.Xptxas...force.store.cache.cs               -1.137e-03  5.610e-03  -0.203
+X.Xptxas...maxrregcount.39                     6.429e-03  5.610e-03   1.146
+dummy1                                         4.128e-03  2.805e-03   1.472
+dummy2                                         7.068e-04  2.805e-03   0.252
+dummy3                                         2.983e-05  2.805e-03   0.011
+dummy4                                         8.511e-04  2.805e-03   0.303
+                                              Pr(>|t|)    
+(Intercept)                                    < 2e-16 ***
+X.Xnvlink...preserve.relocson                 0.812640    
+X..no.align.doubleon                          0.303487    
+X..use_fast_mathon                            0.732949    
+X..ftz.true                                   0.130094    
+X..prec.sqrt.true                             0.584076    
+X..gpu.architecture.sm_52                     0.000625 ***
+X..optimize.3                                 0.077347 .  
+X..relocatable.device.code.true               0.353026    
+X..prec.div.true                              0.226092    
+X.Xptxas...allow.expensive.optimizations.true 0.523648    
+X.Xptxas...fmad.true                          0.823950    
+X.Xptxas...force.load.cache.lu                 < 2e-16 ***
+X.Xptxas...opt.level.3                        0.670871    
+X.Xptxas...force.store.cache.cs               0.840385    
+X.Xptxas...maxrregcount.39                    0.258568    
+dummy1                                        0.148912    
+dummy2                                        0.802355    
+dummy3                                        0.991567    
+dummy4                                        0.763130    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.02173 on 40 degrees of freedom
+Multiple R-squared:  0.9849,	Adjusted R-squared:  0.9778 
+F-statistic: 137.5 on 19 and 40 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+me_plot <- MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure8857jj.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+reg = aov(data = ordered_results, response ~ X..gpu.architecture. + X..optimize. + X.Xptxas...force.load.cache.)
+
+summary.aov(reg)
+#+END_SRC
+
+#+RESULTS:
+:                              Df Sum Sq Mean Sq  F value   Pr(>F)    
+: X..gpu.architecture.          1 0.0065  0.0065   15.231 0.000258 ***
+: X..optimize.                  1 0.0016  0.0016    3.632 0.061804 .  
+: X.Xptxas...force.load.cache.  1 1.2202  1.2202 2856.553  < 2e-16 ***
+: Residuals                    56 0.0239  0.0004                      
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure885V4v.png]]
+
+**** Exploring ~gpu_architecture~
+We will now look at what happens when we change the levels for the ~gpu_architecture~ parameter.
+
+First make sure you have the data:
+
+#+CALL: update_screening_experiment()
+
+#+RESULTS:
+: Already up to date.
+
+Now we load the screening experiment and the results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(FrF2)
+
+experiment_dir <- "autotuning_screening_experiment/data/3_replications_sm/"
+
+factors_file <- paste(experiment_dir, "factors.csv", sep = "")
+results_file <- paste(experiment_dir, "results.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening_design.csv", sep = "")
+
+factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
+results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+n <- c(make.names(trimws(factors$name, which = c("left"))),
+       "response")
+
+ordered_results <- as.data.frame(results[n])
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
+ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
+ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
+
+reg = aov(data = ordered_results, response ~ .)
+
+summary.aov(reg)
+
+summary.lm(reg)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                                          Df Sum Sq Mean Sq  F value  Pr(>F)
+X.Xnvlink...preserve.relocs                1 0.0002  0.0002    0.176   0.677
+X..no.align.double                         1 0.0000  0.0000    0.011   0.917
+X..use_fast_math                           1 0.0001  0.0001    0.064   0.801
+X..ftz.                                    1 0.0001  0.0001    0.078   0.781
+X..prec.sqrt.                              1 0.0000  0.0000    0.028   0.868
+X..gpu.architecture.                       1 0.0189  0.0189   19.759 6.8e-05
+X..optimize.                               1 0.0015  0.0015    1.577   0.217
+X..relocatable.device.code.                1 0.0000  0.0000    0.011   0.917
+X..prec.div.                               1 0.0000  0.0000    0.008   0.931
+X.Xptxas...allow.expensive.optimizations.  1 0.0000  0.0000    0.023   0.881
+X.Xptxas...fmad.                           1 0.0003  0.0003    0.292   0.592
+X.Xptxas...force.load.cache.               1 1.1847  1.1847 1241.338 < 2e-16
+X.Xptxas...opt.level.                      1 0.0000  0.0000    0.046   0.832
+X.Xptxas...force.store.cache.              1 0.0004  0.0004    0.451   0.506
+X.Xptxas...maxrregcount.                   1 0.0001  0.0001    0.091   0.764
+dummy1                                     1 0.0006  0.0006    0.614   0.438
+dummy2                                     1 0.0005  0.0005    0.548   0.464
+dummy3                                     1 0.0008  0.0008    0.815   0.372
+dummy4                                     1 0.0000  0.0000    0.036   0.851
+Residuals                                 40 0.0382  0.0010                 
+                                             
+X.Xnvlink...preserve.relocs                  
+X..no.align.double                           
+X..use_fast_math                             
+X..ftz.                                      
+X..prec.sqrt.                                
+X..gpu.architecture.                      ***
+X..optimize.                                 
+X..relocatable.device.code.                  
+X..prec.div.                                 
+X.Xptxas...allow.expensive.optimizations.    
+X.Xptxas...fmad.                             
+X.Xptxas...force.load.cache.              ***
+X.Xptxas...opt.level.                        
+X.Xptxas...force.store.cache.                
+X.Xptxas...maxrregcount.                     
+dummy1                                       
+dummy2                                       
+dummy3                                       
+dummy4                                       
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Call:
+aov.default(formula = response ~ ., data = ordered_results)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.039489 -0.018327 -0.002965  0.004829  0.072249 
+
+Coefficients:
+                                                Estimate Std. Error t value
+(Intercept)                                    8.0890149  0.0159531 507.051
+X.Xnvlink...preserve.relocson                 -0.0033478  0.0079765  -0.420
+X..no.align.doubleon                           0.0008368  0.0079765   0.105
+X..use_fast_mathon                             0.0020205  0.0079765   0.253
+X..ftz.true                                    0.0022307  0.0079765   0.280
+X..prec.sqrt.true                              0.0013315  0.0079765   0.167
+X..gpu.architecture.sm_52                     -0.0354563  0.0079765  -4.445
+X..optimize.3                                 -0.0100163  0.0079765  -1.256
+X..relocatable.device.code.true                0.0008398  0.0079765   0.105
+X..prec.div.true                              -0.0006963  0.0079765  -0.087
+X.Xptxas...allow.expensive.optimizations.true  0.0012056  0.0079765   0.151
+X.Xptxas...fmad.true                           0.0043130  0.0079765   0.541
+X.Xptxas...force.load.cache.lu                 0.2810341  0.0079765  35.233
+X.Xptxas...opt.level.3                        -0.0017062  0.0079765  -0.214
+X.Xptxas...force.store.cache.cs                0.0053592  0.0079765   0.672
+X.Xptxas...maxrregcount.39                     0.0024084  0.0079765   0.302
+dummy1                                         0.0031254  0.0039883   0.784
+dummy2                                        -0.0029513  0.0039883  -0.740
+dummy3                                         0.0036007  0.0039883   0.903
+dummy4                                        -0.0007562  0.0039883  -0.190
+                                              Pr(>|t|)    
+(Intercept)                                    < 2e-16 ***
+X.Xnvlink...preserve.relocson                    0.677    
+X..no.align.doubleon                             0.917    
+X..use_fast_mathon                               0.801    
+X..ftz.true                                      0.781    
+X..prec.sqrt.true                                0.868    
+X..gpu.architecture.sm_52                      6.8e-05 ***
+X..optimize.3                                    0.217    
+X..relocatable.device.code.true                  0.917    
+X..prec.div.true                                 0.931    
+X.Xptxas...allow.expensive.optimizations.true    0.881    
+X.Xptxas...fmad.true                             0.592    
+X.Xptxas...force.load.cache.lu                 < 2e-16 ***
+X.Xptxas...opt.level.3                           0.832    
+X.Xptxas...force.store.cache.cs                  0.506    
+X.Xptxas...maxrregcount.39                       0.764    
+dummy1                                           0.438    
+dummy2                                           0.464    
+dummy3                                           0.372    
+dummy4                                           0.851    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.03089 on 40 degrees of freedom
+Multiple R-squared:  0.9694,	Adjusted R-squared:  0.9548 
+F-statistic: 66.63 on 19 and 40 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+me_plot <- MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure885hIj.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+reg = aov(data = ordered_results, response ~ X..gpu.architecture. + X.Xptxas...force.load.cache.)
+
+summary.aov(reg)
+#+END_SRC
+
+#+RESULTS:
+:                              Df Sum Sq Mean Sq F value   Pr(>F)    
+: X..gpu.architecture.          1 0.0189  0.0189    25.1 5.59e-06 ***
+: X.Xptxas...force.load.cache.  1 1.1847  1.1847  1576.9  < 2e-16 ***
+: Residuals                    57 0.0428  0.0008                     
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-885ZvB/figure885UMF.png]]
+
 **** POLARIS Meeting
 - As last time, the pad is at https://tinyurl.com/polaris-inria
 - Deciding "high-level" titles and themes for presentations
