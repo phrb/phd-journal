@@ -10468,3 +10468,391 @@ does not seem to discuss Addelman Kempthorne designs directly. It could be
 useful for me to study more about DoE in general.
 
 https://www.springer.com/gp/book/9780387319919 
+*** [2018-02-12 Mon]
+**** Reading about ANOVA and F-Tests in Julia
+I've been studying how to implement or use ANOVA tests in Julia, and found out
+some information that ended up helping my understanding of F-Tests, ANOVA and
+linear models.
+
+Douglas Bates is the developer of the ~lme4~ package in R, and is now
+contributing to Julia. His comments on a [[https://github.com/JuliaStats/GLM.jl/pull/65][GitHub pull request]] list resources
+regarding linear models ([[http://www.stats.ox.ac.uk/pub/MASS3/Exegeses.pdf][Exegeses on Linear Models]]) and explain more about how
+ANOVA is implemented using F-Tests.
+
+Bates's comments lead to the implementation of an F-Test function in the
+Generalized Linear Models Julia package. This [[https://github.com/JuliaStats/GLM.jl/blob/master/src/ftest.jl][implementation]] gives a simple and
+interesting explanation of how to use F-Test to perform ANOVA, comparing the
+relative fit of two models on the same data.
+**** Performing ANOVA in Julia using F-Tests
+Importing the necessary packages:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using DataFrames, GLM
+#+END_SRC
+
+#+RESULTS:
+
+Let's create some random data and generate a response:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+data_names = [:A, :B, :C, :D, :E, :F]
+
+data = DataFrame()
+
+for n in data_names
+    data[n] = rand(10)
+end
+
+data[:Response] = (2 .* data[:C]) .+ (3 .* data[:A]) - (5 .* data[:E])
+
+data
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+6-element Array{Symbol,1}:
+ :A
+ :B
+ :C
+ :D
+ :E
+ :F
+
+0×0 DataFrames.DataFrame
+
+
+
+10-element DataArrays.DataArray{Float64,1}:
+ -2.17384  
+  0.559508 
+ -0.69123  
+ -1.05939  
+ -0.256755 
+  0.557851 
+ -0.267708 
+  1.88294  
+ -2.67724  
+ -0.0301329
+
+10×7 DataFrames.DataFrame
+│ Row │ A         │ B        │ C         │ D          │ E        │ F         │ Response   │
+├─────┼───────────┼──────────┼───────────┼────────────┼──────────┼───────────┼────────────┤
+│ 1   │ 0.623557  │ 0.636231 │ 0.0379813 │ 0.81141    │ 0.824095 │ 0.0993354 │ -2.17384   │
+│ 2   │ 0.955077  │ 0.739728 │ 0.741414  │ 0.85233    │ 0.75771  │ 0.97588   │ 0.559508   │
+│ 3   │ 0.137487  │ 0.994435 │ 0.740511  │ 0.00785093 │ 0.516943 │ 0.5385    │ -0.69123   │
+│ 4   │ 0.653637  │ 0.170175 │ 0.393399  │ 0.348643   │ 0.761421 │ 0.436461  │ -1.05939   │
+│ 5   │ 0.41801   │ 0.431467 │ 0.339211  │ 0.41527    │ 0.437841 │ 0.623234  │ -0.256755  │
+│ 6   │ 0.7353    │ 0.289023 │ 0.518082  │ 0.713594   │ 0.536842 │ 0.920079  │ 0.557851   │
+│ 7   │ 0.0941916 │ 0.230737 │ 0.846342  │ 0.99548    │ 0.448593 │ 0.93209   │ -0.267708  │
+│ 8   │ 0.874464  │ 0.104192 │ 0.700623  │ 0.0223294  │ 0.428339 │ 0.523744  │ 1.88294    │
+│ 9   │ 0.0874393 │ 0.238128 │ 0.686364  │ 0.332731   │ 0.862457 │ 0.36169   │ -2.67724   │
+│ 10  │ 0.606935  │ 0.474219 │ 0.693748  │ 0.23876    │ 0.647687 │ 0.635184  │ -0.0301329 │
+#+end_example
+
+Now, let's create a formula for fitting a model with all variables plus a constant:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_formula = Expr(:call)
+model_formula.args = vcat(:+, 1, [n for n in names(data) if n != :Response])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+:($(Expr(:call)))
+8-element Array{Any,1}:
+  :+
+ 1  
+  :A
+  :B
+  :C
+  :D
+  :E
+  :F
+#+end_example
+
+This allows us to fit 3 models: ~reg~ contains all variables plus a constant,
+~reg_null~ represents the null hipothesis, where no variables have any impact,
+and ~reg_short~ represents a very "economic" model, using only the variables we
+know have an impact on the response.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+reg = lm(Formula(:Response, model_formula), data)
+reg_null = lm(@formula(Response ~ 1), data)
+reg_short = lm(@formula(Response ~ 1 + C + A + E), data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ 1 + A + B + C + D + E + F
+
+Coefficients:
+                 Estimate   Std.Error     t value Pr(>|t|)
+(Intercept)   2.58397e-14  1.7408e-14     1.48436   0.2344
+A                     3.0 1.11011e-14  2.70244e14   <1e-42
+B             1.85943e-15 1.01204e-14     0.18373   0.8659
+C                     2.0 2.20906e-14  9.05361e13   <1e-41
+D              9.8268e-15 1.33726e-14    0.734844   0.5157
+E                    -5.0 2.37455e-14 -2.10567e14   <1e-42
+F            -2.50632e-14 2.46688e-14    -1.01599   0.3844
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ +1
+
+Coefficients:
+             Estimate Std.Error   t value Pr(>|t|)
+(Intercept)   -0.4156  0.422615 -0.983401   0.3511
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ 1 + C + A + E
+
+Coefficients:
+               Estimate   Std.Error     t value Pr(>|t|)
+(Intercept)  2.9491e-14 1.40986e-14     2.09177   0.0814
+C                   2.0 1.07786e-14  1.85554e14   <1e-83
+A                   3.0 7.91033e-15  3.79251e14   <1e-85
+E                  -5.0 1.53978e-14 -3.24722e14   <1e-85
+#+end_example
+
+Now we perform an *F-Test* with the ~reg~ and ~reg_null~ models. We expect the
+F-Statistic to be high, since we know that the model with constant plus all
+variables "explains the data much better" that the constant model.
+
+We can also perform F-Tests for nested models such as ~reg~ and ~reg_short~.
+This can help decreasing the complexity of a model.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+f_test = ftest(reg.model, reg_null.model)
+f_test = ftest(reg.model, reg_short.model, reg_null.model)
+f_test = ftest(reg.model, reg_short.model)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+        Res. DOF DOF ΔDOF     SSR     ΔSSR     R²    ΔR²                                 F*  p(>F)
+Model 1        3   8       0.0000          1.0000                                                 
+Model 2        9   2   -6 16.0743 -16.0743 0.0000 1.0000 38224209186400180409473171456.0000 <1e-42
+        Res. DOF DOF ΔDOF     SSR     ΔSSR     R²    ΔR²                                 F*  p(>F)
+Model 1        3   8       0.0000          1.0000                                                 
+Model 2        6   5   -3  0.0000  -0.0000 1.0000 0.0000                             0.5557 0.6793
+Model 3        9   2   -3 16.0743 -16.0743 0.0000 1.0000 98284726847097150117548916736.0000 <1e-85
+        Res. DOF DOF ΔDOF    SSR    ΔSSR     R²    ΔR²     F*  p(>F)
+Model 1        3   8      0.0000         1.0000                     
+Model 2        6   5   -3 0.0000 -0.0000 1.0000 0.0000 0.5557 0.6793
+#+end_example
+
+***** What happens if the response is random?
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+data_random = deepcopy(data)
+
+data_random[:Response] = rand(10)
+
+data_random
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+10×7 DataFrames.DataFrame
+│ Row │ A         │ B        │ C         │ D          │ E        │ F         │ Response   │
+├─────┼───────────┼──────────┼───────────┼────────────┼──────────┼───────────┼────────────┤
+│ 1   │ 0.623557  │ 0.636231 │ 0.0379813 │ 0.81141    │ 0.824095 │ 0.0993354 │ -2.17384   │
+│ 2   │ 0.955077  │ 0.739728 │ 0.741414  │ 0.85233    │ 0.75771  │ 0.97588   │ 0.559508   │
+│ 3   │ 0.137487  │ 0.994435 │ 0.740511  │ 0.00785093 │ 0.516943 │ 0.5385    │ -0.69123   │
+│ 4   │ 0.653637  │ 0.170175 │ 0.393399  │ 0.348643   │ 0.761421 │ 0.436461  │ -1.05939   │
+│ 5   │ 0.41801   │ 0.431467 │ 0.339211  │ 0.41527    │ 0.437841 │ 0.623234  │ -0.256755  │
+│ 6   │ 0.7353    │ 0.289023 │ 0.518082  │ 0.713594   │ 0.536842 │ 0.920079  │ 0.557851   │
+│ 7   │ 0.0941916 │ 0.230737 │ 0.846342  │ 0.99548    │ 0.448593 │ 0.93209   │ -0.267708  │
+│ 8   │ 0.874464  │ 0.104192 │ 0.700623  │ 0.0223294  │ 0.428339 │ 0.523744  │ 1.88294    │
+│ 9   │ 0.0874393 │ 0.238128 │ 0.686364  │ 0.332731   │ 0.862457 │ 0.36169   │ -2.67724   │
+│ 10  │ 0.606935  │ 0.474219 │ 0.693748  │ 0.23876    │ 0.647687 │ 0.635184  │ -0.0301329 │
+
+10-element Array{Float64,1}:
+ 0.831069 
+ 0.176036 
+ 0.0811816
+ 0.742458 
+ 0.0617893
+ 0.706769 
+ 0.750653 
+ 0.0331454
+ 0.0634919
+ 0.529092
+
+10×7 DataFrames.DataFrame
+│ Row │ A         │ B        │ C         │ D          │ E        │ F         │ Response  │
+├─────┼───────────┼──────────┼───────────┼────────────┼──────────┼───────────┼───────────┤
+│ 1   │ 0.623557  │ 0.636231 │ 0.0379813 │ 0.81141    │ 0.824095 │ 0.0993354 │ 0.831069  │
+│ 2   │ 0.955077  │ 0.739728 │ 0.741414  │ 0.85233    │ 0.75771  │ 0.97588   │ 0.176036  │
+│ 3   │ 0.137487  │ 0.994435 │ 0.740511  │ 0.00785093 │ 0.516943 │ 0.5385    │ 0.0811816 │
+│ 4   │ 0.653637  │ 0.170175 │ 0.393399  │ 0.348643   │ 0.761421 │ 0.436461  │ 0.742458  │
+│ 5   │ 0.41801   │ 0.431467 │ 0.339211  │ 0.41527    │ 0.437841 │ 0.623234  │ 0.0617893 │
+│ 6   │ 0.7353    │ 0.289023 │ 0.518082  │ 0.713594   │ 0.536842 │ 0.920079  │ 0.706769  │
+│ 7   │ 0.0941916 │ 0.230737 │ 0.846342  │ 0.99548    │ 0.448593 │ 0.93209   │ 0.750653  │
+│ 8   │ 0.874464  │ 0.104192 │ 0.700623  │ 0.0223294  │ 0.428339 │ 0.523744  │ 0.0331454 │
+│ 9   │ 0.0874393 │ 0.238128 │ 0.686364  │ 0.332731   │ 0.862457 │ 0.36169   │ 0.0634919 │
+│ 10  │ 0.606935  │ 0.474219 │ 0.693748  │ 0.23876    │ 0.647687 │ 0.635184  │ 0.529092  │
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_formula = Expr(:call)
+model_formula.args = vcat(:+, 1, [n for n in names(data_random) if n != :Response])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+:($(Expr(:call)))
+8-element Array{Any,1}:
+  :+
+ 1  
+  :A
+  :B
+  :C
+  :D
+  :E
+  :F
+#+end_example
+
+We will fit the same 3 models and run F-Tests on them:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+reg = lm(Formula(:Response, model_formula), data_random)
+reg_null = lm(@formula(Response ~ 1), data_random)
+reg_short = lm(@formula(Response ~ 1 + C + A + E), data_random)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ 1 + A + B + C + D + E + F
+
+Coefficients:
+               Estimate Std.Error    t value Pr(>|t|)
+(Intercept)    0.487161  0.899008   0.541886   0.6256
+A            -0.0211967  0.573296 -0.0369734   0.9728
+B             -0.241629  0.522653  -0.462314   0.6753
+C             -0.364222   1.14083   -0.31926   0.7705
+D              0.540471  0.690608   0.782602   0.4910
+E             0.0330877   1.22629  0.0269819   0.9802
+F            -0.0722077   1.27398  -0.056679   0.9584
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ +1
+
+Coefficients:
+             Estimate Std.Error t value Pr(>|t|)
+(Intercept)  0.397569  0.108052  3.6794   0.0051
+DataFrames.DataFrameRegressionModel{GLM.LinearModel{GLM.LmResp{Array{Float64,1}},GLM.DensePredChol{Float64,Base.LinAlg.Cholesky{Float64,Array{Float64,2}}}},Array{Float64,2}}
+
+Formula: Response ~ 1 + C + A + E
+
+Coefficients:
+               Estimate Std.Error    t value Pr(>|t|)
+(Intercept)    0.565469   0.73363   0.770782   0.4701
+C             -0.494118  0.560869  -0.880986   0.4122
+A            0.00236009  0.411619 0.00573368   0.9956
+E              0.180664  0.801233   0.225483   0.8291
+#+end_example
+
+When we run the F-Tests we see that it is much less clear that
+the constant model is worse than the model with variables. Other than
+that, I do not know how far we can interpret these results.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+f_test = ftest(reg.model, reg_null.model)
+f_test = ftest(reg.model, reg_short.model, reg_null.model)
+f_test = ftest(reg.model, reg_short.model)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+        Res. DOF DOF ΔDOF    SSR    ΔSSR     R²    ΔR²     F*  p(>F)
+Model 1        3   8      0.5608         0.4663                     
+Model 2        9   2   -6 1.0508 -0.4900 0.0000 0.4663 0.4369 0.8215
+        Res. DOF DOF ΔDOF    SSR    ΔSSR     R²    ΔR²     F*  p(>F)
+Model 1        3   8      0.5608         0.4663                     
+Model 2        6   5   -3 0.8857 -0.3249 0.1571 0.3092 0.5794 0.6675
+Model 3        9   2   -3 1.0508 -0.1651 0.0000 0.1571 0.3728 0.7760
+        Res. DOF DOF ΔDOF    SSR    ΔSSR     R²    ΔR²     F*  p(>F)
+Model 1        3   8      0.5608         0.4663                     
+Model 2        6   5   -3 0.8857 -0.3249 0.1571 0.3092 0.5794 0.6675
+#+end_example
+**** ANOVA in Julia with F-Tests: Does it Work with "Factors"?
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using DataFrames, GLM
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+data_names = [:A, :B, :C, :D, :E, :F]
+
+data_factors = [[-1, 1], ["a", "b", "c"], [true, false], [2, 4, 8, 16],
+                [0, 1], [4.55, 6.4331, 7.885, 14.44]]
+
+data = DataFrame()
+
+for (n, f) in zip(data_names, data_factors)
+    data[n] = rand(f, 10)
+end
+
+response(x::Int) = (3 * x) / 2
+end
+
+#data[:Response] = (2 .* data[:C]) .+ (3 .* data[:A]) - (5 .* data[:E])
+
+data
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+6-element Array{Symbol,1}:
+ :A
+ :B
+ :C
+ :D
+ :E
+ :F
+
+6-element Array{Array{Any,1},1}:
+ Any[-1, 1]                     
+ Any["a", "b", "c"]             
+ Any[true, false]               
+ Any[2, 4, 8, 16]               
+ Any[0, 1]                      
+ Any[4.55, 6.4331, 7.885, 14.44]
+
+0×0 DataFrames.DataFrame
+
+
+
+
+
+10×6 DataFrames.DataFrame
+│ Row │ A  │ B   │ C     │ D  │ E │ F      │
+├─────┼────┼─────┼───────┼────┼───┼────────┤
+│ 1   │ -1 │ "b" │ true  │ 2  │ 1 │ 4.55   │
+│ 2   │ -1 │ "c" │ false │ 8  │ 1 │ 7.885  │
+│ 3   │ -1 │ "c" │ false │ 4  │ 0 │ 6.4331 │
+│ 4   │ -1 │ "a" │ true  │ 8  │ 0 │ 4.55   │
+│ 5   │ 1  │ "a" │ true  │ 4  │ 1 │ 4.55   │
+│ 6   │ 1  │ "c" │ false │ 8  │ 0 │ 14.44  │
+│ 7   │ -1 │ "b" │ false │ 16 │ 0 │ 7.885  │
+│ 8   │ -1 │ "c" │ false │ 2  │ 1 │ 7.885  │
+│ 9   │ 1  │ "b" │ false │ 4  │ 0 │ 4.55   │
+│ 10  │ -1 │ "a" │ false │ 4  │ 0 │ 6.4331 │
+#+end_example
+
+#+END_SRC
