@@ -11338,6 +11338,7 @@ me_plot <- MEPlot(reg)
 #+RESULTS:
 [[file:/tmp/babel-832YFt/figure832X_H.png]]
 **** Meeting with PUMA Team @ [2018-02-13 Tue]
+***** Intro
 - John Paul is coordinating the meeting
 - The meeting will be recorded
 - We will start with the discussion of the future rebuttal,
@@ -11375,3 +11376,8 @@ me_plot <- MEPlot(reg)
   go in the direction of low-level circuit optimization
 ****** CMOS Works
 ******* Reducing Models for Execution on Neuromorphic Architectures
+***** Next Steps
+- List all techniques we came across, select which will be applied
+- What the archictecure could look like when those techniques are used?
+- Aayush will update the slides with comments from today's meeting
+- Aayush proposes a new meeting next week to discuss next steps
