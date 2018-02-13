@@ -11337,3 +11337,41 @@ me_plot <- MEPlot(reg)
 
 #+RESULTS:
 [[file:/tmp/babel-832YFt/figure832X_H.png]]
+**** Meeting with PUMA Team @ [2018-02-13 Tue]
+- John Paul is coordinating the meeting
+- The meeting will be recorded
+- We will start with the discussion of the future rebuttal,
+  then we'll move to bibliographic review discussion
+***** Rebuttal
+- Izzat will share his question organization:
+  - Issue of novelty is subjective
+  - Argue why the work is helpful - also subjective
+  - Highlight differences between PUMA and ISAAC
+  - Give clearer explanations for the results obtained
+  - Short summary in the rebuttal and the paper
+    - These points are currently scattered in the paper
+- Aayush is working on the questions about energy
+  - Aayush sent a PUMA energy breakdown via e-mail
+- We have limited space in the rebuttal (600 words)
+  - Izzat mentions we can go over the word limit
+- John Paul thinks a good strategy is to try to sway the most
+  strongly opinionated reviewer
+- Izzat mentions we should make it more clear that memristors are
+  already more energy-efficient
+- Aayush mentions a qualitative discussion about CMOSs could be
+  sufficient
+  - We can try to include a more thorough table
+  - Sai generated a large quantitative comparison that was not
+    included in the final paper
+***** Bibliographic Review
+****** Memristor Works
+******* TIME
+- http://nics-efc.org/media/publications/2017/DAC17_218.pdf
+- Aaysuh says we should use this approach
+- Very shortly discusses reducing writes
+- Izzat has some very specific architecture questions,
+  Aayush and John Paul have some answers
+- John Paul and Izzat mention that the paper should not
+  go in the direction of low-level circuit optimization
+****** CMOS Works
+******* Reducing Models for Execution on Neuromorphic Architectures
