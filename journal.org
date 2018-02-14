@@ -11381,3 +11381,155 @@ me_plot <- MEPlot(reg)
 - What the archictecure could look like when those techniques are used?
 - Aayush will update the slides with comments from today's meeting
 - Aayush proposes a new meeting next week to discuss next steps
+*** [2018-02-14 Wed]
+**** Exploring Results for the Needle Screening Experiments
+First make sure you have the data:
+
+#+CALL: update_screening_experiment()
+
+#+RESULTS:
+: Already up to date.
+
+Now we load the screening experiment and the results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(FrF2)
+
+experiment_dir <- "autotuning_screening_experiment/data/needle/3_replications_32_min_regs/"
+
+factors_file <- paste(experiment_dir, "factors.csv", sep = "")
+results_file <- paste(experiment_dir, "results.csv", sep = "")
+screening_file <- paste(experiment_dir, "screening_design.csv", sep = "")
+
+factors <- as.data.frame(read.csv(factors_file, header = TRUE, sep = ","))
+results <- as.data.frame(read.csv(results_file, header = TRUE, sep = ","))
+screening <- as.data.frame(read.csv(screening_file, header = TRUE, sep = ","))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+n <- c(make.names(trimws(factors$name, which = c("left"))),
+       "response")
+
+ordered_results <- as.data.frame(results[n])
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ordered_results$X..optimize. = as.factor(ordered_results$X..optimize.)
+ordered_results$X.Xptxas...opt.level. = as.factor(ordered_results$X.Xptxas...opt.level.)
+ordered_results$X.Xptxas...maxrregcount. = as.factor(ordered_results$X.Xptxas...maxrregcount.)
+
+reg = aov(data = ordered_results, response ~ .)
+
+summary.aov(reg)
+
+summary.lm(reg)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                                          Df  Sum Sq  Mean Sq F value Pr(>F)  
+X.Xnvlink...preserve.relocs                1 0.00000 0.000005   0.001 0.9723  
+X..no.align.double                         1 0.00002 0.000024   0.006 0.9394  
+X..use_fast_math                           1 0.00008 0.000079   0.019 0.8902  
+X..ftz.                                    1 0.00001 0.000014   0.003 0.9532  
+X..prec.sqrt.                              1 0.00028 0.000279   0.068 0.7951  
+X..gpu.architecture.                       1 0.02303 0.023025   5.648 0.0223 *
+X..optimize.                               1 0.00001 0.000012   0.003 0.9577  
+X..relocatable.device.code.                1 0.00000 0.000000   0.000 0.9968  
+X..prec.div.                               1 0.00000 0.000003   0.001 0.9790  
+X.Xptxas...allow.expensive.optimizations.  1 0.00008 0.000075   0.018 0.8926  
+X.Xptxas...fmad.                           1 0.00003 0.000026   0.006 0.9373  
+X.Xptxas...force.load.cache.               1 0.00007 0.000074   0.018 0.8936  
+X.Xptxas...opt.level.                      1 0.00026 0.000263   0.064 0.8009  
+X.Xptxas...force.store.cache.              1 0.00010 0.000096   0.024 0.8789  
+X.Xptxas...maxrregcount.                   1 0.00059 0.000592   0.145 0.7051  
+dummy1                                     1 0.00017 0.000169   0.041 0.8397  
+dummy2                                     1 0.00000 0.000000   0.000 0.9936  
+dummy3                                     1 0.00002 0.000019   0.005 0.9464  
+dummy4                                     1 0.00004 0.000035   0.009 0.9264  
+Residuals                                 40 0.16306 0.004077                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Call:
+aov.default(formula = response ~ ., data = ordered_results)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.06407 -0.04001 -0.01902  0.03824  0.12581 
+
+Coefficients:
+                                                Estimate Std. Error t value
+(Intercept)                                    2.905e-01  3.297e-02   8.812
+X.Xnvlink...preserve.relocson                 -5.756e-04  1.649e-02  -0.035
+X..no.align.doubleon                          -1.261e-03  1.649e-02  -0.077
+X..use_fast_mathon                            -2.291e-03  1.649e-02  -0.139
+X..ftz.true                                    9.727e-04  1.649e-02   0.059
+X..prec.sqrt.true                             -4.310e-03  1.649e-02  -0.261
+X..gpu.architecture.sm_52                     -3.918e-02  1.649e-02  -2.377
+X..optimize.3                                  8.798e-04  1.649e-02   0.053
+X..relocatable.device.code.true                6.751e-05  1.649e-02   0.004
+X..prec.div.true                               4.363e-04  1.649e-02   0.026
+X.Xptxas...allow.expensive.optimizations.true -2.239e-03  1.649e-02  -0.136
+X.Xptxas...fmad.true                           1.305e-03  1.649e-02   0.079
+X.Xptxas...force.load.cache.lu                -2.219e-03  1.649e-02  -0.135
+X.Xptxas...opt.level.3                        -4.184e-03  1.649e-02  -0.254
+X.Xptxas...force.store.cache.cs               -2.529e-03  1.649e-02  -0.153
+X.Xptxas...maxrregcount.63                    -6.283e-03  1.649e-02  -0.381
+dummy1                                         1.678e-03  8.243e-03   0.204
+dummy2                                        -6.703e-05  8.243e-03  -0.008
+dummy3                                        -5.578e-04  8.243e-03  -0.068
+dummy4                                        -7.662e-04  8.243e-03  -0.093
+                                              Pr(>|t|)    
+(Intercept)                                   6.49e-11 ***
+X.Xnvlink...preserve.relocson                   0.9723    
+X..no.align.doubleon                            0.9394    
+X..use_fast_mathon                              0.8902    
+X..ftz.true                                     0.9532    
+X..prec.sqrt.true                               0.7951    
+X..gpu.architecture.sm_52                       0.0223 *  
+X..optimize.3                                   0.9577    
+X..relocatable.device.code.true                 0.9968    
+X..prec.div.true                                0.9790    
+X.Xptxas...allow.expensive.optimizations.true   0.8926    
+X.Xptxas...fmad.true                            0.9373    
+X.Xptxas...force.load.cache.lu                  0.8936    
+X.Xptxas...opt.level.3                          0.8009    
+X.Xptxas...force.store.cache.cs                 0.8789    
+X.Xptxas...maxrregcount.63                      0.7051    
+dummy1                                          0.8397    
+dummy2                                          0.9936    
+dummy3                                          0.9464    
+dummy4                                          0.9264    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.06385 on 40 degrees of freedom
+Multiple R-squared:  0.132,	Adjusted R-squared:  -0.2804 
+F-statistic:  0.32 on 19 and 40 DF,  p-value: 0.9952
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 800 :session *R* 
+me_plot <- MEPlot(reg)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-1038AJA/figure1038_0y.png]]
+**** Reading About Design of Experiments, Factorial Designs, Supersaturated Designs
+- [[file:~/Dropbox/papers/design-of-experiments/georgiou2014supersaturated.pdf][Georgiou's paper on Supersaturated Designs]]
+- [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's Book]]
+**** [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book on Factorial Designs]]
+- The introduction points to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's Book on Design of Experiments]], which seems very nice, especially:
+  - Chapter 7: Other Design and Analysis Techniques for Experiments at More than
+    Two Levels
+  - Chapter 8: Nonregular Designs: Construction and Properties
