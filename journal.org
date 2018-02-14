@@ -11533,3 +11533,4 @@ me_plot <- MEPlot(reg)
   - Chapter 7: Other Design and Analysis Techniques for Experiments at More than
     Two Levels
   - Chapter 8: Nonregular Designs: Construction and Properties
+**** Generating Good/Optimal Mixed-Level Designs
