@@ -11533,4 +11533,27 @@ me_plot <- MEPlot(reg)
   - Chapter 7: Other Design and Analysis Techniques for Experiments at More than
     Two Levels
   - Chapter 8: Nonregular Designs: Construction and Properties
+*** [2018-02-15 Thu]
 **** Generating Good/Optimal Mixed-Level Designs
+Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's book]] on Factorial Designs pointed to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's book]] on Design of Experiments,
+which has two chapters (7 & 8) on the design and analysis of multi-level experimental designs.
+
+Search for more specific terms such as "multi-" or "mixed-level experimental designs" led
+to finding [[file:~/Dropbox/papers/design-of-experiments/fontana2013algebraic.pdf][Fontana's paper]] on algebraic generation of minimum orthogonal designs.
+A [[file:~/Dropbox/papers/design-of-experiments/fontana2017generalized.pdf][later paper]] from the same author generalized these constructions to mixed-level orthogonal
+arrays, which can be used to generate mixed-level optimal designs.
+
+Fontana later collaborated with Ulrike, from the ~DoE~ R packages, to implement this construction
+in the ~DoE.MIParray~ R [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][package]]. The [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][description]] of the implementation mentions that proprietary
+solvers such as ~gurobi~ where used in the solution.
+
+We now have a way of generating optimal mixed-level orthogonal experimental designs using R,
+albeit using proprietary software. Would it be worth evaluating the difficulty of implementing
+this using open-source software?
+
+**** Tuning FPGAs using Experimental Design
+Looking for works that cited Fontana's paper I came across a 2018 JPDC paper on
+[[file:~/Dropbox/papers/design-of-experiments/tuzov2018tuning.pdf][tuning synthesis flags on FPGAs]]. This work uses fractional factorial
+experimental designs to explore a subset of flags that control synthesis in
+FPGAs, targeting a specific architecture.
+
