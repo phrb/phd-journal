@@ -11185,7 +11185,7 @@ me_plot <- MEPlot(reg)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-832YFt/figure832xFs.png]]
+[[file:/tmp/babel-29856R_X/figure29856OMB.png]]
 
 ***** Looking at Half Minimum Register Value
 #+HEADER: :results output :session *R*
@@ -11524,7 +11524,7 @@ me_plot <- MEPlot(reg)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-1038AJA/figure1038_0y.png]]
+[[file:/tmp/babel-29856R_X/figure29856P4r.png]]
 **** Reading About Design of Experiments, Factorial Designs, Supersaturated Designs
 - [[file:~/Dropbox/papers/design-of-experiments/georgiou2014supersaturated.pdf][Georgiou's paper on Supersaturated Designs]]
 - [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's Book]]
@@ -11538,18 +11538,21 @@ me_plot <- MEPlot(reg)
 Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's book]] on Factorial Designs pointed to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's book]] on Design of Experiments,
 which has two chapters (7 & 8) on the design and analysis of multi-level experimental designs.
 
-Search for more specific terms such as "multi-" or "mixed-level experimental designs" led
-to finding [[file:~/Dropbox/papers/design-of-experiments/fontana2013algebraic.pdf][Fontana's paper]] on algebraic generation of minimum orthogonal designs.
-A [[file:~/Dropbox/papers/design-of-experiments/fontana2017generalized.pdf][later paper]] from the same author generalized these constructions to mixed-level orthogonal
-arrays, which can be used to generate mixed-level optimal designs.
+Search for more specific terms such as "multi-" or "mixed-level experimental
+designs" led to finding [[file:~/Dropbox/papers/design-of-experiments/fontana2013algebraic.pdf][Fontana's paper]] on algebraic generation of minimum
+orthogonal designs. A [[file:~/Dropbox/papers/design-of-experiments/fontana2017generalized.pdf][later paper]] from the same author generalized these
+constructions to mixed-level orthogonal arrays, which can be used to generate
+mixed-level optimal designs. Fontana [[file:~/Dropbox/papers/design-of-experiments/fontana2013minimum.pdf][implemented his algorithm]] using the
+proprietary software SAS.
 
-Fontana later collaborated with Ulrike, from the ~DoE~ R packages, to implement this construction
-in the ~DoE.MIParray~ R [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][package]]. The [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][description]] of the implementation mentions that proprietary
-solvers such as ~gurobi~ where used in the solution.
+Fontana later collaborated with Ulrike, from the ~DoE~ R packages, to implement
+this construction in the ~DoE.MIParray~ R [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][package]]. The [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][description]] of the
+implementation mentions that proprietary solvers such as ~gurobi~ where used in
+the solution.
 
-We now have a way of generating optimal mixed-level orthogonal experimental designs using R,
-albeit using proprietary software. Would it be worth evaluating the difficulty of implementing
-this using open-source software?
+We now have a way of generating optimal mixed-level orthogonal experimental
+designs using R, albeit using proprietary software. Would it be worth evaluating
+the difficulty of implementing this using open-source software?
 
 **** Tuning FPGAs using Experimental Design
 Looking for works that cited Fontana's paper I came across a 2018 JPDC paper on
@@ -11557,3 +11560,28 @@ Looking for works that cited Fontana's paper I came across a 2018 JPDC paper on
 experimental designs to explore a subset of flags that control synthesis in
 FPGAs, targeting a specific architecture.
 
+The 9 optimization flags they tested in this paper were selected because they
+were the most common flags across multiple FPGA synthesis tools. The authors
+give no other reason to select those flags. The total number of flags and
+optimizations in the targeted system was 72.
+
+Of those 9 flags, it is not entirely clear which are multi-level factors and
+which are only boolean or two-level factors. It is also not clear whether the
+other 63 flags on the system are multi-level, integers, or other. It seems they
+converted some flags to string selections, but this is not explained further.
+
+They used a 2^{9 - 4}_{IV} fractional factorial design with 32 runs to measure
+the impact of the 9 flags. The entire search space in this case has 512
+different configurations. They use a set of 24 response variables to measure the
+effectiveness of each configuration, and attempt to fit linear models using the
+9 factors for each response variable, separately.
+
+One particularly weird choice of this study was to use the fitted linear models,
+that used 32 configurations, to compute the values of the response variables for
+the remaining 480 configurations. This is strange because the using ANOVA
+attempts to measure whether each factor impacts the response variables, but not
+necessarily gives a correct model, since factor levels are mapped to [0, 1] in
+this case.
+
+They did not re-evaluate the predicted points to check for accuracy and did not
+show where in the search space the 32 actually measured points were.
