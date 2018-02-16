@@ -11585,3 +11585,80 @@ this case.
 
 They did not re-evaluate the predicted points to check for accuracy and did not
 show where in the search space the 32 actually measured points were.
+
+*** [2018-02-16 Fri]
+**** Reviewing the XP 2018 Paper
+*Paper Title*: A Comparison of Task Estimation Accuracy in a Large Agile Environment
+(Short Paper)
+
+***** Summary
+The paper compares developer accuracy in test-based task estimation at
+industrial agile environments. The data set analysed by the paper consists
+of 4,434 estimated task, contained in 732 stories, from a single company,
+
+The paper concludes that the estimation of test-based tasks is almost as
+innacurate as the estimates of other kinds of tasks. The effort to complete
+test-based tasks was under-estimated more often than over-estimated. The paper
+also identifies large variations in accuracies of estimations by different
+developers.
+
+Although answering the research questions it poses, the paper does not make
+clear what were its objectives and contributions.
+
+***** Research Questions
+1. Is test-based task estimation more accurate than for other task types?
+2. Are there significant differences in estimations across developers
+
+***** Section 2: Analysis of Task Accuracy
+Table 1 shows a summary of the data. It is strange that the medians of the
+estimates for all categories are all equal, and also that they are all equal to
+zero. The paper does not discuss the importance of the median in this specific
+data set. Later in the section the accuracy of each category is presented and it
+is possible to understand that the medians are all zero because most points are
+accurate estimates, which are mapped to zero. I suggest considering removing the
+median from the tables because it does not add much to the discussion, since the
+values are the same for all categories. Perhaps presenting a histogram of under-
+and over-estimates could make this section's argument more clear.
+
+Figures 1a and 1b are not boxplots, since they do not present the data grouped
+by its quartiles. It is impossible to distinguish precisely how many points are
+plotted in the same place, although it is possible to see that some circles are
+darker that others, suggesting some points are at the same spot. The paper does
+not mention what tool was used to generate the figures, but I suggest
+considering using the boxplot functions built-in in plotting packages from R,
+such as ggplot2, or Python, such as matplotlib.
+
+The paper does not discuss that the two categories with lower accuracy are the
+ones with the most data points. The accuracy of the other two categories is also
+similar, indicating that it could be interesing to check the possibility that
+the accuracy decreases as the sample size increases. An interesing question is
+whether the distributions of accuracies converge to the same "shape" as sample
+increases. Plots of those distributions for all four categories would also be
+nice additions to the paper.
+
+***** Section 3: Analysis of Developer Accuracy
+Tables 3 and 4 present accuracies of each developer with more than 20 estimates
+in the data set, separated by category. The paper does not discuss why only the
+"Test" and "All" categories were considered in this section. It would be
+interesting to see whether the other categories of estimates had a similar
+behaviour, since they had similar estimate accuracies.
+
+It is curious that the same developers had different accuracies in the two
+categories, but estimate accuracy in the two categories were similar. Maybe the
+different skills of developers in estimating different kinds of tasks balance
+each other out. This reinforces that it would be interesting to look at the
+analysis of developer accuracy in the other two categories.
+
+***** Conclusion
+It would be interesting to explore if the difference between accuracies could be
+explained by the sample size, that is, does the accuracy decreases as the sample
+size increases?
+
+The paper presents an interesting data set, but my opinion is that the analysis
+could be presented better, especially regarding the distribution of over- and
+under-estimation. Presenting boxplots or histograms would greatly ease the
+understanding of the data set.
+
+The paper answers its research questions, but does not clarify its objectives or
+contributions. The paper would benefit from explicitly discussing its objectives
+and what was learned from this data analysis.
