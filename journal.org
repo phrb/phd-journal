@@ -11662,3 +11662,34 @@ understanding of the data set.
 The paper answers its research questions, but does not clarify its objectives or
 contributions. The paper would benefit from explicitly discussing its objectives
 and what was learned from this data analysis.
+*** [2018-02-19 Mon]
+**** Installing the ~DoE.MIParray~ package
+The package is easy to install, but it requires installing, configuring, and
+obtaining a license for proprietary solvers Gurobi or Mosek. After
+unsuccessfully attempting to install Mosek, I installed Gurobi and its R package
+following instructions on Gurobi's [[http://www.gurobi.com/][site]]. I requested an academic license for
+Gurobi and tried to use ~Doe.MIParray:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(DoE.MIParray)
+
+feld <- gurobi_MIParray(18, c(2, 3, 3, 3))
+feld
+#+END_SRC
+
+#+RESULTS:
+: no violation of necessary criteria  for strength  2  was found
+: Error in dyn.load(file, DLLpath = DLLpath, ...) : 
+:   unable to load shared object '/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/gurobi/libs/gurobi.so':
+:   libgurobi75.so: cannot open shared object file: No such file or directory
+: Timing stopped at: 0.021 0.001 0.022
+: Error: object 'feld' not found
+
+Weird enough, the package runs in the R interpreter at a terminal, but refuses
+to find the library at this org-mode session. Further configuration will be
+required.
+**** Understanding ~DoE.MIParray~
+Reading the [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][documentation]] and [[http://www1.beuth-hochschule.de/FB_II/reports/Report-2018-001.pdf][preliminar tech report]] to better understand what
+kinds of designs can be generated with this technique and if those designs fit
+our objective.
