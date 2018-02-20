@@ -11838,5 +11838,39 @@ Applications. That book gives an algorithm for the expansive and contractive
 replacement techniques for constructing orthogonal arrays from existing
 orthogonal arrays.
 
-**** Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]] 
+**** Expansive & Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]]
+Section 9.3 of this book presents the expansive and contractive replacement
+methods, two apparently simple strategies to construct mixed-level designs from
+other designs, or from parts from the same design.
+
+The expansive replacement method can be used to insert runs from designs with
+factors with less levels into designs with factors with more levels, by
+replacing selected columns. This seems straightforward because it "encodes" a
+set of columns with more levels to a column with less levels.
+
+The contractive replacement method seems more directly applicable in our case.
+This method is what the AutoDesign system [[http://www.functionbay.co.kr/documentation/onlinehelp/default.htm#!Documents/plackettandburmandesign.htm][claims to use]] to generate its
+mixed-level Plackett-Burman designs. The method requires finding a set of
+columns in the original design that fulfill certain properties. Those columns
+are used to encode a new factor with more levels, in a process similar to the
+one discussed with Arnaud. The main advantages of this method are the guarantee
+of not losing orthogonality of the design and not changing the number of runs.
+
+***** The Contractive Replacement Method
+One notation for orthogonal arrays is $OA(N, s_1, \dots, s_k, t)$, where
+$N$ is the number of rows, $s_1, \dots, s_k$ are the factors, where each $s_i$
+represents the number of levels, and $t$ is the strength.
+
+To use the contractive method on an array $A = OA(N, s_1, \dots, s_k, 2)$, we
+need to find an OA $B = OA(N, s_u, \forall u \in U, 2)$, constructed from a
+subset $U$ of columns of $A$. $B$ must have the following properties:
+
+1. $B$ is composed of $N / L$ repetitions of the same rows, where $L$ denotes
+   the number of levels of the new factor
+2. $L = 1 - u + \sum\limits_{u \in U}{s_u}$
+
+If we can find $B$, we then encode each unique row as $0, 1, \dots, L - 1$ and
+replace the corresponding rows of $A$, in columns in $U$, with this new
+encoding. This effectively "contracts" the columns in $U$ into a new column
+represeting a factor with L levels.
 
