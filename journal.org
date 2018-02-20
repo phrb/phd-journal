@@ -11679,17 +11679,164 @@ feld
 #+END_SRC
 
 #+RESULTS:
-: no violation of necessary criteria  for strength  2  was found
-: Error in dyn.load(file, DLLpath = DLLpath, ...) : 
-:   unable to load shared object '/home/phrb/R/x86_64-pc-linux-gnu-library/3.4/gurobi/libs/gurobi.so':
-:   libgurobi75.so: cannot open shared object file: No such file or directory
-: Timing stopped at: 0.021 0.001 0.022
-: Error: object 'feld' not found
+#+begin_example
+no violation of necessary criteria  for strength  2  was found
+Academic license - for non-commercial use only
+Optimize a model with 26 rows, 54 columns and 1098 nonzeros
+Variable types: 0 continuous, 54 integer (54 binary)
+Coefficient statistics:
+  Matrix range     [5e-01, 2e+00]
+  Objective range  [0e+00, 0e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+01, 2e+01]
+Presolve time: 0.00s
+Presolved: 26 rows, 54 columns, 585 nonzeros
+Variable types: 0 continuous, 54 integer (54 binary)
+
+Root relaxation: objective 0.000000e+00, 43 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+,*    0     0               0       0.0000000    0.00000  0.00%     -    0s
+
+Explored 0 nodes (55 simplex iterations) in 0.01 seconds
+Thread count was 2 (of 4 available processors)
+
+Solution count 1: 0 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 0.000000000000e+00, best bound 0.000000000000e+00, gap 0.0000%
+=== GWLP after enforcing resolution ===
+    0     1     2     3     4 
+1.000 0.000 0.000 1.778 0.222 
+=======================================
+[1] 3
+Academic license - for non-commercial use only
+Warning: zero or small (< 1e-13) coefficients in quadratic constraints, ignored
+Optimize a model with 46 rows, 76 columns and 1818 nonzeros
+Model has 1 quadratic constraint
+Variable types: 21 continuous, 55 integer (54 binary)
+Coefficient statistics:
+  Matrix range     [4e-01, 3e+00]
+  QMatrix range    [1e+00, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+01, 2e+01]
+
+Loaded MIP start with objective 576
+
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+Presolved: 46 rows, 75 columns, 951 nonzeros
+Variable types: 17 continuous, 58 integer (54 binary)
+Presolve time: 0.00s
+Presolved: 88 rows, 77 columns, 995 nonzeros
+Presolved model has 1 second-order cone constraint
+Root barrier log...
+
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 2.568e+03
+ Factor NZ  : 2.824e+03
+ Factor Ops : 1.120e+05 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.75708770e+01 -5.40000000e+00  4.74e+02 1.00e-01  1.34e+00     0s
+   1   5.94324366e-01 -1.25931102e+01  1.10e+01 1.10e-07  8.92e-02     0s
+   2   5.86074004e-02 -1.35552669e+00  1.21e-05 9.50e-10  8.27e-03     0s
+   3   8.70800208e-05 -3.20404251e-03  1.33e-11 1.28e-12  1.92e-05     0s
+   4   1.36952166e-06 -4.86927800e-06  2.28e-13 3.47e-16  3.65e-08     0s
+   5   4.11125129e-08 -2.12634841e-08  1.44e-11 1.14e-15  3.65e-10     0s
+
+Barrier solved model in 5 iterations and 0.01 seconds
+Optimal objective 4.11125129e-08
+
+
+Root relaxation: objective 4.111251e-08, 0 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0   54  576.00000    0.00000   100%     -    0s
+     0     0    0.00000    0   54  576.00000    0.00000   100%     -    0s
+H    0     0                     162.0000000    0.00000   100%     -    0s
+
+Explored 1 nodes (0 simplex iterations) in 0.25 seconds
+Thread count was 2 (of 4 available processors)
+
+Solution count 2: 162 576 
+
+Optimization achieved user objective limit
+Best objective 1.620000000000e+02, best bound 4.111251287696e-08, gap 100.0000%
+=== GWLP after optimizing A3 ===
+  0   1   2   3   4 
+1.0 0.0 0.0 0.5 1.5 
+=================================
+      [,1] [,2] [,3] [,4]
+ [1,]    1    1    1    3
+ [2,]    1    1    2    1
+ [3,]    1    1    3    2
+ [4,]    1    2    1    2
+ [5,]    1    2    2    3
+ [6,]    1    2    3    1
+ [7,]    1    3    1    1
+ [8,]    1    3    2    2
+ [9,]    1    3    3    3
+[10,]    2    1    1    1
+[11,]    2    1    2    2
+[12,]    2    1    3    3
+[13,]    2    2    1    3
+[14,]    2    2    2    1
+[15,]    2    2    3    2
+[16,]    2    3    1    2
+[17,]    2    3    2    3
+[18,]    2    3    3    1
+attr(,"class")
+[1] "oa"     "matrix"
+attr(,"origin")
+attr(,"origin")$package
+[1] "DoE.MIParry"
+
+attr(,"origin")$call
+gurobi_MIParray(18, c(2, 3, 3, 3))
+
+optimization results:
+    A1to2        A3 
+"OPTIMAL" "OPTIMAL" 
+
+further attribute(s) (accessible with attr( x , attrname)):
+[1] "MIPinfo"
+#+end_example
 
 Weird enough, the package runs in the R interpreter at a terminal, but refuses
 to find the library at this org-mode session. Further configuration will be
 required.
+
+Rebooting the machine seems to have fixed this issue, and now the package works
+on org-mode as well.
 **** Understanding ~DoE.MIParray~
 Reading the [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][documentation]] and [[http://www1.beuth-hochschule.de/FB_II/reports/Report-2018-001.pdf][preliminar tech report]] to better understand what
 kinds of designs can be generated with this technique and if those designs fit
 our objective.
+*** [2018-02-20 Tue]
+**** Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book]] on Factorial Designs
+Chapter 2 provides fundamental definitions of concepts related to factorial
+designs. Its definition of contrasts is a little bit different from [[https://en.wikipedia.org/wiki/Contrast_(statistics)][this one]].
+The [[https://en.wikipedia.org/wiki/Kronecker_product][Kronecker product]] is also a useful concept presented in this chapter.
+
+This book is much more mathematically denser than any other DoE book I have read
+so far. It seems to be a good mathematical foundation for the concepts presented
+in books such as [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's]], but does not offer much in terms of practical
+algorithms or implementations.
+
+A more practical reference is [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's]] Orthogonal Arrays: Theory and
+Applications. That book gives an algorithm for the expansive and contractive
+replacement techniques for constructing orthogonal arrays from existing
+orthogonal arrays.
+
+**** Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]] 
+
