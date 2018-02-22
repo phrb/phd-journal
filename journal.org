@@ -11879,29 +11879,14 @@ represeting a factor with L levels.
 *** [2018-02-21 Wed]
 **** Implementing the Contractive Replacement Method in Julia
 
-#+CALL: define_primes_divisible_offset()
-
-#+RESULTS:
-: 
-: 
-: primes_divisible_offset (generic function with 1 method)
-
-#+CALL: define_julia_paley()
-
-#+RESULTS:
-: binary_search (generic function with 1 method)
-: 
-: paley (generic function with 1 method)
-
-#+CALL: define_julia_plackett_burman()
-
-#+RESULTS:
-: plackett_burman (generic function with 1 method)
-
 #+NAME: define_find_contractible_columns
-#+HEADER: :results output :session *Julia*
+#+HEADER: :results output :session *Julia* :noweb yes
 #+BEGIN_SRC julia
 using DataFrames, IterTools
+
+<<define_primes_divisible_offset>>
+<<define_julia_paley>>
+<<define_julia_plackett_burman>>
 
 # https://stackoverflow.com/questions/47564825/check-if-all-the-elements-of-a-julia-array-are-equal
 @inline function all_equal(x::Array{Int64, 1})
@@ -11979,43 +11964,34 @@ end
 
 
 
+
+primes_divisible_offset (generic function with 1 method)
+binary_search (generic function with 1 method)
+
+paley (generic function with 1 method)
+plackett_burman (generic function with 1 method)
+
+
 all_equal (generic function with 1 method)
 
 count_repetitions (generic function with 1 method)
 
 can_contract (generic function with 1 method)
 
-find_contractible_columns (generic function with 2 methods)
+find_contractible_columns (generic function with 3 methods)
 #+end_example
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-find_contractible_columns(DataFrame(plackett_burman(16)), 5)
+find_contractible_columns(DataFrame(plackett_burman(16)), 2, 5)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-12×11 DataFrames.DataFrame
-│ Row │ x1 │ x2 │ x3 │ x4 │ x5 │ x6 │ x7 │ x8 │ x9 │ x10 │ x11 │
-├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼─────┼─────┤
-│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1   │ 1   │
-│ 2   │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ -1 │ 1  │ -1  │ -1  │
-│ 3   │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ -1  │ 1   │
-│ 4   │ -1 │ -1 │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1   │ -1  │
-│ 5   │ -1 │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1  │ -1  │
-│ 6   │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ -1  │ -1  │
-│ 7   │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ -1 │ -1  │ 1   │
-│ 8   │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ -1 │ -1 │ 1   │ 1   │
-│ 9   │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ -1 │ -1 │ 1  │ 1   │ 1   │
-│ 10  │ 1  │ -1 │ -1 │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ 1   │ -1  │
-│ 11  │ -1 │ -1 │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ -1  │ 1   │
-│ 12  │ -1 │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ -1 │ 1   │ -1  │
-Running for 2 columns...
-Running for 3 columns...
-Running for 4 columns...
-Running for 5 columns...
-Dict{Int64,Any}()
-#+end_example
+: Running for 2 columns...
+: Running for 3 columns...
+: Running for 4 columns...
+: Running for 5 columns...
+: Dict{Int64,Any}()
 **** Thoughts on the Contractive Replacement Method
 It seems that Plackett-Burman designs are not very well suited
 for using this method, since no groups of columns seem to have
@@ -12146,11 +12122,49 @@ class=design, type= pb
 │ 20  │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │
 #+end_example
 **** Checking ~FrF2~'s PB Designs
-#+CALL: define_find_contractible_columns()
+First I will wrap ~FrF2~ in Julia using RCall:
 
-#+RESULTS:
+#+NAME: define_pb_in_julia
+#+HEADER: :results output :session *Julia* :noweb yes
+#+BEGIN_SRC julia
+<<define_find_contractible_columns>>
+
+using RCall, DataFrames, CategoricalArrays
+
+function load_R_packages()
+    reval("library(FrF2)")
+end
+
+function pb(design_size)
+    load_R_packages()
+    reval("r_design <- pb($design_size)")
+    @rget r_design
+end
+
+function categorical_to_int(target_design::DataFrame)
+    design = DataFrame()
+
+    for column in names(target_design)
+        design[column] = Array{Int, 1}(recode(target_design[:, column], "1" => 1, "-1" => -1))
+    end
+
+    design
+end
+#+END_SRC
+
+#+RESULTS: define_pb_in_julia
 #+begin_example
+ESS
+WARNING: Method definition midpoints(Base.Range{T} where T) in module Base at deprecated.jl:56 overwritten in module StatsBase at /home/phrb/.julia/v0.6/StatsBase/src/hist.jl:535.
+WARNING: Method definition midpoints(AbstractArray{T, 1} where T) in module Base at deprecated.jl:56 overwritten in module StatsBase at /home/phrb/.julia/v0.6/StatsBase/src/hist.jl:533.
 
+
+
+primes_divisible_offset (generic function with 1 method)
+binary_search (generic function with 1 method)
+
+paley (generic function with 1 method)
+plackett_burman (generic function with 1 method)
 
 
 all_equal (generic function with 1 method)
@@ -12159,116 +12173,314 @@ count_repetitions (generic function with 1 method)
 
 can_contract (generic function with 1 method)
 
-find_contractible_columns (generic function with 2 methods)
+find_contractible_columns (generic function with 1 method)
+
+WARNING: Method definition ==(Base.Nullable{S}, Base.Nullable{T}) in module Base at nullable.jl:238 overwritten in module NullableArrays at /home/phrb/.julia/v0.6/NullableArrays/src/operators.jl:99.
+WARNING: Method definition promote_rule(Type{T}, Type{Any}) in module Missings at /home/phrb/.julia/v0.6/Missings/src/Missings.jl:52 overwritten in module Nulls at /home/phrb/.julia/v0.6/Nulls/src/Nulls.jl:29.
+
+load_R_packages (generic function with 1 method)
+
+pb (generic function with 1 method)
+
+categorical_to_int (generic function with 1 method)
 #+end_example
+
+Now we can just use ~FrF2~'s ~pb~ as if we were on R. It is strange that ~pb~'s
+designs of size 16 have some contractible sets of 3 columns, and a contractible
+set of 15 columns.
+
+All contractible sets of size 3 contain the ~P~ column, which seem weird. It
+becomes even weirder when we see that designs of other sizes do not usualy have
+contractible column sets.
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-using RCall, DataFrames, CategoricalArrays
+design_size = 16
 
-design_size = 20
+design = pb(design_size)
 
-R"""
-library(FrF2)
+design = categorical_to_int(design)
 
-r_design <- pb($design_size)
-"""
-
-@rget r_design
-
-design = DataFrame()
-
-for column in names(r_design)
-    design[column] = Array{Int, 1}(recode(r_design[:, column], "1" => 1, "-1" => -1))
-end
-
-find_contractible_columns(design, 5)
+find_contractible_columns(design, 2, 16)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
+16
 
+WARNING: RCall.jl: Loading required package: DoE.base
+Loading required package: grid
+Loading required package: conf.design
 
+Attaching package: ‘DoE.base’
+
+The following objects are masked from ‘package:stats’:
+
+    aov, lm
+
+The following object is masked from ‘package:graphics’:
+
+    plot.design
+
+The following object is masked from ‘package:base’:
+
+    lengths
+
+Screening 15 factors in 16 runs involves perfect aliasing of 
+ pairwise interactions of the first six factors with the last factor.
+16×15 DataFrames.DataFrame
+│ Row │ A    │ B    │ C    │ D    │ E    │ F    │ G    │ H    │ J    │ K    │ L    │ M    │ N    │ O    │ P    │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ "-1" │ "1"  │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │
+│ 2   │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │
+│ 3   │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │
+│ 4   │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │
+│ 5   │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │
+│ 6   │ "-1" │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │
+│ 7   │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │
+│ 8   │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │
+│ 9   │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │
+│ 10  │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │
+│ 11  │ "1"  │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │
+│ 12  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │
+│ 13  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │
+│ 14  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │
+│ 15  │ "1"  │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "1"  │
+│ 16  │ "-1" │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │
+
+16×15 DataFrames.DataFrame
+│ Row │ A  │ B  │ C  │ D  │ E  │ F  │ G  │ H  │ J  │ K  │ L  │ M  │ N  │ O  │ P  │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ -1 │ 1  │ 1  │ 1  │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │
+│ 2   │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │
+│ 3   │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │
+│ 4   │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │
+│ 5   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 6   │ -1 │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │
+│ 7   │ -1 │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │
+│ 8   │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ 1  │ 1  │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ 1  │
+│ 9   │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │
+│ 10  │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ -1 │ -1 │ 1  │
+│ 11  │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │
+│ 12  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │
+│ 13  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ -1 │
+│ 14  │ 1  │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │
+│ 15  │ 1  │ 1  │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 16  │ -1 │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ -1 │ 1  │ 1  │ -1 │ 1  │ -1 │ -1 │
+
+Running for 2 columns...
+Running for 3 columns...
+Can contract this set
+Symbol[:A, :B, :P]
+Can contract this set
+Symbol[:C, :E, :P]
+Can contract this set
+Symbol[:D, :F, :P]
+Can contract this set
+Symbol[:G, :H, :P]
+Can contract this set
+Symbol[:J, :K, :P]
+Can contract this set
+Symbol[:L, :M, :P]
+Can contract this set
+Symbol[:N, :O, :P]
+Running for 4 columns...
+Running for 5 columns...
+Running for 6 columns...
+Running for 7 columns...
+Running for 8 columns...
+Running for 9 columns...
+Running for 10 columns...
+Running for 11 columns...
+Running for 12 columns...
+Running for 13 columns...
+Running for 14 columns...
+Running for 15 columns...
+Can contract this set
+Symbol[:A, :B, :C, :D, :E, :F, :G, :H, :J, :K, :L, :M, :N, :O, :P]
+Running for 16 columns...
+Dict{Int64,Any}(Pair{Int64,Any}(14, Dict(:ABCDEFGHJKLMNOP=>3×16 DataFrames.DataFrame
+│ Row │ -1111-1-11-11-1-111-1-1 │ 1-111-1-1-111-11-1-11-1 │ -1-11111-1-1-1-111-1-11 │ -1-11-11-111-1-1-1-1111 │ 111111111111111 │ -1-1-11-11-1-111-1-1111 │ -11-1-111-111-1-11-11-1 │ 11-11-1111-1-1-1-1-1-11 │
+├─────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┤
+│ 1   │ 1                       │ 1                       │ 1                       │ 1                       │ 1               │ 1                       │ 1                       │ 1                       │
+│ 2   │ 1                       │ 2                       │ 3                       │ 4                       │ 5               │ 6                       │ 7                       │ 8                       │
+│ 3   │ 0                       │ 1                       │ 2                       │ 3                       │ 4               │ 5                       │ 6                       │ 7                       │
+
+│ Row │ 1-11-1-11-11-11-111-1-1 │ -1-1-1-1-1-1111111-1-11 │ 1-1-1-1111-11-11-11-1-1 │ 111-11-1-1-111-1-1-1-11 │ -111-1-111-1-111-1-11-1 │ 1-1-111-11-1-11-11-11-1 │ 11-1-1-1-1-1-1-1-111111 │
+├─────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┼─────────────────────────┤
+│ 1   │ 1                       │ 1                       │ 1                       │ 1                       │ 1                       │ 1                       │ 1                       │
+│ 2   │ 9                       │ 10                      │ 11                      │ 12                      │ 13                      │ 14                      │ 15                      │
+│ 3   │ 8                       │ 9                       │ 10                      │ 11                      │ 12                      │ 13                      │ 14                      │
+
+│ Row │ -11-111-1-11-111-11-1-1 │
+├─────┼─────────────────────────┤
+│ 1   │ 1                       │
+│ 2   │ 16                      │
+│ 3   │ 15                      │)),Pair{Int64,Any}(2, Dict(:GHP=>3×4 DataFrames.DataFrame
+│ Row │ 1-1-1 │ -11-1 │ -1-11 │ 111 │
+├─────┼───────┼───────┼───────┼─────┤
+│ 1   │ 4     │ 4     │ 4     │ 4   │
+│ 2   │ 1     │ 2     │ 3     │ 4   │
+│ 3   │ 0     │ 1     │ 2     │ 3   │,:JKP=>3×4 DataFrames.DataFrame
+│ Row │ 1-1-1 │ -1-11 │ 111 │ -11-1 │
+├─────┼───────┼───────┼─────┼───────┤
+│ 1   │ 4     │ 4     │ 4   │ 4     │
+│ 2   │ 1     │ 3     │ 5   │ 9     │
+│ 3   │ 0     │ 1     │ 2   │ 3     │,:DFP=>3×4 DataFrames.DataFrame
+│ Row │ 1-1-1 │ 111 │ -1-11 │ -11-1 │
+├─────┼───────┼─────┼───────┼───────┤
+│ 1   │ 4     │ 4   │ 4     │ 4     │
+│ 2   │ 1     │ 3   │ 4     │ 7     │
+│ 3   │ 0     │ 1   │ 2     │ 3     │,:LMP=>3×4 DataFrames.DataFrame
+│ Row │ -11-1 │ 1-1-1 │ 111 │ -1-11 │
+├─────┼───────┼───────┼─────┼───────┤
+│ 1   │ 4     │ 4     │ 4   │ 4     │
+│ 2   │ 1     │ 2     │ 3   │ 4     │
+│ 3   │ 0     │ 1     │ 2   │ 3     │,:NOP=>3×4 DataFrames.DataFrame
+│ Row │ 1-1-1 │ -11-1 │ -1-11 │ 111 │
+├─────┼───────┼───────┼───────┼─────┤
+│ 1   │ 4     │ 4     │ 4     │ 4   │
+│ 2   │ 1     │ 2     │ 3     │ 4   │
+│ 3   │ 0     │ 1     │ 2     │ 3   │,:ABP=>3×4 DataFrames.DataFrame
+│ Row │ -11-1 │ 1-1-1 │ -1-11 │ 111 │
+├─────┼───────┼───────┼───────┼─────┤
+│ 1   │ 4     │ 4     │ 4     │ 4   │
+│ 2   │ 1     │ 2     │ 3     │ 5   │
+│ 3   │ 0     │ 1     │ 2     │ 3   │,:CEP=>3×4 DataFrames.DataFrame
+│ Row │ 1-1-1 │ 111 │ -1-11 │ -11-1 │
+├─────┼───────┼─────┼───────┼───────┤
+│ 1   │ 4     │ 4   │ 4     │ 4     │
+│ 2   │ 1     │ 3   │ 6     │ 7     │
+│ 3   │ 0     │ 1   │ 2     │ 3     │)))
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+design_size = 20
+
+design = pb(design_size)
+
+design = categorical_to_int(design)
+
+find_contractible_columns(design, 2, 20)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
 20
 
-RCall.RObject{RCall.VecSxp}
-    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T
-1  -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1
-2  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-3  -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1
-4   1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1
-5  -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1
-6   1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1
-7   1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1
-8  -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1
-9   1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1
-10 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1
-11  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1
-12  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1
-13  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1
-14  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1
-15 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1
-16 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1
-17  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1
-18 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1
-19 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1
-20  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1
-class=design, type= pb
+20×19 DataFrames.DataFrame
+│ Row │ A    │ B    │ C    │ D    │ E    │ F    │ G    │ H    │ J    │ K    │ L    │ M    │ N    │ O    │ P    │ Q    │ R    │ S    │ T    │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │
+│ 2   │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │
+│ 3   │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │
+│ 4   │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │
+│ 5   │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │
+│ 6   │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │
+│ 7   │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │
+│ 8   │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │
+│ 9   │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │
+│ 10  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │
+│ 11  │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │
+│ 12  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │
+│ 13  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │
+│ 14  │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │
+│ 15  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │
+│ 16  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │
+│ 17  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │
+│ 18  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │
+│ 19  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │
+│ 20  │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │
 
 20×19 DataFrames.DataFrame
-│ Row │ A    │ B    │ C    │ D    │ E    │ F    │ G    │ H    │ J    │ K    │ L    │ M    │ N    │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │
-│ 2   │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │
-│ 3   │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │
-│ 4   │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │
-│ 5   │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │
-│ 6   │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │
-│ 7   │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │
-│ 8   │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │
-│ 9   │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │
-│ 10  │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │
-│ 11  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │
-│ 12  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │
-│ 13  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │
-│ 14  │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │
-│ 15  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │
-│ 16  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │
-│ 17  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │
-│ 18  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │
-│ 19  │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │
-│ 20  │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │
-
-│ Row │ O    │ P    │ Q    │ R    │ S    │ T    │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │
-│ 2   │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │ "-1" │
-│ 3   │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │
-│ 4   │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │
-│ 5   │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │ "-1" │
-│ 6   │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │
-│ 7   │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │
-│ 8   │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │
-│ 9   │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │ "1"  │
-│ 10  │ "1"  │ "1"  │ "-1" │ "1"  │ "1"  │ "-1" │
-│ 11  │ "-1" │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │
-│ 12  │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │ "1"  │
-│ 13  │ "-1" │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │
-│ 14  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │ "-1" │
-│ 15  │ "1"  │ "1"  │ "-1" │ "1"  │ "-1" │ "1"  │
-│ 16  │ "1"  │ "1"  │ "1"  │ "1"  │ "-1" │ "1"  │
-│ 17  │ "1"  │ "1"  │ "-1" │ "-1" │ "1"  │ "1"  │
-│ 18  │ "-1" │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │
-│ 19  │ "1"  │ "-1" │ "1"  │ "-1" │ "-1" │ "-1" │
-│ 20  │ "-1" │ "-1" │ "-1" │ "1"  │ "1"  │ "-1" │
-
-0×0 DataFrames.DataFrame
-
-
+│ Row │ A  │ B  │ C  │ D  │ E  │ F  │ G  │ H  │ J  │ K  │ L  │ M  │ N  │ O  │ P  │ Q  │ R  │ S  │ T  │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │
+│ 2   │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │
+│ 3   │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │
+│ 4   │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │
+│ 5   │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │
+│ 6   │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │
+│ 7   │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │
+│ 8   │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │ -1 │
+│ 9   │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │
+│ 10  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │
+│ 11  │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │
+│ 12  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │
+│ 13  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │
+│ 14  │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │
+│ 15  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │
+│ 16  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │
+│ 17  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │
+│ 18  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │
+│ 19  │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │
+│ 20  │ 1  │ 1  │ 1  │ 1  │ -1 │ 1  │ -1 │ 1  │ -1 │ -1 │ -1 │ -1 │ 1  │ 1  │ -1 │ 1  │ 1  │ -1 │ -1 │
 
 Running for 2 columns...
 Running for 3 columns...
 Running for 4 columns...
 Running for 5 columns...
-Dict{Int64,Any}()
+Running for 6 columns...
+Running for 7 columns...
+Running for 8 columns...
+Running for 9 columns...
+Running for 10 columns...
+Running for 11 columns...
+Running for 12 columns...
+Running for 13 columns...
+Running for 14 columns...
+Running for 15 columns...
+Running for 16 columns...
+Running for 17 columns...
+Running for 18 columns...
+Running for 19 columns...
+Can contract this set
+Symbol[:A, :B, :C, :D, :E, :F, :G, :H, :J, :K, :L, :M, :N, :O, :P, :Q, :R, :S, :T]
+Running for 20 columns...
+Dict{Int64,Any}(Pair{Int64,Any}(18, Dict(:ABCDEFGHJKLMNOPQRST=>3×20 DataFrames.DataFrame
+│ Row │ -111-111-1-11111-11-11-1-1-1 │ -1-1-111-111-1-11111-11-11-1 │ 11-11-11-1-1-1-111-111-1-111 │ 1-11-1-1-1-111-111-1-11111-1 │ 11-111-1-11111-11-11-1-1-1-1 │ -111-1-11111-11-11-1-1-1-111 │
+├─────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+│ 1   │ 1                            │ 1                            │ 1                            │ 1                            │ 1                            │ 1                            │
+│ 2   │ 1                            │ 2                            │ 3                            │ 4                            │ 5                            │ 6                            │
+│ 3   │ 0                            │ 1                            │ 2                            │ 3                            │ 4                            │ 5                            │
+
+│ Row │ 111-11-11-1-1-1-111-111-1-11 │ -1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 │ 1-1-1-1-111-111-1-11111-11-1 │ -11-11-1-1-1-111-111-1-11111 │ 11-1-11111-11-11-1-1-1-111-1 │ 1-111-1-11111-11-11-1-1-1-11 │
+├─────┼──────────────────────────────┼────────────────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+│ 1   │ 1                            │ 1                                      │ 1                            │ 1                            │ 1                            │ 1                            │
+│ 2   │ 7                            │ 8                                      │ 9                            │ 10                           │ 11                           │ 12                           │
+│ 3   │ 6                            │ 7                                      │ 8                            │ 9                            │ 10                           │ 11                           │
+
+│ Row │ -11-1-1-1-111-111-1-11111-11 │ -11111-11-11-1-1-1-111-111-1 │ 1-11-11-1-1-1-111-111-1-1111 │ -1-1-1-111-111-1-11111-11-11 │ 1-1-11111-11-11-1-1-1-111-11 │ -1-11111-11-11-1-1-1-111-111 │
+├─────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+│ 1   │ 1                            │ 1                            │ 1                            │ 1                            │ 1                            │ 1                            │
+│ 2   │ 13                           │ 14                           │ 15                           │ 16                           │ 17                           │ 18                           │
+│ 3   │ 12                           │ 13                           │ 14                           │ 15                           │ 16                           │ 17                           │
+
+│ Row │ -1-111-111-1-11111-11-11-1-1 │ 1111-11-11-1-1-1-111-111-1-1 │
+├─────┼──────────────────────────────┼──────────────────────────────┤
+│ 1   │ 1                            │ 1                            │
+│ 2   │ 19                           │ 20                           │
+│ 3   │ 18                           │ 19                           │)))
 #+end_example
+**** Checking the Contractive Replacement Method Implementation
+From the last steps:
+
+1. Re-implement this checking in R using FrF2's ~pb~
+
+   - I wrapped FrF2 using RCall and ran the checks again
+   - Weirdly, some designs have contractible columns,
+     especially the design of size 16, but most don't
+   - This suggests there is something wrong with my
+     implementation of Plackett-Burman designs
+
+2. Try this with different classes of OAs (full factorial?)
+
+   - I still have to try this. (is it worth?)
+
+3. Debug the checking implementation
+
+   - There was indeed something funky going on with the
+     comparison of floats and integers, but I fixed it
+     and still did not get any contractible sets using
+     my Plackett-Burman implementation
