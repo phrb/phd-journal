@@ -12484,3 +12484,64 @@ From the last steps:
      comparison of floats and integers, but I fixed it
      and still did not get any contractible sets using
      my Plackett-Burman implementation
+*** [2018-02-23 Fri]
+**** ~DoE.MIParray~
+This technique does not seem to be the best approach for our problem,
+since the construction involves solving a mixed integer problem that
+dependes on the number of levels. From a note in the documentation:
+
+#+BEGIN_QUOTE
+The package is not meant for situations, for which a full factorial design would
+be huge; the mixed integer problem to be solved has at least prod(nlevels)
+binary or general integer variables and will likely be untractable, if this
+number is too large. (For extending an existing designs, since some variables
+are fixed, the limit moves out a bit.)
+#+END_QUOTE
+
+Therefore, attempting to construct a design for more than a 100 factors with
+multiple levels each would not be feasible.
+
+**** Summarizing Strategies for Multi-Level Designs
+
+***** 2-Level Screening with Random Sampling of Levels
+
+In this strategy factors with more than two unordered levels are sampled at two
+random levels. This enables the usage of a small design such as the
+Plackett-Burman screening design.
+
+Advantages are the small design size and good estimation capability for main
+effects. Disadvantages are the incapability of estimating interactions, but
+mainly the lack of information regarding the response for levels not selected in
+the initial screening.
+
+***** Level Projection, Factor Merging or Contractive Replacement
+
+An initial 2-Level design is used to generated mixed-level designs by reencoding
+some columns into a new single column represeting a multi-level factor. The
+contractive replacement of Addelman-Kempthorne is a strategy of this kind.
+
+Advantages are also small design size and good estimation capability of main
+effects. Additionally, the contractive replacement technique is keeps
+orthogonality of designs. Disadvantages are the requirements on the initial
+designs. Not all 2-Level designs can be contracted with those methods if we want
+to keep orthogonality.
+
+***** Direct Generation
+
+The work from [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][Grömping and Fontana]] enables the generation of multi-level
+designs with the Generalized Minimum Aberration optimality criterion by
+solving mixed integer problems.
+
+Advantages are the direct generation of multi-level designs and the optimality
+criteria. Disadvantages are the use of proprietary MIP solvers and the
+limitations on the size and shape of the designs that can be generated.
+
+***** Optimal Designs
+
+This strategy consists of generating optimal multi-level designs. I still did not
+find any algorithms or papers related to this.
+
+
+
+   
+
