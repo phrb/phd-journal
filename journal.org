@@ -4738,6 +4738,7 @@ p
 #+HEADER: :results output :exports both :session *R*
 #+HEADER: :tangle legup-tuner/post_place_and_route/py/results/r_scripts/plot_3D_pareto.r
 #+BEGIN_SRC R
+library(rPref)
 plot_3D_pareto <- function(data) {
     criterion <- low(MKS) * low(Regs) * low(DPS)
 
@@ -4862,6 +4863,12 @@ The following object is masked from ‘package:graphics’:
 #+CALL: define_plot_3D_pareto()
 
 #+RESULTS:
+: 
+: Attaching package: ‘rPref’
+: 
+: The following object is masked from ‘package:dplyr’:
+: 
+:     between
 
 Using our previously-defined utility functions, let's look at the data for the
 experiments with other CHStone applications:
@@ -4880,7 +4887,7 @@ ggpairs(data, columns = tail(names(data), n = 7))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-19695p6/figure1969VfA.png]]
+[[file:/tmp/babel-850Xi8/figure850PMc.png]]
 
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4893,7 +4900,7 @@ plot_uniques(c(1:26), data)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-19695p6/figure1969ipG.png]]
+[[file:/tmp/babel-850Xi8/figure8502qu.png]]
 
 #+HEADER: :results output :session *R* :exports both
 #+BEGIN_SRC R
@@ -6462,7 +6469,7 @@ The Paley construction generates [[https://en.wikipedia.org/wiki/Hadamard_matrix
     find out exactly how generate a Plackett-Burman design from a Hadamard
     matrix built with the Paley construction.
 *** [2018-01-22 Mon]
-**** Generating Plackett-Burman Designs with =survey=
+**** Generating Plackett-Burman Designs with ~survey~
 The =survey= [[https://cran.r-project.org/web/packages/survey/index.html][package]] provides a function for generating
 Hadamard matrices using the Paley construction. To obtain
 the Plackett-Burman design from a Hadamard matrix built using
@@ -12541,7 +12548,71 @@ limitations on the size and shape of the designs that can be generated.
 This strategy consists of generating optimal multi-level designs. I still did not
 find any algorithms or papers related to this.
 
+*** [2018-02-26 Mon]
+**** Presentation @ POLARIS Day
+**Duration:** 15 minutes + questions
+***** Objective
+We want to succintly present the autotuning problem and various approaches to
+tackle it. We also want to present what we did so far, the problems we faced and
+how we are trying to solve them using Design of Experiments. We want to briefly
+discuss the challenges we are facing now and how we think we can overcome them.
+***** Structure
+****** Introduction: Our Work with Autotuning
+We could start with a description of the autotuning problem in general. The main
+difference from previous similar presentations is we should not frame the
+autotuning problem as a search problem. It is worth mentioning, however, that
+our previous work tackled autotuning from the search perspective. At this point
+we can mention our reasons for using experimental design, which will be detailed
+later in the presentation. In a few minutes we should be able to give a short
+summary of the whole presentation.
 
+We could present a table with related work on different systems and approaches,
+to give a sense of the variety of approaches in different problem domains. This
+is not strictly necessary if we lack time.
 
-   
+******* Design of Experiments
 
+By quickly justifying our need for a new autotuning approach, we should be able
+to move to an introduction to Experimental Design. Explanation of basic concepts
+is not necessary, but it is useful to have a description of more or less
+uncommon techniques and types of designs that we are looking for, including
+multi-level designs and techniques to generate them, and the mixed-effects
+model.
+
+****** Case Studies with GPU and FPGA Compiler Parameters
+
+Now we can quickly describe the two settings to which we applied OpenTuner's
+approach to autotuning, and to which we are currently applying the Design of
+Experiments approach. The GPU experiments can be used as an example where search
+can be useful, that is, a setting where compiling and running the code is fast.
+We do not need to describe the GPU scenario with as much detail as the FPGA
+scenario, since we intend to present more data related to the FPGA experiments.
+The FPGA experiments can be used to show more explicitly why we need a
+Design-of-Experiments-based approach.
+
+We should discuss the features of the FPGA HLS search space, mainly its
+intractable size and the time it takes to compile a single code version. We can
+discuss what each different kind of experimental design can help us do. For
+example, screening can give useful insight into which parameters have detectable
+main effects, but suffers from the difficulty of generating mixed-level
+screening designs.
+
+****** Conclusion: Current Challenges and Possible Directions
+
+We could end the presentation with a description of our recent studies on
+different Experimental Designs and techniques, such as the ~MIParray~ R package
+for generating multi-level designs and the contractive replacement method for
+generating multi-level designs from 2-level orthogonal designs.
+**** The PUMA Compiler & Simulator
+***** Cloning & Running Izzat's PUMA Compiler
+The compiler can be found at [[https://bitbucket.org/izzat/dpe][BitBucket]], but Izzat's permission to
+access is required.
+
+Compilation runs without problems. All tests from the '.test' binaries ran
+without problem, but './test.test' gives an error.
+
+It does generate the '.dpe' files though, so maybe everything is running OK.
+From looking at the function listed in the error it does not seem to be a real
+runtime error, so maybe it's intended to work this way?
+
+***** Cloning & Running Aayush's PUMA Simulator
