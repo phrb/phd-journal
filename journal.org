@@ -12616,3 +12616,21 @@ From looking at the function listed in the error it does not seem to be a real
 runtime error, so maybe it's intended to work this way?
 
 ***** Cloning & Running Aayush's PUMA Simulator
+The simulator can be found at [[https://github.com/Aayush-Ankit/dpe_emulate][GitHub]], and the latest version of the code is
+at the [[https://github.com/Aayush-Ankit/dpe_emulate/tree/br_team_changes][br_team_changes]] branch. Following the latest installing instructions
+gives no errors and running the example application goes well.
+
+The configuration an usage are not very well documented though, so it is not
+very clear how to use the output of the compiler as input of the simulator.
+***** Next Steps and Contributions
+It is necessary to understand how PUMAsim is configured and what are the
+properties of the search space. It could be the case, from previous
+conversations with Aayush, that the search space is entirely composed of
+"categorical ordered" factors, that is, integers that can only assume certain
+values inside an interval.
+
+Once the search space is defined and the connection between compiler and
+simulator is understood a workflow can be elaborated to measure the set of
+metrics reported by the simulator. We could use the workloads tested in the
+paper but initial experiments with smaller applications could be needed,
+depending on the simulator's performance.
