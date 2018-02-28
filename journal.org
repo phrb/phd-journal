@@ -12637,7 +12637,6 @@ depending on the simulator's performance.
 *** [2018-02-27 Tue]
 **** Presentation @ POLARIS Day: Autotuning Compiler Parameters for FPGA & GPUS: A Design of Experiments Approach
 Notes and script for the presentation.
-
 ***** Slide 1: Autotuning: Optimizing Program Configuration
 The objective here is to introduce autotuning by presenting some of the levels
 in which configurations and selection can be made in different scenarios, and
@@ -12663,3 +12662,19 @@ so this should be disclosed and discussed.
 Since we discussed the importance of design size and measurement times in the
 previous slide, we can use this slide
 
+**** Meeting with the PUMA Team
+- Dejan mentions it is 5 weeks to the submission
+- Aayush thinks he can finish the implementation in 3 weeks,
+  and then training can start
+***** Aayush started presenting his slides on traning for PUMA
+- The matrix is replicated in 3 crossbars, each with a different
+  role in training
+- To do training you need at least 2 copies of the hardware, because
+  of limitations of the algorithm
+- The proposal is to use 3 crossbars
+- 32 bit in training, 16 bit precision in inference
+- Novelty1: Scalable solution to leverage parallel updates in practical DNNs
+- Novelty2: Convolution with non-static kernel for delta_Wn in CNNs (this is
+  achieved by outer-product in MLPs)
+***** Izzat discusses changes that need to be made to the architecture
+- [[https://wiki.illinois.edu/wiki/display/DPE/PUMA%253A+A+Programmable+Ultra-efficient+Memristor-based+Accelerator][Link to the Wiki]] with the list of changes
