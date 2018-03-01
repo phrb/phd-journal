@@ -13169,7 +13169,8 @@ previous slide, we can use this slide
 **** First complete version of the POLARIS Day Presentation :ATTACH:
 :PROPERTIES:
 :Attachments: presentation.pdf
-:ID:       d43478e8-6bcb-488c-a301-979083615f16
+:ID:       e04c923a-198e-415c-a89a-860e445c811a
 :END:
-I am attaching the slides
+I am attaching the slides in pdf. I could not attach the entire directory with
+the source, but I will try again later.
 
