@@ -11705,7 +11705,7 @@ Gurobi and tried to use ~Doe.MIParray:
 #+BEGIN_SRC R
 library(DoE.MIParray)
 
-feld <- gurobi_MIParray(18, c(2, 3, 3, 3, 3))
+feld <- gurobi_MIParray(18, c(2, 3, 3, 3))
 feld
 #+END_SRC
 
@@ -11713,31 +11713,25 @@ feld
 #+begin_example
 no violation of necessary criteria  for strength  2  was found
 Academic license - for non-commercial use only
-Optimize a model with 42 rows, 162 columns and 5184 nonzeros
-Variable types: 0 continuous, 162 integer (162 binary)
+Optimize a model with 26 rows, 54 columns and 1098 nonzeros
+Variable types: 0 continuous, 54 integer (54 binary)
 Coefficient statistics:
   Matrix range     [5e-01, 2e+00]
   Objective range  [0e+00, 0e+00]
   Bounds range     [1e+00, 1e+00]
   RHS range        [2e+01, 2e+01]
-Presolve time: 0.01s
-Presolved: 42 rows, 162 columns, 2592 nonzeros
-Variable types: 0 continuous, 162 integer (162 binary)
+Presolve time: 0.04s
+Presolved: 26 rows, 54 columns, 585 nonzeros
+Variable types: 0 continuous, 54 integer (54 binary)
 
-Root relaxation: objective 0.000000e+00, 95 iterations, 0.00 seconds
+Root relaxation: objective 0.000000e+00, 43 iterations, 0.01 seconds
 
     Nodes    |    Current Node    |     Objective Bounds      |     Work
  Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
 
-     0     0    0.00000    0   23          -    0.00000      -     -    0s
-     0     0    0.00000    0   39          -    0.00000      -     -    0s
-     0     0    0.00000    0   43          -    0.00000      -     -    0s
 ,*    0     0               0       0.0000000    0.00000  0.00%     -    0s
 
-Cutting planes:
-  Gomory: 2
-
-Explored 1 nodes (287 simplex iterations) in 0.05 seconds
+Explored 0 nodes (55 simplex iterations) in 0.09 seconds
 Thread count was 2 (of 4 available processors)
 
 Solution count 1: 0 
@@ -11745,15 +11739,15 @@ Solution count 1: 0
 Optimal solution found (tolerance 1.00e-04)
 Best objective 0.000000000000e+00, best bound 0.000000000000e+00, gap 0.0000%
 === GWLP after enforcing resolution ===
-    0     1     2     3     4     5 
-1.000 0.000 0.000 4.389 2.722 0.889 
+    0     1     2     3     4 
+1.000 0.000 0.000 1.778 0.222 
 =======================================
 [1] 3
 Academic license - for non-commercial use only
 Warning: zero or small (< 1e-13) coefficients in quadratic constraints, ignored
-Optimize a model with 98 rows, 220 columns and 10940 nonzeros
+Optimize a model with 46 rows, 76 columns and 1818 nonzeros
 Model has 1 quadratic constraint
-Variable types: 57 continuous, 163 integer (162 binary)
+Variable types: 21 continuous, 55 integer (54 binary)
 Coefficient statistics:
   Matrix range     [4e-01, 3e+00]
   QMatrix range    [1e+00, 1e+00]
@@ -11761,93 +11755,77 @@ Coefficient statistics:
   Bounds range     [1e+00, 1e+00]
   RHS range        [2e+01, 2e+01]
 
-Loaded MIP start with objective 1422
+Loaded MIP start with objective 576
 
 Presolve removed 0 rows and 1 columns
 Presolve time: 0.02s
-Presolved: 98 rows, 219 columns, 5396 nonzeros
-Variable types: 50 continuous, 169 integer (162 binary)
+Presolved: 46 rows, 75 columns, 951 nonzeros
+Variable types: 17 continuous, 58 integer (54 binary)
 Presolve time: 0.02s
-Presolved: 212 rows, 221 columns, 5512 nonzeros
+Presolved: 88 rows, 77 columns, 995 nonzeros
 Presolved model has 1 second-order cone constraint
 Root barrier log...
 
 Ordering time: 0.00s
 
 Barrier statistics:
- AA' NZ     : 1.700e+04
- Factor NZ  : 1.767e+04
- Factor Ops : 1.892e+06 (less than 1 second per iteration)
- Threads    : 2
+ AA' NZ     : 2.568e+03
+ Factor NZ  : 2.824e+03
+ Factor Ops : 1.120e+05 (less than 1 second per iteration)
+ Threads    : 1
 
                   Objective                Residual
 Iter       Primal          Dual         Primal    Dual     Compl     Time
-   0   2.30444144e+02 -1.62000000e+01  1.87e+04 1.00e-01  1.19e+01     0s
-   1   6.89299381e+01 -2.87948553e+02  5.32e+03 1.10e-07  3.24e+00     0s
-   2   1.61799044e-01 -4.99100286e+01  9.91e+00 1.21e-13  1.05e-01     0s
-   3   1.33972976e-02 -1.11879731e+00  1.09e-05 9.99e-16  2.29e-03     0s
-   4   3.47304060e-05 -4.21123384e-03  1.20e-11 1.39e-17  8.58e-06     0s
-   5   1.84829765e-06 -8.57143613e-06  1.35e-13 3.89e-16  2.10e-08     0s
-   6   5.05788864e-08 -4.92979379e-07  3.98e-11 6.01e-13  1.10e-09     0s
+   0   1.75708770e+01 -5.40000000e+00  4.74e+02 1.00e-01  1.34e+00     0s
+   1   5.94324366e-01 -1.25931102e+01  1.10e+01 1.10e-07  8.92e-02     0s
+   2   5.86074004e-02 -1.35552669e+00  1.21e-05 9.50e-10  8.27e-03     0s
+   3   8.70800208e-05 -3.20404251e-03  1.33e-11 1.28e-12  1.92e-05     0s
+   4   1.36952166e-06 -4.86927800e-06  2.28e-13 3.47e-16  3.65e-08     0s
+   5   4.11125129e-08 -2.12634841e-08  1.44e-11 1.14e-15  3.65e-10     0s
 
-Barrier solved model in 6 iterations and 0.07 seconds
-Optimal objective 5.05788864e-08
+Barrier solved model in 5 iterations and 0.05 seconds
+Optimal objective 4.11125129e-08
 
 
-Root relaxation: objective 5.057889e-08, 0 iterations, 0.06 seconds
+Root relaxation: objective 4.111251e-08, 0 iterations, 0.03 seconds
 
     Nodes    |    Current Node    |     Objective Bounds      |     Work
  Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
 
-     0     0    0.00000    0  162 1422.00000    0.00000   100%     -    0s
-     0     0    0.00000    0  162 1422.00000    0.00000   100%     -    0s
-H    0     0                    1242.0000000    0.00000   100%     -    0s
-     0     2    0.00000    0  162 1242.00000    0.00000   100%     -    0s
-,*  167   157              53    1206.0000011    0.00000   100%   0.0    4s
-H  173   155                    1206.0000000    0.00000   100%   0.0    4s
-   206   186  151.47618   10  110 1206.00000    0.00000   100%   0.0    5s
-   519   457  653.70409   39   60 1206.00000    0.00000   100%   0.0   10s
-H  753   586                    1134.0000000    0.00000   100%   0.0   15s
-  1121   777  544.92936   46   68 1134.00000   40.49977  96.4%   0.0   20s
-  1536   977     cutoff   54      1134.00000   40.50000  96.4%   0.0   25s
-  1988  1198  173.28985   25   96 1134.00000   40.50017  96.4%   0.0   30s
-  2370  1376  360.03639   30   70 1134.00000   59.28460  94.8%   0.0   35s
-  2752  1619     cutoff   55      1134.00000   59.28467  94.8%   0.0   40s
-  3197  1960  321.67446   41   87 1134.00000   60.92821  94.6%   0.0   46s
-  3501  2197  180.85734   37   84 1134.00000   68.72806  93.9%   0.0   50s
-  3836  2446     cutoff   59      1134.00000   68.72846  93.9%   0.0   55s
-  4224  2744  588.99502   51   57 1134.00000  100.73938  91.1%   0.0   60s
+     0     0    0.00000    0   54  576.00000    0.00000   100%     -    0s
+     0     0    0.00000    0   54  576.00000    0.00000   100%     -    0s
+H    0     0                     162.0000000    0.00000   100%     -    0s
 
-Explored 4249 nodes (0 simplex iterations) in 60.00 seconds
+Explored 1 nodes (0 simplex iterations) in 0.31 seconds
 Thread count was 2 (of 4 available processors)
 
-Solution count 5: 1134 1206 1206 ... 1422
+Solution count 2: 162 576 
 
-Time limit reached
-Best objective 1.134000000000e+03, best bound 1.010000000000e+02, gap 91.0935%
+Optimization achieved user objective limit
+Best objective 1.620000000000e+02, best bound 4.111251287696e-08, gap 100.0000%
 === GWLP after optimizing A3 ===
-  0   1   2   3   4   5 
-1.0 0.0 0.0 3.5 4.5 0.0 
+  0   1   2   3   4 
+1.0 0.0 0.0 0.5 1.5 
 =================================
-      [,1] [,2] [,3] [,4] [,5]
- [1,]    1    1    1    2    1
- [2,]    1    1    2    1    3
- [3,]    1    1    3    3    2
- [4,]    1    2    1    1    2
- [5,]    1    2    2    3    1
- [6,]    1    2    3    2    3
- [7,]    1    3    1    3    3
- [8,]    1    3    2    2    2
- [9,]    1    3    3    1    1
-[10,]    2    1    1    1    2
-[11,]    2    1    2    3    3
-[12,]    2    1    3    2    1
-[13,]    2    2    1    3    1
-[14,]    2    2    2    2    2
-[15,]    2    2    3    1    3
-[16,]    2    3    1    2    3
-[17,]    2    3    2    1    1
-[18,]    2    3    3    3    2
+      [,1] [,2] [,3] [,4]
+ [1,]    1    1    1    3
+ [2,]    1    1    2    1
+ [3,]    1    1    3    2
+ [4,]    1    2    1    2
+ [5,]    1    2    2    3
+ [6,]    1    2    3    1
+ [7,]    1    3    1    1
+ [8,]    1    3    2    2
+ [9,]    1    3    3    3
+[10,]    2    1    1    1
+[11,]    2    1    2    2
+[12,]    2    1    3    3
+[13,]    2    2    1    3
+[14,]    2    2    2    1
+[15,]    2    2    3    2
+[16,]    2    3    1    2
+[17,]    2    3    2    3
+[18,]    2    3    3    1
 attr(,"class")
 [1] "oa"     "matrix"
 attr(,"origin")
@@ -11855,11 +11833,11 @@ attr(,"origin")$package
 [1] "DoE.MIParry"
 
 attr(,"origin")$call
-gurobi_MIParray(18, c(2, 3, 3, 3, 3))
+gurobi_MIParray(18, c(2, 3, 3, 3))
 
 optimization results:
-       A1to2           A3 
-   "OPTIMAL" "TIME_LIMIT" 
+    A1to2        A3 
+"OPTIMAL" "OPTIMAL" 
 
 further attribute(s) (accessible with attr( x , attrname)):
 [1] "MIPinfo"
@@ -13166,11 +13144,9 @@ previous slide, we can use this slide
       - We can mention here our idea of providing a shared library for BOAST, generated
         from my Julia code (using something like [[https://github.com/JuliaLang/PackageCompiler.jl][this]])
 *** [2018-03-01 Thu]
-**** First complete version of the POLARIS Day Presentation :ATTACH:
-:PROPERTIES:
-:Attachments: presentation.pdf
-:ID:       e04c923a-198e-415c-a89a-860e445c811a
-:END:
-I am attaching the slides in pdf. I could not attach the entire directory with
-the source, but I will try again later.
+**** First complete version of the POLARIS Day Presentation
+The slides are hosted at [[https://github.com/phrb/presentations/blob/master/polaris_presentation/src/presentation.pdf][GitHub]].
+*** [2018-03-02 Fri]
+**** Tweak the POLARIS Day Presentation
+The slides are hosted at [[https://github.com/phrb/presentations/blob/master/polaris_presentation/src/presentation.pdf][GitHub]].
 
