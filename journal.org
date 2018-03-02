@@ -13149,4 +13149,8 @@ The slides are hosted at [[https://github.com/phrb/presentations/blob/master/pol
 *** [2018-03-02 Fri]
 **** Tweak the POLARIS Day Presentation
 The slides are hosted at [[https://github.com/phrb/presentations/blob/master/polaris_presentation/src/presentation.pdf][GitHub]].
+**** Hacking Tom's ~DOI_to_org~ script
+I wanted to attach my pre-existing pdf files to my journal so I can conveniently
+anotate papers here. I modified Tom's cool script to fit my use case and opened
+a [[https://github.com/Ezibenroc/DOI_to_org/pull/4][pull request]] to his repository.
 
