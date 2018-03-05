@@ -13143,6 +13143,7 @@ previous slide, we can use this slide
     - Provide an autotuning library to applications
       - We can mention here our idea of providing a shared library for BOAST, generated
         from my Julia code (using something like [[https://github.com/JuliaLang/PackageCompiler.jl][this]])
+** March
 *** [2018-03-01 Thu]
 **** First complete version of the POLARIS Day Presentation
 The slides are hosted at [[https://github.com/phrb/presentations/blob/master/polaris_presentation/src/presentation.pdf][GitHub]].
@@ -13153,4 +13154,49 @@ The slides are hosted at [[https://github.com/phrb/presentations/blob/master/pol
 I wanted to attach my pre-existing pdf files to my journal so I can conveniently
 anotate papers here. I modified Tom's cool script to fit my use case and opened
 a [[https://github.com/Ezibenroc/DOI_to_org/pull/4][pull request]] to his repository.
+*** [2018-03-05 Mon]
+- Copying the program of the two days to deal with intermitent internet:
+**** POLARIS Day I
+- 9:30: arrival with some coffee
+- 9:45 - 12:15: Short talk session #1.
+  1. Nicolas Gast: asymptotic methods for stochastic systems (30')
+  2. Pedro Bruel: Auto-tuning compiler parameters for FPGA/GPUs: the DoE approach!
+  3. Stephan Plassart: fighting state space explosion (in my own small case! ;)
+  4. Bruno Gaujal: Optimization and asymptotic models: benefits and pitfalls (30')
+  5. Kimon Antonakopoulos: algorithm for finding 0 in non-monotonous operators
+  6. Jean-Marc Vincent: Complexity and performance of parallel sorting algorithms
+- 12:30 - 14:00: Lunch
+- 14:00 - 16:30: Short talk session #2.
+  1. Pan: distributed asychronous optimization with unbounded delays: how slow can we go ?
+  2. Tom Cornebize: modeling performance of HPC platforms
+  3. Amélie Heliou: distributed routing optimization via game dynamics
+  4. Umar Ozeer: resiliency in IoT environments
+  5. Benoît Vinot, Takai Eddine Kennouche, and Mouhcine Mendil: context, simulation of smart grid communications (30') https://gitlab.inria.fr/bvinot/polaris_meeting_2018
+  6. Baptiste Jonglez: modeling and performance analysis DNS 
+  7. Arnaud Legrand: Reproducible Research... pfff, why bother ? https://filesender.renater.fr/?s=download&token=b92ae870-32a3-1eb3-a852-e58bb3dff761
+- Coffee break
+- 16:45 - 17:45: hackaton, learning session in small groups
+  1. My first Debian package
+  2. Mon journal en org-mode/Mon article reproductible...
+  3. Gérer mes campagnes d'expériences/de simulations
+  4. Analyse de données en R moderne
+  5. Déployer des frameworks NFV et SDN dans des conteneurs sur Grid5000 et FIT/IOT lab
+- Recess
+- 20:00 - 21:00 : dinner
+- Swimming/spaa, board games, drinking, hackathon or learning session for the workaholics ;)
 
+*** [2018-03-06 Tue]
+**** POLARIS Day II
+- Breakfast between 8:00 and 9:00
+- 8:00 - 12:00: Social break in the morning: hiking, skiing ?
+  1. http://montagne.lachainemeteo.com/meteo-alpes-du-nord/station-montagne/previsions-meteo-les-sept-laux-176-5.php
+- 12:00 - 13:30: lunch
+- 13h30 - 16:00: Short talk session #3
+  1. Patrick Loiseau: TBA
+  2. Guillaume Huard: Management of exascale machines
+  3. Bruno Donassolo: service orchestration in fog/IoT environments
+  4. Florence, Vincent, Guillaume, Jean-Marc: MARTO (30')
+  5. Stéphane Durand: distributed best response dynamics
+  6. Jonatha Anselmi: close-up, impressions about the POLARIS team
+- Brainstorm, thoughts, time to catch up with lateness from the previous sessions.
+- 17:00: going back
