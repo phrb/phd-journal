@@ -13200,3 +13200,12 @@ a [[https://github.com/Ezibenroc/DOI_to_org/pull/4][pull request]] to his reposi
   6. Jonatha Anselmi: close-up, impressions about the POLARIS team
 - Brainstorm, thoughts, time to catch up with lateness from the previous sessions.
 - 17:00: going back
+*** [2018-03-07 Wed]
+**** Meeting with Arnaud, Brice & Fred
+- Take a look at the [[https://github.com/tidyverse/broom][broom]] package to generate clean data for ME plots
+- Would be interesting to find a way to control the spreading of interaction confounding between factors, dummy parameters
+- Is it possible to try to find "good enough" designs by using heuristics in
+  Ulrike's approach?
+- Read papers on D-optimality and compare to Ulrike's approach
+- Brice mentioned that a benchmark for autotuning which gives the full space of optimizations
+  could be interesting, specially if multiple architectures were supported
