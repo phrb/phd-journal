@@ -13209,3 +13209,22 @@ a [[https://github.com/Ezibenroc/DOI_to_org/pull/4][pull request]] to his reposi
 - Read papers on D-optimality and compare to Ulrike's approach
 - Brice mentioned that a benchmark for autotuning which gives the full space of optimizations
   could be interesting, specially if multiple architectures were supported
+*** [2018-03-08 Thu]
+**** Some References on D-Optimal Designs
+The following are some references on D-Optimal designs, including more
+theoretical books, an R package, and a bachelor's thesis with an interesting
+literature review.
+
+- [[http://www.itl.nist.gov/div898/handbook//pri/section5/pri521.htm][This document]] shows a more simplified explanation with examples of construction
+- The following two books are much more theory-intensive and might be useful for a
+  deeper understanding:
+
+  - [[https://global.oup.com/academic/product/optimum-experimental-designs-9780198522546?cc=fr&lang=en&#][Optimum Experimental Designs (1992)]]
+  - [[https://global.oup.com/academic/product/optimum-experimental-designs-with-sas-9780199296590?lang=en&cc=pl][Optimum Experimental Designs, With SAS (2007)]]
+
+- [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][This bachelor's thesis]] implements D-Optimal design construction and has a background review
+- This [[https://cran.r-project.org/web/packages/AlgDesign/index.html][R package]] implements D-Optimal construction and provides some more detailed discussion of
+  the implementation
+- [[file:~/Dropbox/papers/design-of-experiments/cook1980comparison.pdf][Cook's paper]] presents a comparison of different algorithms to generate D-Optimal designs
+
+
