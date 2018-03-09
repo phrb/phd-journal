@@ -13408,3 +13408,40 @@ generate_factorial (generic function with 2 methods)
  1
  0
 #+end_example
+**** Reading Triefenbach's Bachelor Thesis on D-Optimal Designs
+The [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][thesis]] presents some of the theory behind D-Optimal Designs in a simple way.
+It discusses a modification to the model matrix that enables constructing less
+model-dependent D-Optimal designs, but does not details why this "Bayesian
+modification" helps.
+
+Constructing D-Optimal designs seems to be the most straightforward way of
+generating large multi-level designs I have found so far. In theory, it is
+possible to generate designs of any number of runs, with any number of factors
+with any number of different levels. At first, it seems that this is the best
+candidate so far.
+
+In practice, even though the tools from ~AlgDesign~ generate designs for
+arbitrary numbers of factors and levels, that implementation does not work for
+even slightly larger designs. I believe this happens due to implementation
+choices and not "theoretical" or algorithmic limitations.
+
+***** Constructing D-Optimal Designs
+A D-Optimal design is a selection from a set of possible experiments that
+minimizes some optimality criterion.
+
+For example, the imagine we have a full factorial design. We decide that we want
+to analyse this design using a "simple linear model", such as =~.=. Therefore,
+the *set of possible experiments*, or *model matrix* for this experiment is
+obtained by adding a column of ones to the original full factorial design. If we
+had interations, quadratic terms, and so on, we would simply compute the
+correspondent columns using original columns in the original design.
+
+With the model matrix defined, the criterion of our D-Optimal design could be
+minimizing the determinant of the *information matrix*. This new matrix is
+defined by multiplying the previously generated model matrix by its inverse.
+
+Now, the hard part is finding a selection of experiments from the *model matrix*
+that minimizes the determinant of the *information matrix*. Common algorithms
+for this task seem to be pretty straightforward, relying on swapping columns of
+an existing matrix with columns in the possible runs and measuring changes in
+the determinant. 
