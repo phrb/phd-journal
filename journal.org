@@ -7,7 +7,7 @@
 #+TAGS: noexport(n) Stats(S)
 #+TAGS: Teaching(T) R(R) OrgMode(O) Python(P)
 #+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A) Arnaud(r)
-#+TAGS: DataVis(v)
+#+TAGS: DataVis(v) PaperReview(W)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
@@ -11618,7 +11618,7 @@ They did not re-evaluate the predicted points to check for accuracy and did not
 show where in the search space the 32 actually measured points were.
 
 *** [2018-02-16 Fri]
-**** Reviewing the XP 2018 Paper
+**** Reviewing the XP 2018 Paper                           :PaperReview:
 *Paper Title*: A Comparison of Task Estimation Accuracy in a Large Agile Environment
 (Short Paper)
 
@@ -13331,7 +13331,7 @@ $rows
 #+end_example
 
 Now let's try generating larger designs, with a simple model and
-with factors with up to 5 levels:
+with 25 factors with up to 5 levels:
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -13429,7 +13429,7 @@ choices and not "theoretical" or algorithmic limitations.
 A D-Optimal design is a selection from a set of possible experiments that
 minimizes some optimality criterion.
 
-For example, the imagine we have a full factorial design. We decide that we want
+For example, imagine we have a full factorial design. We decide that we want
 to analyse this design using a "simple linear model", such as =~.=. Therefore,
 the *set of possible experiments*, or *model matrix* for this experiment is
 obtained by adding a column of ones to the original full factorial design. If we
@@ -13445,3 +13445,31 @@ that minimizes the determinant of the *information matrix*. Common algorithms
 for this task seem to be pretty straightforward, relying on swapping columns of
 an existing matrix with columns in the possible runs and measuring changes in
 the determinant. 
+*** [2018-03-12 Mon]
+**** JSSPP '18 Paper Review for Alfredo                    :PaperReview:
+*Paper Title*: Reducing the Human-in-the-Loop Component of the Scheduling of
+               Large HTC Workloads
+***** Summary
+The paper presents a real-world case study on the impact of three important
+decisions regarding transfering actions performed by human operators to the
+CC-IN2P3 job scheduler, or removing the necessity of those actions.
+
+The paper details the CC-IN2P3 infrastructure, executed workloads and resource
+allocation procedure. Then the paper presents and discusses the impact of three
+modifications to reduce the reliance on human operators in the scheduling
+policy, regarding partitioning of resources, simplifying quota mechanisms and
+improving the fair-sharing computation.
+
+The paper is well written and presents valuable insight into decisions and their
+impacts in a real-world large HTC scenario. I believe this case study can be
+useful for the research community because it helps painting a picture of
+important issues and what is being done to overcome them. However, I also
+believe that the discussion on this paper would benefit from some data that
+showed the impact of the applied changes over the observed time, although I am
+not sure if the CC-IN2P3's data sharing policies would restrict that.
+
+***** Minor Corrections
+- At the last paragraph of the third page, and at
+  the second paragraph of Section 4:
+  "transfer some the actions" ~> "transfer some of the actions"
+
