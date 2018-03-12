@@ -13473,3 +13473,117 @@ not sure if the CC-IN2P3's data sharing policies would restrict that.
   the second paragraph of Section 4:
   "transfer some the actions" ~> "transfer some of the actions"
 
+**** Continue Reading Bachelor Thesis on D-Optimal Designs
+[[https://www.amazon.com/Experiments-Principles-Applications-Kettaneh-Wold-Johansson/dp/9197373001][This book]] is cited frequently in the [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][thesis]].
+
+***** Some Criteria for D-Optimal Designs
+- D-Optimal: maximize the determinant of the information matrix ($(X'X)$)
+- A-Optimal: minimize the trace of the dispersion matrix ($(X'X)^{-1}$)
+- G-Efficiency: measures the "efficiency" of a D-Optimal designs, in comparison to a
+  fractional factorial design, using the number of runs, model coefficients
+- [[https://en.wikipedia.org/wiki/Condition_number][Condition Number]]: in this case, measures the orthogonality of a design. A condition number of 1
+  indicates an orthogonal design. The orthogonality decreases as the condition
+  number increases
+***** Extended Example for 2 Factors with 3 Levels
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using IterTools, DataFrames
+
+function generate_full_factorial(factors::Array)
+    design = [collect(t) for t in product(factors...)]
+    design = vcat([row' for row in design]...)
+    design = DataFrame(design)
+    return design
+end
+
+function get_model_variables(formula::DataFrames.Formula)
+    variables = Array{Any, 1}()
+    push!(variables, DataFrames.Terms(formula).terms...)
+    return variables
+end
+
+function generate_model_matrix(formula::DataFrames.Formula, design::DataFrame)
+    variables = get_model_variables(formula)
+    new_design = DataFrame(I = ones(size(design, 1)))
+
+    for variable in variables
+        if typeof(variable) == Expr && variable.args[1] == :&
+            interaction = Symbol(variable.args[2:end]...)
+            new_design[interaction] = ones(size(design, 1))
+
+            for s in variable.args[2:end]
+                new_design[interaction] .*= design[s]
+            end
+        else
+            new_design[variable] = float(design[variable])
+        end
+    end
+
+    return new_design
+end
+
+function generate_candidates(design::DataFrame, runs::Int)
+    design = convert(Array, design)
+    candidates = subsets([design[i, :] for i = 1:size(design, 1)], runs)
+    return candidates
+end
+
+factors = [[-1, 0, 1], [-1, 0, 1]]
+
+design = generate_full_factorial(factors)
+
+runs = 3
+
+candidates = generate_candidates(design, runs)
+
+model_matrix = generate_model_matrix(@formula(y ~ x1 * x2), design)
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+generate_full_factorial (generic function with 2 methods)
+
+get_model_variables (generic function with 1 method)
+
+generate_model_matrix (generic function with 1 method)
+
+generate_candidates (generic function with 2 methods)
+
+2-element Array{Array{Int64,1},1}:
+ [-1, 0, 1]
+ [-1, 0, 1]
+
+9×2 DataFrames.DataFrame
+│ Row │ x1 │ x2 │
+├─────┼────┼────┤
+│ 1   │ -1 │ -1 │
+│ 2   │ 0  │ -1 │
+│ 3   │ 1  │ -1 │
+│ 4   │ -1 │ 0  │
+│ 5   │ 0  │ 0  │
+│ 6   │ 1  │ 0  │
+│ 7   │ -1 │ 1  │
+│ 8   │ 0  │ 1  │
+│ 9   │ 1  │ 1  │
+
+3
+
+IterTools.Binomial{Array{Int64,1}}(Array{Int64,1}[[-1, -1], [0, -1], [1, -1], [-1, 0], [0, 0], [1, 0], [-1, 1], [0, 1], [1, 1]], 9, 3)
+
+9×4 DataFrames.DataFrame
+│ Row │ I   │ x1   │ x2   │ x1x2 │
+├─────┼─────┼──────┼──────┼──────┤
+│ 1   │ 1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 2   │ 1.0 │ 0.0  │ -1.0 │ -0.0 │
+│ 3   │ 1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0 │ -1.0 │ 0.0  │ -0.0 │
+│ 5   │ 1.0 │ 0.0  │ 0.0  │ 0.0  │
+│ 6   │ 1.0 │ 1.0  │ 0.0  │ 0.0  │
+│ 7   │ 1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ 1.0 │ 0.0  │ 1.0  │ 0.0  │
+│ 9   │ 1.0 │ 1.0  │ 1.0  │ 1.0  │
+#+end_example
+
