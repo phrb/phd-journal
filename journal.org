@@ -13496,7 +13496,7 @@ First, let's import dependencies:
 #+NAME: dopt_init_dependencies
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-using IterTools, DataFrames
+using IterTools, DataFrames, StatsBase
 #+END_SRC
 
 #+RESULTS: dopt_init_dependencies
@@ -13510,10 +13510,20 @@ terms:
 #+NAME: dopt_model_matrix
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-function generate_full_factorial(factors::Array)
+function generate_full_factorial(factors::Array, args...)
     design = [collect(t) for t in product(factors...)]
     design = vcat([row' for row in design]...)
     design = DataFrame(design)
+    return design
+end
+
+function generate_full_factorial_sample(factors::Array, args...)
+    sample_size = args[1]
+
+    design = [collect(t) for t in product(factors...)]
+    design = vcat([row' for row in design]...)
+    println(size(design))
+    design = DataFrame(design[sample(1:size(design, 1), sample_size, replace = false), :])
     return design
 end
 
@@ -13545,7 +13555,9 @@ end
 #+END_SRC
 
 #+RESULTS: dopt_model_matrix
-: generate_full_factorial (generic function with 1 method)
+: generate_full_factorial (generic function with 2 methods)
+: 
+: generate_full_factorial_sample (generic function with 1 method)
 : 
 : get_model_variables (generic function with 1 method)
 : 
@@ -13698,9 +13710,11 @@ computes an optimal criteria table for all candidate designs:
 #+NAME: dopt_measure
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-function measure_designs(factors::Array, formula::DataFrames.Formula, runs::Int = 0)
-    design = generate_full_factorial(factors)
+function measure_designs(factors::Array, formula::DataFrames.Formula, runs::Int = 0,
+                         intial_design_generator = generate_full_factorial, generator_args...)
+    design = intial_design_generator(factors, generator_args...)
     model_matrix = generate_model_matrix(formula, design)
+
     if runs != 0
         evaluation_table = generate_evaluation_table(model_matrix, runs)
     else
@@ -14530,7 +14544,9 @@ using StatPlots
 #+begin_example
 
 
-generate_full_factorial (generic function with 1 method)
+generate_full_factorial (generic function with 2 methods)
+
+generate_full_factorial_sample (generic function with 1 method)
 
 get_model_variables (generic function with 1 method)
 
@@ -14553,7 +14569,7 @@ evaluate_candidates (generic function with 1 method)
 generate_evaluation_table (generic function with 2 methods)
 
 generate_evaluation_table (generic function with 2 methods)
-measure_designs (generic function with 2 methods)
+measure_designs (generic function with 3 methods)
 #+end_example
 
 I implemented all the optimality criteria listed in the [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][bachelor thesis]] and
@@ -14668,6 +14684,20 @@ plotly()
 : Plots.PlotlyBackend()
 : Created new window in existing browser session.
 
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_size = 1:div(size(evaluation_table, 1), 2)
+plotly()
+@df evaluation_table[plot_size, :] plot(plot_size, [:V :G :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+: 1:255
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+We can look at this graph using the interaction model instead of the
+linear model:
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
@@ -14774,3 +14804,199 @@ plotly()
 #+RESULTS:
 : Plots.PlotlyBackend()
 : Created new window in existing browser session.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table[plot_size, :] plot(plot_size, [:V :G :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+We can also look at the linear model for more factors and mixed levels, but we
+must reduce the number of runs we target, since this is an exhaustive
+exploration of all designs and crashed my machine a couple times because it used
+all my memory.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function run()
+    factors = [[-2, 2], [-2, 2], [-2, 0, 2], [-2, -1, 0, 1, 2]]
+    formula = @formula(y ~ x1 + x2 + x3 + x4)
+
+    runs = 0
+    samples = 10
+    model_matrix, evaluation_table = measure_designs(factors, formula, runs,
+                                                     generate_full_factorial_sample, samples)
+
+    sort!(evaluation_table, cols = (:D, :G), rev = (true, false))
+
+    return evaluation_table
+end
+
+evaluation_table = run()
+
+plot_size = 1:round(Int, size(evaluation_table, 1) / 1.9)
+
+plotly()
+@df evaluation_table[plot_size, :] plot(plot_size, [:D :V :G :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+run (generic function with 1 method)
+
+(60, 4)
+1023×8 DataFrames.DataFrame
+│ Row  │ Rows                   │ Length │ D            │ A           │ V           │ G           │
+├──────┼────────────────────────┼────────┼──────────────┼─────────────┼─────────────┼─────────────┤
+│ 1    │ "1_2_3_4_5_6_7_8_9_10" │ 10     │ 833536.0     │ 0.668458    │ 0.00984758  │ 0.0528526   │
+│ 2    │ "1_2_3_4_5_7_8_9_10"   │ 9      │ 607232.0     │ 0.690556    │ 0.0114838   │ 0.057736    │
+│ 3    │ "1_2_3_4_5_6_7_8_10"   │ 9      │ 537600.0     │ 0.707619    │ 0.0124308   │ 0.0635176   │
+│ 4    │ "1_3_4_5_6_7_8_9_10"   │ 9      │ 508928.0     │ 0.709759    │ 0.0114216   │ 0.0521514   │
+│ 5    │ "1_2_3_4_6_7_8_9_10"   │ 9      │ 491520.0     │ 0.691146    │ 0.0109604   │ 0.0527746   │
+│ 6    │ "1_2_3_4_5_6_8_9_10"   │ 9      │ 483328.0     │ 0.733845    │ 0.0146315   │ 0.0628131   │
+│ 7    │ "1_2_3_5_6_7_8_9_10"   │ 9      │ 390144.0     │ 0.749344    │ 0.0126651   │ 0.0526315   │
+│ 8    │ "1_2_3_4_5_7_8_10"     │ 8      │ 382976.0     │ 0.737467    │ 0.015136    │ 0.072387    │
+│ 9    │ "2_3_4_5_6_7_8_9_10"   │ 9      │ 377856.0     │ 0.773035    │ 0.0160526   │ 0.0707633   │
+│ 10   │ "1_3_4_5_7_8_9_10"     │ 8      │ 368640.0     │ 0.73125     │ 0.0135101   │ 0.0571584   │
+│ 11   │ "1_2_3_4_7_8_9_10"     │ 8      │ 352256.0     │ 0.71548     │ 0.0129472   │ 0.0579335   │
+│ 12   │ "1_2_3_4_5_8_9_10"     │ 8      │ 348160.0     │ 0.759007    │ 0.0175527   │ 0.0702268   │
+│ 13   │ "1_3_4_5_6_7_8_10"     │ 8      │ 321536.0     │ 0.752588    │ 0.0144058   │ 0.0629097   │
+│ 14   │ "1_2_3_4_5_6_8_10"     │ 8      │ 307200.0     │ 0.770208    │ 0.017691    │ 0.0715164   │
+│ 15   │ "1_3_4_6_7_8_9_10"     │ 8      │ 296960.0     │ 0.733621    │ 0.0128867   │ 0.0519782   │
+│ 16   │ "1_2_3_5_7_8_9_10"     │ 8      │ 272384.0     │ 0.78031     │ 0.0146798   │ 0.0563269   │
+│ 17   │ "1_2_3_4_6_8_9_10"     │ 8      │ 270336.0     │ 0.765152    │ 0.0168739   │ 0.0624881   │
+│ 18   │ "1_2_4_5_6_7_8_9_10"   │ 9      │ 258048.0     │ 0.953373    │ 0.0331793   │ 0.138267    │
+│ 19   │ "1_2_3_4_5_6_7_8_9"    │ 9      │ 258048.0     │ 1.46081     │ 0.215683    │ 1.01643     │
+│ 20   │ "1_2_3_4_5_6_7_9_10"   │ 9      │ 254976.0     │ 1.0994      │ 0.0627334   │ 0.38477     │
+│ 21   │ "2_3_4_5_6_7_8_10"     │ 8      │ 239616.0     │ 0.806891    │ 0.019243    │ 0.0791641   │
+│ 22   │ "2_3_4_5_7_8_9_10"     │ 8      │ 229376.0     │ 0.811942    │ 0.0182876   │ 0.0697418   │
+│ 23   │ "1_2_3_5_6_7_8_10"     │ 8      │ 229376.0     │ 0.808036    │ 0.0176493   │ 0.067663    │
+│ 24   │ "1_3_4_5_7_8_10"       │ 7      │ 228352.0     │ 0.78139     │ 0.0178104   │ 0.0717709   │
+│ 25   │ "1_2_3_4_6_7_8_10"     │ 8      │ 221184.0     │ 0.782986    │ 0.0150936   │ 0.0719687   │
+│ 26   │ "3_4_5_6_7_8_9_10"     │ 8      │ 221184.0     │ 0.821759    │ 0.018458    │ 0.0712298   │
+│ 27   │ "1_2_3_4_5_8_10"       │ 7      │ 217088.0     │ 0.802476    │ 0.0221001   │ 0.0829268   │
+│ 28   │ "2_3_4_5_6_8_9_10"     │ 8      │ 217088.0     │ 0.849351    │ 0.0246211   │ 0.0863598   │
+⋮
+│ 995  │ "3_5_6_7"              │ 4      │ -1.81899e-12 │ -3.65917e15 │ -1.22487e46 │ -1.88441e45 │
+│ 996  │ "1_4_5_6_7"            │ 5      │ -1.81899e-12 │ -5.06655e15 │ -2.60116e46 │ -7.27052e13 │
+│ 997  │ "2_5_6_8_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -3.95824e13 │
+│ 998  │ "1_2_5_6_7"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -1.50523e13 │
+│ 999  │ "1_5_6_7_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -8.90604e11 │
+│ 1000 │ "5_6_7_8_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -6.87195e12 │
+│ 1001 │ "4_5_6_8_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -4.29497e13 │
+│ 1002 │ "1_2_5_6_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -1.09951e10 │
+│ 1003 │ "1_4_5_6_9"            │ 5      │ -2.27374e-12 │ -2.53327e15 │ -3.25145e45 │ -1.09951e10 │
+│ 1004 │ "1_3_6_7_8"            │ 5      │ -2.72848e-12 │ -5.06655e15 │ -2.60116e46 │ -1.56375e13 │
+│ 1005 │ "1_2_3_6_8"            │ 5      │ -2.72848e-12 │ -5.06655e15 │ -2.60116e46 │ -1.5271e12  │
+│ 1006 │ "1_3_7_9"              │ 4      │ -2.72848e-12 │ -1.33701e15 │ -5.97503e44 │ -1.15964e13 │
+│ 1007 │ "3_7_9_10"             │ 4      │ -2.72848e-12 │ -1.33701e15 │ -5.97503e44 │ -1.42056e12 │
+│ 1008 │ "1_2_3_6_7"            │ 5      │ -3.41061e-12 │ -1.68885e15 │ -9.63392e44 │ -1.00349e13 │
+│ 1009 │ "2_3_4_6_9"            │ 5      │ -3.63798e-12 │ -5.13692e15 │ -2.71105e46 │ -1.85689e45 │
+│ 1010 │ "1_2_3_5"              │ 4      │ -3.63798e-12 │ -1.47774e15 │ -8.06747e44 │ -1.02073e13 │
+│ 1011 │ "1_4_6_8_10"           │ 5      │ -5.45697e-12 │ -1.68885e15 │ -9.63392e44 │ -6.87195e12 │
+│ 1012 │ "1_6_7_8_9"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -2.30974e11 │
+│ 1013 │ "1_5_6_7_8"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -3.69558e12 │
+│ 1014 │ "1_4_5_6_8"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -8.31506e12 │
+│ 1015 │ "1_4_6_8_9"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -2.07876e12 │
+│ 1016 │ "1_2_3_9_10"           │ 5      │ -5.45697e-12 │ -2.48636e15 │ -3.07414e45 │ -8.93671e11 │
+│ 1017 │ "1_2_5_6_8"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -7.6355e11  │
+│ 1018 │ "1_2_6_8_9"            │ 5      │ -5.45697e-12 │ -2.53327e15 │ -3.25145e45 │ -6.87195e10 │
+│ 1019 │ "1_2_4_5_6_7"          │ 6      │ -7.04858e-12 │ -2.53327e15 │ -2.70954e45 │ -4.30606e13 │
+│ 1020 │ "4_5_6_7_10"           │ 5      │ -7.27596e-12 │ -1.02035e15 │ -2.12458e44 │ -3.66307e43 │
+│ 1021 │ "1_5_7_8_9"            │ 5      │ -7.7307e-12  │ -2.53327e15 │ -3.25145e45 │ -1.15087e11 │
+│ 1022 │ "1_4_5_8_9"            │ 5      │ -7.7307e-12  │ -2.53327e15 │ -3.25145e45 │ -1.2145e13  │
+│ 1023 │ "1_2_5_8_9"            │ 5      │ -7.7307e-12  │ -2.53327e15 │ -3.25145e45 │ -2.98276e12 │
+
+│ Row  │ GE           │ CN         │
+├──────┼──────────────┼────────────┤
+│ 1    │ 946.028      │ 5.09545    │
+│ 2    │ 962.235      │ 4.90356    │
+│ 3    │ 874.648      │ 5.19844    │
+│ 4    │ 1065.28      │ 4.54552    │
+│ 5    │ 1052.69      │ 5.0771     │
+│ 6    │ 884.458      │ 4.63482    │
+│ 7    │ 1055.56      │ 5.18201    │
+│ 8    │ 863.415      │ 5.02375    │
+│ 9    │ 785.09       │ 5.33705    │
+│ 10   │ 1093.45      │ 4.29488    │
+│ 11   │ 1078.82      │ 4.87461    │
+│ 12   │ 889.974      │ 4.3039     │
+│ 13   │ 993.488      │ 4.62354    │
+│ 14   │ 873.925      │ 4.68733    │
+│ 15   │ 1202.43      │ 4.52981    │
+│ 16   │ 1109.59      │ 4.9497     │
+│ 17   │ 1000.19      │ 4.64937    │
+│ 18   │ 401.798      │ 6.09493    │
+│ 19   │ 54.6577      │ 7.74561    │
+│ 20   │ 144.387      │ 6.26901    │
+│ 21   │ 789.499      │ 5.38132    │
+│ 22   │ 896.163      │ 5.14102    │
+│ 23   │ 923.696      │ 5.36423    │
+│ 24   │ 995.23       │ 4.38113    │
+│ 25   │ 868.433      │ 5.24024    │
+│ 26   │ 877.442      │ 4.71528    │
+│ 27   │ 861.345      │ 4.37007    │
+│ 28   │ 723.717      │ 4.7558     │
+⋮
+│ 995  │ -6.63337e-44 │ 3.80036    │
+│ 996  │ -1.37542e-12 │ 1.47335e16 │
+│ 997  │ -2.52637e-12 │ 8.88019e16 │
+│ 998  │ -6.6435e-12  │ 2.6974e16  │
+│ 999  │ -1.12283e-10 │ 1.96515e16 │
+│ 1000 │ -1.45519e-11 │ 3.34164e16 │
+│ 1001 │ -2.32831e-12 │ 1.50299e16 │
+│ 1002 │ -9.09495e-9  │ 1.37238e16 │
+│ 1003 │ -9.09495e-9  │ 4.31859e16 │
+│ 1004 │ -6.39488e-12 │ 2.23175e17 │
+│ 1005 │ -6.54836e-11 │ 3.3942e16  │
+│ 1006 │ -1.07792e-11 │ 5.35723    │
+│ 1007 │ -8.79934e-11 │ 3.83713    │
+│ 1008 │ -9.96525e-12 │ 2.42766e17 │
+│ 1009 │ -5.38536e-44 │ 2.59002e16 │
+│ 1010 │ -1.22462e-11 │ 4.29762    │
+│ 1011 │ -1.45519e-11 │ 1.36746e16 │
+│ 1012 │ -4.3295e-10  │ 7.30763e15 │
+│ 1013 │ -2.70593e-11 │ 3.71959e16 │
+│ 1014 │ -1.20264e-11 │ Inf        │
+│ 1015 │ -4.81055e-11 │ 2.03776e16 │
+│ 1016 │ -1.11898e-10 │ 6.50872e16 │
+│ 1017 │ -1.30967e-10 │ 3.3942e16  │
+│ 1018 │ -1.45519e-9  │ 2.28596e16 │
+│ 1019 │ -1.93526e-12 │ 6.62261e16 │
+│ 1020 │ -2.72995e-42 │ Inf        │
+│ 1021 │ -8.68906e-10 │ 1.78893e16 │
+│ 1022 │ -8.23382e-12 │ 2.89636e16 │
+│ 1023 │ -3.3526e-11  │ 1.54573e16 │
+
+1:682
+
+Plots.PlotlyBackend()
+WARNING: No strict ticks found
+WARNING: No strict ticks found
+Created new window in existing browser session.
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table[plot_size, :] plot(plot_size, :GE)
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table[plot_size, :] plot(plot_size, [:V :G :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
