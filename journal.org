@@ -13523,8 +13523,20 @@ function get_model_variables(formula::DataFrames.Formula)
     return variables
 end
 
+function scale_orthogonal!(design::Array{Float64, 2})
+    design_range = (max(design[:,]...) + min(design[:,]...)) / 2
+
+    for i = 1:size(design, 2)
+        factor_range = (max(design[:, i]...) - min(design[:, i]...)) / 2
+        design[:, i] = (design[:, i] - design_range) / factor_range
+    end
+    
+    return design
+end
+
 function generate_model_matrix(formula::DataFrames.Formula, design::DataFrame)
     variables = get_model_variables(formula)
+    design = DataFrame(scale_orthogonal!(Array{Float64, 2}(design)))
     new_design = DataFrame(I = ones(size(design, 1)))
 
     for variable in variables
@@ -13545,9 +13557,11 @@ end
 #+END_SRC
 
 #+RESULTS: dopt_model_matrix
-: generate_full_factorial (generic function with 2 methods)
+: generate_full_factorial (generic function with 1 method)
 : 
 : get_model_variables (generic function with 1 method)
+: 
+: scale_orthogonal! (generic function with 2 methods)
 : 
 : generate_model_matrix (generic function with 1 method)
 
@@ -13565,7 +13579,7 @@ function a_optimality(model_matrix::Array{Float64, 2})
     try
         return trace(inv(model_matrix' * model_matrix))
     catch exception
-        return Inf
+        return 0.0
     end
     
 end
@@ -13589,7 +13603,7 @@ function v_optimality(model_matrix::Array{Float64, 2})
     prediction_variances = get_prediction_variances(model_matrix)
 
     if prediction_variances == Inf
-        return prediction_variances
+        return 0.0
     else
         rows = size(model_matrix, 1)
         return sum(prediction_variances) / rows    
@@ -13600,7 +13614,7 @@ function g_optimality(model_matrix::Array{Float64, 2})
     prediction_variances = get_prediction_variances(model_matrix)
 
     if prediction_variances == Inf
-        return prediction_variances
+        return 0.0
     else
         return max(prediction_variances...)
     end
@@ -13619,7 +13633,13 @@ function g_efficiency(model_matrix::Array{Float64, 2})
 end
 
 function condition_number(model_matrix::Array{Float64, 2})
-    return cond(model_matrix)
+    condition_number = cond(model_matrix)
+    
+    if condition_number == Inf
+        return 0.0
+    else
+        return condition_number
+    end
 end
 #+END_SRC
 
@@ -14742,7 +14762,6 @@ using StatPlots
 
 #+RESULTS: dopt_init_block
 #+begin_example
-ESS
 
 
 generate_full_factorial (generic function with 1 method)
@@ -14765,7 +14784,7 @@ g_efficiency (generic function with 1 method)
 condition_number (generic function with 1 method)
 evaluate_candidates (generic function with 1 method)
 
-generate_evaluation_table (generic function with 1 method)
+generate_evaluation_table (generic function with 2 methods)
 
 generate_evaluation_table (generic function with 2 methods)
 measure_designs (generic function with 1 method)
@@ -15346,3 +15365,334 @@ Plots.PlotlyBackend()
 Created new window in existing browser session.
 #+end_example
 
+*** [2018-03-14 Wed]
+**** D-Optimal Design Examples
+***** Setup
+#+CALL: dopt_init_block()
+
+#+RESULTS:
+#+begin_example
+
+
+generate_full_factorial (generic function with 1 method)
+
+get_model_variables (generic function with 1 method)
+
+scale_orthogonal! (generic function with 1 method)
+
+generate_model_matrix (generic function with 1 method)
+d_optimality (generic function with 1 method)
+
+a_optimality (generic function with 1 method)
+
+get_prediction_variances (generic function with 1 method)
+
+v_optimality (generic function with 1 method)
+
+g_optimality (generic function with 1 method)
+
+g_efficiency (generic function with 1 method)
+
+condition_number (generic function with 1 method)
+evaluate_candidates (generic function with 1 method)
+
+generate_evaluation_table (generic function with 1 method)
+
+generate_evaluation_table (generic function with 2 methods)
+measure_designs (generic function with 1 method)
+#+end_example
+
+***** 2 3-Level Factors with Linear Model
+Consider an experimental design with 3 experiments, for 2 factors with 3 levels
+each, that considers that a simple linear model will be fit.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function main()
+    factors = [[-1, 0, 1], [-1, 0, 1]]
+    formula = @formula(y ~ x1 + x2)
+
+    runs = 3
+    model_matrix, evaluation_table = measure_designs(factors, formula, runs = 3)
+
+    sort!(evaluation_table, cols = :D, rev = true)
+
+    return evaluation_table
+end
+
+evaluation_table = main()
+
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:D :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+main (generic function with 1 method)
+
+84×8 DataFrames.DataFrame
+│ Row │ Rows    │ Length │ D    │ A       │ V         │ G        │ GE       │ CN      │
+├─────┼─────────┼────────┼──────┼─────────┼───────────┼──────────┼──────────┼─────────┤
+│ 1   │ "1_3_7" │ 3      │ 16.0 │ 1.5     │ 0.34375   │ 0.34375  │ 290.909  │ 2.0     │
+│ 2   │ "1_3_8" │ 3      │ 16.0 │ 1.25    │ 0.0885417 │ 0.125    │ 800.0    │ 1.41421 │
+│ 3   │ "1_3_9" │ 3      │ 16.0 │ 1.5     │ 0.34375   │ 0.34375  │ 290.909  │ 2.0     │
+│ 4   │ "1_6_7" │ 3      │ 16.0 │ 1.25    │ 0.0885417 │ 0.125    │ 800.0    │ 1.41421 │
+│ 5   │ "1_7_9" │ 3      │ 16.0 │ 1.5     │ 0.34375   │ 0.34375  │ 290.909  │ 2.0     │
+│ 6   │ "2_7_9" │ 3      │ 16.0 │ 1.25    │ 0.0885417 │ 0.125    │ 800.0    │ 1.41421 │
+│ 7   │ "3_4_9" │ 3      │ 16.0 │ 1.25    │ 0.0885417 │ 0.125    │ 800.0    │ 1.41421 │
+│ 8   │ "3_7_9" │ 3      │ 16.0 │ 1.5     │ 0.34375   │ 0.34375  │ 290.909  │ 2.0     │
+│ 9   │ "1_6_8" │ 3      │ 9.0  │ 1.66667 │ 0.358025  │ 0.518519 │ 192.857  │ 1.73205 │
+│ 10  │ "2_4_9" │ 3      │ 9.0  │ 1.66667 │ 0.358025  │ 0.518519 │ 192.857  │ 1.73205 │
+│ 11  │ "2_6_7" │ 3      │ 9.0  │ 1.66667 │ 0.358025  │ 0.518519 │ 192.857  │ 1.73205 │
+│ 12  │ "3_4_8" │ 3      │ 9.0  │ 1.66667 │ 0.358025  │ 0.518519 │ 192.857  │ 1.73205 │
+│ 13  │ "1_2_7" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 14  │ "1_2_8" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 10.25    │ 9.7561   │ 3.2255  │
+│ 15  │ "1_3_4" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 16  │ "1_3_5" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 7.375    │ 13.5593  │ 3.2255  │
+│ 17  │ "1_3_6" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 18  │ "1_4_6" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 10.25    │ 9.7561   │ 3.2255  │
+│ 19  │ "1_4_9" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 20  │ "1_5_7" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 7.375    │ 13.5593  │ 3.2255  │
+│ 21  │ "1_6_9" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 22  │ "1_7_8" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 23  │ "2_3_8" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 10.25    │ 9.7561   │ 3.2255  │
+│ 24  │ "2_3_9" │ 3      │ 4.0  │ 4.0     │ 13.5833   │ 22.25    │ 4.49438  │ 4.10676 │
+│ 25  │ "2_4_6" │ 3      │ 4.0  │ 2.5     │ 1.70833   │ 4.25     │ 23.5294  │ 2.41421 │
+│ 26  │ "2_4_8" │ 3      │ 4.0  │ 2.5     │ 1.70833   │ 4.25     │ 23.5294  │ 2.41421 │
+│ 27  │ "2_6_8" │ 3      │ 4.0  │ 2.5     │ 1.70833   │ 4.25     │ 23.5294  │ 2.41421 │
+│ 28  │ "2_7_8" │ 3      │ 4.0  │ 3.0     │ 4.0       │ 10.25    │ 9.7561   │ 3.2255  │
+⋮
+│ 56  │ "3_4_5" │ 3      │ 1.0  │ 9.0     │ 190.0     │ 406.0    │ 0.246305 │ 5.41147 │
+│ 57  │ "3_5_8" │ 3      │ 1.0  │ 9.0     │ 190.0     │ 406.0    │ 0.246305 │ 5.41147 │
+│ 58  │ "3_6_8" │ 3      │ 1.0  │ 11.0    │ 367.667   │ 630.0    │ 0.15873  │ 6.97535 │
+│ 59  │ "4_5_9" │ 3      │ 1.0  │ 9.0     │ 190.0     │ 406.0    │ 0.246305 │ 5.41147 │
+│ 60  │ "4_7_8" │ 3      │ 1.0  │ 7.0     │ 66.3333   │ 99.0     │ 1.0101   │ 5.82843 │
+│ 61  │ "4_8_9" │ 3      │ 1.0  │ 11.0    │ 367.667   │ 630.0    │ 0.15873  │ 6.97535 │
+│ 62  │ "5_6_7" │ 3      │ 1.0  │ 9.0     │ 190.0     │ 406.0    │ 0.246305 │ 5.41147 │
+│ 63  │ "6_7_8" │ 3      │ 1.0  │ 11.0    │ 367.667   │ 630.0    │ 0.15873  │ 6.97535 │
+│ 64  │ "6_8_9" │ 3      │ 1.0  │ 7.0     │ 66.3333   │ 99.0     │ 1.0101   │ 5.82843 │
+│ 65  │ "1_2_5" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 66  │ "1_4_5" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 67  │ "2_3_5" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 68  │ "2_4_5" │ 3      │ 1.0  │ 5.0     │ 17.6667   │ 21.0     │ 4.7619   │ 3.73205 │
+│ 69  │ "2_5_6" │ 3      │ 1.0  │ 5.0     │ 17.6667   │ 21.0     │ 4.7619   │ 3.73205 │
+│ 70  │ "3_5_6" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 71  │ "4_5_7" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 72  │ "4_5_8" │ 3      │ 1.0  │ 5.0     │ 17.6667   │ 21.0     │ 4.7619   │ 3.73205 │
+│ 73  │ "5_6_8" │ 3      │ 1.0  │ 5.0     │ 17.6667   │ 21.0     │ 4.7619   │ 3.73205 │
+│ 74  │ "5_6_9" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 75  │ "5_7_8" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 76  │ "5_8_9" │ 3      │ 1.0  │ 5.0     │ 12.6667   │ 19.0     │ 5.26316  │ 4.04892 │
+│ 77  │ "1_2_3" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 78  │ "1_4_7" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 79  │ "1_5_9" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 80  │ "2_5_8" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 81  │ "3_5_7" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 82  │ "3_6_9" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 83  │ "4_5_6" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+│ 84  │ "7_8_9" │ 3      │ 0.0  │ 0.0     │ 0.0       │ 0.0      │ 0.0      │ Inf     │
+
+Plots.PlotlyBackend()
+WARNING: No strict ticks found
+WARNING: No strict ticks found
+Created new window in existing browser session.
+#+end_example
+
+We can look at G-Efficiency, V- and G-Optimality separately, but still ordered
+by values of D-Optimality:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:GE :V :G])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+We can extend this example and look at runs with all sizes. Since this search
+space is relatively small we can measure all possible subsets of the full
+factorial design.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function main()
+    factors = [[-1, 0, 1], [-1, 0, 1]]
+    formula = @formula(y ~ x1 + x2)
+
+    model_matrix, evaluation_table = measure_designs(factors, formula)
+
+    sort!(evaluation_table, cols = :D, rev = true)
+
+    return evaluation_table
+end
+
+evaluation_table = main()
+
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:D :Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+main (generic function with 1 method)
+
+511×8 DataFrames.DataFrame
+│ Row │ Rows                │ Length │ D     │ A        │ V          │ G          │ GE      │ CN      │
+├─────┼─────────────────────┼────────┼───────┼──────────┼────────────┼────────────┼─────────┼─────────┤
+│ 1   │ "1_2_3_4_5_6_7_8_9" │ 9      │ 324.0 │ 0.444444 │ 0.00118122 │ 0.00462963 │ 7200.0  │ 1.22474 │
+│ 2   │ "1_2_3_4_6_7_8_9"   │ 8      │ 288.0 │ 0.458333 │ 0.00140155 │ 0.00462963 │ 8100.0  │ 1.1547  │
+│ 3   │ "1_2_3_4_5_6_7_9"   │ 8      │ 234.0 │ 0.5      │ 0.00200321 │ 0.00898532 │ 4173.48 │ 1.32951 │
+│ 4   │ "1_2_3_4_5_7_8_9"   │ 8      │ 234.0 │ 0.5      │ 0.00200321 │ 0.00898532 │ 4173.48 │ 1.32951 │
+│ 5   │ "1_2_3_5_6_7_8_9"   │ 8      │ 234.0 │ 0.5      │ 0.00200321 │ 0.00898532 │ 4173.48 │ 1.32951 │
+│ 6   │ "1_3_4_5_6_7_8_9"   │ 8      │ 234.0 │ 0.5      │ 0.00200321 │ 0.00898532 │ 4173.48 │ 1.32951 │
+│ 7   │ "1_2_3_4_7_8_9"     │ 7      │ 204.0 │ 0.519608 │ 0.00249325 │ 0.00921026 │ 4653.2  │ 1.27153 │
+│ 8   │ "1_2_3_6_7_8_9"     │ 7      │ 204.0 │ 0.519608 │ 0.00249325 │ 0.00921026 │ 4653.2  │ 1.27153 │
+│ 9   │ "1_2_3_4_6_7_9"     │ 7      │ 204.0 │ 0.519608 │ 0.00249325 │ 0.00921026 │ 4653.2  │ 1.27153 │
+│ 10  │ "1_3_4_6_7_8_9"     │ 7      │ 204.0 │ 0.519608 │ 0.00249325 │ 0.00921026 │ 4653.2  │ 1.27153 │
+│ 11  │ "1_2_3_4_5_6_7_8"   │ 8      │ 180.0 │ 0.566667 │ 0.0035787  │ 0.012537   │ 2991.14 │ 1.54266 │
+│ 12  │ "1_2_3_4_5_6_8_9"   │ 8      │ 180.0 │ 0.566667 │ 0.0035787  │ 0.012537   │ 2991.14 │ 1.54266 │
+│ 13  │ "1_2_4_5_6_7_8_9"   │ 8      │ 180.0 │ 0.566667 │ 0.0035787  │ 0.012537   │ 2991.14 │ 1.54266 │
+│ 14  │ "2_3_4_5_6_7_8_9"   │ 8      │ 180.0 │ 0.566667 │ 0.0035787  │ 0.012537   │ 2991.14 │ 1.54266 │
+│ 15  │ "1_3_4_5_6_7_9"     │ 7      │ 168.0 │ 0.559524 │ 0.00331001 │ 0.015625   │ 2742.86 │ 1.32288 │
+│ 16  │ "1_2_3_5_7_8_9"     │ 7      │ 168.0 │ 0.559524 │ 0.00331001 │ 0.015625   │ 2742.86 │ 1.32288 │
+│ 17  │ "1_2_3_4_5_7_9"     │ 7      │ 165.0 │ 0.563636 │ 0.00328947 │ 0.00930094 │ 4607.83 │ 1.34598 │
+│ 18  │ "1_2_3_5_6_7_9"     │ 7      │ 165.0 │ 0.563636 │ 0.00328947 │ 0.00930094 │ 4607.83 │ 1.34598 │
+│ 19  │ "1_3_4_5_7_8_9"     │ 7      │ 165.0 │ 0.563636 │ 0.00328947 │ 0.00930094 │ 4607.83 │ 1.34598 │
+│ 20  │ "1_3_5_6_7_8_9"     │ 7      │ 165.0 │ 0.563636 │ 0.00328947 │ 0.00930094 │ 4607.83 │ 1.34598 │
+│ 21  │ "1_2_3_4_6_7_8"     │ 7      │ 156.0 │ 0.589744 │ 0.0045059  │ 0.0130966  │ 3272.4  │ 1.48294 │
+│ 22  │ "1_2_3_4_6_8_9"     │ 7      │ 156.0 │ 0.589744 │ 0.0045059  │ 0.0130966  │ 3272.4  │ 1.48294 │
+│ 23  │ "1_2_4_6_7_8_9"     │ 7      │ 156.0 │ 0.589744 │ 0.0045059  │ 0.0130966  │ 3272.4  │ 1.48294 │
+│ 24  │ "2_3_4_6_7_8_9"     │ 7      │ 156.0 │ 0.589744 │ 0.0045059  │ 0.0130966  │ 3272.4  │ 1.48294 │
+│ 25  │ "1_3_4_6_7_9"       │ 6      │ 144.0 │ 0.583333 │ 0.00414738 │ 0.015625   │ 3200.0  │ 1.22474 │
+│ 26  │ "1_2_3_7_8_9"       │ 6      │ 144.0 │ 0.583333 │ 0.00414738 │ 0.015625   │ 3200.0  │ 1.22474 │
+│ 27  │ "1_2_3_4_7_9"       │ 6      │ 140.0 │ 0.592857 │ 0.00442341 │ 0.00969424 │ 5157.7  │ 1.32288 │
+│ 28  │ "1_2_3_6_7_9"       │ 6      │ 140.0 │ 0.592857 │ 0.00442341 │ 0.00969424 │ 5157.7  │ 1.32288 │
+⋮
+│ 483 │ "1_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.41421 │
+│ 484 │ "2_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 485 │ "3_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.41421 │
+│ 486 │ "4_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 3.2255  │
+│ 487 │ "1_4_7"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+│ 488 │ "5_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 2.41421 │
+│ 489 │ "3_5_7"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+│ 490 │ "6_7"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 491 │ "8"                 │ 1      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.0     │
+│ 492 │ "1_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 493 │ "2_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.0     │
+│ 494 │ "3_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 495 │ "4_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.73205 │
+│ 496 │ "5_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 2.61803 │
+│ 497 │ "2_5_8"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+│ 498 │ "6_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.73205 │
+│ 499 │ "7_8"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 3.2255  │
+│ 500 │ "9"                 │ 1      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.0     │
+│ 501 │ "1_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.41421 │
+│ 502 │ "2_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 503 │ "3_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.41421 │
+│ 504 │ "4_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.22474 │
+│ 505 │ "5_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 2.41421 │
+│ 506 │ "1_5_9"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+│ 507 │ "6_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 3.2255  │
+│ 508 │ "3_6_9"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+│ 509 │ "7_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 1.41421 │
+│ 510 │ "8_9"               │ 2      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ 3.2255  │
+│ 511 │ "7_8_9"             │ 3      │ 0.0   │ 0.0      │ 0.0        │ 0.0        │ 0.0     │ Inf     │
+
+Plots.PlotlyBackend()
+WARNING: No strict ticks found
+WARNING: No strict ticks found
+Created new window in existing browser session.
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:Length :A :CN])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: WARNING: No strict ticks found
+: WARNING: No strict ticks found
+: Created new window in existing browser session.
+
+We can look at G-Efficiency, V- and G-Optimality separately, but still ordered
+by values of D-Optimality:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:GE :Length])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plotly()
+@df evaluation_table plot(1:size(evaluation_table, 1), [:V :G :Length])
+#+END_SRC
+
+#+RESULTS:
+: Plots.PlotlyBackend()
+: Created new window in existing browser session.
+
+***** 100 Mixed-Level Factors with Linear Model (Not possible yet!)
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function build_linear_formula(factors::Int)
+    linear_formula = Expr(:call)
+    linear_formula.args = vcat(:+, [Symbol("x", i) for i = 1:factors])
+    return Formula(:Y, linear_formula)
+end
+
+function main()
+    levels = rand(2:3, 3)
+    factors = [collect(1:l) for l in levels]
+
+    #factors = [[1,2,3],[1,2,3]]
+
+    formula = build_linear_formula(length(factors))
+
+    println(factors)
+
+    max_candidates = 100
+    model_matrix, evaluation_table = measure_designs(factors, formula, max_candidates = max_candidates)
+
+    sort!(evaluation_table, cols = :D, rev = true)
+
+    return evaluation_table
+end
+
+evaluation_table = main()
+
+plot_size = 1:round(Int, size(evaluation_table, 1) / 1.1)
+
+plotly()
+
+@df evaluation_table[plot_size, :] plot(plot_size, [:D :Length :A :V :G :GE])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+build_linear_formula (generic function with 1 method)
+
+main (generic function with 1 method)
+
+Array{Int64,1}[[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+ERROR: MethodError: no method matching measure_designs(::Array{Array{Int64,1},1}, ::DataFrames.Formula, ::Int64)
+Closest candidates are:
+  measure_designs(::Array, ::DataFrames.Formula; runs, max_candidates) at none:3
+Stacktrace:
+ [1] main() at ./none:12
+
+1:238312
+
+Plots.PlotlyBackend()
+
+Created new window in existing browser session.
+#+end_example
