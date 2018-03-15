@@ -6940,7 +6940,7 @@ This gives us a ~420x speedup:
 
 #+NAME: define_primes_divisible_offset
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 using Primes
 
@@ -7347,7 +7347,7 @@ Let's check for the validity of the designs created with our function:
 
 #+NAME: define_julia_is_plackett_burman
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 using StatsBase
 
@@ -7440,7 +7440,7 @@ to only allocate one matrix for the Plackett-Burman construction:
 
 #+NAME: define_julia_paley
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 function binary_search(array::Array{Int, 1}, target::Int)
     n::Int = length(array)
@@ -7505,7 +7505,7 @@ end
 
 #+NAME: define_julia_plackett_burman
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle autotuning_screening_experiment/src/screening/plackett_burman.jl
+#+HEADER: :tangle doe_utils/plackett_burman.jl
 #+BEGIN_SRC julia
 function plackett_burman(matrix_size::Int)
     # Paley construction works for primes where (p + 1) % 4 == 0
@@ -8249,7 +8249,7 @@ values. As before, we will use the hash of values as primary key for this table.
 
 #+NAME: startup_distributed_tables
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle autotuning_screening_experiment/src/screening/distributed_experiments_concept.jl
+#+HEADER: :tangle doe_utils/distributed_experiments_concept.jl
 #+BEGIN_SRC julia
 if length(workers()) > 1
     rmprocs(workers())
@@ -8320,6 +8320,7 @@ import JuliaDB
         put!(channel, init_dummy_table())
     end
 end
+
 #+END_SRC
 
 #+RESULTS: startup_distributed_tables
@@ -15712,19 +15713,31 @@ Plots.PlotlyBackend()
 
 Created new window in existing browser session.
 #+end_example
+*** [2018-03-15 Thu]
 **** Sampling Tools for Large D-Optimal Designs
+The following script is able to unformly sample the space of all subsets of rows
+for full factorial designs with more than a 100 factors. It performs parallel
+sampling of rows of a design but not parallel whole design generation yet. It is
+feasible with these tools to sample very large design spaces in a short time.
+
+We can change values in the ~main~ function to explore different designs and
+regions of designs. To use more processes, run the following block:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+addprocs(2)
+#+END_SRC
+
 #+NAME: dopt_sampling_toolset
 #+HEADER: :tangle doe_utils/doptimal_designs.jl
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-using IterTools, DataFrames, StatsBase
+using IterTools, DataFrames, StatsBase, StatPlots
 
-function generate_full_factorial(factors::Array)
-    design = [collect(t) for t in product(factors...)]
-    design = vcat([row' for row in design]...)
-    design = DataFrame(design)
-    println(size(design))
-    return design
+function build_linear_formula(factors::Int)
+    linear_formula = Expr(:call)
+    linear_formula.args = vcat(:+, [Symbol("x", i) for i = 1:factors])
+    return Formula(:Y, linear_formula)
 end
 
 function get_model_variables(formula::DataFrames.Formula)
@@ -15733,25 +15746,29 @@ function get_model_variables(formula::DataFrames.Formula)
     return variables
 end
 
-function scale_orthogonal!(design::Array{Float64, 2})
+function scale_orthogonal!(design::Array{Float64, 2},
+                           factors::Array{T, 1}) where T<: Any
     design_range = (max(design[:,]...) + min(design[:,]...)) / 2
 
     for i = 1:size(design, 2)
-        factor_range = (max(design[:, i]...) - min(design[:, i]...)) / 2
+        factor_range = (max(factors[i]...) - min(factors[i]...)) / 2
         design[:, i] = (design[:, i] - design_range) / factor_range
     end
-    
+
     return design
 end
 
-function generate_model_matrix(formula::DataFrames.Formula, design::DataFrame)
-    variables = get_model_variables(formula)
-    design = DataFrame(scale_orthogonal!(Array{Float64, 2}(design)))
+function generate_model_matrix(formula::DataFrames.Formula,
+                               design::Array{Float64, 2},
+                               factors::Array{T, 1}) where T <: Any
+    variables  = get_model_variables(formula)
+
+    design     = DataFrame(scale_orthogonal!(design, factors))
     new_design = DataFrame(I = ones(size(design, 1)))
 
     for variable in variables
         if typeof(variable) == Expr && variable.args[1] == :&
-            interaction = Symbol(variable.args[2:end]...)
+            interaction             = Symbol(variable.args[2:end]...)
             new_design[interaction] = ones(size(design, 1))
 
             for s in variable.args[2:end]
@@ -15765,70 +15782,83 @@ function generate_model_matrix(formula::DataFrames.Formula, design::DataFrame)
     return new_design
 end
 
-function d_optimality(model_matrix::Array{Float64, 2})
-    return det(model_matrix' * model_matrix)
-end
-
-function a_optimality(model_matrix::Array{Float64, 2})
-    try
-        return trace(inv(model_matrix' * model_matrix))
-    catch exception
-        return 0.0
-    end
-    
-end
 
 function get_prediction_variances(model_matrix::Array{Float64, 2})
-    try
-        dispersion_matrix = inv(model_matrix' * model_matrix)
+    information_matrix = model_matrix' * model_matrix
 
-        rows = size(dispersion_matrix, 1)
+    if det(information_matrix) != 0.0
+        dispersion_matrix = inv(information_matrix)
+        rows              = size(dispersion_matrix, 1)
 
         prediction_variances = [dispersion_matrix[i, :]' * dispersion_matrix *
                                 dispersion_matrix[i, :] for i = 1:rows]
 
         return prediction_variances
-    catch exception
-        return Inf
+    else
+        return 0.0
     end
+end
+
+function d_optimality(model_matrix::Array{Float64, 2})
+    det_information_matrix = det(model_matrix' * model_matrix)
+
+    if det_information_matrix < 0.0
+        return 0.0
+    else
+        return ^(det_information_matrix, 1 / size(model_matrix, 2))
+    end
+end
+
+function a_optimality(model_matrix::Array{Float64, 2})
+    information_matrix = model_matrix' * model_matrix
+
+    if det(information_matrix) != 0.0
+        return trace(inv(information_matrix)) / size(model_matrix, 2)
+    else
+        return 0.0
+    end
+
 end
 
 function v_optimality(model_matrix::Array{Float64, 2})
     prediction_variances = get_prediction_variances(model_matrix)
+    rows                 = size(model_matrix, 1)
 
-    if prediction_variances == Inf
-        return 0.0
-    else
-        rows = size(model_matrix, 1)
-        return sum(prediction_variances) / rows    
-    end
+    return sum(prediction_variances) / rows
 end
 
 function g_optimality(model_matrix::Array{Float64, 2})
     prediction_variances = get_prediction_variances(model_matrix)
-
-    if prediction_variances == Inf
-        return 0.0
-    else
-        return max(prediction_variances...)
-    end
+    return max(prediction_variances...)
 end
 
 function g_efficiency(model_matrix::Array{Float64, 2})
     prediction_variances = get_prediction_variances(model_matrix)
+    max_variance         = max(prediction_variances...)
 
-    if prediction_variances == Inf
+    g_e = size(model_matrix, 2) / max_variance
+
+    if g_e == Inf
         return 0.0
     else
-        max_variance = max(prediction_variances...)
-        
-        return 100.0 * (size(model_matrix, 2)/(size(model_matrix, 1) * max_variance))
+        return g_e
+    end
+end
+
+function d_efficiency_lower_bound(model_matrix::Array{Float64, 2})
+    g_e   = g_efficiency(model_matrix)
+    d_elb = exp(1 - (1 / g_e))
+
+    if d_elb == Inf
+        return 0.0
+    else
+        return d_elb
     end
 end
 
 function condition_number(model_matrix::Array{Float64, 2})
     condition_number = cond(model_matrix)
-    
+
     if condition_number == Inf
         return 0.0
     else
@@ -15836,83 +15866,104 @@ function condition_number(model_matrix::Array{Float64, 2})
     end
 end
 
-function evaluate_candidates(model_matrix::DataFrame, candidates::Array)
-    candidate = Array(model_matrix[candidates[1], :])
+@everywhere begin
+    function sample_full_factorial(factors::Array{T, 1}) where T <: Any
+        return Array{Float64, 1}([rand(i) for i in factors])
+    end
 
-    evaluation = DataFrame(Rows = [join(candidates[1], "_")],
-                           Length = [length(candidates[1])],
-                           D = [d_optimality(candidate)],
-                           A = [a_optimality(candidate)],
-                           V = [v_optimality(candidate)],
-                           G = [g_optimality(candidate)],
-                           GE = [g_efficiency(candidate)],
-                           CN = [condition_number(candidate)])
+    function check_repeated_row(subset::SharedArray{Float64, 2}, row::Array{Float64, 1})
+        for j = 1:size(subset, 1)
+            if subset[j, :] == row
+                return true
+            end
+        end
 
-    for rows in candidates[2:end]
-        candidate = Array(model_matrix[rows, :])
-        push!(evaluation, [join(rows, "_"),
-                           length(rows),
-                           d_optimality(candidate),
+        return false
+    end
+
+    function full_factorial_subset(factors::Array{T, 1}, experiments::Int) where T <: Any
+        subset = fill!(SharedArray{Float64, 2}(experiments, size(factors, 1)), 0.0)
+
+        @sync @parallel for i = 1:experiments
+            sample_row = sample_full_factorial(factors)
+
+            while check_repeated_row(subset, sample_row)
+                sample_row = sample_full_factorial(factors)
+            end
+
+            subset[i, :] = sample_row
+        end
+
+        return subset
+    end
+end
+
+function generate_designs(factors::Array{T, 1},
+                          sample_range::UnitRange{Int},
+                          designs::Int) where T <: Any
+    evaluation = DataFrame(Length = [],
+                           D      = [],
+                           log10D = [],
+                           DELB   = [],
+                           A      = [],
+                           V      = [],
+                           G      = [],
+                           CN     = [],
+                           log2CN = [],
+                           GE     = [])
+
+
+    for i in 1:designs
+        samples      = rand(sample_range)
+        subset       = full_factorial_subset(factors, samples)
+        formula      = build_linear_formula(length(factors))
+        model_matrix = generate_model_matrix(formula, Array{Float64, 2}(subset), factors)
+        candidate    = Array(model_matrix)
+
+        d_opt = d_optimality(candidate)
+        c_n   = condition_number(candidate)
+
+        push!(evaluation, [size(candidate, 1),
+                           d_opt,
+                           log(10, abs(d_opt)),
+                           d_efficiency_lower_bound(candidate),
                            a_optimality(candidate),
                            v_optimality(candidate),
                            g_optimality(candidate),
-                           g_efficiency(candidate),
-                           condition_number(candidate)])
+                           c_n,
+                           log(2, abs(c_n)),
+                           g_efficiency(candidate)])
     end
 
     return evaluation
 end
 
-function generate_evaluation_table(model_matrix::DataFrame, max_candidates::Int, runs::Int)
-    candidates = collect(subsets(1:size(model_matrix, 1), runs))
+function main()
+    factors = [Array{Float64, 1}(1:rand(3:3)) for i = 1:4]
 
-    if max_candidates != 0
-        candidates = candidates[sample(1:length(candidates),
-                                       max_candidates,
-                                       replace = false)]
-    end
+    println(factors)
+    println(typeof(factors))
 
-    evaluate_candidates(model_matrix, candidates)
+    #sample_range = div(length(factors), 2):(10 * length(factors))
+    sample_range = (length(factors) + 1):(length(factors) + 10)
+    designs = 1000
+
+    println(@elapsed sampling_subset = generate_designs(factors,
+                                                        sample_range,
+                                                        designs))
+
+    sort!(sampling_subset, cols = :D, rev = true)
+
+    println(sampling_subset)
+
+    plotly()
+
+    ymax = max(sampling_subset[:Length]..., sampling_subset[:D]...)
+
+    @df sampling_subset plot(1:size(sampling_subset, 1),
+                             [:D :DELB :log2CN :Length],
+                             ylims = (-1, ymax + 2))
 end
 
-function generate_evaluation_table(model_matrix::DataFrame, max_candidates::Int)
-    all_candidates = subsets(1:size(model_matrix, 1))
-
-    selected_candidates = []
-
-    if max_candidates != 0
-        select_probability = 0.005
-
-        while length(selected_candidates) < max_candidates
-            for candidate in all_candidates
-                if rand() > select_probability || candidate == [] || candidate in selected_candidates
-                    continue
-                else
-                    push!(selected_candidates, candidate)
-                    if length(selected_candidates) == max_candidates
-                        break
-                    end
-                end
-            end
-        end
-    else
-        selected_candidates = collect(all_candidates)[2:end]
-    end
-
-    evaluate_candidates(model_matrix, selected_candidates)
-end
-
-function measure_designs(factors::Array, formula::DataFrames.Formula; runs::Int = 0,
-                         max_candidates::Int = 0)
-    design = generate_full_factorial(factors)
-    model_matrix = generate_model_matrix(formula, design)
-
-    if runs != 0
-        evaluation_table = generate_evaluation_table(model_matrix, max_candidates, runs)
-    else
-        evaluation_table = generate_evaluation_table(model_matrix, max_candidates)
-    end
-
-    return model_matrix, evaluation_table
-end
+main()
 #+END_SRC
