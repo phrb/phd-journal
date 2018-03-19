@@ -13242,11 +13242,11 @@ on all variables:
 #+BEGIN_SRC R
 library(AlgDesign)
 
-variables <- gen.factorial(c(10,3,4,2,6))
+variables <- gen.factorial(c(3,4,2,3))
 
-variables$X3 = as.factor(variables$X3)
+#variables$X3 = as.factor(variables$X3)
 #variables$X4 = as.factor(variables$X4)
-variables$X5 = as.factor(variables$X5)
+#variables$X5 = as.factor(variables$X5)
 #variables$X1 = as.factor(variables$X1)
 #variables$X1 = as.factor(variables$X1)
 
@@ -13258,40 +13258,32 @@ design
 #+RESULTS:
 #+begin_example
 $D
-[1] 0.3451
+[1] 1.50579
 
 $A
-[1] 9.321741
+[1] 0.8743386
 
 $Ge
-[1] 0.589
+[1] 0.824
 
 $Dea
-[1] 0.498
+[1] 0.807
 
 $design
-     X1 X2 X3 X4 X5
-1    -9 -1 -3 -1 -5
-111  -9  1  3 -1 -5
-210   9  1  1  1 -5
-300   9  1 -1 -1 -3
-430   9 -1  1  1 -3
-471  -9  1  3  1 -3
-541  -9 -1  1 -1 -1
-610   9 -1 -3  1 -1
-660   9  1 -1  1 -1
-801  -9  1  1 -1  1
-871  -9 -1 -1  1  1
-940   9 -1  3  1  1
-1000  9 -1 -1 -1  3
-1101 -9  1 -3  1  3
-1230  9  1 -3 -1  5
-1300  9 -1  3 -1  5
-1351 -9 -1 -1  1  5
+   X1 X2 X3 X4
+3   1 -3 -1 -1
+10 -1  3 -1 -1
+13 -1 -3  1 -1
+15  1 -3  1 -1
+22 -1  3  1 -1
+49 -1 -3 -1  1
+60  1  3 -1  1
+61 -1 -3  1  1
+70 -1  3  1  1
+72  1  3  1  1
 
 $rows
- [1]    1  111  210  300  430  471  541  610  660  801  871  940 1000 1101 1230
-[16] 1300 1351
+ [1]  3 10 13 15 22 49 60 61 70 72
 #+end_example
 
 We can also get a small design for multi-level factors using
