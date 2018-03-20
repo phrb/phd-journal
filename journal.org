@@ -16516,7 +16516,6 @@ Created new window in existing browser session.
 #+end_example
 **** Defining D-Optimal Design Utilities                  :Stats:DOE:Code:
 #+NAME: init_dopt_utils
-#+HEADER: :tangle doe_utils/doptimal_designs.jl
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 if length(workers()) > 1
@@ -17171,7 +17170,6 @@ Now, let's look at 6000 designs sampled uniformly of a fixed size. We will
 start with a fixed size $n = 5$:
 
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle doe_utils/doptimal_designs.jl
 #+NAME: define_sample_subsets
 #+BEGIN_SRC julia
 
@@ -17443,7 +17441,6 @@ Elapsed Time: 24.010280802 seconds
 #+end_example
 
 #+HEADER: :results output :session *Julia*
-#+HEADER: :tangle doe_utils/doptimal_designs.jl
 #+NAME: define_plot_subsets
 #+BEGIN_SRC julia
 
@@ -17516,7 +17513,7 @@ row in $X$ that describes an experiment.
 
 I was not able to find a paper or book describing or explaining this criteria.
 
-***** From DETMAX, SAS, and Castillo's Book :ATTACH:
+***** From DETMAX, SAS, and Castillo's Book                     :ATTACH:
 :PROPERTIES:
 :Attachments: castillo2007process.pdf
 :ID:       21aa2891-9cc8-4e49-8f75-ad668b71ea93
@@ -17615,7 +17612,6 @@ sample_subset (generic function with 1 method)
 :ID:       d73b9756-a310-42b0-8ea7-07bd55442b47
 :COMMENT: Results using AlgDesign D-Efficiency
 :END:
-
 
 First generate the data:
 
@@ -18424,19 +18420,413 @@ MEPlot(reg)
 #+RESULTS:
 [[file:/tmp/babel-4228QeL/figure4228xVM.png]]
 
-**** Plotting Sampled Design Spaces using Box Encoding
-***** Setup
+**** Tweaking D-Optimal Utilities                         :Stats:DOE:Code:
+#+NAME: init_complete_dopt_utils
+#+HEADER: :tangle doe_utils/doptimal_designs.jl
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+max_workers = 2
 
-#+CALL: init_dopt_utils()
+if length(workers()) != max_workers
+    rmprocs.(workers())
+    addprocs(2)
+end
 
-#+RESULTS:
+using IterTools, DataFrames, StatsBase, StatPlots
+
+function build_linear_formula(factors::Int)
+    linear_formula = Expr(:call)
+    linear_formula.args = vcat(:+, [Symbol("x", i) for i = 1:factors])
+    return Formula(:Y, linear_formula)
+end
+
+function get_model_variables(formula::DataFrames.Formula)
+    variables = Array{Any, 1}()
+    push!(variables, DataFrames.Terms(formula).terms...)
+    return variables
+end
+
+function scale_orthogonal!(design::Array{Float64, 2},
+                           factors::Array{T, 1}) where T <: Any
+    design_range = (max(design[:,]...) + min(design[:,]...)) / 2
+
+    for i = 1:size(design, 2)
+        factor_range = (max(factors[i]...) - min(factors[i]...)) / 2
+        design[:, i] = (design[:, i] - design_range) / factor_range
+    end
+
+    return design
+end
+
+function scale_box_encoding!(design::Array{Float64, 2},
+                             factors::Array{T, 1}) where T <: Any
+    for i = 1:size(design, 2)
+        factor_mean = mean(factors[i])
+        denominator = sqrt((sum((design[:, i] .- factor_mean) .^ 2.0)) / 4.0)
+
+        numerator = design[:, i] .- factor_mean
+
+        if !iszero(denominator) && !iszero(numerator)
+            numerator ./= denominator
+        end
+
+        design[:, i] = numerator
+    end
+
+    return design
+end
+
+function generate_model_matrix(formula::DataFrames.Formula,
+                               design::Array{Float64, 2},
+                               factors::Array{T, 1};
+                               scale::Function = scale_orthogonal!) where T <: Any
+    variables  = get_model_variables(formula)
+
+    design     = DataFrame(scale(design, factors))
+    new_design = DataFrame(I = ones(size(design, 1)))
+
+    for variable in variables
+        if typeof(variable) == Expr && variable.args[1] == :&
+            interaction             = Symbol(variable.args[2:end]...)
+            new_design[interaction] = ones(size(design, 1))
+
+            for s in variable.args[2:end]
+                new_design[interaction] .*= design[s]
+            end
+        else
+            new_design[variable] = float(design[variable])
+        end
+    end
+
+    return new_design
+end
+
+
+function get_prediction_variances(model_matrix::Array{Float64, 2})
+    information_matrix = model_matrix' * model_matrix
+
+    if det(information_matrix) != 0.0
+        dispersion_matrix = inv(information_matrix)
+        rows              = size(dispersion_matrix, 1)
+
+        prediction_variances = [dispersion_matrix[i, :]' * dispersion_matrix *
+                                dispersion_matrix[i, :] for i = 1:rows]
+
+        return prediction_variances
+    else
+        return 0.0
+    end
+end
+
+function d_optimality(model_matrix::Array{Float64, 2})
+    det_information_matrix = det(model_matrix' * model_matrix)
+
+    if det_information_matrix < 0.0
+        return 0.0
+    else
+        return ^(det_information_matrix, 1 / size(model_matrix, 2))
+    end
+end
+
+function d_efficiency_lower_bound(model_matrix::Array{Float64, 2})
+    return d_optimality(model_matrix) / size(model_matrix, 1)
+end
+
+function a_optimality(model_matrix::Array{Float64, 2})
+    information_matrix = model_matrix' * model_matrix
+
+    if det(information_matrix) != 0.0
+        return trace(inv(information_matrix)) / size(model_matrix, 2)
+    else
+        return 0.0
+    end
+
+end
+
+function v_optimality(model_matrix::Array{Float64, 2})
+    prediction_variances = get_prediction_variances(model_matrix)
+    rows                 = size(model_matrix, 1)
+
+    return sum(prediction_variances) / rows
+end
+
+function g_optimality(model_matrix::Array{Float64, 2})
+    prediction_variances = get_prediction_variances(model_matrix)
+    return max(prediction_variances...)
+end
+
+function g_efficiency(model_matrix::Array{Float64, 2})
+    prediction_variances = get_prediction_variances(model_matrix)
+    max_variance         = max(prediction_variances...)
+
+    g_e = size(model_matrix, 2) / max_variance
+
+    if g_e == Inf
+        return 0.0
+    else
+        return g_e
+    end
+end
+
+function d_efficiency_lower_bound_algdesign(model_matrix::Array{Float64, 2})
+    g_e   = g_efficiency(model_matrix)
+    d_elb = exp(1 - (1 / g_e))
+
+    if d_elb == Inf
+        return 0.0
+    else
+        return d_elb
+    end
+end
+
+function condition_number(model_matrix::Array{Float64, 2})
+    condition_number = cond(model_matrix)
+
+    if condition_number == Inf
+        return 0.0
+    else
+        return condition_number
+    end
+end
+
+@everywhere begin
+    function sample_full_factorial(factors::Array{T, 1}) where T <: Any
+        return Array{Float64, 1}([rand(i) for i in factors])
+    end
+
+    function check_repeated_row(subset::SharedArray{Float64, 2}, row::Array{Float64, 1})
+        for j = 1:size(subset, 1)
+            if subset[j, :] == row
+                return true
+            end
+        end
+
+        return false
+    end
+
+    function full_factorial_subset(factors::Array{T, 1}, experiments::Int) where T <: Any
+        subset = fill!(SharedArray{Float64, 2}(experiments, size(factors, 1)), 0.0)
+
+        @sync @parallel for i = 1:experiments
+            sample_row = sample_full_factorial(factors)
+
+            while check_repeated_row(subset, sample_row)
+                sample_row = sample_full_factorial(factors)
+            end
+
+            subset[i, :] = sample_row
+        end
+
+        return subset
+    end
+end
+
+function generate_designs(factors::Array{T, 1},
+                          formula::DataFrames.Formula,
+                          sample_range::UnitRange{Int},
+                          designs::Int;
+                          check_bounds::Bool = true,
+                          scale::Function = scale_orthogonal!,
+                          compute_all_metrics::Bool = false) where T <: Any
+    println("> Factors: ", factors)
+
+    full_factorial_size = prod(length, factors)
+    full_factorial_subsets = 2.0 ^ full_factorial_size
+
+    println("> Full Factorial Size: ", full_factorial_size)
+    println("> Total Subsets: ", full_factorial_subsets)
+    println("> Range of Design Sizes: ", sample_range)
+    println("> Number of Design to Sample: ", designs)
+
+    if check_bounds
+        if designs > full_factorial_subsets
+            println("> Requested too many designs, using ",
+                    full_factorial_subsets, " instead")
+
+            designs = full_factorial_subsets
+        end
+
+        if sample_range.stop > full_factorial_size
+            println("> Requested too many maximum experiments, using ",
+                    full_factorial_size, " instead")
+            sample_range = sample_range.start:full_factorial_size
+        end
+
+        if sample_range.start == sample_range.stop
+            println("> Total Subsets for Fixed Size ", sample_range.start, ": ",
+                    factorial(float(full_factorial_size)) /
+                    (factorial(float(full_factorial_size - sample_range.start)) *
+                    factorial(float(sample_range.start))))
+        end
+    else
+        println("> WARNING: Skipping bounds check!")
+    end
+
+    if compute_all_metrics
+        evaluation = DataFrame(
+                               Length  = [],
+                               D       = [],
+                               DELB    = [],
+                               DELB_ad = [],
+                               A       = [],
+                               V       = [],
+                               G       = [],
+                               CN      = [],
+                               GE      = [],
+                               log2CN  = [],
+                               log10D  = []
+                              )
+    else
+        evaluation = DataFrame(
+                               Length  = [],
+                               D       = [],
+                               DELB    = [],
+                               DELB_ad = []
+                              )
+    end
+
+
+    for i in 1:designs
+        samples      = rand(sample_range)
+        subset       = full_factorial_subset(factors, samples)
+        model_matrix = generate_model_matrix(formula, Array{Float64, 2}(subset), factors,
+                                             scale = scale)
+        candidate    = Array(model_matrix)
+
+        if compute_all_metrics
+            d_opt = d_optimality(candidate)
+            c_n   = condition_number(candidate)
+
+            push!(evaluation, [
+                               size(candidate, 1),
+                               d_opt,
+                               d_efficiency_lower_bound(candidate),
+                               d_efficiency_lower_bound_algdesign(candidate),
+                               a_optimality(candidate),
+                               v_optimality(candidate),
+                               g_optimality(candidate),
+                               c_n,
+                               g_efficiency(candidate),
+                               log(2, abs(c_n)),
+                               log(10, abs(d_opt))
+                              ]
+                 )
+        else
+            push!(evaluation, [
+                               size(candidate, 1),
+                               d_optimality(candidate),
+                               d_efficiency_lower_bound(candidate),
+                               d_efficiency_lower_bound_algdesign(candidate)
+                              ]
+                 )
+        end
+    end
+
+    return evaluation
+end
+
+function sample_subset(factors,
+                       sample_range,
+                       designs;
+                       check_bounds = true,
+                       scale = scale_orthogonal!)
+    formula = build_linear_formula(length(factors))
+    #formula = @formula(y ~ x1 + x2 + x3)
+
+    run_time = @elapsed sampling_subset = generate_designs(factors,
+                                                           formula,
+                                                           sample_range,
+                                                           designs,
+                                                           check_bounds = check_bounds,
+                                                           scale = scale)
+    println("> Elapsed Time: ", run_time, " seconds")
+
+    sort!(sampling_subset, cols = :D, rev = true)
+
+    return sampling_subset
+end
+
+function sample_subsets(factors::Array,
+                        ranges::Array{UnitRange{Int}, 1},
+                        designs::Int;
+                        check_bounds::Bool = true,
+                        scale::Function = scale_orthogonal!,
+                        compute_all_metrics::Bool = false)
+    sampled_subsets = []
+
+    for subset = 1:length(ranges)
+        label = " "
+
+        if ranges[subset].start == ranges[subset].stop
+            label = string(ranges[subset].start, " Experiments")
+        else
+            label = string(ranges[subset].start, " to ",
+                          ranges[subset].stop, " Experiments")
+        end
+
+        label = string(label, ", ", length(factors[subset]), " Factors")
+
+        sampled_subset = sample_subset(factors[subset],
+                                       ranges[subset],
+                                       designs,
+                                       check_bounds = check_bounds,
+                                       scale = scale)
+
+        push!(
+              sampled_subsets,
+              (sampled_subset,
+              max(sampled_subset[:D]...),
+              label)
+             )
+    end
+
+    return sampled_subsets
+end
+
+function plot_subsets(sampled_subsets; columns = [:D, :DELB, :Length])
+    upscale = 2
+    small_font = Plots.font("sans-serif", 10.0 * upscale)
+    large_font = Plots.font("sans-serif", 14.0 * upscale)
+    default(titlefont  = large_font,
+            guidefont  = large_font,
+            tickfont   = small_font,
+            legendfont = small_font)
+    default(size = (896 * upscale, 504 * upscale))
+    default(dpi = 300)
+
+    plotly()
+
+    subplots = []
+
+    for subset in sampled_subsets
+        push!(subplots,
+              histogram(Array(subset[1][:D]), labels = "Designs",
+                        title = string("D-Optimality for ", subset[3]),
+                        color = :lightblue),
+              histogram(Array(subset[1][:DELB]), labels = "Designs",
+                        title = string("D-Efficiency for ", subset[3]),
+                        color = :darkorange),
+              plot(Array(subset[1][columns]),
+                  ylims = (-1, subset[2] + 2),
+                  labels = reshape(columns, (1, length(columns))),
+                  title = subset[3],
+                  linestyle = :solid,
+                  linealpha=1.0,
+                  linewidth=1.5 * upscale)
+        )
+    end
+
+    plot(subplots...,
+        layout = (length(sampled_subsets), 3)
+    )
+end
+#+END_SRC
+
+#+RESULTS: init_complete_dopt_utils
 #+begin_example
-ESS
+2
 
 
-2-element Array{Int64,1}:
- 2
- 3
 
 
 
@@ -18474,21 +18864,70 @@ condition_number (generic function with 1 method)
 generate_designs (generic function with 1 method)
 
 sample_subset (generic function with 1 method)
+
+sample_subsets (generic function with 1 method)
+
+plot_subsets (generic function with 1 method)
 #+end_example
 
-#+CALL: define_sample_subsets()
+**** Plotting Sampled Design Spaces using Box Encoding
+***** Setup
+
+#+CALL: init_complete_dopt_utils()
 
 #+RESULTS:
-: 
-: sample_subsets (generic function with 1 method)
+#+begin_example
+2
 
-#+CALL: define_plot_subsets()
 
-#+RESULTS:
-: 
-: plot_subsets (generic function with 1 method)
 
-***** Diferent Design Sizes for 4 Factors with 3 Levels
+
+
+build_linear_formula (generic function with 1 method)
+
+get_model_variables (generic function with 1 method)
+
+scale_orthogonal! (generic function with 1 method)
+
+scale_box_encoding! (generic function with 1 method)
+
+generate_model_matrix (generic function with 1 method)
+
+
+get_prediction_variances (generic function with 1 method)
+
+d_optimality (generic function with 1 method)
+
+d_efficiency_lower_bound (generic function with 1 method)
+
+a_optimality (generic function with 1 method)
+
+v_optimality (generic function with 1 method)
+
+g_optimality (generic function with 1 method)
+
+g_efficiency (generic function with 1 method)
+
+d_efficiency_lower_bound_algdesign (generic function with 1 method)
+
+condition_number (generic function with 1 method)
+
+
+
+generate_designs (generic function with 1 method)
+
+sample_subset (generic function with 1 method)
+
+sample_subsets (generic function with 1 method)
+
+plot_subsets (generic function with 1 method)
+#+end_example
+
+***** Diferent Design Sizes for 4 Factors with 3 Levels :ATTACH:
+:PROPERTIES:
+:Attachments: juliaA5HUNi.html
+:ID:       4994e109-0fda-4475-a069-5de5153aae55
+:END:
 
 First generate the data:
 
@@ -18497,7 +18936,7 @@ First generate the data:
 #+BEGIN_SRC julia
 ranges = [4:4, 5:5, 6:6, 12:12, 24:24, 48:48, 4:3 ^ 4]
 factors = [[Array{Float64, 1}(1:3) for i = 1:4] for k in 1:length(ranges)]
-designs = 20
+designs = 8000
 
 sampled_subsets = sample_subsets(factors, ranges, designs, scale = scale_box_encoding!)
 #+END_SRC
@@ -18520,9 +18959,204 @@ sampled_subsets = sample_subsets(factors, ranges, designs, scale = scale_box_enc
  Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
  Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
  Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-20
+8000
 
-ERROR: UndefVarError: sample_subsets not defined
+ Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 4:4
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 4: 1.66374e6
+Elapsed Time: 20.36678581 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 5:5
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 5: 2.5621596e7
+Elapsed Time: 18.927762688 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 6:6
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 6: 3.24540216e8
+Elapsed Time: 18.873806433 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 12:12
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 12: 7.072432018469998e13
+Elapsed Time: 18.877561442 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 24:24
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 24: 2.305491245366683e20
+Elapsed Time: 19.17169629 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 48:48
+Number of Design to Sample: 8000
+Total Subsets for Fixed Size 48: 5.3779686508403226e22
+Elapsed Time: 20.649663899 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 4:81
+Number of Design to Sample: 8000
+Elapsed Time: 21.768217597 seconds
+7-element Array{Any,1}:
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D          │ DELB        │ DELB_ad │
+├──────┼────────┼────────────┼─────────────┼─────────┤
+│ 1    │ 4.0    │ 0.00279486 │ 0.000698715 │ 0.0     │
+│ 2    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
+│ 3    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
+│ 4    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
+│ 5    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
+│ 6    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
+│ 7    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
+│ 8    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
+⋮
+│ 7992 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7993 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7994 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7995 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7996 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7997 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7998 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7999 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 8000 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │, 0.00279486, "4 Experiments, 4 Factors")
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 5.0    │ 3.80731 │ 0.761462 │ 2.66666 │
+│ 2    │ 5.0    │ 3.77635 │ 0.75527  │ 2.67083 │
+│ 3    │ 5.0    │ 3.77635 │ 0.75527  │ 2.68122 │
+│ 4    │ 5.0    │ 3.76698 │ 0.753396 │ 2.69319 │
+│ 5    │ 5.0    │ 3.72902 │ 0.745805 │ 2.66793 │
+│ 6    │ 5.0    │ 3.72902 │ 0.745805 │ 2.67568 │
+│ 7    │ 5.0    │ 3.71867 │ 0.743734 │ 2.62165 │
+│ 8    │ 5.0    │ 3.69761 │ 0.739521 │ 2.67204 │
+⋮
+│ 7992 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7993 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7994 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7995 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7996 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7997 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7998 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7999 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 8000 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │, 3.80731, "5 Experiments, 4 Factors")                                                                                                                     
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 6.0    │ 4.16001 │ 0.693335 │ 2.70436 │
+│ 2    │ 6.0    │ 4.13813 │ 0.689688 │ 2.701   │
+│ 3    │ 6.0    │ 4.13112 │ 0.68852  │ 2.70292 │
+│ 4    │ 6.0    │ 4.09413 │ 0.682355 │ 2.70082 │
+│ 5    │ 6.0    │ 4.08314 │ 0.680523 │ 2.69882 │
+│ 6    │ 6.0    │ 4.06455 │ 0.677425 │ 2.68032 │
+│ 7    │ 6.0    │ 4.04879 │ 0.674799 │ 2.69269 │
+│ 8    │ 6.0    │ 4.04402 │ 0.674003 │ 2.68666 │
+⋮
+│ 7992 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7993 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7994 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7995 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7996 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7997 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7998 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7999 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 8000 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │, 4.16001, "6 Experiments, 4 Factors")                                                                                                                     
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 12.0   │ 4.89218 │ 0.407682 │ 2.70749     │
+│ 2    │ 12.0   │ 4.88622 │ 0.407185 │ 2.70707     │
+│ 3    │ 12.0   │ 4.87187 │ 0.405989 │ 2.70607     │
+│ 4    │ 12.0   │ 4.8691  │ 0.405758 │ 2.70656     │
+│ 5    │ 12.0   │ 4.86581 │ 0.405484 │ 2.70524     │
+│ 6    │ 12.0   │ 4.86278 │ 0.405232 │ 2.70467     │
+│ 7    │ 12.0   │ 4.86272 │ 0.405226 │ 2.70548     │
+│ 8    │ 12.0   │ 4.86215 │ 0.405179 │ 2.70485     │
+⋮
+│ 7992 │ 12.0   │ 2.93831 │ 0.244859 │ 0.0207444   │
+│ 7993 │ 12.0   │ 2.93102 │ 0.244252 │ 0.0782585   │
+│ 7994 │ 12.0   │ 2.92368 │ 0.24364  │ 1.70825     │
+│ 7995 │ 12.0   │ 2.91922 │ 0.243269 │ 0.0253663   │
+│ 7996 │ 12.0   │ 2.90812 │ 0.242344 │ 0.000596084 │
+│ 7997 │ 12.0   │ 2.86405 │ 0.238671 │ 0.262595    │
+│ 7998 │ 12.0   │ 2.78552 │ 0.232127 │ 1.18351     │
+│ 7999 │ 12.0   │ 2.74673 │ 0.228894 │ 1.78442e-14 │
+│ 8000 │ 12.0   │ 2.74661 │ 0.228884 │ 3.18004e-9  │, 4.89218, "12 Experiments, 4 Factors")                                        
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 24.0   │ 5.69929 │ 0.237471 │ 2.70911 │
+│ 2    │ 24.0   │ 5.682   │ 0.23675  │ 2.70892 │
+│ 3    │ 24.0   │ 5.67853 │ 0.236605 │ 2.70833 │
+│ 4    │ 24.0   │ 5.67812 │ 0.236588 │ 2.70895 │
+│ 5    │ 24.0   │ 5.6721  │ 0.236338 │ 2.70815 │
+│ 6    │ 24.0   │ 5.67087 │ 0.236286 │ 2.70818 │
+│ 7    │ 24.0   │ 5.6692  │ 0.236217 │ 2.70793 │
+│ 8    │ 24.0   │ 5.66517 │ 0.236049 │ 2.70843 │
+⋮
+│ 7992 │ 24.0   │ 4.71842 │ 0.196601 │ 2.66399 │
+│ 7993 │ 24.0   │ 4.69688 │ 0.195703 │ 2.56082 │
+│ 7994 │ 24.0   │ 4.66368 │ 0.19432  │ 2.52342 │
+│ 7995 │ 24.0   │ 4.62813 │ 0.192839 │ 2.50825 │
+│ 7996 │ 24.0   │ 4.62669 │ 0.192779 │ 2.37252 │
+│ 7997 │ 24.0   │ 4.58179 │ 0.190908 │ 2.45215 │
+│ 7998 │ 24.0   │ 4.57792 │ 0.190747 │ 2.57361 │
+│ 7999 │ 24.0   │ 4.57719 │ 0.190716 │ 2.63946 │
+│ 8000 │ 24.0   │ 4.55306 │ 0.189711 │ 2.54298 │, 5.69929, "24 Experiments, 4 Factors")                                                                                                                    
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 48.0   │ 6.5625  │ 0.136719 │ 2.70963 │
+│ 2    │ 48.0   │ 6.56013 │ 0.136669 │ 2.70959 │
+│ 3    │ 48.0   │ 6.55907 │ 0.136647 │ 2.70932 │
+│ 4    │ 48.0   │ 6.55874 │ 0.13664  │ 2.70922 │
+│ 5    │ 48.0   │ 6.55732 │ 0.136611 │ 2.70924 │
+│ 6    │ 48.0   │ 6.55709 │ 0.136606 │ 2.70932 │
+│ 7    │ 48.0   │ 6.55692 │ 0.136602 │ 2.7095  │
+│ 8    │ 48.0   │ 6.55659 │ 0.136596 │ 2.70927 │
+⋮
+│ 7992 │ 48.0   │ 6.23293 │ 0.129853 │ 2.6926  │
+│ 7993 │ 48.0   │ 6.21947 │ 0.129572 │ 2.69084 │
+│ 7994 │ 48.0   │ 6.20912 │ 0.129357 │ 2.69493 │
+│ 7995 │ 48.0   │ 6.20779 │ 0.129329 │ 2.69984 │
+│ 7996 │ 48.0   │ 6.20537 │ 0.129278 │ 2.69123 │
+│ 7997 │ 48.0   │ 6.20273 │ 0.129224 │ 2.70278 │
+│ 7998 │ 48.0   │ 6.20156 │ 0.129199 │ 2.69508 │
+│ 7999 │ 48.0   │ 6.19856 │ 0.129137 │ 2.69482 │
+│ 8000 │ 48.0   │ 6.17287 │ 0.128601 │ 2.68824 │, 6.5625, "48 Experiments, 4 Factors")                                                                                                                     
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB      │ DELB_ad │
+├──────┼────────┼─────────┼───────────┼─────────┤
+│ 1    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 2    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 3    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 4    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 5    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 6    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 7    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+│ 8    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
+⋮
+│ 7992 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7993 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7994 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7995 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7996 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7997 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7998 │ 5.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 7999 │ 5.0    │ 0.0     │ 0.0       │ 0.0     │
+│ 8000 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │, 7.30037, "4 to 81 Experiments, 4 Factors")
 #+end_example
 
 Now plot it:
@@ -18535,7 +19169,12 @@ plot_subsets(sampled_subsets)
 
 #+RESULTS:
 : Created new window in existing browser session.
-***** Same Design Sizes for Doubling Factors of 3 Levels
+
+***** Same Design Sizes (1+) for Doubling Factors of 3 Levels    :ATTACH:
+:PROPERTIES:
+:Attachments: juliaxaMlbZ.html
+:ID:       b5631a3e-cd52-48c2-940d-263af99caed2
+:END:
 
 First generate the data:
 
@@ -18572,57 +19211,169 @@ Total Subsets: 2.4178516392292583e24
 Range of Design Sizes: 5:5
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Total Subsets for Fixed Size 5: 2.5621596e7
-Elapsed Time: 20.745976317 seconds
+Elapsed Time: 22.781761875 seconds
 Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
 Full Factorial Size: 6561
 Total Subsets: Inf
 Range of Design Sizes: 9:9
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Total Subsets for Fixed Size 9: NaN
-Elapsed Time: 27.669072319 seconds
+Elapsed Time: 25.151686509 seconds
 Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
 Full Factorial Size: 43046721
 Total Subsets: Inf
 Range of Design Sizes: 17:17
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Total Subsets for Fixed Size 17: NaN
-Elapsed Time: 40.721783303 seconds
+Elapsed Time: 32.111372223 seconds
 Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
 Full Factorial Size: 1853020188851841
 Total Subsets: Inf
 Range of Design Sizes: 33:33
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Total Subsets for Fixed Size 33: NaN
-Elapsed Time: 66.794823804 seconds
+Elapsed Time: 87.339160522 seconds
 Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
 Full Factorial Size: 8733086111712066817
 Total Subsets: Inf
 Range of Design Sizes: 65:65
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Total Subsets for Fixed Size 65: NaN
-Elapsed Time: 133.264120582 seconds
+Elapsed Time: 121.151787811 seconds
 Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
 Full Factorial Size: -9204772141784466943
 Total Subsets: 0.0
 Range of Design Sizes: 129:129
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-ERROR: DomainError:
-Stacktrace:
- [1] nan_dom_err at ./math.jl:300 [inlined]
- [2] gamma(::Float64) at ./special/gamma.jl:3
- [3] #generate_designs#111(::Bool, ::Function, ::Array{Array{Float64,1},1}, ::DataFrames.Formula, ::UnitRange{Int64}, ::Int64) at ./none:34
- [4] (::#kw##generate_designs)(::Array{Any,1}, ::#generate_designs, ::Array{Array{Float64,1},1}, ::DataFrames.Formula, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
- [5] macro expansion at ./util.jl:293 [inlined]
- [6] #sample_subset#112(::Bool, ::Function, ::Array{Array{Float64,1},1}, ::UnitRange{Int64}, ::Int64) at ./none:5
- [7] (::#kw##sample_subset)(::Array{Any,1}, ::#sample_subset, ::Array{Array{Float64,1},1}, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
- [8] #sample_subsets#118(::Bool, ::Function, ::Array{Array{Array{Float64,1},1},1}, ::Array{UnitRange{Int64},1}, ::Int64) at ./none:19
- [9] (::#kw##sample_subsets)(::Array{Any,1}, ::#sample_subsets, ::Array{Array{Array{Float64,1},1},1}, ::Array{UnitRange{Int64},1}, ::Int64) at ./<missing>:0
+Elapsed Time: 344.173834269 seconds
+6-element Array{Any,1}:
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 5.0    │ 4.0     │ 0.8      │ 2.57714 │
+│ 2    │ 5.0    │ 3.89806 │ 0.779612 │ 2.64097 │
+│ 3    │ 5.0    │ 3.79196 │ 0.758391 │ 2.65117 │
+│ 4    │ 5.0    │ 3.79196 │ 0.758391 │ 2.63939 │
+│ 5    │ 5.0    │ 3.79196 │ 0.758391 │ 2.45889 │
+│ 6    │ 5.0    │ 3.79196 │ 0.758391 │ 2.6382  │
+│ 7    │ 5.0    │ 3.6812  │ 0.73624  │ 2.6509  │
+│ 8    │ 5.0    │ 3.5652  │ 0.713041 │ 2.58423 │
+⋮
+│ 7992 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7993 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7994 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7995 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7996 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7997 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7998 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7999 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 8000 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │, 4.0, "5 Experiments, 4 Factors")                                                                                                       
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad    │
+├──────┼────────┼─────────┼──────────┼────────────┤
+│ 1    │ 9.0    │ 4.72165 │ 0.524628 │ 2.62768    │
+│ 2    │ 9.0    │ 4.58898 │ 0.509887 │ 0.00669857 │
+│ 3    │ 9.0    │ 4.58037 │ 0.50893  │ 2.3521     │
+│ 4    │ 9.0    │ 4.55638 │ 0.506264 │ 2.46422    │
+│ 5    │ 9.0    │ 4.50359 │ 0.500399 │ 1.89498    │
+│ 6    │ 9.0    │ 4.50244 │ 0.500271 │ 0.841883   │
+│ 7    │ 9.0    │ 4.50014 │ 0.500016 │ 2.41909    │
+│ 8    │ 9.0    │ 4.45332 │ 0.494813 │ 0.660161   │
+⋮
+│ 7992 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7993 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7994 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7995 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7996 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7997 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7998 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 7999 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │
+│ 8000 │ 9.0    │ 0.0     │ 0.0      │ 0.0        │, 4.72165, "9 Experiments, 8 Factors")                                          
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB      │ DELB_ad     │
+├──────┼────────┼─────────┼───────────┼─────────────┤
+│ 1    │ 17.0   │ 6.63537 │ 0.390316  │ 0.808302    │
+│ 2    │ 17.0   │ 6.50992 │ 0.382936  │ 2.67614e-12 │
+│ 3    │ 17.0   │ 6.49748 │ 0.382205  │ 0.00322526  │
+│ 4    │ 17.0   │ 6.4968  │ 0.382165  │ 1.04575     │
+│ 5    │ 17.0   │ 6.42014 │ 0.377655  │ 0.329298    │
+│ 6    │ 17.0   │ 6.36904 │ 0.37465   │ 2.30735     │
+│ 7    │ 17.0   │ 6.3458  │ 0.373282  │ 0.971649    │
+│ 8    │ 17.0   │ 6.29993 │ 0.370584  │ 1.15764     │
+⋮
+│ 7992 │ 17.0   │ 1.90557 │ 0.112092  │ 0.0         │
+│ 7993 │ 17.0   │ 1.84216 │ 0.108362  │ 0.0         │
+│ 7994 │ 17.0   │ 1.84095 │ 0.108291  │ 0.0         │
+│ 7995 │ 17.0   │ 1.79734 │ 0.105726  │ 0.0         │
+│ 7996 │ 17.0   │ 1.72308 │ 0.101358  │ 0.0         │
+│ 7997 │ 17.0   │ 1.71084 │ 0.100637  │ 0.0         │
+│ 7998 │ 17.0   │ 1.67453 │ 0.0985018 │ 0.0         │
+│ 7999 │ 17.0   │ 1.56493 │ 0.0920548 │ 0.0         │
+│ 8000 │ 17.0   │ 0.0     │ 0.0       │ 0.0         │, 6.63537, "17 Experiments, 16 Factors")  
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 33.0   │ 10.6316 │ 0.322171 │ 0.638725    │
+│ 2    │ 33.0   │ 10.5465 │ 0.319591 │ 2.15452     │
+│ 3    │ 33.0   │ 10.3725 │ 0.314317 │ 4.54039e-17 │
+│ 4    │ 33.0   │ 10.353  │ 0.313727 │ 0.109655    │
+│ 5    │ 33.0   │ 10.2936 │ 0.311929 │ 0.812352    │
+│ 6    │ 33.0   │ 10.2718 │ 0.311268 │ 1.75934     │
+│ 7    │ 33.0   │ 10.257  │ 0.310817 │ 0.107856    │
+│ 8    │ 33.0   │ 10.2526 │ 0.310685 │ 7.71402e-17 │
+⋮
+│ 7992 │ 33.0   │ 5.34046 │ 0.161832 │ 0.0         │
+│ 7993 │ 33.0   │ 5.29927 │ 0.160584 │ 0.0         │
+│ 7994 │ 33.0   │ 5.29118 │ 0.160339 │ 0.0         │
+│ 7995 │ 33.0   │ 5.28733 │ 0.160222 │ 0.0         │
+│ 7996 │ 33.0   │ 5.20379 │ 0.157691 │ 0.0         │
+│ 7997 │ 33.0   │ 5.17954 │ 0.156956 │ 0.0         │
+│ 7998 │ 33.0   │ 5.149   │ 0.15603  │ 0.0         │
+│ 7999 │ 33.0   │ 4.78103 │ 0.14488  │ 0.0         │
+│ 8000 │ 33.0   │ 4.37207 │ 0.132487 │ 0.0         │, 10.6316, "33 Experiments, 32 Factors")                     
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad      │
+├──────┼────────┼─────────┼──────────┼──────────────┤
+│ 1    │ 65.0   │ 18.5992 │ 0.286142 │ 1.24492      │
+│ 2    │ 65.0   │ 18.4906 │ 0.28447  │ 3.42334e-232 │
+│ 3    │ 65.0   │ 18.3835 │ 0.282822 │ 6.62457e-7   │
+│ 4    │ 65.0   │ 18.3142 │ 0.281757 │ 0.392451     │
+│ 5    │ 65.0   │ 18.3031 │ 0.281587 │ 0.446743     │
+│ 6    │ 65.0   │ 18.1103 │ 0.278621 │ 0.00609325   │
+│ 7    │ 65.0   │ 18.0748 │ 0.278073 │ 2.88711e-260 │
+│ 8    │ 65.0   │ 18.0571 │ 0.277801 │ 8.17999e-16  │
+⋮
+│ 7992 │ 65.0   │ 12.84   │ 0.197539 │ 0.0          │
+│ 7993 │ 65.0   │ 12.8049 │ 0.196999 │ 0.0          │
+│ 7994 │ 65.0   │ 12.7964 │ 0.196868 │ 0.0          │
+│ 7995 │ 65.0   │ 12.7568 │ 0.196258 │ 0.0          │
+│ 7996 │ 65.0   │ 12.7532 │ 0.196203 │ 0.0          │
+│ 7997 │ 65.0   │ 12.7168 │ 0.195644 │ 0.0          │
+│ 7998 │ 65.0   │ 12.6661 │ 0.194863 │ 0.0          │
+│ 7999 │ 65.0   │ 12.4861 │ 0.192094 │ 0.0          │
+│ 8000 │ 65.0   │ 12.2259 │ 0.188091 │ 0.0          │, 18.5992, "65 Experiments, 64 Factors")  
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad      │
+├──────┼────────┼─────────┼──────────┼──────────────┤
+│ 1    │ 129.0  │ 34.7063 │ 0.269041 │ 8.83395e-8   │
+│ 2    │ 129.0  │ 34.2328 │ 0.26537  │ 4.48119e-6   │
+│ 3    │ 129.0  │ 33.9477 │ 0.263161 │ 0.0          │
+│ 4    │ 129.0  │ 33.9444 │ 0.263135 │ 1.69787e-18  │
+│ 5    │ 129.0  │ 33.9431 │ 0.263125 │ 1.31273e-70  │
+│ 6    │ 129.0  │ 33.9302 │ 0.263025 │ 4.36205e-9   │
+│ 7    │ 129.0  │ 33.9152 │ 0.262909 │ 2.49017e-301 │
+│ 8    │ 129.0  │ 33.9139 │ 0.262899 │ 4.39307e-13  │
+⋮
+│ 7992 │ 129.0  │ 27.8011 │ 0.215513 │ 0.0          │
+│ 7993 │ 129.0  │ 27.7906 │ 0.215431 │ 0.0          │
+│ 7994 │ 129.0  │ 27.7459 │ 0.215085 │ 0.0          │
+│ 7995 │ 129.0  │ 27.6164 │ 0.214081 │ 0.0          │
+│ 7996 │ 129.0  │ 27.6005 │ 0.213957 │ 0.0          │
+│ 7997 │ 129.0  │ 27.5747 │ 0.213758 │ 0.0          │
+│ 7998 │ 129.0  │ 27.2669 │ 0.211372 │ 0.0          │
+│ 7999 │ 129.0  │ 27.001  │ 0.20931  │ 0.0          │
+│ 8000 │ 129.0  │ 26.9642 │ 0.209025 │ 0.0          │, 34.7063, "129 Experiments, 128 Factors")
 #+end_example
 
 Now plot it:
@@ -18634,3 +19385,229 @@ plot_subsets(sampled_subsets)
 
 #+RESULTS:
 : Created new window in existing browser session.
+***** Same Design Sizes (2+) for Doubling Factors of 3 Levels :ATTACH:
+:PROPERTIES:
+:Attachments: juliaB6Xk5j.html
+:ID:       e6b2926f-3329-4701-ab02-eaec76d3f45a
+:END:
+First generate the data:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = [[Array{Float64, 1}(1:3) for i = 1:k] for k in [4, 8, 16, 32, 64, 128]]
+ranges = [6:6, 10:10, 18:18, 34:34, 66:66, 130:130]
+designs = 8000
+
+sampled_subsets = sample_subsets(factors, ranges, designs, check_bounds = false)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+6-element Array{Array{Array{Float64,1},1},1}:
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]                                                                                                                                                                                                                                                                                   
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]                                                                                                                                                                                                               
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]                                                                       
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]  …  [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]  …  [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+ Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]  …  [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+6-element Array{UnitRange{Int64},1}:
+ 6:6    
+ 10:10  
+ 18:18  
+ 34:34  
+ 66:66  
+ 130:130
+8000
+
+ Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 81
+Total Subsets: 2.4178516392292583e24
+Range of Design Sizes: 6:6
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 18.707112313 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 6561
+Total Subsets: Inf
+Range of Design Sizes: 10:10
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.871870016 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 43046721
+Total Subsets: Inf
+Range of Design Sizes: 18:18
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 21.799537643 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 1853020188851841
+Total Subsets: Inf
+Range of Design Sizes: 34:34
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 50.17788733 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: 8733086111712066817
+Total Subsets: Inf
+Range of Design Sizes: 66:66
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 99.450346445 seconds
+Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+Full Factorial Size: -9204772141784466943
+Total Subsets: 0.0
+Range of Design Sizes: 130:130
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 300.37721438 seconds
+6-element Array{Any,1}:
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 6.0    │ 4.68205 │ 0.780342 │ 2.69661 │
+│ 2    │ 6.0    │ 4.63708 │ 0.772847 │ 2.66581 │
+│ 3    │ 6.0    │ 4.63708 │ 0.772847 │ 2.68181 │
+│ 4    │ 6.0    │ 4.60906 │ 0.768177 │ 2.68811 │
+│ 5    │ 6.0    │ 4.59479 │ 0.765799 │ 2.63503 │
+│ 6    │ 6.0    │ 4.58034 │ 0.763391 │ 2.6718  │
+│ 7    │ 6.0    │ 4.52828 │ 0.754714 │ 2.66898 │
+│ 8    │ 6.0    │ 4.52064 │ 0.753441 │ 2.63131 │
+⋮
+│ 7992 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7993 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7994 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7995 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7996 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7997 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7998 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 7999 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
+│ 8000 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │, 4.68205, "6 Experiments, 4 Factors")                                                                                
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 10.0   │ 5.71884 │ 0.571884 │ 2.65705 │
+│ 2    │ 10.0   │ 5.5905  │ 0.55905  │ 2.69334 │
+│ 3    │ 10.0   │ 5.50645 │ 0.550645 │ 2.66903 │
+│ 4    │ 10.0   │ 5.48557 │ 0.548557 │ 2.53323 │
+│ 5    │ 10.0   │ 5.38907 │ 0.538907 │ 2.62308 │
+│ 6    │ 10.0   │ 5.3741  │ 0.53741  │ 2.5309  │
+│ 7    │ 10.0   │ 5.3419  │ 0.53419  │ 2.2294  │
+│ 8    │ 10.0   │ 5.33227 │ 0.533227 │ 2.54569 │
+⋮
+│ 7992 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7993 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7994 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7995 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7996 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7997 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7998 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 7999 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │
+│ 8000 │ 10.0   │ 0.0     │ 0.0      │ 0.0     │, 5.71884, "10 Experiments, 8 Factors")                                                                               
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad │
+├──────┼────────┼─────────┼──────────┼─────────┤
+│ 1    │ 18.0   │ 7.9149  │ 0.439717 │ 2.60779 │
+│ 2    │ 18.0   │ 7.42469 │ 0.412483 │ 1.33929 │
+│ 3    │ 18.0   │ 7.38786 │ 0.410437 │ 1.72455 │
+│ 4    │ 18.0   │ 7.32382 │ 0.406879 │ 1.45821 │
+│ 5    │ 18.0   │ 7.25485 │ 0.403047 │ 1.51338 │
+│ 6    │ 18.0   │ 7.25082 │ 0.402823 │ 2.4972  │
+│ 7    │ 18.0   │ 7.249   │ 0.402722 │ 1.19845 │
+│ 8    │ 18.0   │ 7.24526 │ 0.402514 │ 2.44167 │
+⋮
+│ 7992 │ 18.0   │ 3.05307 │ 0.169615 │ 0.0     │
+│ 7993 │ 18.0   │ 3.04797 │ 0.169332 │ 0.0     │
+│ 7994 │ 18.0   │ 3.04588 │ 0.169215 │ 0.0     │
+│ 7995 │ 18.0   │ 3.03668 │ 0.168704 │ 0.0     │
+│ 7996 │ 18.0   │ 3.03312 │ 0.168506 │ 0.0     │
+│ 7997 │ 18.0   │ 3.01892 │ 0.167718 │ 0.0     │
+│ 7998 │ 18.0   │ 2.99044 │ 0.166136 │ 0.0     │
+│ 7999 │ 18.0   │ 2.89569 │ 0.160872 │ 0.0     │
+│ 8000 │ 18.0   │ 0.0     │ 0.0      │ 0.0     │, 7.9149, "18 Experiments, 16 Factors")                                                                               
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 34.0   │ 11.695  │ 0.343969 │ 2.13639     │
+│ 2    │ 34.0   │ 11.614  │ 0.341587 │ 1.2105      │
+│ 3    │ 34.0   │ 11.5699 │ 0.34029  │ 0.776928    │
+│ 4    │ 34.0   │ 11.5535 │ 0.33981  │ 2.30996     │
+│ 5    │ 34.0   │ 11.5517 │ 0.339756 │ 0.00118182  │
+│ 6    │ 34.0   │ 11.5422 │ 0.339478 │ 1.8153      │
+│ 7    │ 34.0   │ 11.4372 │ 0.336388 │ 1.95149     │
+│ 8    │ 34.0   │ 11.3602 │ 0.334125 │ 0.000840608 │
+⋮
+│ 7992 │ 34.0   │ 6.89449 │ 0.202779 │ 0.0         │
+│ 7993 │ 34.0   │ 6.88238 │ 0.202423 │ 0.0         │
+│ 7994 │ 34.0   │ 6.88175 │ 0.202405 │ 0.0         │
+│ 7995 │ 34.0   │ 6.85407 │ 0.20159  │ 0.0         │
+│ 7996 │ 34.0   │ 6.76054 │ 0.19884  │ 0.0         │
+│ 7997 │ 34.0   │ 6.67804 │ 0.196413 │ 0.0         │
+│ 7998 │ 34.0   │ 6.57763 │ 0.19346  │ 0.0         │
+│ 7999 │ 34.0   │ 6.40191 │ 0.188291 │ 0.0         │
+│ 8000 │ 34.0   │ 6.2982  │ 0.185241 │ 0.0         │, 11.695, "34 Experiments, 32 Factors")   
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 66.0   │ 20.4187 │ 0.309375 │ 0.713788    │
+│ 2    │ 66.0   │ 19.7291 │ 0.298926 │ 2.0792      │
+│ 3    │ 66.0   │ 19.5276 │ 0.295872 │ 1.26528e-34 │
+│ 4    │ 66.0   │ 19.3939 │ 0.293848 │ 2.14599e-9  │
+│ 5    │ 66.0   │ 19.3708 │ 0.293497 │ 0.0354795   │
+│ 6    │ 66.0   │ 19.3341 │ 0.292941 │ 1.0342      │
+│ 7    │ 66.0   │ 19.2912 │ 0.292291 │ 1.60405     │
+│ 8    │ 66.0   │ 19.2186 │ 0.291191 │ 0.525366    │
+⋮
+│ 7992 │ 66.0   │ 14.764  │ 0.223697 │ 0.0         │
+│ 7993 │ 66.0   │ 14.7337 │ 0.223238 │ 0.0         │
+│ 7994 │ 66.0   │ 14.7148 │ 0.222952 │ 0.0         │
+│ 7995 │ 66.0   │ 14.685  │ 0.2225   │ 0.0         │
+│ 7996 │ 66.0   │ 14.6511 │ 0.221986 │ 0.0         │
+│ 7997 │ 66.0   │ 14.6227 │ 0.221556 │ 0.0         │
+│ 7998 │ 66.0   │ 14.5925 │ 0.221099 │ 0.0         │
+│ 7999 │ 66.0   │ 14.4777 │ 0.219359 │ 0.0         │
+│ 8000 │ 66.0   │ 14.2924 │ 0.216551 │ 0.0         │, 20.4187, "66 Experiments, 64 Factors")  
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 130.0  │ 35.5055 │ 0.273119 │ 3.90157e-5  │
+│ 2    │ 130.0  │ 35.3876 │ 0.272212 │ 3.62187e-5  │
+│ 3    │ 130.0  │ 35.3281 │ 0.271755 │ 0.00213236  │
+│ 4    │ 130.0  │ 35.2031 │ 0.270793 │ 1.74574     │
+│ 5    │ 130.0  │ 35.1961 │ 0.270739 │ 2.97653e-10 │
+│ 6    │ 130.0  │ 35.1401 │ 0.270308 │ 4.19771e-8  │
+│ 7    │ 130.0  │ 35.0709 │ 0.269776 │ 5.96611e-47 │
+│ 8    │ 130.0  │ 35.0639 │ 0.269722 │ 0.00013319  │
+⋮
+│ 7992 │ 130.0  │ 30.3027 │ 0.233098 │ 0.0         │
+│ 7993 │ 130.0  │ 30.2706 │ 0.232851 │ 0.0         │
+│ 7994 │ 130.0  │ 30.267  │ 0.232823 │ 0.0         │
+│ 7995 │ 130.0  │ 30.226  │ 0.232508 │ 0.0         │
+│ 7996 │ 130.0  │ 30.208  │ 0.232369 │ 0.0         │
+│ 7997 │ 130.0  │ 30.0921 │ 0.231478 │ 0.0         │
+│ 7998 │ 130.0  │ 30.0404 │ 0.23108  │ 0.0         │
+│ 7999 │ 130.0  │ 29.9759 │ 0.230584 │ 0.0         │
+│ 8000 │ 130.0  │ 29.582  │ 0.227554 │ 0.0         │, 35.5055, "130 Experiments, 128 Factors")
+#+end_example
+
+Now plot it:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_subsets(sampled_subsets)
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+**** Understanding D-Efficiency: The Box and Draper Encoding      :ATTACH:
+:PROPERTIES:
+:Attachments: box2007response.pdf
+:ID:       c8cb30f5-a404-4ea8-bb9e-90bd726c00a0
+:END:
+
+Box and Draper's 2007 edition of "Response Surfaces, Mixtures and Ridge
+Analyses" is a very clear book which explains the encoding used in the
+computation of the D-Efficiency metric used in the DETMAX paper and Castillo's
+book (See attachment in [[From DETMAX, SAS, and Castillo's Book]]). I am currently
+reading Chapter 14, Variance Optimal Designs, where the book describes D-Optimal
+designs and the encoding used. The intuition is that this metric compares
