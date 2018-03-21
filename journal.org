@@ -8075,32 +8075,49 @@ df
 
 #+RESULTS:
 #+begin_example
+Loading required package: DoE.base
+Loading required package: grid
+Loading required package: conf.design
+
+Attaching package: ‘DoE.base’
+
+The following objects are masked from ‘package:stats’:
+
+    aov, lm
+
+The following object is masked from ‘package:graphics’:
+
+    plot.design
+
+The following object is masked from ‘package:base’:
+
+    lengths
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T
-1  -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1
-2  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-3   1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1
-4  -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1
-5   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1
-6  -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1
-7   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1
-8  -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1
-9   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1
-10  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1
-11  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1
-12 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1
-13 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1
-14 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1
-15  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1
-16  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1
-17 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1
-18  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1
-19  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1
-20 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1
+1   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1
+2   1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1
+3   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1
+4   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1
+5  -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1
+6   1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1
+7   1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1
+8  -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1
+9   1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1
+10 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1
+11 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1
+12 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1
+13 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1
+14  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1
+15  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1
+16 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1
+17 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+18 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1
+19  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1
+20 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1
 class=design, type= pb
 #+end_example
 
 #+begin_src R :results output :session *R* :exports both
-df$Response = as.numeric(df$A) * 10 + as.numeric(df$K) * 20 +
+df$Response = as.numeric(df$S) * 10 + as.numeric(df$T) * 20 +
 rnorm(length(df$A))
 
 df
@@ -8109,66 +8126,88 @@ df
 #+RESULTS:
 #+begin_example
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T Response
-1  -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 30.25367
-2  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 29.82534
-3   1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1 60.25237
-4  -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 30.23092
-5   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1 59.67246
-6  -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 50.49005
-7   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1 59.89293
-8  -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 48.87047
-9   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1 39.00359
-10  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1 58.99971
-11  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1 39.69902
-12 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 48.93797
-13 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 48.96195
-14 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 49.80587
-15  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1 40.03233
-16  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1 40.75935
-17 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 31.97930
-18  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1 39.11118
-19  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1 59.74408
-20 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 29.74950
+1   1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1 32.28862
+2   1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1 60.22126
+3   1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1 49.57405
+4   1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1 40.38103
+5  -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 59.65818
+6   1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1 50.02696
+7   1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1 39.02083
+8  -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 39.46287
+9   1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1 61.32479
+10 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 29.56344
+11 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 51.05901
+12 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 59.88701
+13 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 30.41986
+14  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1 29.93039
+15  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1 40.26708
+16 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 40.42102
+17 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 28.66051
+18 -1  1 -1 -1 -1 -1  1  1 -1  1  1 -1 -1  1  1  1  1 -1  1 49.47242
+19  1 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1 49.67567
+20 -1  1  1 -1 -1  1  1  1  1 -1  1 -1  1 -1 -1 -1 -1  1  1 59.67977
 class=design, type= pb
 #+end_example
 
 #+begin_src R :results output :session *R* :exports both
-reg = lm(data = df, Response ~ .)
+reg = aov(data = df, Response ~ .)
 
 summary(reg)
+
+summary.lm(reg)
 #+end_src
 
 #+RESULTS:
 #+begin_example
+            Df Sum Sq Mean Sq
+A            1    1.0     1.0
+B            1    0.6     0.6
+C            1    1.9     1.9
+D            1    0.6     0.6
+E            1    2.1     2.1
+F            1    0.8     0.8
+G            1    0.8     0.8
+H            1    0.3     0.3
+J            1    0.2     0.2
+K            1    0.4     0.4
+L            1    0.8     0.8
+M            1    0.1     0.1
+N            1    0.9     0.9
+O            1    0.6     0.6
+P            1    0.4     0.4
+Q            1    0.7     0.7
+R            1    0.6     0.6
+S            1  496.5   496.5
+T            1 2003.3  2003.3
 
 Call:
-lm.default(formula = Response ~ ., data = df)
+aov.default(formula = Response ~ ., data = df)
 
 Residuals:
 ALL 20 residuals are 0: no residual degrees of freedom!
 
 Coefficients:
-             Estimate Std. Error t value Pr(>|t|)
-(Intercept) 44.813601         NA      NA       NA
-A1           4.903099         NA      NA       NA
-B1          -0.050754         NA      NA       NA
-C1           0.035971         NA      NA       NA
-D1           0.258685         NA      NA       NA
-E1          -0.001708         NA      NA       NA
-F1           0.018693         NA      NA       NA
-G1           0.292801         NA      NA       NA
-H1          -0.052042         NA      NA       NA
-J1           0.319897         NA      NA       NA
-K1           9.749184         NA      NA       NA
-L1          -0.152393         NA      NA       NA
-M1          -0.093988         NA      NA       NA
-N1          -0.015386         NA      NA       NA
-O1          -0.011397         NA      NA       NA
-P1          -0.035026         NA      NA       NA
-Q1          -0.257190         NA      NA       NA
-R1           0.273815         NA      NA       NA
-S1          -0.005305         NA      NA       NA
-T1          -0.188695         NA      NA       NA
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept) 45.04974         NA      NA       NA
+A1           0.22133         NA      NA       NA
+B1           0.16946         NA      NA       NA
+C1          -0.30622         NA      NA       NA
+D1           0.17416         NA      NA       NA
+E1           0.32443         NA      NA       NA
+F1           0.20419         NA      NA       NA
+G1          -0.19731         NA      NA       NA
+H1           0.13184         NA      NA       NA
+J1           0.10615         NA      NA       NA
+K1           0.13372         NA      NA       NA
+L1           0.19416         NA      NA       NA
+M1           0.06005         NA      NA       NA
+N1           0.21654         NA      NA       NA
+O1           0.17570         NA      NA       NA
+P1           0.14227         NA      NA       NA
+Q1          -0.18196         NA      NA       NA
+R1          -0.17010         NA      NA       NA
+S1           4.98265         NA      NA       NA
+T1          10.00817         NA      NA       NA
 
 Residual standard error: NaN on 0 degrees of freedom
 Multiple R-squared:      1,	Adjusted R-squared:    NaN 
@@ -8180,17 +8219,24 @@ MEPlot(reg)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-1900fOu/figure1900kJV.png]]
+[[file:/tmp/babel-16183psm/figure16183i7v.png]]
 
 
 
 #+begin_src R :results output :session *R* :exports both
 #reg=lm(data=df[-c(6,18,15),], Response ~ .)
+library(AlgDesign)
+
 df2 = df
-df2[c(6,13,25), ]$Response = NA;
+df2[c(4, 8, 3), ]$Response = NA;
 reg = lm(data = df2, Response ~ .)
 
 summary(reg)
+
+summary.lm(reg)
+
+eval.design(~., df)
+
 #+end_src
 
 #+RESULTS:
@@ -8200,35 +8246,70 @@ Call:
 lm.default(formula = Response ~ ., data = df2)
 
 Residuals:
-ALL 18 residuals are 0: no residual degrees of freedom!
+ALL 17 residuals are 0: no residual degrees of freedom!
 
-Coefficients: (2 not defined because of singularities)
-             Estimate Std. Error t value Pr(>|t|)
-(Intercept) 44.808297         NA      NA       NA
-A1           4.908404         NA      NA       NA
-B1           0.137942         NA      NA       NA
-C1          -0.152725         NA      NA       NA
-D1           0.069990         NA      NA       NA
-E1           0.003597         NA      NA       NA
-F1          -0.170003         NA      NA       NA
-G1           0.287497         NA      NA       NA
-H1           0.136653         NA      NA       NA
-J1           0.325202         NA      NA       NA
-K1           9.743879         NA      NA       NA
-L1          -0.157697         NA      NA       NA
-M1          -0.282683         NA      NA       NA
-N1          -0.204081         NA      NA       NA
-O1           0.177298         NA      NA       NA
-P1          -0.040330         NA      NA       NA
-Q1          -0.068495         NA      NA       NA
-R1           0.268510         NA      NA       NA
-S1                 NA         NA      NA       NA
-T1                 NA         NA      NA       NA
+Coefficients: (3 not defined because of singularities)
+              Estimate Std. Error t value Pr(>|t|)
+(Intercept)  55.091336         NA      NA       NA
+A1            0.397027         NA      NA       NA
+B1           10.211057         NA      NA       NA
+C1           -0.448498         NA      NA       NA
+D1           -0.001541         NA      NA       NA
+E1           10.366028         NA      NA       NA
+F1            0.346468         NA      NA       NA
+G1            9.844290         NA      NA       NA
+H1            0.274112         NA      NA       NA
+J1           -0.069551         NA      NA       NA
+K1            0.275992         NA      NA       NA
+L1           -9.847439         NA      NA       NA
+M1            0.235748         NA      NA       NA
+N1           -9.791632         NA      NA       NA
+O1                  NA         NA      NA       NA
+P1                  NA         NA      NA       NA
+Q1          -10.190132         NA      NA       NA
+R1            9.838074         NA      NA       NA
+S1           14.990819         NA      NA       NA
+T1                  NA         NA      NA       NA
 
 Residual standard error: NaN on 0 degrees of freedom
-  (7 observations deleted due to missingness)
+  (3 observations deleted due to missingness)
 Multiple R-squared:      1,	Adjusted R-squared:    NaN 
-F-statistic:   NaN on 17 and 0 DF,  p-value: NA
+F-statistic:   NaN on 16 and 0 DF,  p-value: NA
+
+Call:
+lm.default(formula = Response ~ ., data = df2)
+
+Residuals:
+ALL 17 residuals are 0: no residual degrees of freedom!
+
+Coefficients: (3 not defined because of singularities)
+              Estimate Std. Error t value Pr(>|t|)
+(Intercept)  55.091336         NA      NA       NA
+A1            0.397027         NA      NA       NA
+B1           10.211057         NA      NA       NA
+C1           -0.448498         NA      NA       NA
+D1           -0.001541         NA      NA       NA
+E1           10.366028         NA      NA       NA
+F1            0.346468         NA      NA       NA
+G1            9.844290         NA      NA       NA
+H1            0.274112         NA      NA       NA
+J1           -0.069551         NA      NA       NA
+K1            0.275992         NA      NA       NA
+L1           -9.847439         NA      NA       NA
+M1            0.235748         NA      NA       NA
+N1           -9.791632         NA      NA       NA
+O1                  NA         NA      NA       NA
+P1                  NA         NA      NA       NA
+Q1          -10.190132         NA      NA       NA
+R1            9.838074         NA      NA       NA
+S1           14.990819         NA      NA       NA
+T1                  NA         NA      NA       NA
+
+Residual standard error: NaN on 0 degrees of freedom
+  (3 observations deleted due to missingness)
+Multiple R-squared:      1,	Adjusted R-squared:    NaN 
+F-statistic:   NaN on 16 and 0 DF,  p-value: NA
+Error in eval.design(~., df) : Singular design
 #+end_example
 
 #+begin_src R :results output graphics :file (org-babel-temp-file"figure" ".png") :exports both :width 600 :height 400 :session *R*
@@ -18895,7 +18976,14 @@ WARNING: rmprocs: process 1 not removed
  2
  3
 
-
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/DataFrames.ji for module DataFrames.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/PlotThemes.ji for module PlotThemes.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/Plots.ji for module Plots.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/Distributions.ji for module Distributions.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/TableTraits.ji for module TableTraits.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/IterableTables.ji for module IterableTables.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/TableTraitsUtils.ji for module TableTraitsUtils.
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/KernelDensity.ji for module KernelDensity.
 
 build_linear_formula (generic function with 1 method)
 
@@ -18934,6 +19022,8 @@ sample_subset (generic function with 1 method)
 
 sample_subsets (generic function with 1 method)
 
+check_zero (generic function with 2 methods)
+
 plot_subsets (generic function with 1 method)
 #+end_example
 
@@ -18948,229 +19038,48 @@ First generate the data:
 #+HEADER: :tangle doe_utils/dopt_example.jl
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-ranges = [4:4, 5:5, 6:6, 12:12, 24:24, 48:48, 4:3 ^ 4]
-factors = [[Array{Float64, 1}(1:3) for i = 1:4] for k in 1:length(ranges)]
-designs = 100
+ranges = [4:4, 5:5, 6:6, 12:12, 16:16]
+factors = [[Array{Float64, 1}(1:2) for i = 1:k] for k in 1:length(ranges)]
+designs = 8000
 
 sampled_subsets = sample_subsets(factors, ranges, designs, scale = scale_box_encoding!)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-7-element Array{UnitRange{Int64},1}:
+6-element Array{UnitRange{Int64},1}:
  4:4  
  5:5  
  6:6  
  12:12
- 24:24
- 48:48
- 4:81
-7-element Array{Array{Array{Float64,1},1},1}:
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
- Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+ 16:16
+ 4:16
+6-element Array{Array{Array{Float64,1},1},1}:
+ Array{Float64,1}[[1.0, 2.0]]                                                            
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0]]                                                
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]                                    
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]                        
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]            
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
 8000
 
- Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
+ Factors: Array{Float64,1}[[1.0, 2.0]]
+Full Factorial Size: 2
+Total Subsets: 4.0
 Range of Design Sizes: 4:4
 Number of Design to Sample: 8000
-Total Subsets for Fixed Size 4: 1.66374e6
-Elapsed Time: 20.36678581 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 5:5
-Number of Design to Sample: 8000
-Total Subsets for Fixed Size 5: 2.5621596e7
-Elapsed Time: 18.927762688 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 6:6
-Number of Design to Sample: 8000
-Total Subsets for Fixed Size 6: 3.24540216e8
-Elapsed Time: 18.873806433 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 12:12
-Number of Design to Sample: 8000
-Total Subsets for Fixed Size 12: 7.072432018469998e13
-Elapsed Time: 18.877561442 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 24:24
-Number of Design to Sample: 8000
-Total Subsets for Fixed Size 24: 2.305491245366683e20
-Elapsed Time: 19.17169629 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 48:48
-Number of Design to Sample: 8000
-Total Subsets for Fixed Size 48: 5.3779686508403226e22
-Elapsed Time: 20.649663899 seconds
-Factors: Array{Float64,1}[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
-Full Factorial Size: 81
-Total Subsets: 2.4178516392292583e24
-Range of Design Sizes: 4:81
-Number of Design to Sample: 8000
-Elapsed Time: 21.768217597 seconds
-7-element Array{Any,1}:
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D          │ DELB        │ DELB_ad │
-├──────┼────────┼────────────┼─────────────┼─────────┤
-│ 1    │ 4.0    │ 0.00279486 │ 0.000698715 │ 0.0     │
-│ 2    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
-│ 3    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
-│ 4    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
-│ 5    │ 4.0    │ 0.00274107 │ 0.000685268 │ 0.0     │
-│ 6    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
-│ 7    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
-│ 8    │ 4.0    │ 0.00272979 │ 0.000682448 │ 0.0     │
-⋮
-│ 7992 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7993 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7994 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7995 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7996 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7997 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7998 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 7999 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │
-│ 8000 │ 4.0    │ 0.0        │ 0.0         │ 0.0     │, 0.00279486, "4 Experiments, 4 Factors")
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad │
-├──────┼────────┼─────────┼──────────┼─────────┤
-│ 1    │ 5.0    │ 3.80731 │ 0.761462 │ 2.66666 │
-│ 2    │ 5.0    │ 3.77635 │ 0.75527  │ 2.67083 │
-│ 3    │ 5.0    │ 3.77635 │ 0.75527  │ 2.68122 │
-│ 4    │ 5.0    │ 3.76698 │ 0.753396 │ 2.69319 │
-│ 5    │ 5.0    │ 3.72902 │ 0.745805 │ 2.66793 │
-│ 6    │ 5.0    │ 3.72902 │ 0.745805 │ 2.67568 │
-│ 7    │ 5.0    │ 3.71867 │ 0.743734 │ 2.62165 │
-│ 8    │ 5.0    │ 3.69761 │ 0.739521 │ 2.67204 │
-⋮
-│ 7992 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7993 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7994 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7995 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7996 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7997 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7998 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7999 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 8000 │ 5.0    │ 0.0     │ 0.0      │ 0.0     │, 3.80731, "5 Experiments, 4 Factors")                                                                                                                     
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad │
-├──────┼────────┼─────────┼──────────┼─────────┤
-│ 1    │ 6.0    │ 4.16001 │ 0.693335 │ 2.70436 │
-│ 2    │ 6.0    │ 4.13813 │ 0.689688 │ 2.701   │
-│ 3    │ 6.0    │ 4.13112 │ 0.68852  │ 2.70292 │
-│ 4    │ 6.0    │ 4.09413 │ 0.682355 │ 2.70082 │
-│ 5    │ 6.0    │ 4.08314 │ 0.680523 │ 2.69882 │
-│ 6    │ 6.0    │ 4.06455 │ 0.677425 │ 2.68032 │
-│ 7    │ 6.0    │ 4.04879 │ 0.674799 │ 2.69269 │
-│ 8    │ 6.0    │ 4.04402 │ 0.674003 │ 2.68666 │
-⋮
-│ 7992 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7993 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7994 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7995 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7996 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7997 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7998 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 7999 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │
-│ 8000 │ 6.0    │ 0.0     │ 0.0      │ 0.0     │, 4.16001, "6 Experiments, 4 Factors")                                                                                                                     
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
-├──────┼────────┼─────────┼──────────┼─────────────┤
-│ 1    │ 12.0   │ 4.89218 │ 0.407682 │ 2.70749     │
-│ 2    │ 12.0   │ 4.88622 │ 0.407185 │ 2.70707     │
-│ 3    │ 12.0   │ 4.87187 │ 0.405989 │ 2.70607     │
-│ 4    │ 12.0   │ 4.8691  │ 0.405758 │ 2.70656     │
-│ 5    │ 12.0   │ 4.86581 │ 0.405484 │ 2.70524     │
-│ 6    │ 12.0   │ 4.86278 │ 0.405232 │ 2.70467     │
-│ 7    │ 12.0   │ 4.86272 │ 0.405226 │ 2.70548     │
-│ 8    │ 12.0   │ 4.86215 │ 0.405179 │ 2.70485     │
-⋮
-│ 7992 │ 12.0   │ 2.93831 │ 0.244859 │ 0.0207444   │
-│ 7993 │ 12.0   │ 2.93102 │ 0.244252 │ 0.0782585   │
-│ 7994 │ 12.0   │ 2.92368 │ 0.24364  │ 1.70825     │
-│ 7995 │ 12.0   │ 2.91922 │ 0.243269 │ 0.0253663   │
-│ 7996 │ 12.0   │ 2.90812 │ 0.242344 │ 0.000596084 │
-│ 7997 │ 12.0   │ 2.86405 │ 0.238671 │ 0.262595    │
-│ 7998 │ 12.0   │ 2.78552 │ 0.232127 │ 1.18351     │
-│ 7999 │ 12.0   │ 2.74673 │ 0.228894 │ 1.78442e-14 │
-│ 8000 │ 12.0   │ 2.74661 │ 0.228884 │ 3.18004e-9  │, 4.89218, "12 Experiments, 4 Factors")                                        
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad │
-├──────┼────────┼─────────┼──────────┼─────────┤
-│ 1    │ 24.0   │ 5.69929 │ 0.237471 │ 2.70911 │
-│ 2    │ 24.0   │ 5.682   │ 0.23675  │ 2.70892 │
-│ 3    │ 24.0   │ 5.67853 │ 0.236605 │ 2.70833 │
-│ 4    │ 24.0   │ 5.67812 │ 0.236588 │ 2.70895 │
-│ 5    │ 24.0   │ 5.6721  │ 0.236338 │ 2.70815 │
-│ 6    │ 24.0   │ 5.67087 │ 0.236286 │ 2.70818 │
-│ 7    │ 24.0   │ 5.6692  │ 0.236217 │ 2.70793 │
-│ 8    │ 24.0   │ 5.66517 │ 0.236049 │ 2.70843 │
-⋮
-│ 7992 │ 24.0   │ 4.71842 │ 0.196601 │ 2.66399 │
-│ 7993 │ 24.0   │ 4.69688 │ 0.195703 │ 2.56082 │
-│ 7994 │ 24.0   │ 4.66368 │ 0.19432  │ 2.52342 │
-│ 7995 │ 24.0   │ 4.62813 │ 0.192839 │ 2.50825 │
-│ 7996 │ 24.0   │ 4.62669 │ 0.192779 │ 2.37252 │
-│ 7997 │ 24.0   │ 4.58179 │ 0.190908 │ 2.45215 │
-│ 7998 │ 24.0   │ 4.57792 │ 0.190747 │ 2.57361 │
-│ 7999 │ 24.0   │ 4.57719 │ 0.190716 │ 2.63946 │
-│ 8000 │ 24.0   │ 4.55306 │ 0.189711 │ 2.54298 │, 5.69929, "24 Experiments, 4 Factors")                                                                                                                    
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad │
-├──────┼────────┼─────────┼──────────┼─────────┤
-│ 1    │ 48.0   │ 6.5625  │ 0.136719 │ 2.70963 │
-│ 2    │ 48.0   │ 6.56013 │ 0.136669 │ 2.70959 │
-│ 3    │ 48.0   │ 6.55907 │ 0.136647 │ 2.70932 │
-│ 4    │ 48.0   │ 6.55874 │ 0.13664  │ 2.70922 │
-│ 5    │ 48.0   │ 6.55732 │ 0.136611 │ 2.70924 │
-│ 6    │ 48.0   │ 6.55709 │ 0.136606 │ 2.70932 │
-│ 7    │ 48.0   │ 6.55692 │ 0.136602 │ 2.7095  │
-│ 8    │ 48.0   │ 6.55659 │ 0.136596 │ 2.70927 │
-⋮
-│ 7992 │ 48.0   │ 6.23293 │ 0.129853 │ 2.6926  │
-│ 7993 │ 48.0   │ 6.21947 │ 0.129572 │ 2.69084 │
-│ 7994 │ 48.0   │ 6.20912 │ 0.129357 │ 2.69493 │
-│ 7995 │ 48.0   │ 6.20779 │ 0.129329 │ 2.69984 │
-│ 7996 │ 48.0   │ 6.20537 │ 0.129278 │ 2.69123 │
-│ 7997 │ 48.0   │ 6.20273 │ 0.129224 │ 2.70278 │
-│ 7998 │ 48.0   │ 6.20156 │ 0.129199 │ 2.69508 │
-│ 7999 │ 48.0   │ 6.19856 │ 0.129137 │ 2.69482 │
-│ 8000 │ 48.0   │ 6.17287 │ 0.128601 │ 2.68824 │, 6.5625, "48 Experiments, 4 Factors")                                                                                                                     
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB      │ DELB_ad │
-├──────┼────────┼─────────┼───────────┼─────────┤
-│ 1    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 2    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 3    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 4    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 5    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 6    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 7    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-│ 8    │ 81.0   │ 7.30037 │ 0.0901281 │ 2.7098  │
-⋮
-│ 7992 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7993 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7994 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7995 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7996 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7997 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7998 │ 5.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 7999 │ 5.0    │ 0.0     │ 0.0       │ 0.0     │
-│ 8000 │ 4.0    │ 0.0     │ 0.0       │ 0.0     │, 7.30037, "4 to 81 Experiments, 4 Factors")
+Requested too many designs, using 4.0 instead
+Requested too many maximum experiments, using 2 instead
+ERROR: ArgumentError: range must be non-empty
+Stacktrace:
+ [1] Base.Random.RangeGenerator(::UnitRange{Int64}) at ./random.jl:578
+ [2] #generate_designs#14(::Bool, ::Function, ::Bool, ::Function, ::Array{Array{Float64,1},1}, ::DataFrames.Formula, ::UnitRange{Int64}, ::Int64) at ./none:67
+ [3] (::#kw##generate_designs)(::Array{Any,1}, ::#generate_designs, ::Array{Array{Float64,1},1}, ::DataFrames.Formula, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
+ [4] macro expansion at ./util.jl:293 [inlined]
+ [5] #sample_subset#15(::Bool, ::Function, ::Function, ::Array{Array{Float64,1},1}, ::UnitRange{Int64}, ::Int64) at ./none:9
+ [6] (::#kw##sample_subset)(::Array{Any,1}, ::#sample_subset, ::Array{Array{Float64,1},1}, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
+ [7] #sample_subsets#16(::Bool, ::Function, ::Bool, ::Function, ::Array{Array{Array{Float64,1},1},1}, ::Array{UnitRange{Int64},1}, ::Int64) at ./none:21
+ [8] (::#kw##sample_subsets)(::Array{Any,1}, ::#sample_subsets, ::Array{Array{Array{Float64,1},1},1}, ::Array{UnitRange{Int64},1}, ::Int64) at ./<missing>:0
 #+end_example
 
 Now plot it:
@@ -19182,6 +19091,7 @@ plot_subsets(sampled_subsets)
 #+END_SRC
 
 #+RESULTS:
+: INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/JSON.ji for module JSON.
 : Created new window in existing browser session.
 
 ***** Same Design Sizes (1+) for Doubling Factors of 3 Levels    :ATTACH:
@@ -20118,6 +20028,9 @@ plot_subsets(sampled_subsets)
 #+RESULTS:
 : Created new window in existing browser session.
 ***** Design Size Range for 2 Level Design                       :ATTACH:
+:PROPERTIES:
+:ID:       571714ae-fac9-4e53-abbb-409b2e822d66
+:END:
 First generate the data:
 
 #+HEADER: :results output :session *Julia*
@@ -20125,10 +20038,10 @@ First generate the data:
 factors = [
            [
             [1.0, 2.0] for j = 1:15
-           ] for i = 1:6
+           ] for i = 1:10
           ]
 #factors = [[Array{Float64, 1}(1:3) for i = 1:k] for k in [4, 8, 16, 32, 64, 128]]
-ranges = [15:15, 16:16, 15:30, 30:60, 60:120, 15:120]
+ranges = [4:4, 5:5, 6:6, 7:7, 8:8, 13:13, 14:14, 15:15, 16:16, 17:17]
 designs = 8000
 
 sampled_subsets = sample_subsets(factors, ranges, designs, check_bounds = false, scale = scale_box_encoding!)
@@ -20136,68 +20049,260 @@ sampled_subsets = sample_subsets(factors, ranges, designs, check_bounds = false,
 
 #+RESULTS:
 #+begin_example
-5-element Array{Array{Array{Float64,1},1},1}:
+10-element Array{Array{Array{Float64,1},1},1}:
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+ Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
  Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
  Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
  Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
  Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
  Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
 
-5-element Array{UnitRange{Int64},1}:
- 15:15 
- 15:30 
- 30:60 
- 60:120
- 15:120
+10-element Array{UnitRange{Int64},1}:
+ 4:4  
+ 5:5  
+ 6:6  
+ 7:7  
+ 8:8  
+ 13:13
+ 14:14
+ 15:15
+ 16:16
+ 17:17
 8000
 
  Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
 Full Factorial Size: 32768
 Total Subsets: Inf
+Range of Design Sizes: 4:4
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 18.990819813 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 5:5
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.313746283 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 6:6
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.569691273 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 7:7
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.829456196 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 8:8
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.677585781 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 13:13
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 20.070915543 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 14:14
+Number of Design to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.986090864 seconds
+Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
+Full Factorial Size: 32768
+Total Subsets: Inf
 Range of Design Sizes: 15:15
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 24.955672386 seconds
+Elapsed Time: 20.000066346 seconds
 Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
 Full Factorial Size: 32768
 Total Subsets: Inf
-Range of Design Sizes: 15:30
+Range of Design Sizes: 16:16
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 23.400009175 seconds
+Elapsed Time: 19.808623101 seconds
 Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
 Full Factorial Size: 32768
 Total Subsets: Inf
-Range of Design Sizes: 30:60
+Range of Design Sizes: 17:17
 Number of Design to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 36.848844902 seconds
-Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
-Full Factorial Size: 32768
-Total Subsets: Inf
-Range of Design Sizes: 60:120
-Number of Design to Sample: 8000
-WARNING: Skipping bounds check!
-Elapsed Time: 30.064927685 seconds
-Factors: Array{Float64,1}[[1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0], [1.0, 2.0]]
-Full Factorial Size: 32768
-Total Subsets: Inf
-Range of Design Sizes: 15:120
-Number of Design to Sample: 8000
-WARNING: Skipping bounds check!
-Elapsed Time: 39.540852107 seconds
-5-element Array{Any,1}:
+Elapsed Time: 20.088880863 seconds
+10-element Array{Any,1}:
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D   │ DELB │ DELB_ad │
+├──────┼────────┼─────┼──────┼─────────┤
+│ 1    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 2    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 3    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 4    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 5    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 6    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 8    │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+⋮
+│ 7992 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7993 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7994 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7995 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7996 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7997 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7998 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 7999 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │
+│ 8000 │ 4.0    │ 0.0 │ 0.0  │ 0.0     │, 0.0, "4 Experiments, 15 Factors")                                                                                                                                                                                                                                                                                                     
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D           │ DELB        │ DELB_ad │
+├──────┼────────┼─────────────┼─────────────┼─────────┤
+│ 1    │ 5.0    │ 6.42532e-11 │ 1.28506e-11 │ 0.0     │
+│ 2    │ 5.0    │ 5.95221e-11 │ 1.19044e-11 │ 0.0     │
+│ 3    │ 5.0    │ 5.76768e-11 │ 1.15354e-11 │ 0.0     │
+│ 4    │ 5.0    │ 5.74956e-11 │ 1.14991e-11 │ 0.0     │
+│ 5    │ 5.0    │ 5.67133e-11 │ 1.13427e-11 │ 0.0     │
+│ 6    │ 5.0    │ 5.60837e-11 │ 1.12167e-11 │ 0.0     │
+│ 7    │ 5.0    │ 5.60007e-11 │ 1.12001e-11 │ 0.0     │
+│ 8    │ 5.0    │ 5.58981e-11 │ 1.11796e-11 │ 0.0     │
+⋮
+│ 7992 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7993 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7994 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7995 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7996 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7997 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7998 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7999 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 8000 │ 5.0    │ 0.0         │ 0.0         │ 0.0     │, 6.42532e-11, "5 Experiments, 15 Factors")
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D           │ DELB        │ DELB_ad │
+├──────┼────────┼─────────────┼─────────────┼─────────┤
+│ 1    │ 6.0    │ 6.23966e-10 │ 1.03994e-10 │ 0.0     │
+│ 2    │ 6.0    │ 5.98721e-10 │ 9.97869e-11 │ 0.0     │
+│ 3    │ 6.0    │ 5.89376e-10 │ 9.82294e-11 │ 0.0     │
+│ 4    │ 6.0    │ 5.88117e-10 │ 9.80195e-11 │ 0.0     │
+│ 5    │ 6.0    │ 5.82588e-10 │ 9.7098e-11  │ 0.0     │
+│ 6    │ 6.0    │ 5.71888e-10 │ 9.53146e-11 │ 0.0     │
+│ 7    │ 6.0    │ 5.70406e-10 │ 9.50676e-11 │ 0.0     │
+│ 8    │ 6.0    │ 5.69304e-10 │ 9.4884e-11  │ 0.0     │
+⋮
+│ 7992 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7993 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7994 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7995 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7996 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7997 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7998 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 7999 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │
+│ 8000 │ 6.0    │ 0.0         │ 0.0         │ 0.0     │, 6.23966e-10, "6 Experiments, 15 Factors")
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D          │ DELB        │ DELB_ad │
+├──────┼────────┼────────────┼─────────────┼─────────┤
+│ 1    │ 7.0    │ 6.89262e-9 │ 9.8466e-10  │ 0.0     │
+│ 2    │ 7.0    │ 6.8259e-9  │ 9.75129e-10 │ 0.0     │
+│ 3    │ 7.0    │ 6.80945e-9 │ 9.72779e-10 │ 0.0     │
+│ 4    │ 7.0    │ 6.80662e-9 │ 9.72375e-10 │ 0.0     │
+│ 5    │ 7.0    │ 6.80339e-9 │ 9.71913e-10 │ 0.0     │
+│ 6    │ 7.0    │ 6.75676e-9 │ 9.65251e-10 │ 0.0     │
+│ 7    │ 7.0    │ 6.73748e-9 │ 9.62497e-10 │ 0.0     │
+│ 8    │ 7.0    │ 6.7267e-9  │ 9.60957e-10 │ 0.0     │
+⋮
+│ 7992 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7993 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7994 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7995 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7996 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7997 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7998 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 7999 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │
+│ 8000 │ 7.0    │ 0.0        │ 0.0         │ 0.0     │, 6.89262e-9, "7 Experiments, 15 Factors")                    
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D          │ DELB       │ DELB_ad │
+├──────┼────────┼────────────┼────────────┼─────────┤
+│ 1    │ 8.0    │ 5.38427e-8 │ 6.73033e-9 │ 0.0     │
+│ 2    │ 8.0    │ 5.10389e-8 │ 6.37986e-9 │ 0.0     │
+│ 3    │ 8.0    │ 5.0614e-8  │ 6.32675e-9 │ 0.0     │
+│ 4    │ 8.0    │ 5.0521e-8  │ 6.31512e-9 │ 0.0     │
+│ 5    │ 8.0    │ 5.04089e-8 │ 6.30112e-9 │ 0.0     │
+│ 6    │ 8.0    │ 5.03593e-8 │ 6.29491e-9 │ 0.0     │
+│ 7    │ 8.0    │ 5.03455e-8 │ 6.29319e-9 │ 0.0     │
+│ 8    │ 8.0    │ 5.01744e-8 │ 6.2718e-9  │ 0.0     │
+⋮
+│ 7992 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7993 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7994 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7995 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7996 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7997 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7998 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 7999 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │
+│ 8000 │ 8.0    │ 0.0        │ 0.0        │ 0.0     │, 5.38427e-8, "8 Experiments, 15 Factors")                                       
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D          │ DELB        │ DELB_ad │
+├──────┼────────┼────────────┼─────────────┼─────────┤
+│ 1    │ 13.0   │ 0.00500093 │ 0.000384687 │ 0.0     │
+│ 2    │ 13.0   │ 0.00497203 │ 0.000382464 │ 0.0     │
+│ 3    │ 13.0   │ 0.00496823 │ 0.000382171 │ 0.0     │
+│ 4    │ 13.0   │ 0.00491065 │ 0.000377742 │ 0.0     │
+│ 5    │ 13.0   │ 0.00490982 │ 0.000377678 │ 0.0     │
+│ 6    │ 13.0   │ 0.00488475 │ 0.00037575  │ 0.0     │
+│ 7    │ 13.0   │ 0.00483848 │ 0.00037219  │ 0.0     │
+│ 8    │ 13.0   │ 0.00481806 │ 0.00037062  │ 0.0     │
+⋮
+│ 7992 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7993 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7994 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7995 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7996 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7997 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7998 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 7999 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │
+│ 8000 │ 13.0   │ 0.0        │ 0.0         │ 0.0     │, 0.00500093, "13 Experiments, 15 Factors")                   
+ (8000×4 DataFrames.DataFrame
+│ Row  │ Length │ D         │ DELB       │ DELB_ad │
+├──────┼────────┼───────────┼────────────┼─────────┤
+│ 1    │ 14.0   │ 0.0388629 │ 0.00277592 │ 0.0     │
+│ 2    │ 14.0   │ 0.0386119 │ 0.00275799 │ 0.0     │
+│ 3    │ 14.0   │ 0.0383996 │ 0.00274283 │ 0.0     │
+│ 4    │ 14.0   │ 0.0374976 │ 0.0026784  │ 0.0     │
+│ 5    │ 14.0   │ 0.0372673 │ 0.00266195 │ 0.0     │
+│ 6    │ 14.0   │ 0.0371623 │ 0.00265445 │ 0.0     │
+│ 7    │ 14.0   │ 0.0370465 │ 0.00264618 │ 0.0     │
+│ 8    │ 14.0   │ 0.0368358 │ 0.00263113 │ 0.0     │
+⋮
+│ 7992 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7993 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7994 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7995 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7996 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7997 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7998 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 7999 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │
+│ 8000 │ 14.0   │ 0.0       │ 0.0        │ 0.0     │, 0.0388629, "14 Experiments, 15 Factors")                                                          
  (8000×4 DataFrames.DataFrame
 │ Row  │ Length │ D        │ DELB      │ DELB_ad │
 ├──────┼────────┼──────────┼───────────┼─────────┤
-│ 1    │ 15.0   │ 0.284697 │ 0.0189798 │ 0.0     │
-│ 2    │ 15.0   │ 0.283784 │ 0.0189189 │ 0.0     │
-│ 3    │ 15.0   │ 0.283468 │ 0.0188979 │ 0.0     │
-│ 4    │ 15.0   │ 0.282465 │ 0.018831  │ 0.0     │
-│ 5    │ 15.0   │ 0.28224  │ 0.018816  │ 0.0     │
-│ 6    │ 15.0   │ 0.28108  │ 0.0187387 │ 0.0     │
-│ 7    │ 15.0   │ 0.28087  │ 0.0187246 │ 0.0     │
-│ 8    │ 15.0   │ 0.280309 │ 0.0186873 │ 0.0     │
+│ 1    │ 15.0   │ 0.29892  │ 0.019928  │ 0.0     │
+│ 2    │ 15.0   │ 0.298482 │ 0.0198988 │ 0.0     │
+│ 3    │ 15.0   │ 0.289294 │ 0.0192862 │ 0.0     │
+│ 4    │ 15.0   │ 0.285644 │ 0.0190429 │ 0.0     │
+│ 5    │ 15.0   │ 0.283076 │ 0.0188717 │ 0.0     │
+│ 6    │ 15.0   │ 0.278588 │ 0.0185725 │ 0.0     │
+│ 7    │ 15.0   │ 0.277753 │ 0.0185169 │ 0.0     │
+│ 8    │ 15.0   │ 0.277585 │ 0.0185057 │ 0.0     │
 ⋮
 │ 7992 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │
 │ 7993 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │
@@ -20207,91 +20312,49 @@ Elapsed Time: 39.540852107 seconds
 │ 7997 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │
 │ 7998 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │
 │ 7999 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │
-│ 8000 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │, 0.284697, "15 Experiments, 15 Factors")                                           
+│ 8000 │ 15.0   │ 0.0      │ 0.0       │ 0.0     │, 0.29892, "15 Experiments, 15 Factors")                                                                                                  
  (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB     │ DELB_ad │
-├──────┼────────┼─────────┼──────────┼─────────┤
-│ 1    │ 30.0   │ 3.70863 │ 0.123621 │ 2.66996 │
-│ 2    │ 30.0   │ 3.68852 │ 0.122951 │ 2.61921 │
-│ 3    │ 29.0   │ 3.64674 │ 0.125749 │ 2.62944 │
-│ 4    │ 29.0   │ 3.63777 │ 0.12544  │ 2.56899 │
-│ 5    │ 30.0   │ 3.63304 │ 0.121101 │ 2.67388 │
-│ 6    │ 29.0   │ 3.62415 │ 0.124971 │ 2.62013 │
-│ 7    │ 30.0   │ 3.62087 │ 0.120696 │ 2.55919 │
-│ 8    │ 29.0   │ 3.62081 │ 0.124856 │ 2.64014 │
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 16.0   │ 2.51702 │ 0.157314 │ 0.567517    │
+│ 2    │ 16.0   │ 2.46316 │ 0.153947 │ 0.0100429   │
+│ 3    │ 16.0   │ 2.41053 │ 0.150658 │ 0.0237709   │
+│ 4    │ 16.0   │ 2.39979 │ 0.149987 │ 0.000350092 │
+│ 5    │ 16.0   │ 2.37725 │ 0.148578 │ 6.66675e-8  │
+│ 6    │ 16.0   │ 2.36899 │ 0.148062 │ 6.30584e-9  │
+│ 7    │ 16.0   │ 2.35435 │ 0.147147 │ 0.787154    │
+│ 8    │ 16.0   │ 2.3531  │ 0.147069 │ 2.60841e-41 │
 ⋮
-│ 7992 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7993 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7994 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7995 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7996 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7997 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7998 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 7999 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │
-│ 8000 │ 15.0   │ 0.0     │ 0.0      │ 0.0     │, 3.70863, "15 to 30 Experiments, 15 Factors")                                                                            
+│ 7992 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7993 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7994 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7995 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7996 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7997 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7998 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7999 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 8000 │ 16.0   │ 0.0     │ 0.0      │ 0.0         │, 2.51702, "16 Experiments, 15 Factors")                                                            
  (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB      │ DELB_ad    │
-├──────┼────────┼─────────┼───────────┼────────────┤
-│ 1    │ 60.0   │ 4.31636 │ 0.0719393 │ 2.70653    │
-│ 2    │ 59.0   │ 4.29866 │ 0.0728586 │ 2.70514    │
-│ 3    │ 60.0   │ 4.29433 │ 0.0715721 │ 2.70203    │
-│ 4    │ 60.0   │ 4.29181 │ 0.0715302 │ 2.70495    │
-│ 5    │ 60.0   │ 4.27404 │ 0.0712341 │ 2.70016    │
-│ 6    │ 59.0   │ 4.27189 │ 0.0724049 │ 2.6996     │
-│ 7    │ 58.0   │ 4.27081 │ 0.0736347 │ 2.70709    │
-│ 8    │ 59.0   │ 4.26896 │ 0.0723553 │ 2.70783    │
+│ Row  │ Length │ D       │ DELB     │ DELB_ad     │
+├──────┼────────┼─────────┼──────────┼─────────────┤
+│ 1    │ 17.0   │ 2.76125 │ 0.162427 │ 1.27951     │
+│ 2    │ 17.0   │ 2.69638 │ 0.15861  │ 0.275613    │
+│ 3    │ 17.0   │ 2.67789 │ 0.157523 │ 0.00770836  │
+│ 4    │ 17.0   │ 2.67009 │ 0.157064 │ 0.0951108   │
+│ 5    │ 17.0   │ 2.66278 │ 0.156634 │ 0.066035    │
+│ 6    │ 17.0   │ 2.6627  │ 0.15663  │ 0.136568    │
+│ 7    │ 17.0   │ 2.6569  │ 0.156288 │ 1.10081e-16 │
+│ 8    │ 17.0   │ 2.65261 │ 0.156036 │ 0.373918    │
 ⋮
-│ 7992 │ 30.0   │ 2.98458 │ 0.0994861 │ 1.43891    │
-│ 7993 │ 30.0   │ 2.97296 │ 0.0990988 │ 0.845856   │
-│ 7994 │ 31.0   │ 2.97206 │ 0.0958728 │ 1.40217    │
-│ 7995 │ 30.0   │ 2.96654 │ 0.0988848 │ 0.823876   │
-│ 7996 │ 30.0   │ 2.95858 │ 0.0986192 │ 1.81255    │
-│ 7997 │ 30.0   │ 2.95434 │ 0.098478  │ 2.11819    │
-│ 7998 │ 30.0   │ 2.95054 │ 0.0983514 │ 0.597526   │
-│ 7999 │ 31.0   │ 2.94682 │ 0.0950586 │ 3.63149e-5 │
-│ 8000 │ 30.0   │ 2.72541 │ 0.0908471 │ 0.426313   │, 4.31636, "30 to 60 Experiments, 15 Factors")
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB      │ DELB_ad │
-├──────┼────────┼─────────┼───────────┼─────────┤
-│ 1    │ 119.0  │ 4.721   │ 0.0396723 │ 2.71246 │
-│ 2    │ 119.0  │ 4.71541 │ 0.0396253 │ 2.71225 │
-│ 3    │ 120.0  │ 4.71219 │ 0.0392683 │ 2.71169 │
-│ 4    │ 120.0  │ 4.71151 │ 0.0392626 │ 2.71231 │
-│ 5    │ 118.0  │ 4.7105  │ 0.0399195 │ 2.71032 │
-│ 6    │ 114.0  │ 4.71013 │ 0.0413169 │ 2.71074 │
-│ 7    │ 115.0  │ 4.70933 │ 0.0409507 │ 2.7128  │
-│ 8    │ 120.0  │ 4.70898 │ 0.0392415 │ 2.71072 │
-⋮
-│ 7992 │ 60.0   │ 3.97155 │ 0.0661925 │ 2.68326 │
-│ 7993 │ 63.0   │ 3.96769 │ 0.0629792 │ 2.68654 │
-│ 7994 │ 60.0   │ 3.96413 │ 0.0660689 │ 2.66242 │
-│ 7995 │ 60.0   │ 3.9577  │ 0.0659617 │ 2.67199 │
-│ 7996 │ 61.0   │ 3.95208 │ 0.0647882 │ 2.67044 │
-│ 7997 │ 63.0   │ 3.93632 │ 0.0624813 │ 2.62463 │
-│ 7998 │ 60.0   │ 3.93099 │ 0.0655165 │ 2.63565 │
-│ 7999 │ 60.0   │ 3.92531 │ 0.0654219 │ 2.68219 │
-│ 8000 │ 61.0   │ 3.89874 │ 0.0639138 │ 2.66056 │, 4.721, "60 to 120 Experiments, 15 Factors")                                                          
- (8000×4 DataFrames.DataFrame
-│ Row  │ Length │ D       │ DELB      │ DELB_ad │
-├──────┼────────┼─────────┼───────────┼─────────┤
-│ 1    │ 120.0  │ 4.70963 │ 0.0392469 │ 2.71188 │
-│ 2    │ 114.0  │ 4.70619 │ 0.0412824 │ 2.71265 │
-│ 3    │ 112.0  │ 4.70597 │ 0.0420176 │ 2.7123  │
-│ 4    │ 115.0  │ 4.70388 │ 0.0409033 │ 2.70982 │
-│ 5    │ 119.0  │ 4.70101 │ 0.0395043 │ 2.7113  │
-│ 6    │ 118.0  │ 4.69562 │ 0.0397934 │ 2.71158 │
-│ 7    │ 117.0  │ 4.69532 │ 0.040131  │ 2.71042 │
-│ 8    │ 119.0  │ 4.69128 │ 0.0394225 │ 2.71117 │
-⋮
-│ 7992 │ 16.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7993 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7994 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7995 │ 16.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7996 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7997 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7998 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 7999 │ 15.0   │ 0.0     │ 0.0       │ 0.0     │
-│ 8000 │ 16.0   │ 0.0     │ 0.0       │ 0.0     │, 4.70963, "15 to 120 Experiments, 15 Factors")
+│ 7992 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7993 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7994 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7995 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7996 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7997 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7998 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 7999 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │
+│ 8000 │ 17.0   │ 0.0     │ 0.0      │ 0.0         │, 2.76125, "17 Experiments, 15 Factors")
 #+end_example
 
 Now plot it:
@@ -20303,3 +20366,7 @@ plot_subsets(sampled_subsets)
 
 #+RESULTS:
 : Created new window in existing browser session.
+**** Meeting with Brice and Arnaud
+- Experiments with real factors
+  - 3 Level factors
+  - We should see an increase in D-Eff for 2p + 1
