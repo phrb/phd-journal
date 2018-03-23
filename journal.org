@@ -20370,3 +20370,9 @@ plot_subsets(sampled_subsets)
 - Experiments with real factors
   - 3 Level factors
   - We should see an increase in D-Eff for 2p + 1
+*** [2018-03-22 Thu]
+**** Moved code to a Julia Package
+I've moved all the code developed to study DoE to a Julia package.
+That way it is easier to test examples, reuse and maintain what
+I wrote in the journal. The code is at [[https://github.com/phrb/ExperimentalDesign.jl][GitHub]].
+*** [2018-03-23 Fri]
