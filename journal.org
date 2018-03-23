@@ -20376,3 +20376,8 @@ I've moved all the code developed to study DoE to a Julia package.
 That way it is easier to test examples, reuse and maintain what
 I wrote in the journal. The code is at [[https://github.com/phrb/ExperimentalDesign.jl][GitHub]].
 *** [2018-03-23 Fri]
+**** Running Experiments with 2-Level Factors :ATTACH:
+:PROPERTIES:
+:Attachments: juliaLGby6Y.html julia2ESqX3.html julia9ovkOl.html juliamrKe3d.html julianYd8md.html
+:ID:       11766833-1828-4cad-bc4e-b8e147395e48
+:END:
