@@ -20381,3 +20381,35 @@ I wrote in the journal. The code is at [[https://github.com/phrb/ExperimentalDes
 :Attachments: juliaLGby6Y.html julia2ESqX3.html julia9ovkOl.html juliamrKe3d.html julianYd8md.html
 :ID:       11766833-1828-4cad-bc4e-b8e147395e48
 :END:
+*** [2018-03-26 Mon]
+**** Review Paper for Alfredo (ISCC '18)
+*Title:* An Unikernels Provisioning Architecture for OpenStack
+***** Summary
+The paper details an implementation of an OpenStack driver for provisioning
+unikernel images based on the OSv operating system. The paper discusses the
+OpenStack and OSv configurations that enabled the usage of git repositories
+containing unikernel code, which enabled improvements in provisioning time of
+non-cached unikernel images.
+
+The paper compares the provisioning time of the new driver with OpenStack's
+default driver without caching, showing the new driver takes half the time. The
+paper also compares the provisioning time of the new driver with OpenStack's
+driver when images are cached, showing that the new driver is marginally slower
+than OpenStack's default in that situation. The paper does not present a
+discussion on why the new approach should be adopted if the comparisons with
+OpenStack's cached unikernel images are unfavorable.
+
+***** Minor Corrections
+There is an undefined reference at the second column of page 3:
+"The GNU Parallel tool[?], [...]"
+
+**** Precision on Determinant Computation :ATTACH:
+:PROPERTIES:
+:Attachments: julia3dyF5f.html
+:ID:       49b09354-abd5-4ffa-adf4-488008d0eccc
+:END:
+
+I used big floats in the computation of the determinant of matrices with as many
+experiments as 2-Level factors. This solved the problem of non-zero determinants
+for this size of matrix. The cause of that problem seems to have been the
+accumulated errors in the computation of the determinants of those matrices.
