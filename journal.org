@@ -18050,13 +18050,32 @@ library(AlgDesign)
 
 variables <- gen.factorial(c(2, 4, 2))
 
-m_matrix <- model.matrix(frml, variables)
+variables
+
+m_matrix <- model.matrix(~., variables)
 
 m_matrix
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
+   X1 X2 X3
+1  -1 -3 -1
+2   1 -3 -1
+3  -1 -1 -1
+4   1 -1 -1
+5  -1  1 -1
+6   1  1 -1
+7  -1  3 -1
+8   1  3 -1
+9  -1 -3  1
+10  1 -3  1
+11 -1 -1  1
+12  1 -1  1
+13 -1  1  1
+14  1  1  1
+15 -1  3  1
+16  1  3  1
    (Intercept) X1 X2 X3
 1            1 -1 -3 -1
 2            1  1 -3 -1
@@ -18080,9 +18099,13 @@ attr(,"assign")
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
+variables <- gen.factorial(c(2, 6, 2))
+
 variables$X2 = as.factor(variables$X2)
 
-m_matrix <- model.matrix(frml, variables)
+str(variables)
+
+m_matrix <- model.matrix(~., variables)
 
 m_matrix
 
@@ -18093,56 +18116,70 @@ design
 
 #+RESULTS:
 #+begin_example
-   (Intercept) X1 X2-1 X21 X23 X3
-1            1 -1    0   0   0 -1
-2            1  1    0   0   0 -1
-3            1 -1    1   0   0 -1
-4            1  1    1   0   0 -1
-5            1 -1    0   1   0 -1
-6            1  1    0   1   0 -1
-7            1 -1    0   0   1 -1
-8            1  1    0   0   1 -1
-9            1 -1    0   0   0  1
-10           1  1    0   0   0  1
-11           1 -1    1   0   0  1
-12           1  1    1   0   0  1
-13           1 -1    0   1   0  1
-14           1  1    0   1   0  1
-15           1 -1    0   0   1  1
-16           1  1    0   0   1  1
+'data.frame':	24 obs. of  3 variables:
+ $ X1: num  -1 1 -1 1 -1 1 -1 1 -1 1 ...
+ $ X2: Factor w/ 6 levels "-5","-3","-1",..: 1 1 2 2 3 3 4 4 5 5 ...
+ $ X3: num  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+   (Intercept) X1 X2-3 X2-1 X21 X23 X25 X3
+1            1 -1    0    0   0   0   0 -1
+2            1  1    0    0   0   0   0 -1
+3            1 -1    1    0   0   0   0 -1
+4            1  1    1    0   0   0   0 -1
+5            1 -1    0    1   0   0   0 -1
+6            1  1    0    1   0   0   0 -1
+7            1 -1    0    0   1   0   0 -1
+8            1  1    0    0   1   0   0 -1
+9            1 -1    0    0   0   1   0 -1
+10           1  1    0    0   0   1   0 -1
+11           1 -1    0    0   0   0   1 -1
+12           1  1    0    0   0   0   1 -1
+13           1 -1    0    0   0   0   0  1
+14           1  1    0    0   0   0   0  1
+15           1 -1    1    0   0   0   0  1
+16           1  1    1    0   0   0   0  1
+17           1 -1    0    1   0   0   0  1
+18           1  1    0    1   0   0   0  1
+19           1 -1    0    0   1   0   0  1
+20           1  1    0    0   1   0   0  1
+21           1 -1    0    0   0   1   0  1
+22           1  1    0    0   0   1   0  1
+23           1 -1    0    0   0   0   1  1
+24           1  1    0    0   0   0   1  1
 attr(,"assign")
-[1] 0 1 2 2 2 3
+[1] 0 1 2 2 2 2 2 3
 attr(,"contrasts")
 attr(,"contrasts")$X2
 [1] "contr.treatment"
 $D
-[1] 0.3804964
+[1] 0.2566584
 
 $A
-[1] 6.045635
+[1] 8.951042
 
 $Ge
-[1] 0.764
+[1] 0.923
 
 $Dea
-[1] 0.734
+[1] 0.92
 
 $design
    X1 X2 X3
-2   1 -3 -1
-3  -1 -1 -1
-4   1 -1 -1
-5  -1  1 -1
-7  -1  3 -1
-8   1  3 -1
-9  -1 -3  1
-11 -1 -1  1
-14  1  1  1
-15 -1  3  1
-16  1  3  1
+1  -1 -5 -1
+3  -1 -3 -1
+6   1 -1 -1
+7  -1  1 -1
+8   1  1 -1
+10  1  3 -1
+11 -1  5 -1
+14  1 -5  1
+16  1 -3  1
+17 -1 -1  1
+19 -1  1  1
+21 -1  3  1
+24  1  5  1
 
 $rows
- [1]  2  3  4  5  7  8  9 11 14 15 16
+ [1]  1  3  6  7  8 10 11 14 16 17 19 21 24
 #+end_example
 *** [2018-03-20 Tue]
 **** Analysing Data from GPU Autotuning Screening Experiments @ pilipili2
@@ -20411,5 +20448,5 @@ There is an undefined reference at the second column of page 3:
 
 I used big floats in the computation of the determinant of matrices with as many
 experiments as 2-Level factors. This solved the problem of non-zero determinants
-for this size of matrix. The cause of that problem seems to have been the
+for this kind of matrix. The cause of that problem seems to have been the
 accumulated errors in the computation of the determinants of those matrices.
