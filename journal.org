@@ -13309,7 +13309,7 @@ literature review.
   the implementation
 - [[file:~/Dropbox/papers/design-of-experiments/cook1980comparison.pdf][Cook's paper]] presents a comparison of different algorithms to generate D-Optimal designs
 *** [2018-03-09 Fri]
-**** Using the ~AlgDesign~ R package
+**** Using the ~AlgDesign~ R package                          :R:DOE:Code:
 Let's try to generate a design for 5 factors with 10, 3, 4, 2 and 6 levels.
 The ~gen.factorial~ function generates the full factorial design for those
 factors, which has 1440 runs. Then, the ~optFederov~ function optimizes the
@@ -20451,7 +20451,7 @@ experiments as 2-Level factors. This solved the problem of non-zero determinants
 for this kind of matrix. The cause of that problem seems to have been the
 accumulated errors in the computation of the determinants of those matrices.
 *** [2018-03-27 Tue]
-**** Comparing Designs
+**** Comparing 2-Level Factor (Numerical) Designs
 ***** Setup
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
@@ -20466,7 +20466,7 @@ struct SampleComparison
     federov_delb
 end
 
-function compare_sample_pb(two_level_factors)
+function compare_sample_pb(two_level_factors, designs = 8000, check_bounds = false)
     pb_design = float(plackett_burman(two_level_factors))
 
     pb_factors = OrderedDict([(Symbol(:f, j), [-1., 1.]) for j = 1:two_level_factors])
@@ -20479,17 +20479,18 @@ function compare_sample_pb(two_level_factors)
 
     best_sampled_delbs = []
 
-    ranges = [i:i for i = (two_level_factors + 1):(size(pb_design, 1) + 7)]
+    ranges = [i:i for i = (two_level_factors + 1):(min(2 * two_level_factors,
+                                                       size(pb_design, 1) + 7))]
 
     for range in ranges
-        design_subset = sample_subset(pb_factors, range, 8000, check_bounds = false)
+        design_subset = sample_subset(pb_factors, range, floor(Int, designs), check_bounds = check_bounds)
         push!(best_sampled_delbs, max(design_subset[:DELB]...))
     end
     
     return SampleComparison(pb_design, pb_delb, ranges, best_sampled_delbs, false, false)
 end
 
-function compare_sample_pb_federov(two_level_factors)
+function compare_sample_pb_federov(two_level_factors, designs = 8000, check_bounds = false)
     r_output = R"""
     library(AlgDesign)
     federov <- optFederov(~., gen.factorial(rep(2, $two_level_factors)), criterion = "D")
@@ -20504,12 +20505,12 @@ function compare_sample_pb_federov(two_level_factors)
     factors = OrderedDict([(Symbol(:f, j), [-1., 1.]) for j = 1:two_level_factors])
 
     model_matrix = generate_model_matrix(build_linear_formula(collect(keys(factors))),
-                                        design_array,
-                                        factors)
+                                         design_array,
+                                         factors)
 
     federov_delb = d_efficiency_lower_bound(model_matrix)
 
-    comparison = compare_sample_pb(two_level_factors)
+    comparison = compare_sample_pb(two_level_factors, designs, check_bounds)
 
     return SampleComparison(comparison.pb_design, comparison.pb_delb, comparison.ranges,
                             comparison.best_sampled_delbs, federov_design, federov_delb)
@@ -20536,6 +20537,7 @@ function plot_pb_comparison(comparison)
          shape = :circle,
          markersize = 7,
          ylims = (0.0, 1.05),
+         xlims = (comparison.ranges[1].start - 0.05, comparison.ranges[end].stop + 0.05),
          ylabel = "D-Efficiency Lower Bound",
          xlabel = "Experiments",
          label = "Sampled")
@@ -20566,13 +20568,13 @@ end
 
 
 
-compare_sample_pb (generic function with 1 method)
+compare_sample_pb (generic function with 3 methods)
 
-compare_sample_pb_federov (generic function with 1 method)
+compare_sample_pb_federov (generic function with 3 methods)
 
-plot_pb_comparison (generic function with 2 methods)
+plot_pb_comparison (generic function with 1 method)
 
-plot_federov_comparison (generic function with 2 methods)
+plot_federov_comparison (generic function with 1 method)
 #+end_example
 
 ***** Measuring ~optFederov~ Designs (11 Factors)                :ATTACH:
@@ -20678,6 +20680,112 @@ SampleComparison([1.0 1.0 … 1.0 1.0; 1.0 -1.0 … -1.0 -1.0; … ; -1.0 -1.0 �
 plot_federov_comparison(comparison)
 #+END_SRC
 
+***** Measuring ~optFederov~ Designs (11 Factors, 32000 samples) :ATTACH:
+:PROPERTIES:
+:Attachments: julia7zhnky.html
+:ID:       d2f0e7e7-adae-4432-9930-4edb171f968b
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+# WARNING: optFederov will take a lot of time for the next
+# Plackett-Burman design (size 19).
+two_level_factors = 11
+
+comparison = compare_sample_pb_federov(two_level_factors, 32000)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+11
+
+ Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 25.4718629 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 19.743451831 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 24.745586674 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 27.359950553 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 16:16
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 24.18248598 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 17:17
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 27.503991559 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 18:18
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 21.628538803 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
+Full Factorial Size: 2048
+Total Subsets: Inf
+Range of Design Sizes: 19:19
+Number of Designs to Sample: 32000
+WARNING: Skipping bounds check!
+Elapsed Time: 20.388877163 seconds
+SampleComparison([1.0 1.0 … 1.0 1.0; 1.0 -1.0 … -1.0 -1.0; … ; -1.0 -1.0 … -1.0 1.0; -1.0 1.0 … 1.0 -1.0], 0.9999999999999999, UnitRange{Int64}[12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18, 19:19], Any[0.662254, 0.724095, 0.749854, 0.811092, 0.83258, 0.83034, 0.832914, 0.857121], 17×11 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 10  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 17  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 0.9731455541411729)
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison)
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
 ***** Measuring ~optFederov~ (7 Factors) :ATTACH:
 :PROPERTIES:
 :Attachments: juliaDHxlH1.html
@@ -20689,7 +20797,7 @@ plot_federov_comparison(comparison)
 # Plackett-Burman design (size 19).
 two_level_factors = 7
 
-comparison = compare_sample_pb_federov(two_level_factors)
+comparison = compare_sample_pb_federov(two_level_factors, 8000, true)
 
 plot_federov_comparison(comparison)
 #+END_SRC
@@ -20775,11 +20883,71 @@ SampleComparison([1.0 1.0 … 1.0 1.0; -1.0 1.0 … -1.0 -1.0; … ; -1.0 -1.0 �
 
 Created new window in existing browser session.
 #+end_example
+***** Measuring ~optFederov~ (3 Factors) :ATTACH:
+:PROPERTIES:
+:Attachments: juliagNacRn.html
+:ID:       619a13cf-7cef-4d80-8712-271a7ae3b44e
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+# WARNING: optFederov will take a lot of time for the next
+# Plackett-Burman design (size 19).
+two_level_factors = 3
+
+comparison = compare_sample_pb(two_level_factors, 8000, true)
+
+plot_pb_comparison(comparison)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+3
+
+ Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+Full Factorial Size: 8
+Total Subsets: 256.0
+Range of Design Sizes: 4:4
+Number of Designs to Sample: 8000
+Total Subsets for Fixed Size 4: 70
+Requested too many designs, using 70 instead
+Elapsed Time: 0.032258978 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+Full Factorial Size: 8
+Total Subsets: 256.0
+Range of Design Sizes: 5:5
+Number of Designs to Sample: 8000
+Total Subsets for Fixed Size 5: 56
+Requested too many designs, using 56 instead
+Elapsed Time: 0.027338444 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+Full Factorial Size: 8
+Total Subsets: 256.0
+Range of Design Sizes: 6:6
+Number of Designs to Sample: 8000
+Total Subsets for Fixed Size 6: 28
+Requested too many designs, using 28 instead
+Elapsed Time: 0.01159232 seconds
+SampleComparison([1.0 1.0 1.0; 1.0 -1.0 -1.0; -1.0 -1.0 1.0; -1.0 1.0 -1.0], 1.0, UnitRange{Int64}[4:4, 5:5, 6:6], Any[1.0, 0.951366, 0.942809], false, false)
+
+Created new window in existing browser session.
+#+end_example
 ***** Comparing Larger Designs with PB :ATTACH:
 :PROPERTIES:
 :Attachments: juliaYbr3EH.html
 :ID:       6b599d16-2bdf-4bcf-8ef6-72f7dc913f14
 :END:
+The ~optFederov~ implementation in ~AlgDesign~ was not able to finish generating
+a new design for 19 factors in 15 minutes. As we saw before in [[Using the
+~AlgDesign~ R package]], we can't generate large designs with ~AlgDesign~ due to
+memory limitations, since this implementation needs to generate the full
+factorial design before optimizing.
+
+We can still compare the 127 2-Level Factor Plackett-Burman design with our
+uniform sampling. The plot shows we got a lot further from the PB design this
+time, perhaps because there are many more designs to choose from this time.
+
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 two_level_factors = 127
