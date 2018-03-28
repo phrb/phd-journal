@@ -23323,7 +23323,8 @@ plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and
 
 ***** Comparing to ~optFederov~ Designs (3 4-Level, 3 8-Level, 2 3-Level) :ATTACH:
 :PROPERTIES:
-:ID:       8922b4ed-fba9-41a8-9049-35ed6a167709
+:Attachments: juliaXmvftq.html
+:ID:       3a226ef1-4c83-4692-b2fb-037599e54661
 :END:
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
