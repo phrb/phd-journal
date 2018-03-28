@@ -20516,6 +20516,40 @@ function compare_sample_pb_federov(two_level_factors, designs = 8000, check_boun
                             comparison.best_sampled_delbs, federov_design, federov_delb)
 end
 
+function compare_sample_federov(two_level_factors, designs = 8000, check_bounds = false)
+    r_output = R"""
+    library(AlgDesign)
+    federov <- optFederov(~., gen.factorial(rep(2, $two_level_factors)), criterion = "D")
+    """
+
+    federov = @rget federov
+
+    federov_design = federov[:design]
+
+    design_array = float(Array(federov_design))
+
+    factors = OrderedDict([(Symbol(:f, j), [-1., 1.]) for j = 1:two_level_factors])
+
+    model_matrix = generate_model_matrix(build_linear_formula(collect(keys(factors))),
+                                         design_array,
+                                         factors)
+
+    federov_delb = d_efficiency_lower_bound(model_matrix)
+
+    best_sampled_delbs = []
+
+    ranges = [i:i for i = (two_level_factors + 1):(min(2 * two_level_factors,
+                                                       size(pb_design, 1) + 7))]
+
+    for range in ranges
+        design_subset = sample_subset(pb_factors, range, floor(Int, designs), check_bounds = check_bounds)
+        push!(best_sampled_delbs, max(design_subset[:DELB]...))
+    end
+
+    return SampleComparison(false, false, ranges, best_sampled_delbs,
+                            federov_design, federov_delb)
+end
+
 function plot_pb_comparison(comparison)
     upscale    = 1.5
     small_font = Plots.font("sans-serif", 10.0 * upscale)
@@ -20564,7 +20598,8 @@ end
 
 #+RESULTS:
 #+begin_example
-
+WARNING: Method definition ==(Base.Nullable{S}, Base.Nullable{T}) in module Base at nullable.jl:238 overwritten in module NullableArrays at /home/phrb/.julia/v0.6/NullableArrays/src/operators.jl:99.
+WARNING: Method definition promote_rule(Type{T}, Type{Any}) in module Missings at /home/phrb/.julia/v0.6/Missings/src/Missings.jl:52 overwritten in module Nulls at /home/phrb/.julia/v0.6/Nulls/src/Nulls.jl:29.
 
 
 
@@ -20572,12 +20607,14 @@ compare_sample_pb (generic function with 3 methods)
 
 compare_sample_pb_federov (generic function with 3 methods)
 
+compare_sample_federov (generic function with 3 methods)
+
 plot_pb_comparison (generic function with 1 method)
 
 plot_federov_comparison (generic function with 1 method)
 #+end_example
 
-***** Measuring ~optFederov~ Designs (11 Factors)                :ATTACH:
+***** Comparing to ~optFederov~ Designs (11 Factors)            :ATTACH:
 :PROPERTIES:
 :Attachments: juliaXTkPZf.html
 :ID:       79af4438-4272-4e54-aeaa-607a28b0eddc
@@ -20680,7 +20717,7 @@ SampleComparison([1.0 1.0 … 1.0 1.0; 1.0 -1.0 … -1.0 -1.0; … ; -1.0 -1.0 �
 plot_federov_comparison(comparison)
 #+END_SRC
 
-***** Measuring ~optFederov~ Designs (11 Factors, 32000 samples) :ATTACH:
+***** Comparing to ~optFederov~ Designs (11 Factors, 32000 samples) :ATTACH:
 :PROPERTIES:
 :Attachments: julia7zhnky.html
 :ID:       d2f0e7e7-adae-4432-9930-4edb171f968b
@@ -20786,7 +20823,7 @@ plot_federov_comparison(comparison)
 #+RESULTS:
 : Created new window in existing browser session.
 
-***** Measuring ~optFederov~ (7 Factors) :ATTACH:
+***** Comparing to ~optFederov~ (7 Factors)                      :ATTACH:
 :PROPERTIES:
 :Attachments: juliaDHxlH1.html
 :ID:       e0c11877-8fb7-463e-9098-b7360624bae1
@@ -20883,7 +20920,7 @@ SampleComparison([1.0 1.0 … 1.0 1.0; -1.0 1.0 … -1.0 -1.0; … ; -1.0 -1.0 �
 
 Created new window in existing browser session.
 #+end_example
-***** Measuring ~optFederov~ (3 Factors) :ATTACH:
+***** Comparing to Plackett-Burman (3 Factors)                   :ATTACH:
 :PROPERTIES:
 :Attachments: juliagNacRn.html
 :ID:       619a13cf-7cef-4d80-8712-271a7ae3b44e
@@ -20933,7 +20970,7 @@ SampleComparison([1.0 1.0 1.0; 1.0 -1.0 -1.0; -1.0 -1.0 1.0; -1.0 1.0 -1.0], 1.0
 
 Created new window in existing browser session.
 #+end_example
-***** Comparing Larger Designs with PB :ATTACH:
+***** Comparing Larger Designs to Plackett-Burman                :ATTACH:
 :PROPERTIES:
 :Attachments: juliaYbr3EH.html
 :ID:       6b599d16-2bdf-4bcf-8ef6-72f7dc913f14
@@ -20983,3 +21020,4 @@ plot_pb_comparison(comparison)
 
 #+RESULTS:
 : Created new window in existing browser session.
+*** [2018-03-28 Wed]
