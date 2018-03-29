@@ -23964,3 +23964,6 @@ plot_max_samples(comparison, title = string("D-Efficiency and Experiments",
 #+RESULTS:
 : Created new window in existing browser session.
 
+*** [2018-03-29 Thu]
+
+
