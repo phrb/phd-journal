@@ -23965,5 +23965,69 @@ plot_max_samples(comparison, title = string("D-Efficiency and Experiments",
 : Created new window in existing browser session.
 
 *** [2018-03-29 Thu]
+**** Implement Real Factors and Tweak Plots
+I implemeted real factors in my design sampling code and I am now
+able to generate plots for mixed and multi-level "true" factors.
+
+I also fixed limits of my plotting script and normalized the
+histograms.
+*** [2018-03-30 Fri]
+**** Using Smaller Candidate Sets for ~optFederov~
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using RCall, ExperimentalDesign, DataStructures
+
+function opt_federov(two_level_factors)
+    r_output = R"""
+    library(AlgDesign)
+    federov <- optFederov(~., gen.factorial(rep(2, $two_level_factors)), criterion = "D")
+    """
+end
+
+factors = OrderedDict{Symbol, Any}([(Symbol(:f, j), [1., 2.]) for j = 1:19])
+
+full_factorial_subset(collect(values(factors)), 10)
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+opt_federov (generic function with 1 method)
+
+DataStructures.OrderedDict{Symbol,Any} with 19 entries:
+  :f1  => [1.0, 2.0]
+  :f2  => [1.0, 2.0]
+  :f3  => [1.0, 2.0]
+  :f4  => [1.0, 2.0]
+  :f5  => [1.0, 2.0]
+  :f6  => [1.0, 2.0]
+  :f7  => [1.0, 2.0]
+  :f8  => [1.0, 2.0]
+  :f9  => [1.0, 2.0]
+  :f10 => [1.0, 2.0]
+  :f11 => [1.0, 2.0]
+  :f12 => [1.0, 2.0]
+  :f13 => [1.0, 2.0]
+  :f14 => [1.0, 2.0]
+  :f15 => [1.0, 2.0]
+  :f16 => [1.0, 2.0]
+  :f17 => [1.0, 2.0]
+  :f18 => [1.0, 2.0]
+  :f19 => [1.0, 2.0]
+
+ERROR: MethodError: ==(::Array{Any,1}, ::Array{Any,1}) is ambiguous. Candidates:
+  ==(A::AbstractArray{#s3,N} where N where #s3>:Nulls.Null, B::AbstractArray{#s2,N} where N where #s2>:Nulls.Null) in Nulls at /home/phrb/.julia/v0.6/Nulls/src/Nulls.jl:200
+  ==(A::AbstractArray{#s2,N} where N where #s2>:Nulls.Null, B::AbstractArray) in Nulls at /home/phrb/.julia/v0.6/Nulls/src/Nulls.jl:181
+  ==(A::AbstractArray, B::AbstractArray{#s3,N} where N where #s3>:Nulls.Null) in Nulls at /home/phrb/.julia/v0.6/Nulls/src/Nulls.jl:199
+  ==(A::AbstractArray{#s9,N} where N where #s9>:Missings.Missing, B::AbstractArray{#s10,N} where N where #s10>:Missings.Missing) in Missings at /home/phrb/.julia/v0.6/Missings/src/Missings.jl:169
+Possible fix, define
+  ==(::AbstractArray{#s9,N} where N where #s9>:Union{Missings.Missing, Nulls.Null}, ::AbstractArray{#s10,N} where N where #s10>:Union{Missings.Missing, Nulls.Null})
+Stacktrace:
+ [1] check_repeated_row(::Array{Any,2}, ::Array{Any,1}) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/sampling.jl:7
+ [2] full_factorial_subset(::Array{Any,1}, ::Int64) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/sampling.jl:21
+#+end_example
+
 
 
