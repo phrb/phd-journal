@@ -26531,7 +26531,9 @@ plot_max_samples(comparison, title = string("D-Efficiency and Experiments",
 #+RESULTS:
 : Created new window in existing browser session.
 
-**** Comparing Model Matrix
+**** Comparing Model Matrices
+Generating a model matrix with ~AlgDesign~:
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
@@ -26582,6 +26584,12 @@ $gmean.variances
 [1] 5.241483
 #+end_example
 
+Note that the factors are not centered, limits 0 and 1, and that
+the determinant, or "D-efficiency" in this case, is really small.
+
+When we run an equivalent example in my julia implementation,
+we get this:
+
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 using ExperimentalDesign, DataStructures, StatsModels
@@ -26597,8 +26605,7 @@ d_efficiency_lower_bound(m)
 
 #+RESULTS:
 #+begin_example
-ESS
-INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/ExperimentalDesign.ji for module ExperimentalDesign.
+
 
 DataStructures.OrderedDict{Symbol,Array{Symbol,1}} with 2 entries:
   :x1 => Symbol[:a, :b]
@@ -26621,4 +26628,38 @@ DataStructures.OrderedDict{Symbol,Array{Symbol,1}} with 2 entries:
  1.0   1.0  -1.0   1.0
 
 0.8773826753016616
+#+end_example
+
+Note that the factors are centered with limits -1 and 1. This is due to the scaling
+function I implemented. This scaling is a requirement for performing the D-Efficiency
+computation using the k-th root, according to Castillo's book, page 141.
+(See [[From DETMAX, SAS, and Castillo's Book]])
+
+If we run the same example but use an "identity scale" we get identical results to
+the ~AlgDesign~ implementation. The D-Efficiency is also the same:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function identity_scaling(design, factors)
+    return design
+end
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = identity_scaling)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+identity_scaling (generic function with 2 methods)
+
+6×4 Array{Float64,2}:
+ 1.0  0.0  0.0  0.0
+ 1.0  1.0  0.0  0.0
+ 1.0  0.0  1.0  0.0
+ 1.0  1.0  1.0  0.0
+ 1.0  0.0  0.0  1.0
+ 1.0  1.0  0.0  1.0
+
+0.31020161970069987
 #+end_example
