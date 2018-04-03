@@ -20456,7 +20456,7 @@ accumulated errors in the computation of the determinants of those matrices.
 #+NAME: setup_design_comparison
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-using ExperimentalDesign, Plots, StatPlots, RCall
+using ExperimentalDesign, Plots, StatPlots, RCall, DataStructures, DataFrames
 
 struct SampleComparison
     pb_design
@@ -20609,7 +20609,8 @@ function compare_sample_federov(two_level_factors::Int, designs = 8000, check_bo
                             federov_designs, federov_delbs)
 end
 
-function compare_sample_federov(factors, designs = 8000, check_bounds = false)
+function compare_sample_federov(factors, designs = 8000, check_bounds = false;
+                                true_factors = [])
     levels = [length(v) for v in values(factors)]
 
     federov_designs = []
@@ -20617,30 +20618,36 @@ function compare_sample_federov(factors, designs = 8000, check_bounds = false)
 
     r_output = R"""
     library(AlgDesign)
-    federov <- optFederov(~., gen.factorial(c($levels)), criterion = "D")
+    federov <- optFederov(~., gen.factorial(c($levels), factors = $true_factors), criterion = "D")
     """
 
     federov = @rget federov
 
     start_design = federov[:design]
 
-    for i = (length(keys(factors)) + 1):(size(start_design, 1) + 3)
-        r_output = R"""
-        library(AlgDesign)
-        federov <- optFederov(~., gen.factorial(c($levels)), criterion = "D", nTrials = $i)
-        """
+    for i = (2 * length(keys(factors)) + 1):(size(start_design, 1) + 3)
+        federov_design = DataFrame()
+        federov_delb = 0.0
 
-        federov = @rget federov
+        #try
+            r_output = R"""
+            library(AlgDesign)
+            federov <- optFederov(~., gen.factorial(c($levels), factors = $true_factors), criterion = "D", nTrials = $i)
+            """
 
-        federov_design = federov[:design]
+            federov = @rget federov
 
-        design_array = float(Array(federov_design))
+            federov_design = federov[:design]
 
-        model_matrix = generate_model_matrix(build_linear_formula(collect(keys(factors))),
-                                            design_array,
-                                            factors)
+            design_array = Array(federov_design)
 
-        federov_delb = d_efficiency_lower_bound(model_matrix)
+            model_matrix = generate_model_matrix(build_linear_formula(collect(keys(factors))),
+                                                design_array,
+                                                factors)
+
+            federov_delb = d_efficiency_lower_bound(model_matrix)
+            #federov_delb = federov[:D]
+        #end
 
         println("Computed optFederov for nTrials ", i)
         println(federov_design)
@@ -23986,7 +23993,7 @@ end
 
 factors = OrderedDict{Symbol, Array{Float64, 1}}([(Symbol(:f, j), [1., 2.]) for j = 1:19])
 
-design = full_factorial_subset(collect(values(factors)), 800)
+design = full_factorial_subset(collect(values(factors)), 3200)
 
 opt_federov(DataFrame(Array{Float64, 2}(design)))
 
@@ -24019,124 +24026,2877 @@ DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 19 entries:
   :f18 => [1.0, 2.0]
   :f19 => [1.0, 2.0]
 
-800×19 Array{Any,2}:
- 1.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0
- 2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0
- 1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0
- 2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0
- 1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0
- 2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0
- 2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0
- 1.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0
- 1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0
- 2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0
- 1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0
- 1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0
- 2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0
- 2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0
- 2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0
- 1.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0
- 2.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0
- 1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0
- 1.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0
- 1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0
- 2.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0
- 1.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0
- 2.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0
- 2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0
- 2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0
- 2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0
+3200×19 Array{Any,2}:
+ 1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0
+ 1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0
+ 1.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0
+ 2.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0
+ 2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0
+ 2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  2.0  2.0  2.0
+ 2.0  2.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0
+ 2.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0
+ 2.0  1.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0
+ 1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0
+ 1.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0
+ 1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0
+ 2.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0
+ 1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0
+ 2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0
+ 1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0
+ 1.0  2.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0
+ 2.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0
+ 1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0
+ 1.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0
+ 2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0
+ 2.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0
+ 2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0
+ 1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0
+ 1.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0
+ 1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0
+ 1.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0
+ 2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0
  ⋮                        ⋮                        ⋮                        ⋮                 
- 2.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  2.0  2.0  2.0  2.0
- 1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0
- 1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0
- 1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0
- 1.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0
- 1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0
- 2.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0
- 2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0
- 1.0  2.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0
- 2.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0
- 2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0
- 2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0
- 2.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0
- 1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0
- 2.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0
- 2.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0
- 2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0
- 1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0
- 1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0
- 2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  1.0
- 2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0
- 1.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0
- 1.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0
- 2.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0
- 2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0
+ 2.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0
+ 1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0
+ 1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0
+ 2.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0
+ 2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0
+ 1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0
+ 2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0
+ 2.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0
+ 1.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0
+ 2.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0
+ 2.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0
+ 1.0  1.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0
+ 1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  2.0  2.0
+ 2.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0
+ 1.0  2.0  1.0  2.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0
+ 2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  1.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  1.0  2.0  2.0
+ 1.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  1.0  1.0
+ 1.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0
+ 2.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0
+ 1.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  1.0
+ 1.0  2.0  1.0  1.0  1.0  2.0  1.0  2.0  2.0  1.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0  1.0
+ 1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0  2.0  2.0
+ 1.0  2.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  2.0  1.0  2.0  1.0
+ 1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  1.0  2.0  2.0  2.0  1.0
+ 2.0  1.0  1.0  1.0  1.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0
+ 1.0  2.0  2.0  2.0  2.0  2.0  2.0  2.0  1.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  2.0  1.0  1.0
+ 2.0  2.0  2.0  1.0  1.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  1.0  1.0  2.0  2.0  2.0  2.0  2.0
+ 1.0  1.0  2.0  1.0  2.0  2.0  2.0  1.0  2.0  1.0  2.0  1.0  1.0  2.0  1.0  1.0  1.0  2.0  1.0
 
-'data.frame':	8 obs. of  3 variables:
- $ X1: num  -1 1 -1 1 -1 1 -1 1
- $ X2: num  -1 -1 1 1 -1 -1 1 1
- $ X3: num  -1 -1 -1 -1 1 1 1 1
-'data.frame':	800 obs. of  19 variables:
- $ x1 : num  1 2 1 2 1 2 2 1 1 2 ...
- $ x2 : num  1 2 2 2 2 1 2 2 2 1 ...
- $ x3 : num  1 2 1 1 1 1 2 2 1 1 ...
- $ x4 : num  1 2 2 2 1 2 1 2 2 2 ...
- $ x5 : num  2 1 1 2 2 2 1 2 1 1 ...
- $ x6 : num  1 1 1 1 2 2 2 2 2 2 ...
- $ x7 : num  2 2 2 2 1 2 1 2 2 1 ...
- $ x8 : num  2 1 1 2 2 1 1 2 1 1 ...
- $ x9 : num  2 1 2 2 1 1 1 1 2 1 ...
- $ x10: num  2 2 1 1 2 2 2 2 1 2 ...
- $ x11: num  1 2 2 1 1 2 2 1 2 2 ...
- $ x12: num  2 1 2 2 1 2 2 1 1 2 ...
- $ x13: num  1 2 1 1 2 1 2 2 2 2 ...
- $ x14: num  1 1 1 2 1 1 2 1 1 2 ...
- $ x15: num  2 1 2 1 1 1 2 1 1 2 ...
- $ x16: num  2 1 1 1 2 1 1 1 2 1 ...
- $ x17: num  1 1 2 1 1 2 1 2 1 2 ...
- $ x18: num  1 1 2 2 2 1 2 2 1 2 ...
- $ x19: num  2 2 2 1 1 2 1 2 1 1 ...
 RCall.RObject{RCall.VecSxp}
 $D
-[1] 0.2147352
+[1] 0.2275095
 
 $A
-[1] 20.67914
+[1] 15.51855
 
 $Ge
-[1] 0.308
+[1] 0.333
 
 $Dea
-[1] 0.106
+[1] 0.135
 
 $design
-    x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19
-44   1  1  2  2  2  2  1  1  2   1   2   1   1   1   1   1   2   2   1
-205  2  2  2  2  1  1  2  2  1   1   2   2   2   2   1   1   2   2   2
-211  1  2  1  2  1  2  1  1  1   2   1   1   2   1   2   1   2   2   1
-224  1  2  2  1  1  1  1  2  1   2   2   2   2   1   2   2   2   1   1
-265  2  2  2  1  2  2  2  1  1   1   2   2   1   2   2   1   1   1   2
-277  2  1  1  1  1  2  2  1  2   2   2   2   2   1   1   1   1   1   1
-335  1  2  1  1  2  2  2  2  1   1   2   2   2   1   2   2   1   2   1
-417  2  1  2  2  2  2  2  2  1   2   2   2   2   2   2   2   2   1   1
-421  1  1  1  1  2  1  2  2  2   2   2   1   1   2   1   1   1   2   1
-426  1  1  2  2  1  1  2  1  1   2   1   2   1   1   2   2   1   2   1
-428  1  1  2  1  2  2  1  2  2   2   1   2   2   2   1   1   1   1   2
-441  2  2  1  1  2  1  1  1  1   2   2   1   1   1   1   2   1   2   2
-522  2  2  2  1  1  2  2  2  2   2   1   1   1   1   2   2   1   1   2
-613  1  1  1  2  1  2  2  1  1   1   2   1   1   2   1   2   1   1   2
-674  1  1  1  2  2  1  1  2  2   2   2   2   2   1   2   2   1   1   2
-678  2  1  2  1  2  1  2  1  1   1   1   1   2   1   2   1   2   1   2
-704  1  1  2  1  2  2  2  1  2   1   2   1   2   2   2   2   2   2   2
-710  1  2  2  2  2  1  2  1  2   2   1   2   1   2   1   2   2   1   2
-712  2  2  2  2  1  1  1  1  2   1   1   1   2   2   1   2   1   1   1
-791  2  1  1  1  1  1  1  2  2   1   1   2   1   2   2   2   2   1   2
+     x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19
+221   1  2  1  1  2  1  1  1  2   1   2   1   1   1   1   1   1   1   1
+230   2  1  2  2  1  1  1  2  2   1   1   1   1   1   1   1   2   1   1
+293   1  2  2  2  1  2  2  1  2   1   2   1   1   2   2   1   1   2   1
+624   1  1  2  1  2  2  1  2  1   1   1   2   1   1   2   2   1   1   1
+658   2  2  2  2  2  2  2  1  1   1   1   1   2   1   1   1   1   2   1
+668   2  2  1  2  1  2  1  2  1   2   1   2   1   2   1   1   2   2   1
+716   1  2  1  2  1  2  1  1  2   2   1   1   2   2   2   2   1   1   1
+802   2  1  1  2  1  1  1  1  1   2   2   1   1   1   2   1   1   2   1
+1033  2  1  1  1  2  1  2  2  1   1   1   1   2   2   2   1   2   2   1
+1149  2  2  1  2  2  2  2  2  2   1   2   2   1   1   2   2   2   1   1
+1392  2  2  2  1  1  2  1  1  2   1   1   2   2   1   2   2   2   2   2
+1572  1  1  2  2  2  1  2  1  1   2   1   2   1   1   2   1   2   1   2
+1803  1  2  1  2  1  1  2  2  1   1   1   1   1   1   1   2   1   2   2
+1944  1  1  1  1  1  2  2  1  1   1   2   2   1   1   1   1   2   1   1
+2188  1  1  2  1  1  1  2  2  2   2   1   2   2   1   1   2   1   2   1
+2413  1  1  2  2  2  1  1  1  1   2   2   1   2   2   1   2   2   2   1
+2421  2  1  1  2  1  1  1  1  1   1   2   2   2   2   1   1   1   1   2
+2457  2  2  2  1  1  2  2  2  1   2   2   1   2   2   1   1   2   1   2
+2764  2  1  1  1  2  2  2  1  2   2   1   1   1   2   1   2   1   2   2
+2929  1  1  1  2  2  2  1  2  2   1   2   1   2   1   1   1   2   2   2
 
 $rows
- [1]  44 205 211 224 265 277 335 417 421 426 428 441 522 613 674 678 704 710 712
-[20] 791
+ [1]  221  230  293  624  658  668  716  802 1033 1149 1392 1572 1803 1944 2188
+[16] 2413 2421 2457 2764 2929
+#+end_example
+** April
+*** [2018-04-03 Tue]
+**** Using ~StatsModels~ Contrast Coding
+Let's create a placeholder dataframe with mixed-level true factors. We have two
+numerical factors and two true factors, one with two levels and one with five
+levels. Note that we add a dummy response ~y~ so we can build the model matrix
+later.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using StatsModels, DataFrames
+
+data = DataFrame(x1 = [1, 4, 2, 4, 5], x3 = [true, false, false, true, true],
+                 x2 = ["A", "A", "B", "A", "B"], x4 = [1.2, 1.4, 1.3, 1.1, 1.0],
+                 y = [1.0, 1.0, 1.0, 1.0, 1.0])
+
+factors = Dict(:x1 => [1, 5], :x3 => [true, false],
+               :x2 => ["A", "C", "B", "E", "F"], :x4 => [1.0, 1.4])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+5×5 DataFrames.DataFrame
+│ Row │ x1 │ x3    │ x2 │ x4  │ y   │
+├─────┼────┼───────┼────┼─────┼─────┤
+│ 1   │ 1  │ true  │ A  │ 1.2 │ 1.0 │
+│ 2   │ 4  │ false │ A  │ 1.4 │ 1.0 │
+│ 3   │ 2  │ false │ B  │ 1.3 │ 1.0 │
+│ 4   │ 4  │ true  │ A  │ 1.1 │ 1.0 │
+│ 5   │ 5  │ true  │ B  │ 1.0 │ 1.0 │
+
+Dict{Symbol,Any} with 4 entries:
+  :x2 => String["A", "C", "B", "E", "F"]
+  :x3 => Bool[true, false]
+  :x4 => [1.0, 1.4]
+  :x1 => [1, 5]
 #+end_example
 
+Now let's compute the contrast matrices for these factors. This will enable us
+to generate the model matrix using a general formula. We create a dictionary
+containing the levels of each factor. We pass this dictionary to ~ModelFrame~ as
+the ~contrasts~ keyword parameter. We also give a formula that uses all
+variables in the model. There seems to be no way currently of specifying all
+terms at once, using something like R's dot syntax. I will use the function I
+already implemented for this.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+contrasts = Dict([(f, StatsModels.ContrastsMatrix(DummyCoding(), factors[f])) for f in keys(factors)])
+
+model = ModelFrame(@formula(y ~ 1 + x1 + x2 + x3 + x4), data, contrasts = contrasts)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Dict{Symbol,StatsModels.ContrastsMatrix{StatsModels.DummyCoding,_} where _} with 4 entries:
+  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
+  :x3 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Bool}([0.0; 1.0], Bool[false], Bool[true, …
+  :x4 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Float64}([0.0; 1.0], [1.4], [1.0, 1.4], St…
+  :x1 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Int64}([0.0; 1.0], [5], [1, 5], StatsModel…
+
+StatsModels.ModelFrame(5×5 DataFrames.DataFrame
+│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
+├─────┼─────┼────┼────┼───────┼─────┤
+│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
+│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
+│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
+│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
+│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │, StatsModels.Terms(Any[:x1, :x2, :x3, :x4], Symbol[:y, :x1, :x2, :x3, :x4], Bool[true false … false false; false true … false false; … ; false false … true false; false false … false true], Bool[false false … false false; false false … false false; … ; false false … false false; false false … false false], [1, 1, 1, 1, 1], true, true), Bool[true, true, true, true, true], Dict{Symbol,StatsModels.ContrastsMatrix}(Pair{Symbol,StatsModels.ContrastsMatrix}(:x2, StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0; … ; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0], String["C", "B", "E", "F"], String["A", "C", "B", "E", "F"], StatsModels.DummyCoding(#NULL, #NULL)))))
+#+end_example
+
+Currently we can access the original dataframe, the formula terms and the
+contrasts like so:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model.df
+
+model.terms.terms
+
+model.contrasts
+
+keys(model.contrasts)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+5×5 DataFrames.DataFrame
+│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
+├─────┼─────┼────┼────┼───────┼─────┤
+│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
+│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
+│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
+│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
+│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │
+
+4-element Array{Any,1}:
+ :x1
+ :x2
+ :x3
+ :x4
+
+Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry:
+  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
+
+Base.KeyIterator for a Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry. Keys:
+  :x2
+#+end_example
+
+Now let's create the model matrix. This will use the contrasts and the original
+data to create the coded matrix mixing true and numerical factors. Note that the
+intercept is automatically added even if we do not pass it in the generating
+formula.
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_matrix = ModelMatrix(model)
+#+END_SRC
+
+#+RESULTS:
+: StatsModels.ModelMatrix{Array{Float64,2}}([1.0 1.0 … 1.0 1.2; 1.0 4.0 … 0.0 1.4; … ; 1.0 4.0 … 1.0 1.1; 1.0 5.0 … 1.0 1.0], [0, 1, 2, 2, 2, 2, 3, 4])
+
+We can get the matrix and the column-factor correspondance like so:
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_matrix.m
+model_matrix.assign
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+5×8 Array{Float64,2}:
+ 1.0  1.0  0.0  0.0  0.0  0.0  1.0  1.2
+ 1.0  4.0  0.0  0.0  0.0  0.0  0.0  1.4
+ 1.0  2.0  0.0  1.0  0.0  0.0  0.0  1.3
+ 1.0  4.0  0.0  0.0  0.0  0.0  1.0  1.1
+ 1.0  5.0  0.0  1.0  0.0  0.0  1.0  1.0
+8-element Array{Int64,1}:
+ 0
+ 1
+ 2
+ 2
+ 2
+ 2
+ 3
+ 4
+#+end_example
+**** Comparing Mixed-Level Factor Designs (Numerical)
+***** Setup
+#+CALL: setup_design_comparison()
+
+#+RESULTS:
+#+begin_example
 
 
+
+
+get_max_samples (generic function with 3 methods)
+
+compare_sample_pb (generic function with 3 methods)
+
+compare_sample_pb_federov (generic function with 3 methods)
+
+compare_sample_federov (generic function with 6 methods)
+
+compare_sample_federov (generic function with 6 methods)
+
+plot_pb_comparison (generic function with 1 method)
+
+plot_federov_comparison (generic function with 1 method)
+
+plot_max_samples (generic function with 1 method)
+#+end_example
+***** [TEST] Comparing to ~optFederov~ Designs (3 2-Level, 3 3-Level)
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Any, 1}}()
+
+for i = 1:3
+    factors[Symbol(:f, i)] = ["-1", "0", "1"]
+end
+
+for i = 4:6
+    factors[Symbol(:f, i)] = ["-1", "1"]
+end
+
+comparison = compare_sample_federov(factors, 800, false, true_factors = [1, 2, 3, 4, 5, 6])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Any,1}} with 0 entries
+
+
+
+
+
+Computed optFederov for nTrials 13
+13×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 5   │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │
+│ 6   │ 1  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 8   │ 1  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 9   │ 3  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 11  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 13  │ 3  │ 3  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Computed optFederov for nTrials 14
+14×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 13  │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 14  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Computed optFederov for nTrials 15
+15×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 13  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 15  │ 2  │ 2  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Computed optFederov for nTrials 16
+16×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 1  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 10  │ 3  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 12  │ 2  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 15  │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 16  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Computed optFederov for nTrials 17
+17×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 7   │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 2  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 15  │ 2  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 16  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 17  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Computed optFederov for nTrials 18
+18×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 4   │ 3  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 5   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 6   │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 10  │ 3  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │
+│ 13  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 14  │ 2  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 15  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 16  │ 3  │ 2  │ 3  │ 1  │ 2  │ 2  │
+│ 17  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 18  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.0
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 7:7
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.521978462 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 8:8
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.547597885 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 9:9
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.554444221 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 10:10
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.596946611 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 11:11
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.609541312 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.635973657 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.660627545 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.682865519 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.719676786 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 16:16
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.744420309 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 17:17
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.760838679 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 18:18
+Number of Designs to Sample: 800
+WARNING: Skipping bounds check!
+Elapsed Time: 0.796687823 seconds
+SampleComparison(false, false, UnitRange{Int64}[7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18], Any[1.50835e-5, 0.000471382, 0.0184915, 0.562513, 0.622462, 0.659349, 0.684322, 0.700303, 0.701232, 0.71677, 0.742087, 0.756341], Any[13×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 5   │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │
+│ 6   │ 1  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 8   │ 1  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 9   │ 3  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 11  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 13  │ 3  │ 3  │ 2  │ 2  │ 2  │ 2  │, 14×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 13  │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 14  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │, 15×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 13  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 15  │ 2  │ 2  │ 3  │ 2  │ 2  │ 2  │, 16×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 1  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 10  │ 3  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 12  │ 2  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 15  │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 16  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │, 17×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 7   │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 2  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 15  │ 2  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 16  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 17  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │, 18×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 4   │ 3  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 5   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 6   │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 3  │ 1  │ 2  │ 2  │ 1  │
+│ 9   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 10  │ 3  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │
+│ 13  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 14  │ 2  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 15  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 16  │ 3  │ 2  │ 3  │ 1  │ 2  │ 2  │
+│ 17  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 18  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │], Any[0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and Experiments",
+                                                               " for 3 2-Level Factors and",
+                                                               " 3 3-Level Factors (True Factors)"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Comparing to ~optFederov~ Designs (3 2-Level, 3 3-Level)
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Any, 1}}()
+
+for i = 1:3
+    factors[Symbol(:f, i)] = ["-1", "0", "1"]
+end
+
+for i = 4:6
+    factors[Symbol(:f, i)] = ["-1", "1"]
+end
+
+comparison = compare_sample_federov(factors, 8000, false, true_factors = [1, 2, 3, 4, 5, 6])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Any,1}} with 0 entries
+
+
+
+
+
+Computed optFederov for nTrials 7
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 8
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 9
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 10
+10×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 6   │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │
+│ 7   │ 1  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 9   │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 10  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │
+DELB = 0.22206430349229211
+Computed optFederov for nTrials 11
+11×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 4   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 5   │ 2  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 6   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 7   │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 10  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 11  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.22899369330504132
+Computed optFederov for nTrials 12
+12×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 5   │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 3  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 10  │ 1  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 12  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.23071601293085597
+Computed optFederov for nTrials 13
+13×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │
+│ 13  │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.23479581885220582
+Computed optFederov for nTrials 14
+14×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 5   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 9   │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 10  │ 1  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 12  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │
+│ 13  │ 2  │ 2  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.23414803722496236
+Computed optFederov for nTrials 15
+15×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 9   │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 2  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 13  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 3  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 15  │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │
+DELB = 0.23723646746276486
+Computed optFederov for nTrials 16
+16×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │
+│ 8   │ 1  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 9   │ 1  │ 3  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 14  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 15  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 16  │ 1  │ 2  │ 1  │ 2  │ 2  │ 2  │
+DELB = 0.23810859782230615
+Computed optFederov for nTrials 17
+17×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 3  │ 1  │ 2  │ 1  │
+│ 9   │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 10  │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │
+│ 12  │ 2  │ 1  │ 3  │ 1  │ 1  │ 2  │
+│ 13  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 14  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │
+│ 15  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 16  │ 2  │ 2  │ 3  │ 2  │ 2  │ 2  │
+│ 17  │ 1  │ 3  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.24039599968022263
+Computed optFederov for nTrials 18
+18×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 6   │ 2  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 8   │ 2  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 9   │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 10  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 12  │ 3  │ 2  │ 3  │ 1  │ 1  │ 2  │
+│ 13  │ 2  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 15  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 16  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │
+│ 17  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │
+DELB = 0.2429450418896461
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 7:7
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 5.147728462 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 8:8
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 5.27991925 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 9:9
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 5.502951235 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 10:10
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 5.733410037 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 11:11
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 5.967396875 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 6.213756383 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 6.662773177 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 6.915424347 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 7.132752967 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 16:16
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 7.362129493 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 17:17
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 7.827337565 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["-1", "0", "1"],:f2=>Any["-1", "0", "1"],:f3=>Any["-1", "0", "1"],:f4=>Any["-1", "1"],:f5=>Any["-1", "1"],:f6=>Any["-1", "1"])
+Full Factorial Size: 216
+Total Subsets: 1.0531229166855719e65
+Range of Design Sizes: 18:18
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 7.969118756 seconds
+SampleComparison(false, false, UnitRange{Int64}[7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18], Any[1.66118e-5, 0.000517808, 0.0191145, 0.620738, 0.643677, 0.687551, 0.72224, 0.719526, 0.718433, 0.74215, 0.75255, 0.747716], Any[0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 10×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 6   │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │
+│ 7   │ 1  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │
+│ 9   │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 10  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │, 11×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 4   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 5   │ 2  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 6   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 7   │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 10  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 11  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │, 12×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 5   │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 8   │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 3  │ 3  │ 3  │ 1  │ 1  │ 2  │
+│ 10  │ 1  │ 2  │ 3  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 12  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │, 13×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 2  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 3  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 9   │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 12  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │
+│ 13  │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │, 14×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 5   │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 7   │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 9   │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 10  │ 1  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 11  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 12  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │
+│ 13  │ 2  │ 2  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │, 15×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │
+│ 9   │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 2  │ 1  │ 3  │ 2  │ 1  │ 2  │
+│ 12  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 13  │ 1  │ 3  │ 3  │ 1  │ 2  │ 2  │
+│ 14  │ 3  │ 3  │ 1  │ 2  │ 2  │ 2  │
+│ 15  │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │, 16×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │
+│ 3   │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 7   │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │
+│ 8   │ 1  │ 1  │ 3  │ 2  │ 2  │ 1  │
+│ 9   │ 1  │ 3  │ 1  │ 1  │ 1  │ 2  │
+│ 10  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 12  │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │
+│ 14  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │
+│ 15  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │
+│ 16  │ 1  │ 2  │ 1  │ 2  │ 2  │ 2  │, 17×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 2  │ 1  │ 1  │
+│ 5   │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │
+│ 6   │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 8   │ 3  │ 2  │ 3  │ 1  │ 2  │ 1  │
+│ 9   │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 10  │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │
+│ 12  │ 2  │ 1  │ 3  │ 1  │ 1  │ 2  │
+│ 13  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │
+│ 14  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │
+│ 15  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │
+│ 16  │ 2  │ 2  │ 3  │ 2  │ 2  │ 2  │
+│ 17  │ 1  │ 3  │ 3  │ 2  │ 2  │ 2  │, 18×6 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │
+├─────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 1  │ 2  │ 1  │ 1  │
+│ 4   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 5   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │
+│ 6   │ 2  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 7   │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │
+│ 8   │ 2  │ 3  │ 3  │ 1  │ 2  │ 1  │
+│ 9   │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 10  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │
+│ 11  │ 3  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 12  │ 3  │ 2  │ 3  │ 1  │ 1  │ 2  │
+│ 13  │ 2  │ 3  │ 1  │ 2  │ 1  │ 2  │
+│ 14  │ 1  │ 3  │ 2  │ 2  │ 1  │ 2  │
+│ 15  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │
+│ 16  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │
+│ 17  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │], Any[0.0, 0.0, 0.0, 0.222064, 0.228994, 0.230716, 0.234796, 0.234148, 0.237236, 0.238109, 0.240396, 0.242945])
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and Experiments",
+                                                               " for 3 2-Level Factors and",
+                                                               " 3 3-Level Factors (True Factors)"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Comparing to ~optFederov~ Designs (3 2-Level, 3 3-Level, 3 4-Level) :ATTACH:
+:PROPERTIES:
+:Attachments: julia1aSFrL.html
+:ID:       d8930c0e-d2b9-47f8-9867-cc8da095f737
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Any, 1}}()
+
+for i = 1:3
+    factors[Symbol(:f, i)] = ["1", "0", "1"]
+end
+
+for i = 4:6
+    factors[Symbol(:f, i)] = ["1", "1"]
+end
+
+for i = 7:9
+    factors[Symbol(:f, i)] = ["3", "-1", "1", "3"]
+end
+
+println(factors)
+
+comparison = compare_sample_federov(factors, 8000, false, true_factors = [1, 2, 3, 4, 5, 6, 7, 8, 9])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Any,1}} with 0 entries
+
+
+
+
+
+
+
+DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+
+Computed optFederov for nTrials 10
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 11
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 12
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 13
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 14
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 15
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 16
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 17
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 18
+0×0 DataFrames.DataFrame
+
+DELB = 0.0
+Computed optFederov for nTrials 19
+19×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 1  │ 2  │ 1  │ 1  │ 3  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 3   │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 4   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │ 2  │ 4  │ 1  │
+│ 5   │ 3  │ 3  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 6   │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 4  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 8   │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 9   │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 10  │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │ 3  │ 1  │ 3  │
+│ 11  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 13  │ 3  │ 2  │ 3  │ 2  │ 1  │ 2  │ 1  │ 4  │ 3  │
+│ 14  │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 15  │ 2  │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │
+│ 16  │ 3  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 4  │
+│ 17  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 2  │ 2  │ 4  │
+│ 18  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │ 3  │ 3  │ 4  │
+│ 19  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 4  │ 4  │ 4  │
+DELB = 0.17896912809304905
+Computed optFederov for nTrials 20
+20×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 3   │ 3  │ 1  │ 1  │ 2  │ 1  │ 2  │ 4  │ 3  │ 1  │
+│ 4   │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 4  │ 1  │
+│ 5   │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 6   │ 1  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 8   │ 1  │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 9   │ 3  │ 2  │ 3  │ 2  │ 1  │ 1  │ 3  │ 4  │ 2  │
+│ 10  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 3  │ 4  │ 2  │
+│ 11  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 3  │
+│ 12  │ 2  │ 3  │ 3  │ 2  │ 1  │ 2  │ 4  │ 2  │ 3  │
+│ 13  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 14  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │ 3  │ 3  │ 3  │
+│ 15  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │ 3  │
+│ 16  │ 2  │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │ 1  │ 4  │
+│ 17  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 1  │ 4  │
+│ 18  │ 1  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │ 4  │
+│ 19  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │ 3  │ 4  │
+│ 20  │ 1  │ 1  │ 3  │ 2  │ 2  │ 2  │ 2  │ 4  │ 4  │
+DELB = 0.18319618159222162
+Computed optFederov for nTrials 21
+21×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │
+│ 4   │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 6   │ 3  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 4  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 8   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 1  │ 2  │
+│ 10  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 2  │
+│ 11  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 4  │ 3  │ 2  │
+│ 12  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │ 2  │
+│ 13  │ 2  │ 2  │ 1  │ 1  │ 2  │ 2  │ 4  │ 1  │ 3  │
+│ 14  │ 3  │ 1  │ 2  │ 1  │ 2  │ 1  │ 3  │ 2  │ 3  │
+│ 15  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │ 3  │ 3  │
+│ 16  │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 3  │ 3  │
+│ 17  │ 1  │ 3  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 3  │
+│ 18  │ 3  │ 2  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │
+│ 19  │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │ 4  │ 2  │ 4  │
+│ 20  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 21  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │ 4  │ 4  │
+DELB = 0.1831054089866796
+Computed optFederov for nTrials 22
+22×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 1  │
+│ 2   │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │ 3  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 2  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │ 3  │ 1  │
+│ 5   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 4  │ 1  │
+│ 6   │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 7   │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 4  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 9   │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │ 2  │ 2  │
+│ 10  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 2  │
+│ 11  │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 3  │ 3  │ 2  │
+│ 12  │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 14  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │
+│ 15  │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 3  │
+│ 16  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 17  │ 1  │ 1  │ 2  │ 1  │ 2  │ 2  │ 4  │ 3  │ 3  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │ 3  │ 4  │ 3  │
+│ 19  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 1  │ 4  │
+│ 20  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │
+│ 21  │ 2  │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │ 4  │
+│ 22  │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │ 4  │ 4  │
+DELB = 0.18415573439089813
+Computed optFederov for nTrials 23
+23×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 4   │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 3  │ 1  │
+│ 5   │ 3  │ 1  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 9   │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 2  │
+│ 11  │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 2  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 2  │ 1  │ 3  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 1  │ 2  │ 4  │ 1  │ 3  │
+│ 14  │ 2  │ 1  │ 1  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 15  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │
+│ 16  │ 3  │ 2  │ 3  │ 1  │ 1  │ 1  │ 3  │ 3  │ 3  │
+│ 17  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 4  │ 3  │
+│ 18  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │
+│ 19  │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 4  │
+│ 20  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │
+│ 21  │ 1  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 2  │ 4  │
+│ 22  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 3  │ 3  │ 4  │
+│ 23  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 4  │ 4  │ 4  │
+DELB = 0.18563360906011683
+Computed optFederov for nTrials 24
+24×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 3   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │ 3  │ 3  │ 1  │
+│ 4   │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 3  │ 4  │ 1  │
+│ 6   │ 3  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │ 1  │
+│ 7   │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 3  │ 1  │ 2  │
+│ 9   │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 3  │ 2  │
+│ 11  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 3  │ 2  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │ 4  │ 4  │ 2  │
+│ 14  │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │
+│ 15  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 3  │
+│ 16  │ 1  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 17  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │ 4  │ 2  │ 3  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 3  │ 3  │
+│ 19  │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 20  │ 1  │ 2  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 4  │
+│ 21  │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │ 4  │
+│ 22  │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │ 2  │ 3  │ 4  │
+│ 23  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 24  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │ 4  │ 4  │
+DELB = 0.18894583250163818
+Computed optFederov for nTrials 25
+25×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 1  │ 1  │ 1  │ 2  │ 3  │ 2  │ 1  │
+│ 4   │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 1  │
+│ 5   │ 1  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 4  │ 1  │
+│ 6   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 7   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 3  │ 1  │ 2  │
+│ 8   │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 4  │ 1  │ 2  │
+│ 9   │ 2  │ 3  │ 3  │ 1  │ 2  │ 2  │ 4  │ 2  │ 2  │
+│ 10  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │
+│ 11  │ 3  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 3  │ 2  │
+│ 12  │ 3  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 3  │
+│ 14  │ 2  │ 3  │ 3  │ 2  │ 1  │ 1  │ 3  │ 2  │ 3  │
+│ 15  │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │
+│ 16  │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │ 3  │ 3  │
+│ 17  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 4  │ 3  │
+│ 18  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 4  │ 4  │ 3  │
+│ 19  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 4  │
+│ 20  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 3  │ 1  │ 4  │
+│ 21  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │ 4  │
+│ 22  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 4  │
+│ 23  │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 24  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │ 4  │
+│ 25  │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 4  │ 4  │
+DELB = 0.18891119621513267
+Computed optFederov for nTrials 26
+26×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 1  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 2   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 3   │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 1  │ 3  │ 1  │
+│ 4   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │ 1  │
+│ 5   │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 4  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 7   │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 2  │
+│ 10  │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │ 2  │ 3  │ 2  │
+│ 11  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 12  │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │ 3  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 3  │
+│ 14  │ 3  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 1  │ 3  │
+│ 15  │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 3  │
+│ 16  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 4  │ 2  │ 3  │
+│ 17  │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 3  │ 3  │
+│ 18  │ 1  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 3  │ 3  │
+│ 19  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 20  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │
+│ 21  │ 3  │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │ 2  │ 4  │
+│ 22  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 2  │ 4  │
+│ 23  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 3  │ 2  │ 4  │
+│ 24  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 4  │
+│ 25  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 4  │ 3  │ 4  │
+│ 26  │ 2  │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │
+DELB = 0.1896991784476113
+Computed optFederov for nTrials 27
+27×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 4   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 1  │
+│ 5   │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 3  │ 1  │
+│ 6   │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │ 1  │
+│ 7   │ 2  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 4  │ 1  │
+│ 8   │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 12  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │ 2  │ 2  │
+│ 13  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │ 2  │
+│ 14  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 2  │
+│ 15  │ 3  │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 3  │
+│ 16  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │ 3  │
+│ 17  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │ 3  │ 3  │
+│ 18  │ 3  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 3  │ 3  │
+│ 19  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 4  │ 3  │
+│ 20  │ 1  │ 3  │ 3  │ 1  │ 1  │ 2  │ 3  │ 4  │ 3  │
+│ 21  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 3  │ 1  │ 4  │
+│ 22  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │ 4  │ 1  │ 4  │
+│ 23  │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 4  │
+│ 24  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │
+│ 25  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 26  │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │ 4  │ 3  │ 4  │
+│ 27  │ 1  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 4  │ 4  │
+DELB = 0.19020587737384215
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 10:10
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 13.501666082 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 11:11
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 14.289629947 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 16.384569797 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 17.168120473 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 18.18873945 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 20.965601844 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 16:16
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 21.072172662 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 17:17
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 21.795494849 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 18:18
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 22.817732246 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 19:19
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 24.274626853 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 20:20
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 25.820225521 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 21:21
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 27.827354931 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 22:22
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 26.047881217 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 23:23
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 26.280927739 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 24:24
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 28.113321166 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 25:25
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 28.723108075 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 26:26
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 30.475267221 seconds
+Factors: DataStructures.OrderedDict(:f1=>Any["1", "0", "1"],:f2=>Any["1", "0", "1"],:f3=>Any["1", "0", "1"],:f4=>Any["1", "1"],:f5=>Any["1", "1"],:f6=>Any["1", "1"],:f7=>Any["3", "-1", "1", "3"],:f8=>Any["3", "-1", "1", "3"],:f9=>Any["3", "-1", "1", "3"])
+Full Factorial Size: 13824
+Total Subsets: Inf
+Range of Design Sizes: 27:27
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 30.473137196 seconds
+SampleComparison(false, false, UnitRange{Int64}[10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18, 19:19, 20:20, 21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27], Any[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], Any[0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 0×0 DataFrames.DataFrame
+, 19×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 1  │ 2  │ 1  │ 1  │ 3  │ 1  │ 1  │
+│ 2   │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │
+│ 3   │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 4   │ 1  │ 1  │ 3  │ 1  │ 1  │ 1  │ 2  │ 4  │ 1  │
+│ 5   │ 3  │ 3  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 6   │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 4  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 8   │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 9   │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 10  │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │ 3  │ 1  │ 3  │
+│ 11  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 13  │ 3  │ 2  │ 3  │ 2  │ 1  │ 2  │ 1  │ 4  │ 3  │
+│ 14  │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 15  │ 2  │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │
+│ 16  │ 3  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 4  │
+│ 17  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 2  │ 2  │ 4  │
+│ 18  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │ 3  │ 3  │ 4  │
+│ 19  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 4  │ 4  │ 4  │, 20×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │
+│ 3   │ 3  │ 1  │ 1  │ 2  │ 1  │ 2  │ 4  │ 3  │ 1  │
+│ 4   │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 4  │ 1  │
+│ 5   │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 6   │ 1  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 8   │ 1  │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 9   │ 3  │ 2  │ 3  │ 2  │ 1  │ 1  │ 3  │ 4  │ 2  │
+│ 10  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 3  │ 4  │ 2  │
+│ 11  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 3  │
+│ 12  │ 2  │ 3  │ 3  │ 2  │ 1  │ 2  │ 4  │ 2  │ 3  │
+│ 13  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 14  │ 2  │ 1  │ 3  │ 1  │ 2  │ 2  │ 3  │ 3  │ 3  │
+│ 15  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │ 3  │
+│ 16  │ 2  │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │ 1  │ 4  │
+│ 17  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 1  │ 4  │
+│ 18  │ 1  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │ 4  │
+│ 19  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │ 3  │ 4  │
+│ 20  │ 1  │ 1  │ 3  │ 2  │ 2  │ 2  │ 2  │ 4  │ 4  │, 21×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 3  │ 1  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │
+│ 4   │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 6   │ 3  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 4  │ 1  │
+│ 7   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 8   │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 1  │ 2  │
+│ 10  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 2  │
+│ 11  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 4  │ 3  │ 2  │
+│ 12  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │ 2  │
+│ 13  │ 2  │ 2  │ 1  │ 1  │ 2  │ 2  │ 4  │ 1  │ 3  │
+│ 14  │ 3  │ 1  │ 2  │ 1  │ 2  │ 1  │ 3  │ 2  │ 3  │
+│ 15  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │ 3  │ 3  │
+│ 16  │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 3  │ 3  │
+│ 17  │ 1  │ 3  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 3  │
+│ 18  │ 3  │ 2  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │
+│ 19  │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │ 4  │ 2  │ 4  │
+│ 20  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 21  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 1  │ 4  │ 4  │, 22×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 3  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 1  │
+│ 2   │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │ 3  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 2  │ 1  │ 1  │ 2  │ 3  │ 2  │ 1  │
+│ 4   │ 3  │ 3  │ 3  │ 2  │ 2  │ 1  │ 2  │ 3  │ 1  │
+│ 5   │ 2  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 4  │ 1  │
+│ 6   │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 7   │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 4  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │
+│ 9   │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │ 4  │ 2  │ 2  │
+│ 10  │ 1  │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 2  │
+│ 11  │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 3  │ 3  │ 2  │
+│ 12  │ 1  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 1  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 14  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │
+│ 15  │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 3  │
+│ 16  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │
+│ 17  │ 1  │ 1  │ 2  │ 1  │ 2  │ 2  │ 4  │ 3  │ 3  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │ 3  │ 4  │ 3  │
+│ 19  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 1  │ 4  │
+│ 20  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │
+│ 21  │ 2  │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │ 4  │
+│ 22  │ 3  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │ 4  │ 4  │, 23×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 1  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 1  │
+│ 3   │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 4   │ 3  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 3  │ 1  │
+│ 5   │ 3  │ 1  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 6   │ 2  │ 3  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 2  │
+│ 7   │ 3  │ 1  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 9   │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 1  │ 3  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 2  │
+│ 11  │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 4  │ 2  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 2  │ 1  │ 3  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 1  │ 2  │ 4  │ 1  │ 3  │
+│ 14  │ 2  │ 1  │ 1  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 15  │ 2  │ 1  │ 3  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │
+│ 16  │ 3  │ 2  │ 3  │ 1  │ 1  │ 1  │ 3  │ 3  │ 3  │
+│ 17  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 4  │ 3  │
+│ 18  │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │
+│ 19  │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 4  │
+│ 20  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │
+│ 21  │ 1  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 2  │ 4  │
+│ 22  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 3  │ 3  │ 4  │
+│ 23  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 4  │ 4  │ 4  │, 24×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │ 2  │ 1  │
+│ 3   │ 2  │ 1  │ 3  │ 2  │ 2  │ 1  │ 3  │ 3  │ 1  │
+│ 4   │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 4  │ 3  │ 1  │
+│ 5   │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 3  │ 4  │ 1  │
+│ 6   │ 3  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │ 1  │
+│ 7   │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │
+│ 8   │ 3  │ 3  │ 2  │ 1  │ 2  │ 2  │ 3  │ 1  │ 2  │
+│ 9   │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │ 2  │
+│ 10  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 3  │ 2  │
+│ 11  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 3  │ 2  │
+│ 12  │ 2  │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 2  │ 1  │ 1  │ 2  │ 2  │ 2  │ 4  │ 4  │ 2  │
+│ 14  │ 2  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │ 1  │ 3  │
+│ 15  │ 1  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 3  │
+│ 16  │ 1  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 3  │
+│ 17  │ 2  │ 2  │ 2  │ 2  │ 1  │ 2  │ 4  │ 2  │ 3  │
+│ 18  │ 3  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 3  │ 3  │
+│ 19  │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 20  │ 1  │ 2  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 4  │
+│ 21  │ 2  │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │ 4  │
+│ 22  │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │ 2  │ 3  │ 4  │
+│ 23  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 24  │ 1  │ 3  │ 1  │ 2  │ 2  │ 2  │ 1  │ 4  │ 4  │, 25×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 1  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │
+│ 2   │ 3  │ 1  │ 3  │ 2  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 3  │ 2  │ 1  │ 1  │ 1  │ 2  │ 3  │ 2  │ 1  │
+│ 4   │ 1  │ 3  │ 2  │ 1  │ 2  │ 1  │ 2  │ 3  │ 1  │
+│ 5   │ 1  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 4  │ 1  │
+│ 6   │ 2  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 7   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 3  │ 1  │ 2  │
+│ 8   │ 1  │ 2  │ 1  │ 2  │ 1  │ 1  │ 4  │ 1  │ 2  │
+│ 9   │ 2  │ 3  │ 3  │ 1  │ 2  │ 2  │ 4  │ 2  │ 2  │
+│ 10  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │
+│ 11  │ 3  │ 1  │ 1  │ 1  │ 1  │ 2  │ 1  │ 3  │ 2  │
+│ 12  │ 3  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 1  │ 1  │ 2  │ 1  │ 1  │ 1  │ 3  │
+│ 14  │ 2  │ 3  │ 3  │ 2  │ 1  │ 1  │ 3  │ 2  │ 3  │
+│ 15  │ 3  │ 2  │ 3  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │
+│ 16  │ 2  │ 1  │ 2  │ 1  │ 1  │ 1  │ 4  │ 3  │ 3  │
+│ 17  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 2  │ 4  │ 3  │
+│ 18  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 4  │ 4  │ 3  │
+│ 19  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 4  │
+│ 20  │ 3  │ 3  │ 2  │ 1  │ 2  │ 1  │ 3  │ 1  │ 4  │
+│ 21  │ 3  │ 2  │ 2  │ 2  │ 1  │ 1  │ 1  │ 2  │ 4  │
+│ 22  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 2  │ 2  │ 4  │
+│ 23  │ 1  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 24  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 4  │ 3  │ 4  │
+│ 25  │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 4  │ 4  │, 26×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 2  │ 3  │ 1  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 2   │ 1  │ 2  │ 3  │ 2  │ 1  │ 1  │ 2  │ 2  │ 1  │
+│ 3   │ 2  │ 2  │ 1  │ 1  │ 2  │ 1  │ 1  │ 3  │ 1  │
+│ 4   │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │ 1  │
+│ 5   │ 1  │ 3  │ 3  │ 1  │ 2  │ 1  │ 2  │ 4  │ 1  │
+│ 6   │ 3  │ 1  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 1  │
+│ 7   │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 3  │ 1  │ 2  │
+│ 8   │ 3  │ 2  │ 3  │ 2  │ 2  │ 1  │ 4  │ 1  │ 2  │
+│ 9   │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 2  │
+│ 10  │ 3  │ 3  │ 1  │ 1  │ 1  │ 2  │ 2  │ 3  │ 2  │
+│ 11  │ 2  │ 2  │ 2  │ 1  │ 2  │ 2  │ 2  │ 4  │ 2  │
+│ 12  │ 1  │ 3  │ 1  │ 1  │ 1  │ 1  │ 3  │ 4  │ 2  │
+│ 13  │ 1  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 1  │ 3  │
+│ 14  │ 3  │ 1  │ 3  │ 1  │ 1  │ 2  │ 3  │ 1  │ 3  │
+│ 15  │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 3  │
+│ 16  │ 2  │ 3  │ 1  │ 2  │ 2  │ 2  │ 4  │ 2  │ 3  │
+│ 17  │ 2  │ 3  │ 2  │ 2  │ 1  │ 1  │ 2  │ 3  │ 3  │
+│ 18  │ 1  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 3  │ 3  │
+│ 19  │ 3  │ 2  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 3  │
+│ 20  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │
+│ 21  │ 3  │ 1  │ 1  │ 1  │ 2  │ 1  │ 2  │ 2  │ 4  │
+│ 22  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 2  │ 4  │
+│ 23  │ 2  │ 2  │ 3  │ 1  │ 1  │ 2  │ 3  │ 2  │ 4  │
+│ 24  │ 3  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 3  │ 4  │
+│ 25  │ 1  │ 2  │ 2  │ 1  │ 1  │ 1  │ 4  │ 3  │ 4  │
+│ 26  │ 2  │ 1  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 4  │, 27×9 DataFrames.DataFrame
+│ Row │ X1 │ X2 │ X3 │ X4 │ X5 │ X6 │ X7 │ X8 │ X9 │
+├─────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ 1   │ 1  │ 2  │ 1  │ 1  │ 1  │ 2  │ 2  │ 1  │ 1  │
+│ 2   │ 2  │ 3  │ 2  │ 1  │ 1  │ 1  │ 4  │ 1  │ 1  │
+│ 3   │ 2  │ 2  │ 3  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │
+│ 4   │ 3  │ 1  │ 3  │ 1  │ 2  │ 1  │ 4  │ 2  │ 1  │
+│ 5   │ 3  │ 1  │ 1  │ 1  │ 1  │ 1  │ 1  │ 3  │ 1  │
+│ 6   │ 1  │ 2  │ 2  │ 2  │ 2  │ 2  │ 3  │ 3  │ 1  │
+│ 7   │ 2  │ 3  │ 3  │ 2  │ 2  │ 2  │ 1  │ 4  │ 1  │
+│ 8   │ 3  │ 1  │ 1  │ 2  │ 2  │ 1  │ 3  │ 4  │ 1  │
+│ 9   │ 1  │ 1  │ 3  │ 1  │ 2  │ 2  │ 1  │ 1  │ 2  │
+│ 10  │ 3  │ 3  │ 3  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │
+│ 11  │ 2  │ 1  │ 2  │ 1  │ 1  │ 2  │ 3  │ 2  │ 2  │
+│ 12  │ 1  │ 2  │ 1  │ 2  │ 2  │ 1  │ 4  │ 2  │ 2  │
+│ 13  │ 2  │ 3  │ 1  │ 1  │ 2  │ 2  │ 3  │ 3  │ 2  │
+│ 14  │ 3  │ 2  │ 2  │ 2  │ 1  │ 2  │ 4  │ 4  │ 2  │
+│ 15  │ 3  │ 3  │ 2  │ 2  │ 2  │ 2  │ 1  │ 1  │ 3  │
+│ 16  │ 1  │ 3  │ 1  │ 2  │ 1  │ 1  │ 3  │ 2  │ 3  │
+│ 17  │ 2  │ 1  │ 2  │ 2  │ 2  │ 1  │ 2  │ 3  │ 3  │
+│ 18  │ 3  │ 2  │ 3  │ 1  │ 2  │ 2  │ 4  │ 3  │ 3  │
+│ 19  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 1  │ 4  │ 3  │
+│ 20  │ 1  │ 3  │ 3  │ 1  │ 1  │ 2  │ 3  │ 4  │ 3  │
+│ 21  │ 2  │ 2  │ 3  │ 1  │ 2  │ 1  │ 3  │ 1  │ 4  │
+│ 22  │ 2  │ 1  │ 1  │ 2  │ 1  │ 2  │ 4  │ 1  │ 4  │
+│ 23  │ 3  │ 2  │ 2  │ 1  │ 1  │ 1  │ 1  │ 2  │ 4  │
+│ 24  │ 3  │ 3  │ 1  │ 1  │ 2  │ 2  │ 2  │ 2  │ 4  │
+│ 25  │ 3  │ 1  │ 3  │ 2  │ 1  │ 2  │ 3  │ 3  │ 4  │
+│ 26  │ 1  │ 3  │ 3  │ 2  │ 1  │ 1  │ 4  │ 3  │ 4  │
+│ 27  │ 1  │ 1  │ 2  │ 1  │ 2  │ 1  │ 2  │ 4  │ 4  │], Any[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.178969, 0.183196, 0.183105, 0.184156, 0.185634, 0.188946, 0.188911, 0.189699, 0.190206])
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and Experiments",
+                                                               " for 3 2-Level Factors,",
+                                                               " 3 3-Level Factors and",
+                                                               " 3 4-Level Factors"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Comparing to ~optFederov~ Designs (3 4-Level, 3 8-Level) :ATTACH:
+:PROPERTIES:
+:Attachments: juliaKOCQ5j.html
+:ID:       24caab1a-a58e-49ff-8b9b-832c95d5476f
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Float64, 1}}()
+
+for i = 1:3
+    factors[Symbol(:f, i)] = [-3., -1., 1., 3.]
+end
+
+for i = 4:6
+    factors[Symbol(:f, i)] = [-7., -5., -3., -1., 1., 3., 5., 7.]
+end
+
+println(factors)
+
+comparison = compare_sample_federov(factors, 16000, false)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 0 entries
+
+
+
+
+
+DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+
+Computed optFederov for nTrials 7
+7×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.8782013454017028
+Computed optFederov for nTrials 8
+8×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9999999999999999
+Computed optFederov for nTrials 9
+9×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 8   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 9   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9724060657957856
+Computed optFederov for nTrials 10
+10×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 7   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9567841965003845
+Computed optFederov for nTrials 11
+11×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 10  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 11  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9626594295083751
+Computed optFederov for nTrials 12
+12×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 11  │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 12  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9999999999999999
+Computed optFederov for nTrials 13
+13×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 13  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9857078839190708
+Computed optFederov for nTrials 14
+14×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 13  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 14  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9770162408979399
+Computed optFederov for nTrials 15
+15×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 13  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 14  │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 15  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 7.0  │
+DELB = 0.9824986034095922
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 7:7
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.149774114 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 8:8
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.165935386 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 9:9
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.22372249 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 10:10
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.333030345 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 11:11
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.459775788 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.541040779 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.32154448 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.270067512 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0])
+Full Factorial Size: 32768
+Total Subsets: Inf
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.465349291 seconds
+SampleComparison(false, false, UnitRange{Int64}[7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15], Any[0.814588, 0.869131, 0.906517, 0.921521, 0.918068, 0.920718, 0.941603, 0.939566, 0.960415], Any[7×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 8×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │, 9×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 4   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 6   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 8   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 9   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 10×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 7   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 11×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 10  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 11  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │, 12×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 11  │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 12  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 13×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 7.0  │
+│ 13  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 14×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 7.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 13  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 14  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 7.0  │, 15×6 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -7.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -7.0 │
+│ 4   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -7.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -7.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -7.0 │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 7.0  │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 7.0  │
+│ 11  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 7.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 13  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 7.0  │
+│ 14  │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 7.0  │
+│ 15  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 7.0  │], Any[0.878201, 1.0, 0.972406, 0.956784, 0.962659, 1.0, 0.985708, 0.977016, 0.982499])
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and Experiments",
+                                                               " for 3 4-Level Factors and",
+                                                               " 3 8-Level Factors"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Comparing to ~optFederov~ Designs (3 4-Level, 3 8-Level, 2 3-Level) :ATTACH:
+:PROPERTIES:
+:Attachments: juliaXmvftq.html
+:ID:       3a226ef1-4c83-4692-b2fb-037599e54661
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Float64, 1}}()
+
+for i = 1:3
+    factors[Symbol(:f, i)] = [-3., -1., 1., 3.]
+end
+
+for i = 4:6
+    factors[Symbol(:f, i)] = [-7., -5., -3., -1., 1., 3., 5., 7.]
+end
+
+for i = 7:8
+    factors[Symbol(:f, i)] = [-1., 0., 1.]
+end
+
+println(factors)
+
+comparison = compare_sample_federov(factors, 16000, false)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 0 entries
+
+
+
+
+
+
+
+DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+
+Computed optFederov for nTrials 9
+9×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9319833539112609
+Computed optFederov for nTrials 10
+10×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 10  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9455165939753816
+Computed optFederov for nTrials 11
+11×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 10  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9406062516838208
+Computed optFederov for nTrials 12
+12×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9999999999999999
+Computed optFederov for nTrials 13
+13×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9822954250668702
+Computed optFederov for nTrials 14
+14×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 14  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9704029760123662
+Computed optFederov for nTrials 15
+15×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 15  │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9730550180262034
+Computed optFederov for nTrials 16
+16×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9857604614636898
+Computed optFederov for nTrials 17
+17×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 17  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │
+DELB = 0.9848322396481787
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 9:9
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.91629738 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 10:10
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.312658915 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 11:11
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 11.291727637 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 12:12
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.798561893 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 13:13
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 8.914144557 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 14:14
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.026248166 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 15:15
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.16825026 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 16:16
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.214298632 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f5=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f6=>[-1.0, 0.0, 1.0],:f7=>[-1.0, 0.0, 1.0],:f8=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 110592
+Total Subsets: Inf
+Range of Design Sizes: 17:17
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 9.349246461 seconds
+SampleComparison(false, false, UnitRange{Int64}[9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17], Any[0.740244, 0.796298, 0.856957, 0.881931, 0.889058, 0.896842, 0.906155, 0.895239, 0.903463], Any[9×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 6   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │, 10×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 10  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │, 11×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 10  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │, 12×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │, 13×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ -3.0 │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │, 14×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 14  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ 1.0  │, 15×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 15  │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ 1.0  │, 16×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -3.0 │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ 1.0  │, 17×8 DataFrames.DataFrame
+│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 3.0  │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -3.0 │ -3.0 │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ -7.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ 7.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ -7.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 3.0  │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -3.0 │ 3.0  │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ -3.0 │ 3.0  │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 3.0  │ 3.0  │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -3.0 │ -3.0 │ 3.0  │ -7.0 │ 7.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 12  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ 7.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ -3.0 │ -3.0 │ 3.0  │ 7.0  │ -7.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 3.0  │ -3.0 │ -3.0 │ 7.0  │ 7.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ -3.0 │ 3.0  │ -3.0 │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ 3.0  │ 3.0  │ 3.0  │ -7.0 │ -7.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 17  │ 3.0  │ -3.0 │ -3.0 │ -7.0 │ 7.0  │ 1.0  │ 1.0  │ 1.0  │], Any[0.931983, 0.945517, 0.940606, 1.0, 0.982295, 0.970403, 0.973055, 0.98576, 0.984832])
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+comparison = SampleComparison(false, false,
+                              UnitRange{Int64}[9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17],
+                              Any[0.740244, 0.796298, 0.856957, 0.881931, 0.889058, 0.896842, 0.906155, 0.895239, 0.903463],
+                              [Array{Float64, 2}(i, 8) for i = 9:17], 
+                              Any[0.931983, 0.945517, 0.940606, 1.0, 0.982295, 0.970403, 0.973055, 0.98576, 0.984832])
+#+END_SRC
+
+#+RESULTS:
+: SampleComparison(false, false, UnitRange{Int64}[9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17], Any[0.740244, 0.796298, 0.856957, 0.881931, 0.889058, 0.896842, 0.906155, 0.895239, 0.903463], Array{Float64,2}[[6.9257e-310 6.92556e-310 … 0.0 0.0; 6.92574e-310 6.9257e-310 … 3.65609e-322 0.0; … ; -2.08127e-138 6.9257e-310 … 0.0 0.0; -4.01597e-143 6.9257e-310 … 0.0 0.0], [6.92573e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; … ; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310], [6.92571e-310 6.92571e-310 … 6.92571e-310 6.92571e-310; 6.92571e-310 6.92571e-310 … 6.92571e-310 6.92571e-310; … ; 6.92571e-310 6.92571e-310 … 6.92571e-310 6.92573e-310; 6.92571e-310 6.92571e-310 … 6.92571e-310 6.92573e-310], [6.92573e-310 6.92571e-310 … 6.92571e-310 6.92571e-310; 6.92573e-310 6.92571e-310 … 6.92571e-310 6.92571e-310; … ; 6.92571e-310 6.92571e-310 … 6.92571e-310 0.0; 6.92571e-310 6.92571e-310 … 6.92571e-310 -1.18818], [6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; … ; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310], [6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.9257e-310; … ; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.92573e-310; 6.9257e-310 6.9257e-310 … 6.9257e-310 6.92573e-310], [1.17588e-321 7.46039e-322 … 9.48606e-322 1.22528e-321; 9.53547e-322 1.21046e-321 … 8.54734e-322 8.84378e-322; … ; 1.00789e-321 1.18082e-321 … 6.7687e-322 8.59674e-322; 6.62048e-322 1.23022e-321 … 7.31217e-322 8.49793e-322], [4.94066e-324 0.0 … 4.94066e-324 4.94066e-324; 7.23847e-318 0.0 … 4.29561e-318 7.23864e-318; … ; 4.94066e-324 0.0 … 4.94066e-324 4.94066e-324; 4.29581e-318 0.0 … 4.29567e-318 7.23862e-318], [4.94066e-324 7.23983e-318 … 4.94066e-324 7.23912e-318; 7.2392e-318 4.94066e-324 … 7.239e-318 4.94066e-324; … ; 7.23977e-318 4.94066e-324 … 7.23957e-318 0.0; 4.94066e-324 7.23973e-318 … 4.94066e-324 0.0]], Any[0.931983, 0.945517, 0.940606, 1.0, 0.982295, 0.970403, 0.973055, 0.98576, 0.984832])
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_federov_comparison(comparison, pb = false, title = string("D-Efficiency and Experiments",
+                                                               " for 3 4-Level,",
+                                                               " 3 8-Level and",
+                                                               " 2 3-Level Factors"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Discussion
+The Federov algorithm was not as good in these cases, in comparison to random
+sampling of the designs. I did not plot histograms for mixed-level designs, so I
+had no intuition for these cases.
+
+**** Plotting Large Mixed-Level Factor Designs (Numerical)
+***** Setup
+#+CALL: setup_design_comparison()
+
+#+RESULTS:
+#+begin_example
+
+
+
+
+get_max_samples (generic function with 3 methods)
+
+compare_sample_pb (generic function with 3 methods)
+
+compare_sample_pb_federov (generic function with 3 methods)
+
+compare_sample_federov (generic function with 6 methods)
+
+compare_sample_federov (generic function with 6 methods)
+
+plot_pb_comparison (generic function with 1 method)
+
+plot_federov_comparison (generic function with 1 method)
+
+plot_max_samples (generic function with 1 method)
+#+end_example
+***** Plotting 12 4-Level, 12 8-Level, 12 3-Level                :ATTACH:
+:PROPERTIES:
+:Attachments: juliaZRpVhy.html
+:ID:       251e72ef-74f5-4fbd-b3f7-ff719ac69624
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Float64, 1}}()
+
+for i = 1:12
+    factors[Symbol(:f, i)] = [-3., -1., 1., 3.]
+end
+
+for i = 13:25
+    factors[Symbol(:f, i)] = [-7., -5., -3., -1., 1., 3., 5., 7.]
+end
+
+for i = 26:38
+    factors[Symbol(:f, i)] = [-1., 0., 1.]
+end
+
+println(factors)
+
+comparison = get_max_samples(factors, 16000, false)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 0 entries
+
+
+
+
+
+
+
+DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+
+ Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 39:39
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 37.005733716 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 40:40
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 44.203143155 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 41:41
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 46.337401917 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 42:42
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 47.751510035 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 43:43
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 45.447193732 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f14=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f15=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f16=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f17=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f18=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f19=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f20=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f21=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f22=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f23=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f24=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f25=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f26=>[-1.0, 0.0, 1.0],:f27=>[-1.0, 0.0, 1.0],:f28=>[-1.0, 0.0, 1.0],:f29=>[-1.0, 0.0, 1.0],:f30=>[-1.0, 0.0, 1.0],:f31=>[-1.0, 0.0, 1.0],:f32=>[-1.0, 0.0, 1.0],:f33=>[-1.0, 0.0, 1.0],:f34=>[-1.0, 0.0, 1.0],:f35=>[-1.0, 0.0, 1.0],:f36=>[-1.0, 0.0, 1.0],:f37=>[-1.0, 0.0, 1.0],:f38=>[-1.0, 0.0, 1.0])
+Full Factorial Size: -9223372036854775808
+Total Subsets: 0.0
+Range of Design Sizes: 44:44
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 45.690709198 seconds
+SampleComparison(false, false, UnitRange{Int64}[39:39, 40:40, 41:41, 42:42, 43:43, 44:44], Any[0.462577, 0.479875, 0.512196, 0.529278, 0.542623, 0.560132], false, false)
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_max_samples(comparison, title = string("D-Efficiency and Experiments",
+                                            " for 12 4-Level,",
+                                            " 12 8-Level and",
+                                            " 12 3-Level Factors"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+***** Plotting 30 4-Level, 30 8-Level, 30 3-Level                :ATTACH:
+:PROPERTIES:
+:Attachments: juliaMisZRt.html
+:ID:       8fc6de72-185e-4788-96fd-fa7005855019
+:END:
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+factors = OrderedDict{Symbol, Array{Float64, 1}}()
+
+for i = 1:30
+    factors[Symbol(:f, i)] = [-3., -1., 1., 3.]
+end
+
+for i = 31:61
+    factors[Symbol(:f, i)] = [-7., -5., -3., -1., 1., 3., 5., 7.]
+end
+
+for i = 62:92
+    factors[Symbol(:f, i)] = [-1., 0., 1.]
+end
+
+println(factors)
+
+comparison = get_max_samples(factors, 16000, false)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 0 entries
+
+
+
+
+
+
+
+DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+
+ Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 93:93
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 199.894570161 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 94:94
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 217.675115762 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 95:95
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 273.297037336 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 96:96
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 236.204031963 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 97:97
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 206.879922424 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-3.0, -1.0, 1.0, 3.0],:f2=>[-3.0, -1.0, 1.0, 3.0],:f3=>[-3.0, -1.0, 1.0, 3.0],:f4=>[-3.0, -1.0, 1.0, 3.0],:f5=>[-3.0, -1.0, 1.0, 3.0],:f6=>[-3.0, -1.0, 1.0, 3.0],:f7=>[-3.0, -1.0, 1.0, 3.0],:f8=>[-3.0, -1.0, 1.0, 3.0],:f9=>[-3.0, -1.0, 1.0, 3.0],:f10=>[-3.0, -1.0, 1.0, 3.0],:f11=>[-3.0, -1.0, 1.0, 3.0],:f12=>[-3.0, -1.0, 1.0, 3.0],:f13=>[-3.0, -1.0, 1.0, 3.0],:f14=>[-3.0, -1.0, 1.0, 3.0],:f15=>[-3.0, -1.0, 1.0, 3.0],:f16=>[-3.0, -1.0, 1.0, 3.0],:f17=>[-3.0, -1.0, 1.0, 3.0],:f18=>[-3.0, -1.0, 1.0, 3.0],:f19=>[-3.0, -1.0, 1.0, 3.0],:f20=>[-3.0, -1.0, 1.0, 3.0],:f21=>[-3.0, -1.0, 1.0, 3.0],:f22=>[-3.0, -1.0, 1.0, 3.0],:f23=>[-3.0, -1.0, 1.0, 3.0],:f24=>[-3.0, -1.0, 1.0, 3.0],:f25=>[-3.0, -1.0, 1.0, 3.0],:f26=>[-3.0, -1.0, 1.0, 3.0],:f27=>[-3.0, -1.0, 1.0, 3.0],:f28=>[-3.0, -1.0, 1.0, 3.0],:f29=>[-3.0, -1.0, 1.0, 3.0],:f30=>[-3.0, -1.0, 1.0, 3.0],:f31=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f32=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f33=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f34=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f35=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f36=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f37=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f38=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f39=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f40=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f41=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f42=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f43=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f44=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f45=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f46=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f47=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f48=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f49=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f50=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f51=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f52=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f53=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f54=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f55=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f56=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f57=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f58=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f59=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f60=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f61=>[-7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0],:f62=>[-1.0, 0.0, 1.0],:f63=>[-1.0, 0.0, 1.0],:f64=>[-1.0, 0.0, 1.0],:f65=>[-1.0, 0.0, 1.0],:f66=>[-1.0, 0.0, 1.0],:f67=>[-1.0, 0.0, 1.0],:f68=>[-1.0, 0.0, 1.0],:f69=>[-1.0, 0.0, 1.0],:f70=>[-1.0, 0.0, 1.0],:f71=>[-1.0, 0.0, 1.0],:f72=>[-1.0, 0.0, 1.0],:f73=>[-1.0, 0.0, 1.0],:f74=>[-1.0, 0.0, 1.0],:f75=>[-1.0, 0.0, 1.0],:f76=>[-1.0, 0.0, 1.0],:f77=>[-1.0, 0.0, 1.0],:f78=>[-1.0, 0.0, 1.0],:f79=>[-1.0, 0.0, 1.0],:f80=>[-1.0, 0.0, 1.0],:f81=>[-1.0, 0.0, 1.0],:f82=>[-1.0, 0.0, 1.0],:f83=>[-1.0, 0.0, 1.0],:f84=>[-1.0, 0.0, 1.0],:f85=>[-1.0, 0.0, 1.0],:f86=>[-1.0, 0.0, 1.0],:f87=>[-1.0, 0.0, 1.0],:f88=>[-1.0, 0.0, 1.0],:f89=>[-1.0, 0.0, 1.0],:f90=>[-1.0, 0.0, 1.0],:f91=>[-1.0, 0.0, 1.0],:f92=>[-1.0, 0.0, 1.0])
+Full Factorial Size: 0
+Total Subsets: 1.0
+Range of Design Sizes: 98:98
+Number of Designs to Sample: 16000
+WARNING: Skipping bounds check!
+Elapsed Time: 217.453677873 seconds
+SampleComparison(false, false, UnitRange{Int64}[93:93, 94:94, 95:95, 96:96, 97:97, 98:98], Any[0.405744, 0.424798, 0.435124, 0.447934, 0.454053, 0.464837], false, false)
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot_max_samples(comparison, title = string("D-Efficiency and Experiments",
+                                            " for 30 4-Level,",
+                                            " 30 8-Level and",
+                                            " 30 3-Level Factors"))
+#+END_SRC
+
+#+RESULTS:
+: Created new window in existing browser session.
+
+**** Comparing Model Matrix
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+fac <- gen.factorial(c(2,3), factors = c(1,2))
+m <- model.matrix(~., fac)
+
+fac
+m
+
+eval.design(~., fac)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2
+1 -1 -1
+2  1 -1
+3 -1  0
+4  1  0
+5 -1  1
+6  1  1
+  (Intercept) X1 X2
+1           1 -1 -1
+2           1  1 -1
+3           1 -1  0
+4           1  1  0
+5           1 -1  1
+6           1  1  1
+attr(,"assign")
+[1] 0 1 2
+$determinant
+[1] 0.8735805
+
+$A
+[1] 1.166667
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1.224745
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using ExperimentalDesign, DataStructures, StatsModels
+
+fac = OrderedDict(:x1 => [:a, :b], :x2 => [:a, :b, :c])
+
+design = [:a :a; :b :a; :a :b; :b :b; :a :c; :b :c]
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ESS
+INFO: Recompiling stale cache file /home/phrb/.julia/lib/v0.6/ExperimentalDesign.ji for module ExperimentalDesign.
+
+DataStructures.OrderedDict{Symbol,Array{Symbol,1}} with 2 entries:
+  :x1 => Symbol[:a, :b]
+  :x2 => Symbol[:a, :b, :c]
+
+6×2 Array{Symbol,2}:
+ :a  :a
+ :b  :a
+ :a  :b
+ :b  :b
+ :a  :c
+ :b  :c
+
+6×4 Array{Float64,2}:
+ 1.0  -1.0  -1.0  -1.0
+ 1.0   1.0  -1.0  -1.0
+ 1.0  -1.0   1.0  -1.0
+ 1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0
+
+0.8773826753016616
+#+end_example
