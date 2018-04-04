@@ -27432,20 +27432,20 @@ plot_subsets(sampled_subsets, "5T3L, 10N2L")
 #+BEGIN_SRC julia
 using RCall, ExperimentalDesign, DataStructures, DataFrames
 
-function opt_federov(design, experiments, is_true_factor)
+function opt_federov(design, experiments)
     r_output = R"""
     library(AlgDesign)
-    federov_output <- optFederov(~., $design, criterion = "D", nTrials = $experiments, factors = $is_true_factor)
+    design <- $design
+    design[] <- lapply(design, as.factor)
+    str(design)
+    federov_output <- optFederov(~., design, criterion = "D", nTrials = $experiments)
     """
     return @rget federov_output
 end
 
-function sampled_opt_federov(factors, is_true_factor, experiments, candidate_set_size)
-    println(collect(values(factors)))
+function sampled_opt_federov(factors, experiments, candidate_set_size)
     design = full_factorial_subset(collect(values(factors)), candidate_set_size)
-    println(design)
-    println(DataFrame(design))
-    return opt_federov(DataFrame(design), experiments, is_true_factor)
+    return opt_federov(DataFrame(Array{Float64, 2}(design)), experiments)
 end
 
 function sampling_max(factors, designs, ranges, check_bounds = false)
@@ -27459,19 +27459,23 @@ function sampling_max(factors, designs, ranges, check_bounds = false)
     return best_sampled
 end
 
-function sampled_opt_federov_max(factors, is_true_factor, candidate_set_size,
+function sampled_opt_federov_max(factors, julia_factors, candidate_set_size,
                                  set_repeats, ranges)
     best_sampled = []
 
     for range in ranges
         best_range = []
         for i = 1:set_repeats
-            federov_output = sampled_opt_federov(factors, range.start, candidate_set_size)
-            design_array   = Array(federov_output[:design])
-            model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(factors))),
-                                                   design_array,
-                                                   factors)
+            federov_output = sampled_opt_federov(factors, range.start,
+                                                 candidate_set_size)
+            design_array   = Array{String, 2}(federov_output[:design])
+            println(design_array)
 
+            model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(julia_factors))),
+                                                   design_array,
+                                                   julia_factors)
+
+            println("federov_output[:D]: ", federov_output[:D])
             push!(best_range, d_efficiency_lower_bound(model_matrix))
         end
         push!(best_sampled, max(best_range...))
@@ -27482,15 +27486,18 @@ end
 #+END_SRC
 
 #+RESULTS:
-: 
-: 
-: opt_federov (generic function with 2 methods)
-: 
-: sampled_opt_federov (generic function with 2 methods)
-: 
-: sampling_max (generic function with 2 methods)
-: 
-: sampled_opt_federov_max (generic function with 3 methods)
+#+begin_example
+ESS
+
+
+opt_federov (generic function with 1 method)
+
+sampled_opt_federov (generic function with 1 method)
+
+sampling_max (generic function with 2 methods)
+
+sampled_opt_federov_max (generic function with 1 method)
+#+end_example
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
@@ -27498,17 +27505,21 @@ function get_samples()
     factors = OrderedDict{Symbol, Any}()
 
     for i = 1:10
-        factors[Symbol(:f, i)] = ["1", "2", "3"]
+        factors[Symbol(:f, i)] = [1., 2., 3.]
     end
 
-    is_true_factor = collect(1:10)
+    julia_factors = OrderedDict{Symbol, Any}()
 
-    ranges = [k:k for k = 20:1:24]
+    for i = 1:10
+        julia_factors[Symbol(:f, i)] = ["1", "2", "3"]
+    end
 
-    candidate_set_size = 4000
+    ranges = [k:k for k = 21:1:24]
+
+    candidate_set_size = 400
     repeats = 1
 
-    best_federov = sampled_opt_federov_max(factors, is_true_factor, candidate_set_size,
+    best_federov = sampled_opt_federov_max(factors, julia_factors, candidate_set_size,
                                            repeats, ranges)
     println(best_federov)
 end
@@ -27517,15 +27528,7 @@ get_samples()
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-get_samples (generic function with 1 method)
-
-ERROR: MethodError: Cannot `convert` an object of type String to an object of type Float64
-This may have arisen from a call to the constructor Float64(...),
-since type constructors fall back to convert methods.
-Stacktrace:
- [1] copy!(::IndexLinear, ::Array{Float64,2}, ::IndexLinear, ::Array{Any,2}) at ./abstractarray.jl:656
- [2] sampled_opt_federov(::DataStructures.OrderedDict{Symbol,Any}, ::Int64, ::Int64) at ./none:2
- [3] sampled_opt_federov_max(::DataStructures.OrderedDict{Symbol,Any}, ::Array{Int64,1}, ::Int64, ::Int64, ::Array{UnitRange{Int64},1}) at ./none:8
- [4] get_samples() at ./none:15
-#+end_example
+: get_samples (generic function with 1 method)
+: 
+: ERROR: REvalError: Error in design[] <- lapply(`#JL`$design, as.factor) : 
+:   object 'design' not found
