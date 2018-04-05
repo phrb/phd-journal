@@ -27432,20 +27432,27 @@ plot_subsets(sampled_subsets, "5T3L, 10N2L")
 #+BEGIN_SRC julia
 using RCall, ExperimentalDesign, DataStructures, DataFrames
 
-function opt_federov(design, experiments)
+function identity_scaling(design, factors)
+    return design
+end
+
+function opt_federov(design, is_factor, experiments)
     r_output = R"""
     library(AlgDesign)
     design <- $design
-    design[] <- lapply(design, as.factor)
-    str(design)
+    if(length($is_factor) != 0) {
+        design[$is_factor] <- lapply(design[$is_factor], as.factor)
+    }
     federov_output <- optFederov(~., design, criterion = "D", nTrials = $experiments)
     """
     return @rget federov_output
 end
 
-function sampled_opt_federov(factors, experiments, candidate_set_size)
+function sampled_opt_federov(factors, is_factor, experiments, candidate_set_size)
     design = full_factorial_subset(collect(values(factors)), candidate_set_size)
-    return opt_federov(DataFrame(Array{Float64, 2}(design)), experiments)
+    design = DataFrame(Array{Float64, 2}(design))
+    rename!(design, OrderedDict(zip(names(design), keys(factors))))
+    return opt_federov(design, is_factor, experiments)
 end
 
 function sampling_max(factors, designs, ranges, check_bounds = false)
@@ -27459,44 +27466,48 @@ function sampling_max(factors, designs, ranges, check_bounds = false)
     return best_sampled
 end
 
-function sampled_opt_federov_max(factors, julia_factors, candidate_set_size,
-                                 set_repeats, ranges)
-    best_sampled = []
+function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_set_size,
+                                 set_repeats, ranges, scale = identity_scaling)
+    best_sampled         = []
+    best_sampled_federov = []
 
     for range in ranges
-        best_range = []
+        best_range         = []
+        best_range_federov = []
         for i = 1:set_repeats
-            federov_output = sampled_opt_federov(factors, range.start,
+            federov_output = sampled_opt_federov(factors, is_factor, range.start,
                                                  candidate_set_size)
-            design_array   = Array{String, 2}(federov_output[:design])
-            println(design_array)
+            design_array   = Array{Any, 2}(federov_output[:design])
 
             model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(julia_factors))),
                                                    design_array,
-                                                   julia_factors)
+                                                   julia_factors,
+                                                   scale = scale)
 
-            println("federov_output[:D]: ", federov_output[:D])
+            push!(best_range_federov, federov_output[:D])
             push!(best_range, d_efficiency_lower_bound(model_matrix))
         end
+        push!(best_sampled_federov, max(best_range_federov...))
         push!(best_sampled, max(best_range...))
     end
 
-    return best_sampled
+    return best_sampled, best_sampled_federov
 end
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ESS
 
 
-opt_federov (generic function with 1 method)
+identity_scaling (generic function with 1 method)
 
-sampled_opt_federov (generic function with 1 method)
+opt_federov (generic function with 2 methods)
+
+sampled_opt_federov (generic function with 2 methods)
 
 sampling_max (generic function with 2 methods)
 
-sampled_opt_federov_max (generic function with 1 method)
+sampled_opt_federov_max (generic function with 3 methods)
 #+end_example
 
 #+HEADER: :results output :session *Julia*
@@ -27507,6 +27518,13 @@ function get_samples()
     for i = 1:10
         factors[Symbol(:f, i)] = [1., 2., 3.]
     end
+
+    is_factor = [String(f) for f in keys(factors)]
+
+    println("Factors:")
+    println(factors)
+    println("True factors:")
+    println(is_factor)
 
     julia_factors = OrderedDict{Symbol, Any}()
 
@@ -27519,8 +27537,64 @@ function get_samples()
     candidate_set_size = 400
     repeats = 1
 
-    best_federov = sampled_opt_federov_max(factors, julia_factors, candidate_set_size,
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
                                            repeats, ranges)
+    println("Output with identity scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_boxdraper_encoding!)
+    println("Output with Box-Draper scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_orthogonal!)
+    println("Output with orthogonal scaling:")
+    println(best_federov)
+
+    factors = OrderedDict{Symbol, Any}()
+
+    for i = 1:20
+        factors[Symbol(:f, i)] = [1., 2.]
+    end
+
+    is_factor = []
+
+    println("Factors:")
+    println(factors)
+    println("True factors:")
+    println(is_factor)
+
+    julia_factors = factors
+
+    ranges = [k:k for k = 21:1:24]
+
+    candidate_set_size = 400
+    repeats = 1
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges)
+    println("Output with identity scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_boxdraper_encoding!)
+    println("Output with Box-Draper scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_orthogonal!)
+    println("Output with orthogonal scaling:")
     println(best_federov)
 end
 
@@ -27528,7 +27602,743 @@ get_samples()
 #+END_SRC
 
 #+RESULTS:
-: get_samples (generic function with 1 method)
-: 
-: ERROR: REvalError: Error in design[] <- lapply(`#JL`$design, as.factor) : 
-:   object 'design' not found
+#+begin_example
+get_samples (generic function with 1 method)
+
+Factors:
+DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0, 3.0],:f2=>[1.0, 2.0, 3.0],:f3=>[1.0, 2.0, 3.0],:f4=>[1.0, 2.0, 3.0],:f5=>[1.0, 2.0, 3.0],:f6=>[1.0, 2.0, 3.0],:f7=>[1.0, 2.0, 3.0],:f8=>[1.0, 2.0, 3.0],:f9=>[1.0, 2.0, 3.0],:f10=>[1.0, 2.0, 3.0])
+True factors:
+String["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"]
+Output with identity scaling:
+(Any[0.164348, 0.167937, 0.174036, 0.176942], Any[0.164348, 0.167937, 0.174036, 0.176942])
+Output with Box-Draper scaling:
+(Any[0.615584, 0.624695, 0.654439, 0.652266], Any[0.164398, 0.166831, 0.174775, 0.174194])
+Output with orthogonal scaling:
+(Any[0.619785, 0.631156, 0.642248, 0.645951], Any[0.16552, 0.168557, 0.171519, 0.172508])
+Factors:
+DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0],:f2=>[1.0, 2.0],:f3=>[1.0, 2.0],:f4=>[1.0, 2.0],:f5=>[1.0, 2.0],:f6=>[1.0, 2.0],:f7=>[1.0, 2.0],:f8=>[1.0, 2.0],:f9=>[1.0, 2.0],:f10=>[1.0, 2.0],:f11=>[1.0, 2.0],:f12=>[1.0, 2.0],:f13=>[1.0, 2.0],:f14=>[1.0, 2.0],:f15=>[1.0, 2.0],:f16=>[1.0, 2.0],:f17=>[1.0, 2.0],:f18=>[1.0, 2.0],:f19=>[1.0, 2.0],:f20=>[1.0, 2.0])
+True factors:
+Any[]
+Output with identity scaling:
+(Any[0.207151, 0.213685, 0.219506, 0.226019], Any[0.207151, 0.213685, 0.219506, 0.226019])
+Output with Box-Draper scaling:
+(Any[0.765185, 0.796408, 0.820742, 0.844003], Any[0.204351, 0.212689, 0.219188, 0.2254])
+Output with orthogonal scaling:
+(Any[0.774935, 0.806954, 0.823208, 0.846287], Any[0.206955, 0.215506, 0.219846, 0.22601])
+#+end_example
+*** [2018-04-05 Thu]
+**** Comparing More Model Matrices
+***** Comparing Factor Model Matrices
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+fac <- gen.factorial(c(2, 3), factors = c(1, 2))
+m <- model.matrix(~., fac)
+
+fac
+m
+
+eval.design(~., fac, X = fac)
+
+optimized <- optFederov(~., fac, nTrials = 6)
+
+optimized
+
+eval.design(~., optimized$design, X = fac)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2
+1  1  1
+2  2  1
+3  1  2
+4  2  2
+5  1  3
+6  2  3
+  (Intercept) X12 X22 X23
+1           1   0   0   0
+2           1   1   0   0
+3           1   0   1   0
+4           1   1   1   0
+5           1   0   0   1
+6           1   1   0   1
+attr(,"assign")
+[1] 0 1 2 2
+attr(,"contrasts")
+attr(,"contrasts")$X1
+[1] "contr.treatment"
+
+attr(,"contrasts")$X2
+[1] "contr.treatment"
+$determinant
+[1] 0.3102016
+
+$A
+[1] 5
+
+$I
+[1] 4
+
+$Geff
+[1] 1
+
+$Deffbound
+[1] 1
+
+$diagonality
+[1] 0.874
+
+$gmean.variances
+[1] 5.241483
+$D
+[1] 0.3102016
+
+$A
+[1] 5
+
+$Ge
+[1] 1
+
+$Dea
+[1] 1
+
+$design
+  X1 X2
+1  1  1
+2  2  1
+3  1  2
+4  2  2
+5  1  3
+6  2  3
+
+$rows
+[1] 1 2 3 4 5 6
+$determinant
+[1] 0.3102016
+
+$A
+[1] 5
+
+$I
+[1] 4
+
+$Geff
+[1] 1
+
+$Deffbound
+[1] 1
+
+$diagonality
+[1] 0.874
+
+$gmean.variances
+[1] 5.241483
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using ExperimentalDesign, DataStructures, StatsModels, IterTools
+
+function identity_scaling(design, factors)
+    return design
+end
+
+fac = OrderedDict(:x1 => [:a, :b], :x2 => [:a, :b, :c])
+
+design = [:a :a; :b :a; :a :b; :b :b; :a :c; :b :c]
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = identity_scaling)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_orthogonal!)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_boxdraper_encoding!)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+identity_scaling (generic function with 1 method)
+
+DataStructures.OrderedDict{Symbol,Array{Symbol,1}} with 2 entries:
+  :x1 => Symbol[:a, :b]
+  :x2 => Symbol[:a, :b, :c]
+
+6×2 Array{Symbol,2}:
+ :a  :a
+ :b  :a
+ :a  :b
+ :b  :b
+ :a  :c
+ :b  :c
+
+6×4 Array{Float64,2}:
+ 1.0  0.0  0.0  0.0
+ 1.0  1.0  0.0  0.0
+ 1.0  0.0  1.0  0.0
+ 1.0  1.0  1.0  0.0
+ 1.0  0.0  0.0  1.0
+ 1.0  1.0  0.0  1.0
+
+0.31020161970069987
+
+6×4 Array{Float64,2}:
+ 1.0  -1.0  -1.0  -1.0
+ 1.0   1.0  -1.0  -1.0
+ 1.0  -1.0   1.0  -1.0
+ 1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0
+
+0.8773826753016616
+
+6×4 Array{Float64,2}:
+ 1.0  -1.0  -1.0  -1.0
+ 1.0   1.0  -1.0  -1.0
+ 1.0  -1.0   1.0  -1.0
+ 1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0
+
+0.8773826753016616
+#+end_example
+***** Comparing Numerical Model Matrices
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+fac <- gen.factorial(c(2,3))
+m <- model.matrix(~., fac)
+
+fac
+m
+
+eval.design(~., fac, X = fac)
+
+optimized <- optFederov(~., fac, nTrials = 6)
+
+optimized
+
+eval.design(~., optimized$design, X = fac)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2
+1 -1 -1
+2  1 -1
+3 -1  0
+4  1  0
+5 -1  1
+6  1  1
+  (Intercept) X1 X2
+1           1 -1 -1
+2           1  1 -1
+3           1 -1  0
+4           1  1  0
+5           1 -1  1
+6           1  1  1
+attr(,"assign")
+[1] 0 1 2
+$determinant
+[1] 0.8735805
+
+$A
+[1] 1.166667
+
+$I
+[1] 3
+
+$Geff
+[1] 0.857
+
+$Deffbound
+[1] 0.846
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1.224745
+$D
+[1] 0.8735805
+
+$A
+[1] 1.166667
+
+$Ge
+[1] 0.857
+
+$Dea
+[1] 0.846
+
+$design
+  X1 X2
+1 -1 -1
+2  1 -1
+3 -1  0
+4  1  0
+5 -1  1
+6  1  1
+
+$rows
+[1] 1 2 3 4 5 6
+$determinant
+[1] 0.8735805
+
+$A
+[1] 1.166667
+
+$I
+[1] 3
+
+$Geff
+[1] 0.857
+
+$Deffbound
+[1] 0.846
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1.224745
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using ExperimentalDesign, DataStructures, StatsModels, IterTools
+
+function identity_scaling(design, factors)
+    return design
+end
+
+fac = OrderedDict(:x1 => [1, 2], :x2 => [1, 2, 3])
+
+design = [1 1; 2 1; 1 2; 2 2; 1 3; 2 3]
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = identity_scaling)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_orthogonal!)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_boxdraper_encoding!)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+identity_scaling (generic function with 1 method)
+
+DataStructures.OrderedDict{Symbol,Array{Int64,1}} with 2 entries:
+  :x1 => [1, 2]
+  :x2 => [1, 2, 3]
+
+6×2 Array{Int64,2}:
+ 1  1
+ 2  1
+ 1  2
+ 2  2
+ 1  3
+ 2  3
+
+6×3 Array{Float64,2}:
+ 1.0  1.0  1.0
+ 1.0  2.0  1.0
+ 1.0  1.0  2.0
+ 1.0  2.0  2.0
+ 1.0  1.0  3.0
+ 1.0  2.0  3.0
+
+0.5503212081491043
+
+6×3 Array{Float64,2}:
+ 1.0  -1.0  -1.0
+ 1.0   1.0  -1.0
+ 1.0  -1.0   0.0
+ 1.0   1.0   0.0
+ 1.0  -1.0   1.0
+ 1.0   1.0   1.0
+
+0.8735804647362988
+
+6×3 Array{Float64,2}:
+ 1.0  -1.0  -1.22474
+ 1.0   1.0  -1.22474
+ 1.0  -1.0   0.0    
+ 1.0   1.0   0.0    
+ 1.0  -1.0   1.22474
+ 1.0   1.0   1.22474
+
+0.9999999999999999
+#+end_example
+***** Comparing Model Matrices for the Plackett-Burman Design
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(FrF2)
+
+design <- pb(16)
+design
+
+m <- model.matrix(~., design)
+m
+
+eval.design(~., design, X = design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Screening 15 factors in 16 runs involves perfect aliasing of 
+ pairwise interactions of the first six factors with the last factor.
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+1   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+2  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+3  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+4   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+5   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+6   1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+7  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+8  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+9   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+10  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+11  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+12 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+13 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+14  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+15 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+16 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+class=design, type= pb
+   (Intercept) A1 B1 C1 D1 E1 F1 G1 H1 J1 K1 L1 M1 N1 O1 P1
+1            1  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+2            1 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+3            1 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+4            1  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+5            1  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+6            1  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+7            1 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+8            1 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+9            1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+10           1  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+11           1  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+12           1 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+13           1 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+14           1  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+15           1 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+16           1 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+attr(,"assign")
+ [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+attr(,"contrasts")
+attr(,"contrasts")$A
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$B
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$C
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$D
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$E
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$F
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$G
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$H
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$J
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$K
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$L
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$M
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$N
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$O
+   [,1]
+-1   -1
+1     1
+
+attr(,"contrasts")$P
+   [,1]
+-1   -1
+1     1
+$determinant
+[1] 1
+
+$A
+[1] 1
+
+$I
+[1] 16
+
+$Geff
+[1] 1
+
+$Deffbound
+[1] 1
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using ExperimentalDesign, DataStructures, StatsModels, IterTools
+
+function identity_scaling(design, factors)
+    return design
+end
+
+design = placket_burman(16)
+
+fac = OrderedDict([(Symbol(:x, i), [-1., 1.]) for i = 1:size(design, 2)])
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = identity_scaling)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_orthogonal!)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_boxdraper_encoding!)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+***** Comparing Mixed Model Matrices
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+fac <- gen.factorial(c(2, 3), factors = c(2))
+m <- model.matrix(~., fac)
+
+fac
+m
+
+eval.design(~., fac, X = fac)
+
+optimized <- optFederov(~., fac, nTrials = 6)
+
+optimized
+
+eval.design(~., optimized$design, X = fac)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2
+1 -1  1
+2  1  1
+3 -1  2
+4  1  2
+5 -1  3
+6  1  3
+  (Intercept) X1 X22 X23
+1           1 -1   0   0
+2           1  1   0   0
+3           1 -1   1   0
+4           1  1   1   0
+5           1 -1   0   1
+6           1  1   0   1
+attr(,"assign")
+[1] 0 1 2 2
+attr(,"contrasts")
+attr(,"contrasts")$X2
+[1] "contr.treatment"
+$determinant
+[1] 0.4386913
+
+$A
+[1] 4
+
+$I
+[1] 4
+
+$Geff
+[1] 1
+
+$Deffbound
+[1] 1
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 3.301927
+$D
+[1] 0.4386913
+
+$A
+[1] 4
+
+$Ge
+[1] 1
+
+$Dea
+[1] 1
+
+$design
+  X1 X2
+1 -1  1
+2  1  1
+3 -1  2
+4  1  2
+5 -1  3
+6  1  3
+
+$rows
+[1] 1 2 3 4 5 6
+$determinant
+[1] 0.4386913
+
+$A
+[1] 4
+
+$I
+[1] 4
+
+$Geff
+[1] 1
+
+$Deffbound
+[1] 1
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 3.301927
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using ExperimentalDesign, DataStructures, StatsModels, IterTools
+
+function identity_scaling(design, factors)
+    return design
+end
+
+fac = OrderedDict(:x1 => [1., 2.], :x2 => [:a, :b, :c])
+
+design = [1. :a; 2. :a; 1. :b; 2. :b; 1. :c; 2. :c]
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = identity_scaling)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_orthogonal!)
+
+d_efficiency_lower_bound(m)
+
+m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_boxdraper_encoding!)
+
+d_efficiency_lower_bound(m)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+identity_scaling (generic function with 1 method)
+
+DataStructures.OrderedDict{Symbol,Any} with 2 entries:
+  :x1 => [1.0, 2.0]
+  :x2 => Symbol[:a, :b, :c]
+
+6×2 Array{Any,2}:
+ 1.0  :a
+ 2.0  :a
+ 1.0  :b
+ 2.0  :b
+ 1.0  :c
+ 2.0  :c
+
+6×4 Array{Float64,2}:
+ 1.0  1.0  0.0  0.0
+ 1.0  2.0  0.0  0.0
+ 1.0  1.0  1.0  0.0
+ 1.0  2.0  1.0  0.0
+ 1.0  1.0  0.0  1.0
+ 1.0  2.0  0.0  1.0
+
+0.31020161970069987
+
+6×4 Array{Float64,2}:
+ 1.0  -1.0  -1.0  -1.0
+ 1.0   1.0  -1.0  -1.0
+ 1.0  -1.0   1.0  -1.0
+ 1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0
+
+0.8773826753016616
+
+6×4 Array{Float64,2}:
+ 1.0  -1.0  -1.0  -1.0
+ 1.0   1.0  -1.0  -1.0
+ 1.0  -1.0   1.0  -1.0
+ 1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0
+
+0.8773826753016616
+#+end_example
