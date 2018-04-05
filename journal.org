@@ -27993,6 +27993,8 @@ library(AlgDesign)
 library(FrF2)
 
 design <- pb(16)
+design[] <- lapply(design, as.factor)
+
 design
 
 m <- model.matrix(~., design)
@@ -28006,40 +28008,40 @@ eval.design(~., design, X = design)
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
-1   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
-2  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
-3  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
-4   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
-5   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
-6   1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
-7  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
-8  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
-9   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-10  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
-11  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+1  -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+2   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+3   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+4   1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+5  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+6   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+7  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+8  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+9   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+10 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+11 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
 12 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
-13 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
-14  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+13  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+14  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 15 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
-16 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+16  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
 class=design, type= pb
    (Intercept) A1 B1 C1 D1 E1 F1 G1 H1 J1 K1 L1 M1 N1 O1 P1
-1            1  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
-2            1 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
-3            1 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
-4            1  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
-5            1  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
-6            1  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
-7            1 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
-8            1 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
-9            1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-10           1  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
-11           1  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+1            1 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+2            1  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+3            1  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+4            1  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+5            1 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+6            1  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+7            1 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+8            1 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+9            1  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+10           1 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+11           1 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
 12           1 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
-13           1 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
-14           1  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+13           1  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+14           1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 15           1 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
-16           1 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+16           1  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
 attr(,"assign")
  [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 attr(,"contrasts")
@@ -28147,7 +28149,7 @@ function identity_scaling(design, factors)
     return design
 end
 
-design = placket_burman(16)
+design = plackett_burman(16)
 
 fac = OrderedDict([(Symbol(:x, i), [-1., 1.]) for i = 1:size(design, 2)])
 
@@ -28163,6 +28165,89 @@ m = generate_model_matrix(@formula(y ~ x1 + x2), design, fac, scale = scale_boxd
 
 d_efficiency_lower_bound(m)
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+identity_scaling (generic function with 1 method)
+
+12×11 Array{Int64,2}:
+  1   1   1   1   1   1   1   1   1   1   1
+  1  -1  -1  -1   1   1   1  -1   1  -1  -1
+ -1  -1  -1   1   1   1  -1   1  -1  -1   1
+ -1  -1   1   1   1  -1   1  -1  -1   1  -1
+ -1   1   1   1  -1   1  -1  -1   1  -1  -1
+  1   1   1  -1   1  -1  -1   1  -1  -1  -1
+  1   1  -1   1  -1  -1   1  -1  -1  -1   1
+  1  -1   1  -1  -1   1  -1  -1  -1   1   1
+ -1   1  -1  -1   1  -1  -1  -1   1   1   1
+  1  -1  -1   1  -1  -1  -1   1   1   1  -1
+ -1  -1   1  -1  -1  -1   1   1   1  -1   1
+ -1   1  -1  -1  -1   1   1   1  -1   1  -1
+
+DataStructures.OrderedDict{Symbol,Array{Float64,1}} with 11 entries:
+  :x1  => [-1.0, 1.0]
+  :x2  => [-1.0, 1.0]
+  :x3  => [-1.0, 1.0]
+  :x4  => [-1.0, 1.0]
+  :x5  => [-1.0, 1.0]
+  :x6  => [-1.0, 1.0]
+  :x7  => [-1.0, 1.0]
+  :x8  => [-1.0, 1.0]
+  :x9  => [-1.0, 1.0]
+  :x10 => [-1.0, 1.0]
+  :x11 => [-1.0, 1.0]
+
+12×12 Array{Float64,2}:
+ 1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0
+ 1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0
+ 1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0
+ 1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0
+ 1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0
+ 1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0
+
+0.9999999999999999
+
+12×12 Array{Float64,2}:
+ 1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0
+ 1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0
+ 1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0
+ 1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0
+ 1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0
+ 1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0
+
+0.9999999999999999
+
+12×12 Array{Float64,2}:
+ 1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0
+ 1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0
+ 1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0
+ 1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0
+ 1.0   1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0
+ 1.0   1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0
+ 1.0   1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0
+ 1.0   1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0
+ 1.0  -1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0
+ 1.0  -1.0   1.0  -1.0  -1.0  -1.0   1.0   1.0   1.0  -1.0   1.0  -1.0
+
+0.9999999999999999
+#+end_example
+
 ***** Comparing Mixed Model Matrices
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -28341,4 +28426,269 @@ DataStructures.OrderedDict{Symbol,Any} with 2 entries:
  1.0   1.0  -1.0   1.0
 
 0.8773826753016616
+#+end_example
+***** Discussion
+There are things that are still not understood. My implementation matches R's
+model matrix for designs with only true factors and only numerical factors, but
+I need to use different scaling functions. After that getting an identical model
+matrix, the D-Efficiency metric I compute matches the determinant computed by
+~AlgDesign~'s ~eval.design~.
+
+For the case with mixed factors, for example one 2-level numerical factor and
+one 3-level true factor, I can't yet generate the same model matrix as R. It
+seems that the R model matrix scales, or centers, numerical and true factors
+differently. Since I can't get the same model matrix, the D-Efficiency does not
+match ~AlgDesign~'s.
+
+I do not understand yet if the D-Efficiency computation and scalings that I am
+using are applicable to "mixed factor" designs. My understanding at the moment
+is that those scalings are akin to the contrasts used by R model matrix
+function. The problem is that I am not sure whether the formula for D-Efficiency
+I am using works in those mixed designs, where each factor uses a different
+contrast.
+
+****** The Computation of the Determinant in ~AlgDesign~
+The ~eval.design~ function first generates the model matrix for a design and
+then scales the information matrix by the number of rows of the design before
+computing its determinant. The k-th root of the determinant is then taken, where
+k is the number of columns of the expanded model matrix.
+
+Note that this differs from the computation on Castillo's book, where the
+determinant of the information matrix is computed without this scaling, and the
+normalization by the number of rows is only performed after the k-th root is
+taken. 
+
+Below is the source code of ~eval.design~, where those implementation details
+can be seen:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+eval.design
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+function (frml, design, confounding = FALSE, variances = TRUE, 
+    center = FALSE, X = NULL) 
+{
+    rownames(design) <- 1:nrow(design)
+    proportions <- NULL
+    if (colnames(design)[1] == "Rep..") {
+        ND <- nrow(design)
+        reps <- design[, 1]
+        design <- design[, -1, drop = FALSE]
+        design <- design[rep(1:ND, reps), ]
+        rownames(design) <- 1:nrow(design)
+    }
+    else if (colnames(design)[1] == "Proportion") {
+        proportions <- design[, 1]
+        design <- design[, -1, drop = FALSE]
+    }
+    frml <- expand.formula(frml, colnames(design))
+    design <- data.frame(design)
+    numericColumns <- sapply(design, is.numeric)
+    if (center) {
+        means <- apply(design[, numericColumns, drop = FALSE], 
+            2, mean)
+        design[, numericColumns] <- sweep(design[, numericColumns, 
+            drop = FALSE], 2, means)
+    }
+    des <- model.matrix(frml, design)
+    if (!missing(X)) {
+        X <- data.frame(X)
+        if (center) {
+            means <- apply(X[, numericColumns, drop = FALSE], 
+                2, mean)
+            X[, numericColumns] <- sweep(X[, numericColumns, 
+                drop = FALSE], 2, means)
+        }
+        Xd <- model.matrix(frml, X)
+    }
+    output <- NULL
+    if (is.vector(proportions)) {
+        M <- t(des) %*% diag(proportions) %*% des
+    }
+    else {
+        M <- (t(des) %*% des)/nrow(des)
+    }
+    k <- ncol(M)
+    determinant <- det(M)
+    if (determinant <= 0) 
+        stop("Singular design")
+    determinant <- (determinant)^(1/k)
+    trac <- 0
+    Ival <- 0
+    Geff <- 0
+    Deff <- 0
+    orthog <- 0
+    if (determinant > 0) {
+        MI <- solve(M)
+        if (confounding == TRUE) {
+            dg <- diag(-1/diag(MI))
+            output <- list(confounding = round(MI %*% dg, 4))
+        }
+        trac <- sum(diag(MI))/k
+        if (!missing(X)) {
+            CC <- t(Xd) %*% Xd/nrow(Xd)
+            Ival <- sum(diag(qr.solve(M, CC)))
+            Z <- t(qr.solve(M, t(Xd)))
+            Geff <- ncol(Xd)/max(apply(Z * Xd, 1, sum))
+            Deff <- exp(1 - 1/Geff)
+        }
+        cp <- match("(Intercept)", dimnames(M)[[2]], nomatch = 0)
+        if (cp > 0) {
+            orthog <- exp((log(det(M[-cp, -cp])) - sum(log(diag(M)[-cp])))/(k - 
+                1))
+        }
+        else {
+            orthog <- exp(log(determinant) - sum(log(diag(M)))/k)
+        }
+    }
+    output <- c(output, list(determinant = determinant, A = trac))
+    if (!missing(X)) {
+        output <- c(output, list(I = Ival, Geff = round(Geff, 
+            3), Deffbound = round(Deff, 3)))
+    }
+    output <- c(output, list(diagonality = round(orthog, 3)))
+    if (variances) {
+        if (determinant > 0) {
+            t <- diag(solve(M))
+            if (cp > 0) 
+                t <- t[-cp]
+            t <- exp(mean(log(t)))
+            output <- c(output, list(gmean.variances = t))
+        }
+    }
+    output
+}
+<bytecode: 0x55bdaeeba4b0>
+<environment: namespace:AlgDesign>
+#+end_example
+**** Exploring Contrast Codings
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using StatsModels, DataFrames
+
+data = DataFrame(x1 = [1, 4, 2, 4, 5], x3 = [true, false, false, true, true],
+                 x2 = ["A", "A", "B", "A", "B"], x4 = [1.2, 1.4, 1.3, 1.1, 1.0],
+                 y = [1.0, 1.0, 1.0, 1.0, 1.0])
+
+factors = Dict(:x1 => [1, 5], :x3 => [true, false],
+               :x2 => ["A", "C", "B", "E", "F"], :x4 => [1.0, 1.4])
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+5×5 DataFrames.DataFrame
+│ Row │ x1 │ x3    │ x2 │ x4  │ y   │
+├─────┼────┼───────┼────┼─────┼─────┤
+│ 1   │ 1  │ true  │ A  │ 1.2 │ 1.0 │
+│ 2   │ 4  │ false │ A  │ 1.4 │ 1.0 │
+│ 3   │ 2  │ false │ B  │ 1.3 │ 1.0 │
+│ 4   │ 4  │ true  │ A  │ 1.1 │ 1.0 │
+│ 5   │ 5  │ true  │ B  │ 1.0 │ 1.0 │
+
+Dict{Symbol,Any} with 4 entries:
+  :x2 => String["A", "C", "B", "E", "F"]
+  :x3 => Bool[true, false]
+  :x4 => [1.0, 1.4]
+  :x1 => [1, 5]
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+contrasts = Dict([(f, StatsModels.ContrastsMatrix(DummyCoding(), factors[f])) for f in keys(factors)])
+
+model = ModelFrame(@formula(y ~ 1 + x1 + x2 + x3 + x4), data, contrasts = contrasts)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Dict{Symbol,StatsModels.ContrastsMatrix{StatsModels.DummyCoding,_} where _} with 4 entries:
+  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
+  :x3 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Bool}([0.0; 1.0], Bool[false], Bool[true, …
+  :x4 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Float64}([0.0; 1.0], [1.4], [1.0, 1.4], St…
+  :x1 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Int64}([0.0; 1.0], [5], [1, 5], StatsModel…
+
+StatsModels.ModelFrame(5×5 DataFrames.DataFrame
+│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
+├─────┼─────┼────┼────┼───────┼─────┤
+│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
+│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
+│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
+│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
+│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │, StatsModels.Terms(Any[:x1, :x2, :x3, :x4], Symbol[:y, :x1, :x2, :x3, :x4], Bool[true false … false false; false true … false false; … ; false false … true false; false false … false true], Bool[false false … false false; false false … false false; … ; false false … false false; false false … false false], [1, 1, 1, 1, 1], true, true), Bool[true, true, true, true, true], Dict{Symbol,StatsModels.ContrastsMatrix}(Pair{Symbol,StatsModels.ContrastsMatrix}(:x2, StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0; … ; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0], String["C", "B", "E", "F"], String["A", "C", "B", "E", "F"], StatsModels.DummyCoding(#NULL, #NULL)))))
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model.df
+
+model.terms.terms
+
+model.contrasts
+
+keys(model.contrasts)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+5×5 DataFrames.DataFrame
+│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
+├─────┼─────┼────┼────┼───────┼─────┤
+│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
+│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
+│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
+│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
+│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │
+
+4-element Array{Any,1}:
+ :x1
+ :x2
+ :x3
+ :x4
+
+Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry:
+  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
+
+Base.KeyIterator for a Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry. Keys:
+  :x2
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_matrix = ModelMatrix(model)
+#+END_SRC
+
+#+RESULTS:
+: StatsModels.ModelMatrix{Array{Float64,2}}([1.0 1.0 … 1.0 1.2; 1.0 4.0 … 0.0 1.4; … ; 1.0 4.0 … 1.0 1.1; 1.0 5.0 … 1.0 1.0], [0, 1, 2, 2, 2, 2, 3, 4])
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+model_matrix.m
+
+model_matrix.assign
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+5×8 Array{Float64,2}:
+ 1.0  1.0  0.0  0.0  0.0  0.0  1.0  1.2
+ 1.0  4.0  0.0  0.0  0.0  0.0  0.0  1.4
+ 1.0  2.0  0.0  1.0  0.0  0.0  0.0  1.3
+ 1.0  4.0  0.0  0.0  0.0  0.0  1.0  1.1
+ 1.0  5.0  0.0  1.0  0.0  0.0  1.0  1.0
+
+8-element Array{Int64,1}:
+ 0
+ 1
+ 2
+ 2
+ 2
+ 2
+ 3
+ 4
 #+end_example
