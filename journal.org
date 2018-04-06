@@ -28565,62 +28565,312 @@ function (frml, design, confounding = FALSE, variances = TRUE,
 <bytecode: 0x55bdaeeba4b0>
 <environment: namespace:AlgDesign>
 #+end_example
-**** Exploring Contrast Codings
+*** [2018-04-06 Fri]
+**** Exploring Contrasts
+***** Model Matrices in R
+Let's create a model matrix from a full factorial design for 3 parameters: 1
+2-Level Numerical Factor, 1 3-Level Numerical Factor and 1 5-Level Categorical
+Factor.
+
+If we give ~model.matrix~ the full factorial, it is able to generate the correct
+contrast for every parameter, because all values are represented at least once.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+design <- gen.factorial(c(2, 3, 5), factors = c(3))
+str(design)
+
+model.matrix(~., design)
+
+eval.design(~., design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	30 obs. of  3 variables:
+ $ X1: num  -1 1 -1 1 -1 1 -1 1 -1 1 ...
+ $ X2: num  -1 -1 0 0 1 1 -1 -1 0 0 ...
+ $ X3: Factor w/ 5 levels "1","2","3","4",..: 1 1 1 1 1 1 2 2 2 2 ...
+   (Intercept) X1 X2 X32 X33 X34 X35
+1            1 -1 -1   0   0   0   0
+2            1  1 -1   0   0   0   0
+3            1 -1  0   0   0   0   0
+4            1  1  0   0   0   0   0
+5            1 -1  1   0   0   0   0
+6            1  1  1   0   0   0   0
+7            1 -1 -1   1   0   0   0
+8            1  1 -1   1   0   0   0
+9            1 -1  0   1   0   0   0
+10           1  1  0   1   0   0   0
+11           1 -1  1   1   0   0   0
+12           1  1  1   1   0   0   0
+13           1 -1 -1   0   1   0   0
+14           1  1 -1   0   1   0   0
+15           1 -1  0   0   1   0   0
+16           1  1  0   0   1   0   0
+17           1 -1  1   0   1   0   0
+18           1  1  1   0   1   0   0
+19           1 -1 -1   0   0   1   0
+20           1  1 -1   0   0   1   0
+21           1 -1  0   0   0   1   0
+22           1  1  0   0   0   1   0
+23           1 -1  1   0   0   1   0
+24           1  1  1   0   0   1   0
+25           1 -1 -1   0   0   0   1
+26           1  1 -1   0   0   0   1
+27           1 -1  0   0   0   0   1
+28           1  1  0   0   0   0   1
+29           1 -1  1   0   0   0   1
+30           1  1  1   0   0   0   1
+attr(,"assign")
+[1] 0 1 2 3 3 3 3
+attr(,"contrasts")
+attr(,"contrasts")$X3
+[1] "contr.treatment"
+$determinant
+[1] 0.2989371
+
+$A
+[1] 6.785714
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 4.966097
+#+end_example
+
+If we give it an incomplete design where not all values appear we get the wrong
+contrasts unless we specify them. Note that our 5-Level Categorical Factor
+becomes a 4-Level Factor because one value is missing in the design.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+X1 <- c(-1, 1, -1, 1, 1, -1, 1)
+X2 <- c(-1, 0, -1, 1, 1, 0, 1)
+X3 <- as.factor(c(1, 1, 3, 4, 5, 3, 1))
+
+design <- data.frame(X1, X2, X3)
+
+design
+str(design)
+
+model.matrix(~., design)
+
+eval.design(~., design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2 X3
+1 -1 -1  1
+2  1  0  1
+3 -1 -1  3
+4  1  1  4
+5  1  1  5
+6 -1  0  3
+7  1  1  1
+'data.frame':	7 obs. of  3 variables:
+ $ X1: num  -1 1 -1 1 1 -1 1
+ $ X2: num  -1 0 -1 1 1 0 1
+ $ X3: Factor w/ 4 levels "1","3","4","5": 1 1 2 3 4 2 1
+  (Intercept) X1 X2 X33 X34 X35
+1           1 -1 -1   0   0   0
+2           1  1  0   0   0   0
+3           1 -1 -1   1   0   0
+4           1  1  1   0   1   0
+5           1  1  1   0   0   1
+6           1 -1  0   1   0   0
+7           1  1  1   0   0   0
+attr(,"assign")
+[1] 0 1 2 3 3 3
+attr(,"contrasts")
+attr(,"contrasts")$X3
+[1] "contr.treatment"
+$determinant
+[1] 0.2267716
+
+$A
+[1] 8.895833
+
+$diagonality
+[1] 0.631
+
+$gmean.variances
+[1] 9.667521
+#+end_example
+
+To fix this we must specify the levels of the factor. This means that for this
+new model matrix we get a singular design, since one factor is missing. This will be
+necessary for evaluating samples of the full factorial design with ~optFederov~. We
+must define all levels of all factors before measuring anything.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+X1 <- c(-1, 1, -1, 1, 1, -1, 1)
+X2 <- c(-1, 0, -1, 1, 1, 0, 1)
+X3 <- as.factor(c(1, 1, 3, 4, 5, 3, 1))
+levels(X3) <- c(1, 2, 3, 4, 5)
+
+design <- data.frame(X1, X2, X3)
+
+design
+str(design)
+
+model.matrix(~., design)
+
+eval.design(~., design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2 X3
+1 -1 -1  1
+2  1  0  1
+3 -1 -1  2
+4  1  1  3
+5  1  1  4
+6 -1  0  2
+7  1  1  1
+'data.frame':	7 obs. of  3 variables:
+ $ X1: num  -1 1 -1 1 1 -1 1
+ $ X2: num  -1 0 -1 1 1 0 1
+ $ X3: Factor w/ 5 levels "1","2","3","4",..: 1 1 2 3 4 2 1
+  (Intercept) X1 X2 X32 X33 X34 X35
+1           1 -1 -1   0   0   0   0
+2           1  1  0   0   0   0   0
+3           1 -1 -1   1   0   0   0
+4           1  1  1   0   1   0   0
+5           1  1  1   0   0   1   0
+6           1 -1  0   1   0   0   0
+7           1  1  1   0   0   0   0
+attr(,"assign")
+[1] 0 1 2 3 3 3 3
+attr(,"contrasts")
+attr(,"contrasts")$X3
+[1] "contr.treatment"
+Error in eval.design(~., design) : Singular design
+#+end_example
+
+Now adding the missing value, we get:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+X1 <- c(-1, 1, -1, 1, 1, -1, 1)
+X2 <- c(-1, 0, -1, 1, 1, 0, 1)
+X3 <- as.factor(c(1, 1, 3, 4, 5, 3, 2))
+levels(X3) <- c(1, 2, 3, 4, 5)
+
+design <- data.frame(X1, X2, X3)
+
+design
+str(design)
+
+model.matrix(~., design)
+
+eval.design(~., design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  X1 X2 X3
+1 -1 -1  1
+2  1  0  1
+3 -1 -1  3
+4  1  1  4
+5  1  1  5
+6 -1  0  3
+7  1  1  2
+'data.frame':	7 obs. of  3 variables:
+ $ X1: num  -1 1 -1 1 1 -1 1
+ $ X2: num  -1 0 -1 1 1 0 1
+ $ X3: Factor w/ 5 levels "1","2","3","4",..: 1 1 3 4 5 3 2
+  (Intercept) X1 X2 X32 X33 X34 X35
+1           1 -1 -1   0   0   0   0
+2           1  1  0   0   0   0   0
+3           1 -1 -1   0   1   0   0
+4           1  1  1   0   0   1   0
+5           1  1  1   0   0   0   1
+6           1 -1  0   0   1   0   0
+7           1  1  1   1   0   0   0
+attr(,"assign")
+[1] 0 1 2 3 3 3 3
+attr(,"contrasts")
+attr(,"contrasts")$X3
+[1] "contr.treatment"
+$determinant
+[1] 0.1741448
+
+$A
+[1] 18
+
+$diagonality
+[1] 0.621
+
+$gmean.variances
+[1] 17.63889
+#+end_example
+
+***** Model Matrices in Julia
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 using StatsModels, DataFrames
 
-data = DataFrame(x1 = [1, 4, 2, 4, 5], x3 = [true, false, false, true, true],
-                 x2 = ["A", "A", "B", "A", "B"], x4 = [1.2, 1.4, 1.3, 1.1, 1.0],
-                 y = [1.0, 1.0, 1.0, 1.0, 1.0])
+data = DataFrame(y  = [1, 1, 1, 1, 1, 1, 1],
+                 x1 = [-1, 1, -1, 1, 1, -1, 1],
+                 x2 = [-1, 0, -1, 1, 1, 0, 1],
+                 x3 = [Symbol(1), Symbol(1), Symbol(3), Symbol(4),
+                       Symbol(5), Symbol(3), Symbol(2)])
 
-factors = Dict(:x1 => [1, 5], :x3 => [true, false],
-               :x2 => ["A", "C", "B", "E", "F"], :x4 => [1.0, 1.4])
+factors = Dict(:x1 => [-1, 1],
+               :x2 => [-1, 0, 1],
+               :x3 => [Symbol(1), Symbol(2), Symbol(3), Symbol(4), Symbol(5)])
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
 
 
-5×5 DataFrames.DataFrame
-│ Row │ x1 │ x3    │ x2 │ x4  │ y   │
-├─────┼────┼───────┼────┼─────┼─────┤
-│ 1   │ 1  │ true  │ A  │ 1.2 │ 1.0 │
-│ 2   │ 4  │ false │ A  │ 1.4 │ 1.0 │
-│ 3   │ 2  │ false │ B  │ 1.3 │ 1.0 │
-│ 4   │ 4  │ true  │ A  │ 1.1 │ 1.0 │
-│ 5   │ 5  │ true  │ B  │ 1.0 │ 1.0 │
+7×4 DataFrames.DataFrame
+│ Row │ y │ x1 │ x2 │ x3 │
+├─────┼───┼────┼────┼────┤
+│ 1   │ 1 │ -1 │ -1 │ 1  │
+│ 2   │ 1 │ 1  │ 0  │ 1  │
+│ 3   │ 1 │ -1 │ -1 │ 3  │
+│ 4   │ 1 │ 1  │ 1  │ 4  │
+│ 5   │ 1 │ 1  │ 1  │ 5  │
+│ 6   │ 1 │ -1 │ 0  │ 3  │
+│ 7   │ 1 │ 1  │ 1  │ 2  │
 
-Dict{Symbol,Any} with 4 entries:
-  :x2 => String["A", "C", "B", "E", "F"]
-  :x3 => Bool[true, false]
-  :x4 => [1.0, 1.4]
-  :x1 => [1, 5]
+Dict{Symbol,Any} with 3 entries:
+  :x2 => [-1, 0, 1]
+  :x3 => Symbol[Symbol("1"), Symbol("2"), Symbol("3"), Symbol("4"), Symbol("5")]
+  :x1 => [-1, 1]
 #+end_example
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-contrasts = Dict([(f, StatsModels.ContrastsMatrix(DummyCoding(), factors[f])) for f in keys(factors)])
+contrasts = Dict(:x3 => StatsModels.ContrastsMatrix(DummyCoding(), factors[:x3]))
 
-model = ModelFrame(@formula(y ~ 1 + x1 + x2 + x3 + x4), data, contrasts = contrasts)
+model = ModelFrame(@formula(y ~ x1 + x2 + x3), data, contrasts = contrasts)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-Dict{Symbol,StatsModels.ContrastsMatrix{StatsModels.DummyCoding,_} where _} with 4 entries:
-  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
-  :x3 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Bool}([0.0; 1.0], Bool[false], Bool[true, …
-  :x4 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Float64}([0.0; 1.0], [1.4], [1.0, 1.4], St…
-  :x1 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Int64}([0.0; 1.0], [5], [1, 5], StatsModel…
+Dict{Symbol,StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Symbol}} with 1 entry:
+  :x3 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Symbol}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
 
-StatsModels.ModelFrame(5×5 DataFrames.DataFrame
-│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
-├─────┼─────┼────┼────┼───────┼─────┤
-│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
-│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
-│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
-│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
-│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │, StatsModels.Terms(Any[:x1, :x2, :x3, :x4], Symbol[:y, :x1, :x2, :x3, :x4], Bool[true false … false false; false true … false false; … ; false false … true false; false false … false true], Bool[false false … false false; false false … false false; … ; false false … false false; false false … false false], [1, 1, 1, 1, 1], true, true), Bool[true, true, true, true, true], Dict{Symbol,StatsModels.ContrastsMatrix}(Pair{Symbol,StatsModels.ContrastsMatrix}(:x2, StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0; … ; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0], String["C", "B", "E", "F"], String["A", "C", "B", "E", "F"], StatsModels.DummyCoding(#NULL, #NULL)))))
+StatsModels.ModelFrame(7×4 DataFrames.DataFrame
+│ Row │ y │ x1 │ x2 │ x3 │
+├─────┼───┼────┼────┼────┤
+│ 1   │ 1 │ -1 │ -1 │ 1  │
+│ 2   │ 1 │ 1  │ 0  │ 1  │
+│ 3   │ 1 │ -1 │ -1 │ 3  │
+│ 4   │ 1 │ 1  │ 1  │ 4  │
+│ 5   │ 1 │ 1  │ 1  │ 5  │
+│ 6   │ 1 │ -1 │ 0  │ 3  │
+│ 7   │ 1 │ 1  │ 1  │ 2  │, StatsModels.Terms(Symbol[:x1, :x2, :x3], Symbol[:y, :x1, :x2, :x3], Bool[true false false false; false true false false; false false true false; false false false true], Bool[false false false false; false false false false; false false false false; false false false false], [1, 1, 1, 1], true, true), Bool[true, true, true, true, true, true, true], Dict{Symbol,StatsModels.ContrastsMatrix}(Pair{Symbol,StatsModels.ContrastsMatrix}(:x3, StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Symbol}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0; … ; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0], Symbol[Symbol("2"), Symbol("3"), Symbol("4"), Symbol("5")], Symbol[Symbol("1"), Symbol("2"), Symbol("3"), Symbol("4"), Symbol("5")], StatsModels.DummyCoding(#NULL, #NULL)))))
 #+end_example
 
 #+HEADER: :results output :session *Julia*
@@ -28636,35 +28886,35 @@ keys(model.contrasts)
 
 #+RESULTS:
 #+begin_example
-5×5 DataFrames.DataFrame
-│ Row │ y   │ x1 │ x2 │ x3    │ x4  │
-├─────┼─────┼────┼────┼───────┼─────┤
-│ 1   │ 1.0 │ 1  │ A  │ true  │ 1.2 │
-│ 2   │ 1.0 │ 4  │ A  │ false │ 1.4 │
-│ 3   │ 1.0 │ 2  │ B  │ false │ 1.3 │
-│ 4   │ 1.0 │ 4  │ A  │ true  │ 1.1 │
-│ 5   │ 1.0 │ 5  │ B  │ true  │ 1.0 │
+7×4 DataFrames.DataFrame
+│ Row │ y │ x1 │ x2 │ x3 │
+├─────┼───┼────┼────┼────┤
+│ 1   │ 1 │ -1 │ -1 │ 1  │
+│ 2   │ 1 │ 1  │ 0  │ 1  │
+│ 3   │ 1 │ -1 │ -1 │ 3  │
+│ 4   │ 1 │ 1  │ 1  │ 4  │
+│ 5   │ 1 │ 1  │ 1  │ 5  │
+│ 6   │ 1 │ -1 │ 0  │ 3  │
+│ 7   │ 1 │ 1  │ 1  │ 2  │
 
-4-element Array{Any,1}:
+3-element Array{Symbol,1}:
  :x1
  :x2
  :x3
- :x4
 
 Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry:
-  :x2 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,String}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
+  :x3 => StatsModels.ContrastsMatrix{StatsModels.DummyCoding,Symbol}([0.0 0.0 0.0 0.0; 1.0 0.0 0.0 0.0;…
 
 Base.KeyIterator for a Dict{Symbol,StatsModels.ContrastsMatrix} with 1 entry. Keys:
-  :x2
+  :x3
 #+end_example
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-model_matrix = ModelMatrix(model)
+model_matrix = ModelMatrix(model);
 #+END_SRC
 
 #+RESULTS:
-: StatsModels.ModelMatrix{Array{Float64,2}}([1.0 1.0 … 1.0 1.2; 1.0 4.0 … 0.0 1.4; … ; 1.0 4.0 … 1.0 1.1; 1.0 5.0 … 1.0 1.0], [0, 1, 2, 2, 2, 2, 3, 4])
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
@@ -28675,20 +28925,197 @@ model_matrix.assign
 
 #+RESULTS:
 #+begin_example
-5×8 Array{Float64,2}:
- 1.0  1.0  0.0  0.0  0.0  0.0  1.0  1.2
- 1.0  4.0  0.0  0.0  0.0  0.0  0.0  1.4
- 1.0  2.0  0.0  1.0  0.0  0.0  0.0  1.3
- 1.0  4.0  0.0  0.0  0.0  0.0  1.0  1.1
- 1.0  5.0  0.0  1.0  0.0  0.0  1.0  1.0
+7×7 Array{Float64,2}:
+ 1.0  -1.0  -1.0  0.0  0.0  0.0  0.0
+ 1.0   1.0   0.0  0.0  0.0  0.0  0.0
+ 1.0  -1.0  -1.0  0.0  1.0  0.0  0.0
+ 1.0   1.0   1.0  0.0  0.0  1.0  0.0
+ 1.0   1.0   1.0  0.0  0.0  0.0  1.0
+ 1.0  -1.0   0.0  0.0  1.0  0.0  0.0
+ 1.0   1.0   1.0  1.0  0.0  0.0  0.0
 
-8-element Array{Int64,1}:
+7-element Array{Int64,1}:
  0
  1
  2
- 2
- 2
- 2
  3
- 4
+ 3
+ 3
+ 3
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+A = model_matrix.m
+
+D = det((A' * A) / size(A, 1)) ^ (1 / size(A, 2))
+D = (det((A' * A)) ^ (1 / size(A, 2))) / size(A, 1)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+7×7 Array{Float64,2}:
+ 1.0  -1.0  -1.0  0.0  0.0  0.0  0.0
+ 1.0   1.0   0.0  0.0  0.0  0.0  0.0
+ 1.0  -1.0  -1.0  0.0  1.0  0.0  0.0
+ 1.0   1.0   1.0  0.0  0.0  1.0  0.0
+ 1.0   1.0   1.0  0.0  0.0  0.0  1.0
+ 1.0  -1.0   0.0  0.0  1.0  0.0  0.0
+ 1.0   1.0   1.0  1.0  0.0  0.0  0.0
+
+0.1741448077434965
+0.17414480774349653
+#+end_example
+**** Comparing Candidate Sets for ~optFederov~ using Correct Levels
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+using RCall, ExperimentalDesign, DataStructures, DataFrames
+
+function identity_scaling(design, factors)
+    return design
+end
+
+function opt_federov(design, factors, is_factor, experiments)
+    r_output = R"""
+    library(AlgDesign)
+    design <- $design
+    factors <- $factors
+    if(length($is_factor) != 0) {
+        design[$is_factor] <- lapply(design[$is_factor], as.factor)
+    }
+    for(factor in $is_factor) {
+        levels(design[factor]) <- factors[factor]
+    }
+    federov_output <- optFederov(~., design, criterion = "D", nTrials = $experiments)
+    """
+    return @rget federov_output
+end
+
+function sampled_opt_federov(factors, is_factor, experiments, candidate_set_size)
+    design = full_factorial_subset(collect(values(factors)), candidate_set_size)
+    design = DataFrame(Array{Float64, 2}(design))
+    rename!(design, OrderedDict(zip(names(design), keys(factors))))
+    return opt_federov(design, factors, is_factor, experiments)
+end
+
+function sampling_max(factors, designs, ranges, check_bounds = false)
+    best_sampled = []
+
+    for range in ranges
+        design_subset = sample_subset(factors, range, designs, check_bounds = check_bounds)
+        push!(best_sampled, max(design_subset[:DELB]...))
+    end
+
+    return best_sampled
+end
+
+function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_set_size,
+                                 set_repeats, ranges, scale = identity_scaling)
+    best_sampled         = []
+    best_sampled_federov = []
+
+    for range in ranges
+        best_range         = []
+        best_range_federov = []
+        for i = 1:set_repeats
+            federov_output = sampled_opt_federov(factors, is_factor, range.start,
+                                                 candidate_set_size)
+            design_array   = Array{Any, 2}(federov_output[:design])
+
+            model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(julia_factors))),
+                                                   design_array,
+                                                   julia_factors,
+                                                   scale = scale)
+
+            push!(best_range_federov, federov_output[:D])
+            push!(best_range, d_efficiency_lower_bound(model_matrix))
+        end
+        push!(best_sampled_federov, max(best_range_federov...))
+        push!(best_sampled, max(best_range...))
+    end
+
+    return best_sampled, best_sampled_federov
+end
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+identity_scaling (generic function with 1 method)
+
+opt_federov (generic function with 1 method)
+
+sampled_opt_federov (generic function with 1 method)
+
+sampling_max (generic function with 2 methods)
+
+sampled_opt_federov_max (generic function with 2 methods)
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+function get_samples()
+    factors = OrderedDict{Symbol, Any}()
+
+    for i = 1:10
+        factors[Symbol(:f, i)] = [1., 2., 3.]
+    end
+
+    is_factor = [String(f) for f in keys(factors)]
+
+    println("Factors:")
+    println(factors)
+    println("True factors:")
+    println(is_factor)
+
+    julia_factors = OrderedDict{Symbol, Any}()
+
+    for i = 1:10
+        julia_factors[Symbol(:f, i)] = ["1", "2", "3"]
+    end
+
+    ranges = [k:k for k = 21:1:24]
+
+    candidate_set_size = 400
+    repeats = 1
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges)
+    println("Output with identity scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_boxdraper_encoding!)
+    println("Output with Box-Draper scaling:")
+    println(best_federov)
+
+    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                           candidate_set_size,
+                                           repeats, ranges,
+                                           scale_orthogonal!)
+    println("Output with orthogonal scaling:")
+    println(best_federov)
+end
+
+get_samples()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+get_samples (generic function with 1 method)
+
+Factors:
+DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0, 3.0],:f2=>[1.0, 2.0, 3.0],:f3=>[1.0, 2.0, 3.0],:f4=>[1.0, 2.0, 3.0],:f5=>[1.0, 2.0, 3.0],:f6=>[1.0, 2.0, 3.0],:f7=>[1.0, 2.0, 3.0],:f8=>[1.0, 2.0, 3.0],:f9=>[1.0, 2.0, 3.0],:f10=>[1.0, 2.0, 3.0])
+True factors:
+String["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"]
+Output with identity scaling:
+(Any[0.162745, 0.162433, 0.172429, 0.178464], Any[0.162745, 0.162433, 0.172429, 0.178464])
+Output with Box-Draper scaling:
+(Any[0.604216, 0.641319, 0.638605, 0.652356], Any[0.161362, 0.171271, 0.170546, 0.174218])
+Output with orthogonal scaling:
+(Any[0.589644, 0.628003, 0.644628, 0.663173], Any[0.15747, 0.167715, 0.172155, 0.177107])
 #+end_example
