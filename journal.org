@@ -28971,10 +28971,6 @@ D = (det((A' * A)) ^ (1 / size(A, 2))) / size(A, 1)
 #+BEGIN_SRC julia
 using RCall, ExperimentalDesign, DataStructures, DataFrames
 
-function identity_scaling(design, factors)
-    return design
-end
-
 function opt_federov(design, factors, is_factor, experiments)
     r_output = R"""
     library(AlgDesign)
@@ -29009,8 +29005,8 @@ function sampling_max(factors, designs, ranges, check_bounds = false)
     return best_sampled
 end
 
-function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_set_size,
-                                 set_repeats, ranges, scale = identity_scaling)
+function sampled_opt_federov_max(factors, is_factor, julia_factors,
+                                 candidate_set_size, set_repeats, ranges)
     best_sampled         = []
     best_sampled_federov = []
 
@@ -29020,12 +29016,11 @@ function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_se
         for i = 1:set_repeats
             federov_output = sampled_opt_federov(factors, is_factor, range.start,
                                                  candidate_set_size)
-            design_array   = Array{Any, 2}(federov_output[:design])
+            design_array   = federov_output[:design]
 
             model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(julia_factors))),
                                                    design_array,
-                                                   julia_factors,
-                                                   scale = scale)
+                                                   julia_factors)
 
             push!(best_range_federov, federov_output[:D])
             push!(best_range, d_efficiency_lower_bound(model_matrix))
@@ -29040,6 +29035,7 @@ end
 
 #+RESULTS:
 #+begin_example
+ESS
 
 
 identity_scaling (generic function with 1 method)
@@ -29056,7 +29052,7 @@ sampled_opt_federov_max (generic function with 2 methods)
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 function get_samples()
-    factors = OrderedDict{Symbol, Any}()
+    factors = Dict{Symbol, Any}()
 
     for i = 1:10
         factors[Symbol(:f, i)] = [1., 2., 3.]
@@ -29069,7 +29065,7 @@ function get_samples()
     println("True factors:")
     println(is_factor)
 
-    julia_factors = OrderedDict{Symbol, Any}()
+    julia_factors = Dict{Symbol, Any}()
 
     for i = 1:10
         julia_factors[Symbol(:f, i)] = ["1", "2", "3"]
@@ -29083,21 +29079,7 @@ function get_samples()
     best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
                                            candidate_set_size,
                                            repeats, ranges)
-    println("Output with identity scaling:")
-    println(best_federov)
-
-    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
-                                           candidate_set_size,
-                                           repeats, ranges,
-                                           scale_boxdraper_encoding!)
-    println("Output with Box-Draper scaling:")
-    println(best_federov)
-
-    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
-                                           candidate_set_size,
-                                           repeats, ranges,
-                                           scale_orthogonal!)
-    println("Output with orthogonal scaling:")
+    println("Output:")
     println(best_federov)
 end
 
@@ -29105,17 +29087,11 @@ get_samples()
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-get_samples (generic function with 1 method)
-
-Factors:
-DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0, 3.0],:f2=>[1.0, 2.0, 3.0],:f3=>[1.0, 2.0, 3.0],:f4=>[1.0, 2.0, 3.0],:f5=>[1.0, 2.0, 3.0],:f6=>[1.0, 2.0, 3.0],:f7=>[1.0, 2.0, 3.0],:f8=>[1.0, 2.0, 3.0],:f9=>[1.0, 2.0, 3.0],:f10=>[1.0, 2.0, 3.0])
-True factors:
-String["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"]
-Output with identity scaling:
-(Any[0.162745, 0.162433, 0.172429, 0.178464], Any[0.162745, 0.162433, 0.172429, 0.178464])
-Output with Box-Draper scaling:
-(Any[0.604216, 0.641319, 0.638605, 0.652356], Any[0.161362, 0.171271, 0.170546, 0.174218])
-Output with orthogonal scaling:
-(Any[0.589644, 0.628003, 0.644628, 0.663173], Any[0.15747, 0.167715, 0.172155, 0.177107])
-#+end_example
+: get_samples (generic function with 1 method)
+: 
+: Factors:
+: Dict{Symbol,Any}(Pair{Symbol,Any}(:f7, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f1, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f3, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f8, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f5, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f6, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f9, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f2, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f10, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f4, [1.0, 2.0, 3.0]))
+: True factors:
+: String["f7", "f1", "f3", "f8", "f5", "f6", "f9", "f2", "f10", "f4"]
+: Output:
+: (Any[0.165789, 0.166994, 0.171123, 0.176538], Any[0.165789, 0.166994, 0.171123, 0.176538])
