@@ -27474,6 +27474,7 @@ function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_se
     for range in ranges
         best_range         = []
         best_range_federov = []
+
         for i = 1:set_repeats
             federov_output = sampled_opt_federov(factors, is_factor, range.start,
                                                  candidate_set_size)
@@ -27487,6 +27488,7 @@ function sampled_opt_federov_max(factors, is_factor, julia_factors, candidate_se
             push!(best_range_federov, federov_output[:D])
             push!(best_range, d_efficiency_lower_bound(model_matrix))
         end
+
         push!(best_sampled_federov, max(best_range_federov...))
         push!(best_sampled, max(best_range...))
     end
@@ -28966,7 +28968,9 @@ D = (det((A' * A)) ^ (1 / size(A, 2))) / size(A, 1)
 0.1741448077434965
 0.17414480774349653
 #+end_example
+*** [2018-04-09 Mon]
 **** Comparing Candidate Sets for ~optFederov~ using Correct Levels
+***** Setup
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
 using RCall, ExperimentalDesign, DataStructures, DataFrames
@@ -28976,21 +28980,25 @@ function opt_federov(design, factors, is_factor, experiments)
     library(AlgDesign)
     design <- $design
     factors <- $factors
+
     if(length($is_factor) != 0) {
         design[$is_factor] <- lapply(design[$is_factor], as.factor)
     }
+
     for(factor in $is_factor) {
         levels(design[factor]) <- factors[factor]
     }
+
     federov_output <- optFederov(~., design, criterion = "D", nTrials = $experiments)
     """
     return @rget federov_output
 end
 
 function sampled_opt_federov(factors, is_factor, experiments, candidate_set_size)
-    design = full_factorial_subset(collect(values(factors)), candidate_set_size)
+    design = full_factorial_subset(factors, candidate_set_size)
     design = DataFrame(Array{Float64, 2}(design))
     rename!(design, OrderedDict(zip(names(design), keys(factors))))
+
     return opt_federov(design, factors, is_factor, experiments)
 end
 
@@ -29013,9 +29021,9 @@ function sampled_opt_federov_max(factors, is_factor, julia_factors,
     for range in ranges
         best_range         = []
         best_range_federov = []
+
         for i = 1:set_repeats
-            federov_output = sampled_opt_federov(factors, is_factor, range.start,
-                                                 candidate_set_size)
+            federov_output = sampled_opt_federov(factors, is_factor, range.start, candidate_set_size)
             design_array   = federov_output[:design]
 
             model_matrix   = generate_model_matrix(build_linear_formula(collect(keys(julia_factors))),
@@ -29025,6 +29033,7 @@ function sampled_opt_federov_max(factors, is_factor, julia_factors,
             push!(best_range_federov, federov_output[:D])
             push!(best_range, d_efficiency_lower_bound(model_matrix))
         end
+
         push!(best_sampled_federov, max(best_range_federov...))
         push!(best_sampled, max(best_range...))
     end
@@ -29034,64 +29043,595 @@ end
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-ESS
-
-
-identity_scaling (generic function with 1 method)
-
-opt_federov (generic function with 1 method)
-
-sampled_opt_federov (generic function with 1 method)
-
-sampling_max (generic function with 2 methods)
-
-sampled_opt_federov_max (generic function with 2 methods)
-#+end_example
+: 
+: 
+: opt_federov (generic function with 1 method)
+: 
+: sampled_opt_federov (generic function with 1 method)
+: 
+: sampling_max (generic function with 2 methods)
+: 
+: sampled_opt_federov_max (generic function with 1 method)
 
 #+HEADER: :results output :session *Julia*
 #+BEGIN_SRC julia
-function get_samples()
-    factors = Dict{Symbol, Any}()
+using Plots
 
-    for i = 1:10
-        factors[Symbol(:f, i)] = [1., 2., 3.]
+function get_samples(nfactors::Int, nlevels::Int,
+                     set_sizes::Array{Int, 1}, starting_design_size::Int,
+                     categorical::Bool = true)
+    factors = OrderedDict{Symbol, Any}()
+
+    for i = 1:nfactors
+        factors[Symbol(:f, i)] = [float(i) for i = 1:nlevels]
     end
 
-    is_factor = [String(f) for f in keys(factors)]
+    if categorical
+        is_factor = [String(f) for f in keys(factors)]
+    else
+        #is_factor = [String(f) for f in collect(keys(factors))[floor(Int, end / 2):end]]
+        is_factor = []
+    end
 
     println("Factors:")
     println(factors)
     println("True factors:")
     println(is_factor)
 
-    julia_factors = Dict{Symbol, Any}()
+    julia_factors = OrderedDict{Symbol, Any}()
 
-    for i = 1:10
-        julia_factors[Symbol(:f, i)] = ["1", "2", "3"]
+    if categorical
+        for i = 1:nfactors
+            julia_factors[Symbol(:f, i)] = [string(i) for i = 1:nlevels]
+        end
+    else
+        for i = 1:nfactors
+            julia_factors[Symbol(:f, i)] = [i for i = 1:nlevels]
+        end
     end
 
-    ranges = [k:k for k = 21:1:24]
+    ranges = [k:k for k = starting_design_size:1:(starting_design_size + 20)]
 
-    candidate_set_size = 400
-    repeats = 1
+    best_values = []
 
-    best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
-                                           candidate_set_size,
-                                           repeats, ranges)
-    println("Output:")
-    println(best_federov)
+    for candidate_set_size in set_sizes
+        repeats = 1
+
+        best_computed, best_federov = sampled_opt_federov_max(factors, is_factor, julia_factors, 
+                                                              candidate_set_size,
+                                                              repeats, ranges)
+                                                              
+        println("Size: ", candidate_set_size)
+        println("From ", set_sizes[1], " to ", set_sizes[end])
+        println("Results match:", isapprox(best_federov, best_computed))
+
+        push!(best_values, best_computed)
+    end
+
+    #sampling_max(factors, designs, ranges, check_bounds = false)
+    best_sampled = sampling_max(julia_factors, 8000, ranges)
+
+    return ranges, best_values, best_sampled
 end
-
-get_samples()
 #+END_SRC
 
 #+RESULTS:
-: get_samples (generic function with 1 method)
 : 
-: Factors:
-: Dict{Symbol,Any}(Pair{Symbol,Any}(:f7, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f1, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f3, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f8, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f5, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f6, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f9, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f2, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f10, [1.0, 2.0, 3.0]),Pair{Symbol,Any}(:f4, [1.0, 2.0, 3.0]))
-: True factors:
-: String["f7", "f1", "f3", "f8", "f5", "f6", "f9", "f2", "f10", "f4"]
-: Output:
-: (Any[0.165789, 0.166994, 0.171123, 0.176538], Any[0.165789, 0.166994, 0.171123, 0.176538])
+: 
+: get_samples (generic function with 2 methods)
+
+***** 10 3-Level Categorical Factors :ATTACH:
+:PROPERTIES:
+:Attachments: 10_3LC.png
+:ID:       46133360-25c5-4fa7-aa4c-5ae557928081
+:END:
+#+HEADER: :session *Julia* :results output
+#+BEGIN_SRC julia
+sample_sets = [100, 200, 300, 400, 600, 700, 800, 900, 1000, 1100]
+nfactors = 10
+nlevels = 3
+starting_size = 21
+
+#get_samples(nfactors::Int, nlevels::Int, set_sizes::Array{Int, 1}, starting_design_size::Int)
+ranges, samples, uniform_sampled = get_samples(nfactors, nlevels, sample_sets, starting_size)
+println(samples, uniform_sampled, ranges)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+10-element Array{Int64,1}:
+  100
+  200
+  300
+  400
+  600
+  700
+  800
+  900
+ 1000
+ 1100
+10
+3
+21
+
+
+Factors:
+DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0, 3.0],:f2=>[1.0, 2.0, 3.0],:f3=>[1.0, 2.0, 3.0],:f4=>[1.0, 2.0, 3.0],:f5=>[1.0, 2.0, 3.0],:f6=>[1.0, 2.0, 3.0],:f7=>[1.0, 2.0, 3.0],:f8=>[1.0, 2.0, 3.0],:f9=>[1.0, 2.0, 3.0],:f10=>[1.0, 2.0, 3.0])
+True factors:
+String["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"]
+Size: 100
+From 100 to 1100
+Results match:true
+Size: 200
+From 100 to 1100
+Results match:true
+Size: 300
+From 100 to 1100
+Results match:true
+Size: 400
+From 100 to 1100
+Results match:true
+Size: 600
+From 100 to 1100
+Results match:true
+Size: 700
+From 100 to 1100
+Results match:true
+Size: 800
+From 100 to 1100
+Results match:true
+Size: 900
+From 100 to 1100
+Results match:true
+Size: 1000
+From 100 to 1100
+Results match:true
+Size: 1100
+From 100 to 1100
+Results match:true
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 21:21
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 39.061239556 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 22:22
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 37.287125658 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 23:23
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 38.985596183 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 24:24
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 37.620414169 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 25:25
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 39.862220456 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 26:26
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 42.831769023 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 27:27
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 44.119385979 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 28:28
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 70.584242656 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 29:29
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 54.960434993 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 30:30
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 44.290145794 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 31:31
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 75.534711567 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 32:32
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 48.112127203 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 33:33
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 61.055319928 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 34:34
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 57.727199466 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 35:35
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 53.163875787 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 36:36
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 49.658737 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 37:37
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 50.417926592 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 38:38
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 60.748829787 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 39:39
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 61.346857428 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 40:40
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 71.10459736 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 41:41
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 58.314581787 seconds
+(UnitRange{Int64}[21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27, 28:28, 29:29, 30:30  …  32:32, 33:33, 34:34, 35:35, 36:36, 37:37, 38:38, 39:39, 40:40, 41:41], Any[Any[0.149287, 0.155784, 0.158983, 0.165764, 0.168128, 0.170373, 0.171479, 0.17257, 0.174034, 0.179265  …  0.178966, 0.181841, 0.180439, 0.181032, 0.181859, 0.187461, 0.185382, 0.185967, 0.185857, 0.184504], Any[0.159024, 0.162459, 0.168526, 0.169193, 0.172653, 0.179839, 0.180204, 0.1843, 0.183166, 0.186445  …  0.187274, 0.190139, 0.187559, 0.19032, 0.194199, 0.192152, 0.192606, 0.194977, 0.195315, 0.194874], Any[0.163806, 0.165794, 0.172309, 0.174176, 0.177036, 0.178625, 0.18018, 0.18649, 0.185798, 0.186599  …  0.19117, 0.191281, 0.193048, 0.193896, 0.193152, 0.19482, 0.194538, 0.196441, 0.196749, 0.196278], Any[0.159848, 0.169257, 0.172764, 0.177604, 0.179332, 0.184683, 0.183094, 0.1838, 0.185208, 0.187218  …  0.192157, 0.193845, 0.19271, 0.192055, 0.194621, 0.195412, 0.196118, 0.197769, 0.196947, 0.197333], Any[0.16313, 0.171984, 0.172282, 0.176713, 0.178676, 0.183305, 0.183875, 0.186502, 0.187487, 0.190464  …  0.191986, 0.193158, 0.192759, 0.195552, 0.195947, 0.195665, 0.197872, 0.197574, 0.197955, 0.199437], Any[0.162154, 0.170105, 0.171436, 0.179001, 0.180391, 0.183589, 0.186092, 0.185418, 0.1889, 0.190802  …  0.191594, 0.192409, 0.194323, 0.194627, 0.196362, 0.195579, 0.197044, 0.198359, 0.198036, 0.199098], Any[0.168404, 0.173322, 0.174837, 0.180563, 0.182093, 0.184903, 0.185899, 0.1888, 0.189733, 0.192342  …  0.193369, 0.19518, 0.194656, 0.194854, 0.19583, 0.196742, 0.198095, 0.1973, 0.198933, 0.200061], Any[0.169151, 0.173183, 0.174484, 0.179125, 0.182277, 0.183738, 0.186821, 0.186691, 0.187509, 0.190827  …  0.193274, 0.195166, 0.196434, 0.19547, 0.196127, 0.197978, 0.198499, 0.198894, 0.198839, 0.200113], Any[0.168762, 0.172927, 0.177364, 0.180788, 0.187873, 0.185636, 0.185796, 0.187996, 0.18962, 0.1916  …  0.19302, 0.195628, 0.195326, 0.197196, 0.196695, 0.196265, 0.198531, 0.198321, 0.199043, 0.199672], Any[0.16542, 0.174365, 0.178521, 0.179557, 0.18466, 0.185799, 0.187392, 0.190508, 0.190954, 0.190815  …  0.193921, 0.194818, 0.197159, 0.19586, 0.197707, 0.196854, 0.1986, 0.198517, 0.19948, 0.199623]], Any[0.110256, 0.118288, 0.131229, 0.133287, 0.136324, 0.138263, 0.141416, 0.144907, 0.155509, 0.153229  …  0.161195, 0.157471, 0.160366, 0.161868, 0.163381, 0.163155, 0.168345, 0.167112, 0.167884, 0.168458])
+Any[Any[0.149287, 0.155784, 0.158983, 0.165764, 0.168128, 0.170373, 0.171479, 0.17257, 0.174034, 0.179265, 0.178596, 0.178966, 0.181841, 0.180439, 0.181032, 0.181859, 0.187461, 0.185382, 0.185967, 0.185857, 0.184504], Any[0.159024, 0.162459, 0.168526, 0.169193, 0.172653, 0.179839, 0.180204, 0.1843, 0.183166, 0.186445, 0.186296, 0.187274, 0.190139, 0.187559, 0.19032, 0.194199, 0.192152, 0.192606, 0.194977, 0.195315, 0.194874], Any[0.163806, 0.165794, 0.172309, 0.174176, 0.177036, 0.178625, 0.18018, 0.18649, 0.185798, 0.186599, 0.18835, 0.19117, 0.191281, 0.193048, 0.193896, 0.193152, 0.19482, 0.194538, 0.196441, 0.196749, 0.196278], Any[0.159848, 0.169257, 0.172764, 0.177604, 0.179332, 0.184683, 0.183094, 0.1838, 0.185208, 0.187218, 0.188887, 0.192157, 0.193845, 0.19271, 0.192055, 0.194621, 0.195412, 0.196118, 0.197769, 0.196947, 0.197333], Any[0.16313, 0.171984, 0.172282, 0.176713, 0.178676, 0.183305, 0.183875, 0.186502, 0.187487, 0.190464, 0.190814, 0.191986, 0.193158, 0.192759, 0.195552, 0.195947, 0.195665, 0.197872, 0.197574, 0.197955, 0.199437], Any[0.162154, 0.170105, 0.171436, 0.179001, 0.180391, 0.183589, 0.186092, 0.185418, 0.1889, 0.190802, 0.191296, 0.191594, 0.192409, 0.194323, 0.194627, 0.196362, 0.195579, 0.197044, 0.198359, 0.198036, 0.199098], Any[0.168404, 0.173322, 0.174837, 0.180563, 0.182093, 0.184903, 0.185899, 0.1888, 0.189733, 0.192342, 0.190234, 0.193369, 0.19518, 0.194656, 0.194854, 0.19583, 0.196742, 0.198095, 0.1973, 0.198933, 0.200061], Any[0.169151, 0.173183, 0.174484, 0.179125, 0.182277, 0.183738, 0.186821, 0.186691, 0.187509, 0.190827, 0.19138, 0.193274, 0.195166, 0.196434, 0.19547, 0.196127, 0.197978, 0.198499, 0.198894, 0.198839, 0.200113], Any[0.168762, 0.172927, 0.177364, 0.180788, 0.187873, 0.185636, 0.185796, 0.187996, 0.18962, 0.1916, 0.192686, 0.19302, 0.195628, 0.195326, 0.197196, 0.196695, 0.196265, 0.198531, 0.198321, 0.199043, 0.199672], Any[0.16542, 0.174365, 0.178521, 0.179557, 0.18466, 0.185799, 0.187392, 0.190508, 0.190954, 0.190815, 0.194011, 0.193921, 0.194818, 0.197159, 0.19586, 0.197707, 0.196854, 0.1986, 0.198517, 0.19948, 0.199623]]Any[0.110256, 0.118288, 0.131229, 0.133287, 0.136324, 0.138263, 0.141416, 0.144907, 0.155509, 0.153229, 0.155141, 0.161195, 0.157471, 0.160366, 0.161868, 0.163381, 0.163155, 0.168345, 0.167112, 0.167884, 0.168458]UnitRange{Int64}[21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27, 28:28, 29:29, 30:30, 31:31, 32:32, 33:33, 34:34, 35:35, 36:36, 37:37, 38:38, 39:39, 40:40, 41:41]
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot([r.start for r in ranges], samples[1],
+     label = "optFederov with $(sample_sets[1]) samples")
+
+for sample = 2:length(samples)
+    plot!([r.start for r in ranges], samples[sample],
+          label = "optFederov with $(sample_sets[sample]) samples",
+          yticks = round(min(uniform_sampled..., vcat(samples...)...) - 0.002, 2):0.01:round(max(uniform_sampled..., vcat(samples...)...) + 0.002, 2),
+          xticks = ranges[1].start:4:ranges[end].stop,
+          ylim = ((min(uniform_sampled..., vcat(samples...)...) - 0.002), (max(uniform_sampled..., vcat(samples...)...) + 0.002)))
+end
+
+plot!([r.start for r in ranges], uniform_sampled,
+      label = "8000 uniformly sampled designs", color = :black,
+      ylabel = "D-Efficiency", xlabel = "Design Size",
+      legend = :bottomright,
+      legendfont = Plots.Font("sans-serif",6,:hcenter,:vcenter,0.0,RGB{U8}(0.0,0.0,0.0)),
+      title = "$nfactors $(nlevels)-Level Categorical Factors")
+
+#+END_SRC
+
+#+RESULTS:
+: 
+: 
+: 
+: 
+: WARNING: ColorTypes.U8 is deprecated, use FixedPointNumbers.Normed{UInt8, 8} instead.
+:   likely near no file:0
+
+#+HEADER: :session *Julia* :eval no-export :results graphics output :file /tmp/10_3LC.png
+#+BEGIN_SRC julia
+savefig("/tmp/10_3LC.png")
+#+END_SRC
+
+#+ATTR_ORG: :width 900 :height 900
+#+RESULTS:
+[[file:/tmp/10_3LC.png]]
+***** 20 2-Level Numerical Factors                               :ATTACH:
+#+HEADER: :session *Julia* :results output
+#+BEGIN_SRC julia
+sample_sets = [100, 200, 300, 400, 600, 700, 800, 900, 1000, 1100]
+nfactors = 20
+nlevels = 2
+starting_size = 21
+
+#get_samples(nfactors::Int, nlevels::Int, set_sizes::Array{Int, 1}, starting_design_size::Int)
+ranges, samples, uniform_sampled = get_samples(nfactors, nlevels,
+                                               sample_sets, starting_size,
+                                               false)
+println(samples, uniform_sampled, ranges)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+10-element Array{Int64,1}:
+  100
+  200
+  300
+  400
+  600
+  700
+  800
+  900
+ 1000
+ 1100
+10
+3
+21
+
+
+Factors:
+DataStructures.OrderedDict{Symbol,Any}(:f1=>[1.0, 2.0, 3.0],:f2=>[1.0, 2.0, 3.0],:f3=>[1.0, 2.0, 3.0],:f4=>[1.0, 2.0, 3.0],:f5=>[1.0, 2.0, 3.0],:f6=>[1.0, 2.0, 3.0],:f7=>[1.0, 2.0, 3.0],:f8=>[1.0, 2.0, 3.0],:f9=>[1.0, 2.0, 3.0],:f10=>[1.0, 2.0, 3.0])
+True factors:
+String["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"]
+Size: 100
+From 100 to 1100
+Results match:true
+Size: 200
+From 100 to 1100
+Results match:true
+Size: 300
+From 100 to 1100
+Results match:true
+Size: 400
+From 100 to 1100
+Results match:true
+Size: 600
+From 100 to 1100
+Results match:true
+Size: 700
+From 100 to 1100
+Results match:true
+Size: 800
+From 100 to 1100
+Results match:true
+Size: 900
+From 100 to 1100
+Results match:true
+Size: 1000
+From 100 to 1100
+Results match:true
+Size: 1100
+From 100 to 1100
+Results match:true
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 21:21
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 39.061239556 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 22:22
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 37.287125658 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 23:23
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 38.985596183 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 24:24
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 37.620414169 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 25:25
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 39.862220456 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 26:26
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 42.831769023 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 27:27
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 44.119385979 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 28:28
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 70.584242656 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 29:29
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 54.960434993 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 30:30
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 44.290145794 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 31:31
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 75.534711567 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 32:32
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 48.112127203 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 33:33
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 61.055319928 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 34:34
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 57.727199466 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 35:35
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 53.163875787 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 36:36
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 49.658737 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 37:37
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 50.417926592 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 38:38
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 60.748829787 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 39:39
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 61.346857428 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 40:40
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 71.10459736 seconds
+Factors: DataStructures.OrderedDict{Symbol,Any}(:f1=>String["1", "2", "3"],:f2=>String["1", "2", "3"],:f3=>String["1", "2", "3"],:f4=>String["1", "2", "3"],:f5=>String["1", "2", "3"],:f6=>String["1", "2", "3"],:f7=>String["1", "2", "3"],:f8=>String["1", "2", "3"],:f9=>String["1", "2", "3"],:f10=>String["1", "2", "3"])
+Full Factorial Size: 59049
+Total Subsets: Inf
+Range of Design Sizes: 41:41
+Number of Designs to Sample: 8000
+WARNING: Skipping bounds check!
+Elapsed Time: 58.314581787 seconds
+(UnitRange{Int64}[21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27, 28:28, 29:29, 30:30  …  32:32, 33:33, 34:34, 35:35, 36:36, 37:37, 38:38, 39:39, 40:40, 41:41], Any[Any[0.149287, 0.155784, 0.158983, 0.165764, 0.168128, 0.170373, 0.171479, 0.17257, 0.174034, 0.179265  …  0.178966, 0.181841, 0.180439, 0.181032, 0.181859, 0.187461, 0.185382, 0.185967, 0.185857, 0.184504], Any[0.159024, 0.162459, 0.168526, 0.169193, 0.172653, 0.179839, 0.180204, 0.1843, 0.183166, 0.186445  …  0.187274, 0.190139, 0.187559, 0.19032, 0.194199, 0.192152, 0.192606, 0.194977, 0.195315, 0.194874], Any[0.163806, 0.165794, 0.172309, 0.174176, 0.177036, 0.178625, 0.18018, 0.18649, 0.185798, 0.186599  …  0.19117, 0.191281, 0.193048, 0.193896, 0.193152, 0.19482, 0.194538, 0.196441, 0.196749, 0.196278], Any[0.159848, 0.169257, 0.172764, 0.177604, 0.179332, 0.184683, 0.183094, 0.1838, 0.185208, 0.187218  …  0.192157, 0.193845, 0.19271, 0.192055, 0.194621, 0.195412, 0.196118, 0.197769, 0.196947, 0.197333], Any[0.16313, 0.171984, 0.172282, 0.176713, 0.178676, 0.183305, 0.183875, 0.186502, 0.187487, 0.190464  …  0.191986, 0.193158, 0.192759, 0.195552, 0.195947, 0.195665, 0.197872, 0.197574, 0.197955, 0.199437], Any[0.162154, 0.170105, 0.171436, 0.179001, 0.180391, 0.183589, 0.186092, 0.185418, 0.1889, 0.190802  …  0.191594, 0.192409, 0.194323, 0.194627, 0.196362, 0.195579, 0.197044, 0.198359, 0.198036, 0.199098], Any[0.168404, 0.173322, 0.174837, 0.180563, 0.182093, 0.184903, 0.185899, 0.1888, 0.189733, 0.192342  …  0.193369, 0.19518, 0.194656, 0.194854, 0.19583, 0.196742, 0.198095, 0.1973, 0.198933, 0.200061], Any[0.169151, 0.173183, 0.174484, 0.179125, 0.182277, 0.183738, 0.186821, 0.186691, 0.187509, 0.190827  …  0.193274, 0.195166, 0.196434, 0.19547, 0.196127, 0.197978, 0.198499, 0.198894, 0.198839, 0.200113], Any[0.168762, 0.172927, 0.177364, 0.180788, 0.187873, 0.185636, 0.185796, 0.187996, 0.18962, 0.1916  …  0.19302, 0.195628, 0.195326, 0.197196, 0.196695, 0.196265, 0.198531, 0.198321, 0.199043, 0.199672], Any[0.16542, 0.174365, 0.178521, 0.179557, 0.18466, 0.185799, 0.187392, 0.190508, 0.190954, 0.190815  …  0.193921, 0.194818, 0.197159, 0.19586, 0.197707, 0.196854, 0.1986, 0.198517, 0.19948, 0.199623]], Any[0.110256, 0.118288, 0.131229, 0.133287, 0.136324, 0.138263, 0.141416, 0.144907, 0.155509, 0.153229  …  0.161195, 0.157471, 0.160366, 0.161868, 0.163381, 0.163155, 0.168345, 0.167112, 0.167884, 0.168458])
+Any[Any[0.149287, 0.155784, 0.158983, 0.165764, 0.168128, 0.170373, 0.171479, 0.17257, 0.174034, 0.179265, 0.178596, 0.178966, 0.181841, 0.180439, 0.181032, 0.181859, 0.187461, 0.185382, 0.185967, 0.185857, 0.184504], Any[0.159024, 0.162459, 0.168526, 0.169193, 0.172653, 0.179839, 0.180204, 0.1843, 0.183166, 0.186445, 0.186296, 0.187274, 0.190139, 0.187559, 0.19032, 0.194199, 0.192152, 0.192606, 0.194977, 0.195315, 0.194874], Any[0.163806, 0.165794, 0.172309, 0.174176, 0.177036, 0.178625, 0.18018, 0.18649, 0.185798, 0.186599, 0.18835, 0.19117, 0.191281, 0.193048, 0.193896, 0.193152, 0.19482, 0.194538, 0.196441, 0.196749, 0.196278], Any[0.159848, 0.169257, 0.172764, 0.177604, 0.179332, 0.184683, 0.183094, 0.1838, 0.185208, 0.187218, 0.188887, 0.192157, 0.193845, 0.19271, 0.192055, 0.194621, 0.195412, 0.196118, 0.197769, 0.196947, 0.197333], Any[0.16313, 0.171984, 0.172282, 0.176713, 0.178676, 0.183305, 0.183875, 0.186502, 0.187487, 0.190464, 0.190814, 0.191986, 0.193158, 0.192759, 0.195552, 0.195947, 0.195665, 0.197872, 0.197574, 0.197955, 0.199437], Any[0.162154, 0.170105, 0.171436, 0.179001, 0.180391, 0.183589, 0.186092, 0.185418, 0.1889, 0.190802, 0.191296, 0.191594, 0.192409, 0.194323, 0.194627, 0.196362, 0.195579, 0.197044, 0.198359, 0.198036, 0.199098], Any[0.168404, 0.173322, 0.174837, 0.180563, 0.182093, 0.184903, 0.185899, 0.1888, 0.189733, 0.192342, 0.190234, 0.193369, 0.19518, 0.194656, 0.194854, 0.19583, 0.196742, 0.198095, 0.1973, 0.198933, 0.200061], Any[0.169151, 0.173183, 0.174484, 0.179125, 0.182277, 0.183738, 0.186821, 0.186691, 0.187509, 0.190827, 0.19138, 0.193274, 0.195166, 0.196434, 0.19547, 0.196127, 0.197978, 0.198499, 0.198894, 0.198839, 0.200113], Any[0.168762, 0.172927, 0.177364, 0.180788, 0.187873, 0.185636, 0.185796, 0.187996, 0.18962, 0.1916, 0.192686, 0.19302, 0.195628, 0.195326, 0.197196, 0.196695, 0.196265, 0.198531, 0.198321, 0.199043, 0.199672], Any[0.16542, 0.174365, 0.178521, 0.179557, 0.18466, 0.185799, 0.187392, 0.190508, 0.190954, 0.190815, 0.194011, 0.193921, 0.194818, 0.197159, 0.19586, 0.197707, 0.196854, 0.1986, 0.198517, 0.19948, 0.199623]]Any[0.110256, 0.118288, 0.131229, 0.133287, 0.136324, 0.138263, 0.141416, 0.144907, 0.155509, 0.153229, 0.155141, 0.161195, 0.157471, 0.160366, 0.161868, 0.163381, 0.163155, 0.168345, 0.167112, 0.167884, 0.168458]UnitRange{Int64}[21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27, 28:28, 29:29, 30:30, 31:31, 32:32, 33:33, 34:34, 35:35, 36:36, 37:37, 38:38, 39:39, 40:40, 41:41]
+#+end_example
+
+#+HEADER: :results output :session *Julia*
+#+BEGIN_SRC julia
+plot([r.start for r in ranges], samples[1],
+     label = "optFederov with $(sample_sets[1]) samples")
+
+for sample = 2:length(samples)
+    plot!([r.start for r in ranges], samples[sample],
+          label = "optFederov with $(sample_sets[sample]) samples",
+          yticks = round(min(uniform_sampled..., vcat(samples...)...) - 0.002, 2):0.01:round(max(uniform_sampled..., vcat(samples...)...) + 0.002, 2),
+          xticks = ranges[1].start:4:ranges[end].stop,
+          ylim = ((min(uniform_sampled..., vcat(samples...)...) - 0.002), (max(uniform_sampled..., vcat(samples...)...) + 0.002)))
+end
+
+plot!([r.start for r in ranges], uniform_sampled,
+      label = "8000 uniformly sampled designs", color = :black,
+      ylabel = "D-Efficiency", xlabel = "Design Size",
+      legend = :bottomright,
+      legendfont = Plots.Font("sans-serif", 6, :hcenter,
+                              :vcenter, 0.0, RGB(0.0,0.0,0.0)),
+      title = "$nfactors $(nlevels)-Level Categorical Factors")
+
+#+END_SRC
+
+#+RESULTS:
+: 
+: 
+: 
+: 
+: WARNING: ColorTypes.U8 is deprecated, use FixedPointNumbers.Normed{UInt8, 8} instead.
+:   likely near no file:0
+
+#+HEADER: :session *Julia* :eval no-export :results graphics output :file /tmp/10_3LC.png
+#+BEGIN_SRC julia
+savefig("/tmp/10_3LC.png")
+#+END_SRC
+
+#+ATTR_ORG: :width 900 :height 900
+#+RESULTS:
+[[file:/tmp/10_3LC.png]]
