@@ -20814,86 +20814,38 @@ plot_pb_comparison(comparison)
 
 3
 
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3   │ y   │
-├─────┼──────┼──────┼──────┼─────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0 │
-│ 2   │ 1.0  │ -1.0 │ -1.0 │ 1.0 │
-│ 3   │ -1.0 │ -1.0 │ 1.0  │ 1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ 1.0 │
-Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+ Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
 Full Factorial Size: 8
 Total Subsets: 256.0
 Range of Design Sizes: 4:4
 Number of Designs to Sample: 8000
 Total Subsets for Fixed Size 4: 70.0
 Requested too many designs, using 70.0 instead
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3   │ y   │
-├─────┼──────┼──────┼──────┼─────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ 1.0 │
-│ 2   │ 1.0  │ 1.0  │ 1.0  │ 1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ 1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ 1.0 │
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3   │ y   │
-├─────┼──────┼──────┼──────┼─────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0 │
-│ 2   │ 1.0  │ -1.0 │ -1.0 │ 1.0 │
-│ 3   │ -1.0 │ 1.0  │ -1.0 │ 1.0 │
-│ 4   │ -1.0 │ -1.0 │ -1.0 │ 1.0 │
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3   │ y   │
-├─────┼──────┼──────┼──────┼─────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ 1.0 │
-│ 2   │ 1.0  │ 1.0  │ 1.0  │ 1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ 1.0 │
-│ 4   │ 1.0  │ -1.0 │ 1.0  │ 1.0 │
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3   │ y   │
-├─────┼──────┼──────┼──────┼─────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ 1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0 │
-│ 4   │ -1.0 │ -1.0 │ -1.0 │ 1.0 │
-Any[]
-Formula: y ~ f1 + f2 + f3
-4×4 DataFrames.DataFrame
-│ Row │ f1   │ f2   │ f3  │ y   │
-├─────┼──────┼──────┼─────┼─────┤
-│ 1   │ -1.0 │ 1.0  │ 1.0 │ 1.0 │
-│ 2   │ 1.0  │ 1.0  │ 1.0 │ 1.0 │
-│ 3   │ 1.0  │ -1.0 │ 1.0 │ 1.0 │
-│ 4   │ -1.0 │ -1.0 │ 1.0 │ 1.0 │
-ERROR: ArgumentError: only one level found: 1.0 (need at least two to compute contrasts).
-Stacktrace:
- [1] StatsModels.ContrastsMatrix(::StatsModels.DummyCoding, ::Array{Any,1}) at /home/phrb/.julia/v0.6/StatsModels/src/contrasts.jl:158
- [2] evalcontrasts(::DataFrames.DataFrame, ::Dict{Any,Any}) at /home/phrb/.julia/v0.6/StatsModels/src/modelframe.jl:125
- [3] #ModelFrame#22(::Dict{Any,Any}, ::Type{T} where T, ::StatsModels.Terms, ::DataFrames.DataFrame) at /home/phrb/.julia/v0.6/StatsModels/src/modelframe.jl:147
- [4] (::Core.#kw#Type)(::Array{Any,1}, ::Type{StatsModels.ModelFrame}, ::StatsModels.Terms, ::DataFrames.DataFrame) at ./<missing>:0
- [5] #ModelFrame#27(::Array{Any,1}, ::Type{T} where T, ::StatsModels.Formula, ::DataFrames.DataFrame) at /home/phrb/.julia/v0.6/StatsModels/src/modelframe.jl:156
- [6] (::Core.#kw#Type)(::Array{Any,1}, ::Type{StatsModels.ModelFrame}, ::StatsModels.Formula, ::DataFrames.DataFrame) at ./<missing>:0
- [7] #generate_model_matrix#8(::Function, ::Function, ::StatsModels.Formula, ::DataFrames.DataFrame, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/modeling.jl:362
- [8] (::ExperimentalDesign.#kw##generate_model_matrix)(::Array{Any,1}, ::ExperimentalDesign.#generate_model_matrix, ::StatsModels.Formula, ::DataFrames.DataFrame, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}) at ./<missing>:0
- [9] evaluate_metrics(::DataStructures.OrderedDict{Symbol,Array{Float64,1}}, ::StatsModels.Formula, ::UnitRange{Int64}, ::Int64, ::Function) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/sampling.jl:134
- [10] #generate_designs#11(::Bool, ::Function, ::Bool, ::Function, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}, ::StatsModels.Formula, ::UnitRange{Int64}, ::Int64) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/sampling.jl:162
- [11] (::ExperimentalDesign.#kw##generate_designs)(::Array{Any,1}, ::ExperimentalDesign.#generate_designs, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}, ::StatsModels.Formula, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
- [12] macro expansion at ./util.jl:293 [inlined]
- [13] #sample_subset#12(::Bool, ::Function, ::Function, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}, ::UnitRange{Int64}, ::Int64) at /home/phrb/.julia/v0.6/ExperimentalDesign/src/d_optimal/sampling.jl:181
- [14] (::ExperimentalDesign.#kw##sample_subset)(::Array{Any,1}, ::ExperimentalDesign.#sample_subset, ::DataStructures.OrderedDict{Symbol,Array{Float64,1}}, ::UnitRange{Int64}, ::Int64) at ./<missing>:0
- [15] compare_sample_pb(::Int64, ::Int64, ::Bool) at ./none:21
+Elapsed Time: 0.047150198 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+Full Factorial Size: 8
+Total Subsets: 256.0
+Range of Design Sizes: 5:5
+Number of Designs to Sample: 8000
+Total Subsets for Fixed Size 5: 56.0
+Requested too many designs, using 56.0 instead
+Elapsed Time: 0.023937148 seconds
+Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0])
+Full Factorial Size: 8
+Total Subsets: 256.0
+Range of Design Sizes: 6:6
+Number of Designs to Sample: 8000
+Total Subsets for Fixed Size 6: 28.0
+Requested too many designs, using 28.0 instead
+Elapsed Time: 0.010208752 seconds
+SampleComparison(4×3 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │
+├─────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ 1.0  │
+│ 2   │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ -1.0 │ 1.0  │
+│ 4   │ -1.0 │ 1.0  │ -1.0 │, 1.0, UnitRange{Int64}[4:4, 5:5, 6:6], Any[1.0, 0.951366, 0.942809], false, false)
 
-ERROR: UndefVarError: comparison not defined
 #+end_example
 ***** Comparing to ~optFederov~ (7 Factors)                      :ATTACH:
 :PROPERTIES:
@@ -20918,335 +20870,347 @@ plot_federov_comparison(comparison)
 7
 
 Computed optFederov for nTrials 8
-8×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 1.0
+DELB = 0.8537382425870722
 Computed optFederov for nTrials 9
-9×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9693402068135624
 Computed optFederov for nTrials 10
-10×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9513656920021768
 Computed optFederov for nTrials 11
-11×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9494542111210719
+DELB = 0.9467908352732439
 Computed optFederov for nTrials 12
-12×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
 DELB = 1.0
 Computed optFederov for nTrials 13
-13×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9839408409698828
 Computed optFederov for nTrials 14
-14×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9739023141149995
 Computed optFederov for nTrials 15
-15×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-DELB = 0.9762140324639844
+DELB = 0.9781376460849827
 Computed optFederov for nTrials 16
-16×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9919651383152107
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 8:8
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 8: 1429702652400
-Elapsed Time: 4.192090873 seconds
+Total Subsets for Fixed Size 8: 1.4297026524e12
+Elapsed Time: 5.15042899 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 9:9
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 9: 19062702032000
-Elapsed Time: 4.523220985 seconds
+Total Subsets for Fixed Size 9: 1.9062702032e13
+Elapsed Time: 5.937001035 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 10:10
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 10: 226846154180799
-Elapsed Time: 5.714122434 seconds
+Total Subsets for Fixed Size 10: 2.2684615418079997e14
+Elapsed Time: 6.421870567 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 11:11
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 11: 2433440563030400
-Elapsed Time: 4.205947783 seconds
+Total Subsets for Fixed Size 11: 2.4334405630304e15
+Elapsed Time: 6.290856648 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 12:12
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 12: 23726045489546400
-Elapsed Time: 4.546601966 seconds
+Total Subsets for Fixed Size 12: 2.37260454895464e16
+Elapsed Time: 6.533177306 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 13:13
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 13: 211709328983644832
-Elapsed Time: 4.652173734 seconds
+Total Subsets for Fixed Size 13: 2.1170932898364483e17
+Elapsed Time: 6.692458322 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0])
 Full Factorial Size: 128
 Total Subsets: 3.402823669209385e38
 Range of Design Sizes: 14:14
 Number of Designs to Sample: 8000
-Total Subsets for Fixed Size 14: 1739040916651367936
-Elapsed Time: 4.389386725 seconds
-SampleComparison([1.0 1.0 … 1.0 1.0; -1.0 1.0 … -1.0 -1.0; … ; -1.0 -1.0 … 1.0 1.0; -1.0 -1.0 … 1.0 -1.0], 1.0, UnitRange{Int64}[8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14], Any[0.853738, 0.851485, 0.882233, 0.879408, 0.90984, 0.902102, 0.912176], Any[8×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
+Total Subsets for Fixed Size 14: 1.739040916651368e18
+Elapsed Time: 7.095789714 seconds
+SampleComparison(8×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 5   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 7   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 8   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │, 1.0, UnitRange{Int64}[8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14], Any[0.782542, 0.835522, 0.85963, 0.890466, 0.895695, 0.910519, 0.917028], Any[8×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 4   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 9×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
 │ 1   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 2   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
 │ 3   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
 │ 5   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 6   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
 │ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 9×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 8   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
 │ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 10×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 11×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
 │ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 12×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
+│ 2   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 11×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 13×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 1   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
 │ 2   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 14×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
+│ 3   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 8   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 10  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 12×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 15×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │, 16×7 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 1   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
 │ 5   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 13×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 14×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │, 15×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
 │ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 7   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 15  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 16×7 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
 │ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
 │ 14  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │], Any[1.0, 0.96934, 0.951366, 0.949454, 1.0, 0.983941, 0.973902, 0.976214, 0.991965])
+│ 15  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │], Any[0.853738, 0.96934, 0.951366, 0.946791, 1.0, 0.983941, 0.973902, 0.978138, 0.991965])
 
+Fontconfig warning: "/etc/fonts/fonts.conf", line 5: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/fonts.conf", line 6: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/fonts.conf", line 6: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/fonts.conf", line 6: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/fonts.conf", line 7: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/fonts.conf", line 7: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/fonts.conf", line 9: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/65-fonts-persian.conf", line 34: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 36: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 36: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/69-unifont.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/69-unifont.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/80-delicious.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/80-delicious.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/90-synthetic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/90-synthetic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 6: invalid attribute 'version'
+Fontconfig error: Cannot load config file from /etc/fonts/fonts.conf
 Created new window in existing browser session.
 #+end_example
 ***** Comparing to ~optFederov~ Designs (11 Factors)            :ATTACH:
@@ -21270,413 +21234,256 @@ comparison = compare_sample_pb_federov(two_level_factors)
 11
 
 Computed optFederov for nTrials 12
-12×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9428090415820632
+DELB = 0.9999999999999999
 Computed optFederov for nTrials 13
-13×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 13  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9779659332547339
 Computed optFederov for nTrials 14
-14×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
 DELB = 0.9621103271223196
 Computed optFederov for nTrials 15
-15×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9538524155158346
+DELB = 0.9538524155158347
 Computed optFederov for nTrials 16
-16×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 16  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9889340668608626
+DELB = 0.9671682101338345
 Computed optFederov for nTrials 17
-17×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 17  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.97964281879448
+DELB = 0.9729796440071278
 Computed optFederov for nTrials 18
-18×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 18  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9753684362254575
+DELB = 0.9735789872316732
 Computed optFederov for nTrials 19
-19×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 10  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 11  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 18  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 19  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9740396533121419
+DELB = 0.9727789463913687
 Computed optFederov for nTrials 20
-20×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 13  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 15  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 18  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 19  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 20  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
-DELB = 0.9781626610794962
+DELB = 0.9793641899158704
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 12:12
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 4.867937559 seconds
+Elapsed Time: 8.690470855 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 13:13
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.162218907 seconds
+Elapsed Time: 9.310633193 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 14:14
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.110547206 seconds
+Elapsed Time: 9.748692936 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 15:15
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.225437659 seconds
+Elapsed Time: 10.191342519 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 16:16
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.081039944 seconds
+Elapsed Time: 10.542346126 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 17:17
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.235147398 seconds
+Elapsed Time: 10.976244253 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 18:18
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.327163744 seconds
+Elapsed Time: 11.481893438 seconds
 Factors: DataStructures.OrderedDict(:f1=>[-1.0, 1.0],:f2=>[-1.0, 1.0],:f3=>[-1.0, 1.0],:f4=>[-1.0, 1.0],:f5=>[-1.0, 1.0],:f6=>[-1.0, 1.0],:f7=>[-1.0, 1.0],:f8=>[-1.0, 1.0],:f9=>[-1.0, 1.0],:f10=>[-1.0, 1.0],:f11=>[-1.0, 1.0])
 Full Factorial Size: 2048
 Total Subsets: Inf
 Range of Design Sizes: 19:19
 Number of Designs to Sample: 8000
 WARNING: Skipping bounds check!
-Elapsed Time: 5.361172062 seconds
-SampleComparison([1.0 1.0 … 1.0 1.0; 1.0 -1.0 … -1.0 -1.0; … ; -1.0 -1.0 … -1.0 1.0; -1.0 1.0 … 1.0 -1.0], 0.9999999999999999, UnitRange{Int64}[12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18, 19:19], Any[0.703006, 0.695148, 0.741643, 0.768192, 0.77639, 0.821046, 0.817912, 0.842789], Any[12×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+Elapsed Time: 12.00145532 seconds
+SampleComparison(12×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 8   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 13×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 2   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 6   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 9   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 10  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 11  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │, 0.9999999999999999, UnitRange{Int64}[12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18, 19:19], Any[0.6783, 0.710505, 0.746752, 0.776294, 0.782361, 0.793481, 0.816573, 0.820573], Any[12×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 13  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 14×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+│ 1   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 11  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │, 13×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 13  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 15×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+│ 1   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 12  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 13  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 14×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 1   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 8   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 14  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 15×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 9   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 14  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 15  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 16×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 4   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 9   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 13  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 14  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 15  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 17×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
 │ 4   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 11  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 5   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
 │ 12  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 16×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+│ 13  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 14  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │
+│ 17  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 18×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 16  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 17×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
+│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 6   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 10  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 14  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 15  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 17  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 18  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 19×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
 ├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 4   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 14  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 17  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 18×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 10  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 11  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 14  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 15  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 18  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 19×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
-│ 4   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 7   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 9   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 10  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 11  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
-│ 15  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 18  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 19  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 20×11 DataFrames.DataFrame
-│ Row │ X1   │ X2   │ X3   │ X4   │ X5   │ X6   │ X7   │ X8   │ X9   │ X10  │ X11  │
-├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ 1   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 2   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
-│ 3   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 1   │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
 │ 4   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
-│ 5   │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 6   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
-│ 7   │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 8   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
-│ 9   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
-│ 10  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
-│ 11  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
-│ 13  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 14  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
-│ 15  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 16  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
-│ 17  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
-│ 18  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
-│ 19  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
-│ 20  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │], Any[0.942809, 0.977966, 0.96211, 0.953852, 0.988934, 0.979643, 0.975368, 0.97404, 0.978163])
+│ 5   │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │
+│ 6   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 8   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 10  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 11  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 12  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 14  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 15  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 16  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 17  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 18  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 19  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │, 20×11 DataFrames.DataFrame
+│ Row │ f1   │ f2   │ f3   │ f4   │ f5   │ f6   │ f7   │ f8   │ f9   │ f10  │ f11  │
+├─────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+│ 1   │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │
+│ 2   │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 3   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │
+│ 4   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 5   │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │
+│ 6   │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │
+│ 7   │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │
+│ 8   │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │
+│ 9   │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 10  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │
+│ 11  │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │
+│ 12  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │
+│ 13  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │
+│ 14  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 15  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │
+│ 16  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ 1.0  │
+│ 17  │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 18  │ -1.0 │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │
+│ 19  │ 1.0  │ -1.0 │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ -1.0 │ 1.0  │ 1.0  │ 1.0  │
+│ 20  │ 1.0  │ 1.0  │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ -1.0 │ 1.0  │ 1.0  │ 1.0  │], Any[1.0, 0.977966, 0.96211, 0.953852, 0.967168, 0.97298, 0.973579, 0.972779, 0.979364])
 #+end_example
 
 #+HEADER: :results output :session *Julia*
@@ -21685,7 +21492,146 @@ plot_federov_comparison(comparison)
 #+END_SRC
 
 #+RESULTS:
-: Created new window in existing browser session.
+#+begin_example
+Fontconfig warning: "/etc/fonts/fonts.conf", line 5: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/fonts.conf", line 6: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/fonts.conf", line 6: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/fonts.conf", line 6: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/fonts.conf", line 7: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/fonts.conf", line 7: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/fonts.conf", line 9: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-hinting-slight.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-hinting-slight.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-scale-bitmap-fonts.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/10-sub-pixel-rgb.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/11-lcdfilter-default.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/20-unhint-small-vera.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/30-metric-aliases.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/30-metric-aliases.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/40-nonlatin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/40-nonlatin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/45-generic.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/45-generic.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/45-latin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/45-latin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/49-sansserif.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/49-sansserif.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/50-user.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/50-user.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/51-local.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/51-local.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/60-generic.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/60-generic.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/60-latin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/60-latin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/65-fonts-persian.conf", line 34: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 35: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 36: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/65-fonts-persian.conf", line 36: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/65-nonlatin.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/65-nonlatin.conf", line 8: unknown element "description"
+Fontconfig warning: "/etc/fonts/conf.d/69-unifont.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/69-unifont.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/69-unifont.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/80-delicious.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/80-delicious.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/80-delicious.conf", line 6: invalid attribute 'version'
+Fontconfig warning: "/etc/fonts/conf.d/90-synthetic.conf", line 4: unknown element "its:rules"
+Fontconfig warning: "/etc/fonts/conf.d/90-synthetic.conf", line 5: unknown element "its:translateRule"
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 5: invalid attribute 'translate'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 5: invalid attribute 'selector'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 6: invalid attribute 'xmlns:its'
+Fontconfig error: "/etc/fonts/conf.d/90-synthetic.conf", line 6: invalid attribute 'version'
+Fontconfig error: Cannot load config file from /etc/fonts/fonts.conf
+Created new window in existing browser session.
+#+end_example
 
 ***** Comparing to ~optFederov~ Designs (11 Factors, 32000 samples) :ATTACH:
 :PROPERTIES:
