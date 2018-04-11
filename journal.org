@@ -30751,6 +30751,7 @@ DataStructures.OrderedDict{Symbol,Any} with 2 entries:
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
+library(FrF2)
 
 fac <- gen.factorial(c(2, 2, 2, 2))
 fac
@@ -30761,11 +30762,38 @@ output
 X = data.matrix(data.frame(model.matrix(~., output$design)))
 X
 
-d_eff = 1 / (dim(X)[1] * (det(solve(t(X) %*% X)) ^ (1 / dim(X)[2])))
-d_eff
+"inf.matrix" <- function (X) {
+    return (solve(t(X) %*% X))
+}
 
-a_eff = 1 / (dim(X)[1] * (sum(diag(solve(t(X) %*% X))) / dim(X)[2]))
-a_eff
+"d_eff" <- function (X) {
+    return (1 / (dim(X)[1] * (det(inf.matrix(X)) ^ (1 / dim(X)[2]))))
+}
+
+"a_eff" <- function (X) {
+    return (1 / (dim(X)[1] * (sum(diag(inf.matrix(X))) / dim(X)[2])))
+}
+
+d_eff(X)
+a_eff(X)
+
+pb_design <- pb(24)
+pb_design[] <- lapply(pb_design, as.character)
+pb_design[] <- lapply(pb_design, as.numeric)
+pb_design <- data.matrix(pb_design)
+pb_design
+
+det_inf_matrix = 1 / (det(inf.matrix(pb_design)) ^ (1 / dim(pb_design)[2]))
+det_inf_matrix
+
+trace_inf_matrix = 1 / (sum(diag(inf.matrix(pb_design))) / dim(pb_design)[2])
+trace_inf_matrix
+
+d_eff(pb_design)
+a_eff(pb_design)
+
+eval.design(~., pb_design)
+
 #+END_SRC
 
 #+RESULTS:
@@ -30801,30 +30829,70 @@ $Dea
 
 $design
    X1 X2 X3 X4
-1  -1 -1 -1 -1
+2   1 -1 -1 -1
 3  -1  1 -1 -1
-6   1 -1  1 -1
+5  -1 -1  1 -1
 8   1  1  1 -1
-9  -1 -1 -1  1
 10  1 -1 -1  1
-12  1  1 -1  1
+11 -1  1 -1  1
 13 -1 -1  1  1
+14  1 -1  1  1
 15 -1  1  1  1
 16  1  1  1  1
 
 $rows
- [1]  1  3  6  8  9 10 12 13 15 16
+ [1]  2  3  5  8 10 11 13 14 15 16
    X.Intercept. X1 X2 X3 X4
-1             1 -1 -1 -1 -1
+2             1  1 -1 -1 -1
 3             1 -1  1 -1 -1
-6             1  1 -1  1 -1
+5             1 -1 -1  1 -1
 8             1  1  1  1 -1
-9             1 -1 -1 -1  1
 10            1  1 -1 -1  1
-12            1  1  1 -1  1
+11            1 -1  1 -1  1
 13            1 -1 -1  1  1
+14            1  1 -1  1  1
 15            1 -1  1  1  1
 16            1  1  1  1  1
 [1] 0.9703219
 [1] 0.9438202
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X
+1   1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1
+2   1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1
+3   1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1
+4  -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1
+5  -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1
+6  -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1
+7   1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1
+8  -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1
+9  -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1
+10  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1
+11 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1
+12 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1
+13 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1
+14  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1
+15  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1
+16  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1
+17 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+18 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1
+19  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1
+20  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1
+21  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1
+22 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1
+23  1 -1 -1 -1 -1  1  1  1  1  1 -1  1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+24 -1  1  1 -1 -1  1  1 -1 -1  1 -1  1 -1 -1 -1 -1  1  1  1  1  1 -1  1
+[1] 24
+[1] 24
+[1] 1
+[1] 1
+$determinant
+[1] 1
+
+$A
+[1] 1
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1
 #+end_example
