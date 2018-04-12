@@ -30960,8 +30960,502 @@ $gmean.variances
   is the *dispersion matrix*, or *covariance matrix*
 ***** Design Efficiency
 - In a *least-squares linear regression*, considering a *linear relationship* between
-  variables, *parameter estimates* are proportional to the *covariance matrix*
-- The *A-Efficiency* of given design is a function of the *arithmetic mean* of the *eigenvalues*
+  variables, *parameter estimates* are proportional to a design's *covariance matrix*
+- The *eigenvalues* of the *covariance matrix* of a design represent its "size" in a certain sense
+- The *A-Efficiency* of a design is inversely proportional to the *arithmetic mean* of the *eigenvalues*
   of the design's *covariance matrix*
-- *D-Efficiency* of a given design is a function of the *geometric mean* of the *eigenvalues*
+- The *D-Efficiency* of a design is inversely proportional to the *geometric mean* of the *eigenvalues*
   of the design's *covariance matrix*
+- For a given set of *factors*, a hypothetical *balanced* an *orthogonal* design has optimal *A-Efficiency* and
+  *D-Efficiency*
+- A design with $N$ rows is *balanced and orthogonal* when the *dispersion matrix* is diagonal
+  and equals to $\dfrac{1}{N}\mathbf{I}$
+  - The following designs are all *balanced and orthogonal*:
+    #+HEADER: :results output :session *R*
+    #+BEGIN_SRC R
+    library(AlgDesign)
+    library(FrF2)
+
+    design <- gen.factorial(c(2, 2, 2, 2))
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * 16
+
+    eval.design(~., full_fac)
+
+    design <- pb(16)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * 16
+
+    design <- FrF2(nruns = 8, nfactors = 4)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * 8
+    #+END_SRC
+    
+    #+RESULTS:
+    #+begin_example
+       X1 X2 X3 X4
+    1  -1 -1 -1 -1
+    2   1 -1 -1 -1
+    3  -1  1 -1 -1
+    4   1  1 -1 -1
+    5  -1 -1  1 -1
+    6   1 -1  1 -1
+    7  -1  1  1 -1
+    8   1  1  1 -1
+    9  -1 -1 -1  1
+    10  1 -1 -1  1
+    11 -1  1 -1  1
+    12  1  1 -1  1
+    13 -1 -1  1  1
+    14  1 -1  1  1
+    15 -1  1  1  1
+    16  1  1  1  1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+       (Intercept) X1 X2 X3 X4
+    1            1 -1 -1 -1 -1
+    2            1  1 -1 -1 -1
+    3            1 -1  1 -1 -1
+    4            1  1  1 -1 -1
+    5            1 -1 -1  1 -1
+    6            1  1 -1  1 -1
+    7            1 -1  1  1 -1
+    8            1  1  1  1 -1
+    9            1 -1 -1 -1  1
+    10           1  1 -1 -1  1
+    11           1 -1  1 -1  1
+    12           1  1  1 -1  1
+    13           1 -1 -1  1  1
+    14           1  1 -1  1  1
+    15           1 -1  1  1  1
+    16           1  1  1  1  1
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept) X1 X2 X3 X4
+    (Intercept)           1  0  0  0  0
+    X1                    0  1  0  0  0
+    X2                    0  0  1  0  0
+    X3                    0  0  0  1  0
+    X4                    0  0  0  0  1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+    Screening 15 factors in 16 runs involves perfect aliasing of 
+     pairwise interactions of the first six factors with the last factor.
+        A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+    1   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+    2   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+    3   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+    4  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+    5  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+    6  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+    7   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+    8   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+    9  -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+    10  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+    11  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+    12 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+    13 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+    14 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+    15  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    16 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+       (Intercept)  A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+    1            1  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+    2            1  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+    3            1  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+    4            1 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+    5            1 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+    6            1 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+    7            1  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+    8            1  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+    9            1 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+    10           1  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+    11           1  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+    12           1 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+    13           1 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+    14           1 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+    15           1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    16           1 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+    attr(,"assign")
+     [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+                (Intercept) A B C D E F G H J K L M N O P
+    (Intercept)           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    A                     0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    B                     0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+    C                     0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+    D                     0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+    E                     0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+    F                     0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+    G                     0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+    H                     0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+    J                     0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+    K                     0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+    L                     0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+    M                     0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+    N                     0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+    O                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+    P                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+       A  B  C  D
+    1  1 -1  1 -1
+    2 -1  1 -1  1
+    3 -1 -1 -1 -1
+    4 -1 -1  1  1
+    5  1  1  1  1
+    6  1 -1 -1  1
+    7  1  1 -1 -1
+    8 -1  1  1 -1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+      (Intercept)  A  B  C  D
+    1           1  1 -1  1 -1
+    2           1 -1  1 -1  1
+    3           1 -1 -1 -1 -1
+    4           1 -1 -1  1  1
+    5           1  1  1  1  1
+    6           1  1 -1 -1  1
+    7           1  1  1 -1 -1
+    8           1 -1  1  1 -1
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept) A B C D
+    (Intercept)           1 0 0 0 0
+    A                     0 1 0 0 0
+    B                     0 0 1 0 0
+    C                     0 0 0 1 0
+    D                     0 0 0 0 1
+    #+end_example
+- A design is *orthogonal* when the *dispersion matrix* is diagonal, excluding the row and column
+  correspondent to the *intercept*, that is, there can be non-zero elements in the *intercept* row
+  and column
+  - The following designs are all *orthogonal*, but not *balanced*:
+    #+HEADER: :results output :session *R*
+    #+BEGIN_SRC R
+    library(AlgDesign)
+    library(FrF2)
+
+    design <- oa.design(nfactors = 6, nlevels = 3)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+
+    design <- oa.design(nlevels=c(4,3,3,2))
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+    #+END_SRC
+    
+    #+RESULTS:
+    #+begin_example
+    The columns of the array have been used in order of appearance. 
+    For designs with relatively few columns, 
+    the properties can sometimes be substantially improved 
+    using option columns with min3 or even min34.
+       A B C D E F
+    1  1 3 2 3 2 1
+    2  3 2 1 2 1 3
+    3  1 2 3 1 2 3
+    4  1 1 1 1 1 1
+    5  2 3 1 2 3 1
+    6  2 3 2 1 1 3
+    7  1 3 3 2 1 2
+    8  2 1 1 3 2 3
+    9  3 1 3 2 2 1
+    10 3 3 1 1 2 2
+    11 3 3 3 3 3 3
+    12 2 2 3 3 1 1
+    13 2 2 2 2 2 2
+    14 3 1 2 3 1 2
+    15 2 1 3 1 3 2
+    16 1 2 1 3 3 2
+    17 3 2 2 1 3 1
+    18 1 1 2 2 3 3
+    $determinant
+    [1] 0.7064227
+
+    $A
+    [1] 6.571429
+
+    $diagonality
+    [1] 0.261
+
+    $gmean.variances
+    [1] 1.5
+       (Intercept) A B C D E F
+    1            1 1 3 2 3 2 1
+    2            1 3 2 1 2 1 3
+    3            1 1 2 3 1 2 3
+    4            1 1 1 1 1 1 1
+    5            1 2 3 1 2 3 1
+    6            1 2 3 2 1 1 3
+    7            1 1 3 3 2 1 2
+    8            1 2 1 1 3 2 3
+    9            1 3 1 3 2 2 1
+    10           1 3 3 1 1 2 2
+    11           1 3 3 3 3 3 3
+    12           1 2 2 3 3 1 1
+    13           1 2 2 2 2 2 2
+    14           1 3 1 2 3 1 2
+    15           1 2 1 3 1 3 2
+    16           1 1 2 1 3 3 2
+    17           1 3 2 2 1 3 1
+    18           1 1 1 2 2 3 3
+    attr(,"assign")
+    [1] 0 1 2 3 4 5 6
+                (Intercept)    A    B    C    D    E    F
+    (Intercept)          37 -3.0 -3.0 -3.0 -3.0 -3.0 -3.0
+    A                    -3  1.5  0.0  0.0  0.0  0.0  0.0
+    B                    -3  0.0  1.5  0.0  0.0  0.0  0.0
+    C                    -3  0.0  0.0  1.5  0.0  0.0  0.0
+    D                    -3  0.0  0.0  0.0  1.5  0.0  0.0
+    E                    -3  0.0  0.0  0.0  0.0  1.5  0.0
+    F                    -3  0.0  0.0  0.0  0.0  0.0  1.5
+    creating full factorial with 72 runs ...
+       A B C D
+    1  3 1 1 2
+    2  3 3 1 1
+    3  1 2 2 1
+    4  4 1 3 1
+    5  1 3 2 1
+    6  1 3 2 2
+    7  2 2 2 2
+    8  4 3 1 2
+    9  3 1 3 2
+    10 3 3 3 1
+    11 4 2 1 2
+    12 2 3 2 2
+    13 1 1 2 2
+    14 3 2 3 1
+    15 4 2 2 2
+    16 4 3 2 1
+    17 4 3 1 1
+    18 4 2 2 1
+    19 3 3 3 2
+    20 2 2 2 1
+    21 3 2 2 2
+    22 3 1 2 1
+    23 2 3 1 1
+    24 2 3 3 1
+    25 4 2 3 1
+    26 2 3 2 1
+    27 2 1 3 2
+    28 1 2 3 1
+    29 3 1 1 1
+    30 1 2 3 2
+    31 3 2 3 2
+    32 4 1 1 2
+    33 3 2 1 1
+    34 2 3 3 2
+    35 1 2 1 1
+    36 1 1 2 1
+    37 2 2 1 1
+    38 3 1 2 2
+    39 1 3 1 1
+    40 2 1 2 1
+    41 1 3 3 2
+    42 3 2 1 2
+    43 4 3 3 1
+    44 2 2 3 1
+    45 2 1 1 2
+    46 1 1 1 2
+    47 2 1 2 2
+    48 1 1 1 1
+    49 1 2 2 2
+    50 1 3 1 2
+    51 4 3 3 2
+    52 3 2 2 1
+    53 2 1 1 1
+    54 2 1 3 1
+    55 1 2 1 2
+    56 3 3 2 2
+    57 4 1 2 1
+    58 2 3 1 2
+    59 4 2 3 2
+    60 3 3 1 2
+    61 1 3 3 1
+    62 4 1 1 1
+    63 2 2 1 2
+    64 4 1 2 2
+    65 1 1 3 1
+    66 2 2 3 2
+    67 3 3 2 1
+    68 3 1 3 1
+    69 4 1 3 2
+    70 4 2 1 1
+    71 1 1 3 2
+    72 4 3 2 2
+    $determinant
+    [1] 0.6738039
+
+    $A
+    [1] 6.96
+
+    $diagonality
+    [1] 0.31
+
+    $gmean.variances
+    [1] 1.638073
+       (Intercept) A B C D
+    1            1 3 1 1 2
+    2            1 3 3 1 1
+    3            1 1 2 2 1
+    4            1 4 1 3 1
+    5            1 1 3 2 1
+    6            1 1 3 2 2
+    7            1 2 2 2 2
+    8            1 4 3 1 2
+    9            1 3 1 3 2
+    10           1 3 3 3 1
+    11           1 4 2 1 2
+    12           1 2 3 2 2
+    13           1 1 1 2 2
+    14           1 3 2 3 1
+    15           1 4 2 2 2
+    16           1 4 3 2 1
+    17           1 4 3 1 1
+    18           1 4 2 2 1
+    19           1 3 3 3 2
+    20           1 2 2 2 1
+    21           1 3 2 2 2
+    22           1 3 1 2 1
+    23           1 2 3 1 1
+    24           1 2 3 3 1
+    25           1 4 2 3 1
+    26           1 2 3 2 1
+    27           1 2 1 3 2
+    28           1 1 2 3 1
+    29           1 3 1 1 1
+    30           1 1 2 3 2
+    31           1 3 2 3 2
+    32           1 4 1 1 2
+    33           1 3 2 1 1
+    34           1 2 3 3 2
+    35           1 1 2 1 1
+    36           1 1 1 2 1
+    37           1 2 2 1 1
+    38           1 3 1 2 2
+    39           1 1 3 1 1
+    40           1 2 1 2 1
+    41           1 1 3 3 2
+    42           1 3 2 1 2
+    43           1 4 3 3 1
+    44           1 2 2 3 1
+    45           1 2 1 1 2
+    46           1 1 1 1 2
+    47           1 2 1 2 2
+    48           1 1 1 1 1
+    49           1 1 2 2 2
+    50           1 1 3 1 2
+    51           1 4 3 3 2
+    52           1 3 2 2 1
+    53           1 2 1 1 1
+    54           1 2 1 3 1
+    55           1 1 2 1 2
+    56           1 3 3 2 2
+    57           1 4 1 2 1
+    58           1 2 3 1 2
+    59           1 4 2 3 2
+    60           1 3 3 1 2
+    61           1 1 3 3 1
+    62           1 4 1 1 1
+    63           1 2 2 1 2
+    64           1 4 1 2 2
+    65           1 1 1 3 1
+    66           1 2 2 3 2
+    67           1 3 3 2 1
+    68           1 3 1 3 1
+    69           1 4 1 3 2
+    70           1 4 2 1 1
+    71           1 1 1 3 2
+    72           1 4 3 2 2
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept)             A    B    C  D
+    (Intercept)          27 -2.000000e+00 -3.0 -3.0 -6
+    A                    -2  8.000000e-01  0.0  0.0  0
+    B                    -3  0.000000e+00  1.5  0.0  0
+    C                    -3  0.000000e+00  0.0  1.5  0
+    D                    -6  4.440892e-16  0.0  0.0  4
+    #+end_example
+- A design is *balanced* when the elements of the *intercept* row and column are all zero, except
+  for the element in the diagonal, that is, there can be non-zero elements in every other row and
+  column
