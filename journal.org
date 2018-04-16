@@ -31532,3 +31532,5 @@ $gmean.variances
 *** [2018-04-13 Fri]
 - Learning about making presentations with orgmode
 - Translating DoE presentation to an org file
+*** [2018-04-16 Mon]
+- Finish porting DoE presentation to org file
