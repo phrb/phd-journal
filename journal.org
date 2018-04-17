@@ -31537,4 +31537,58 @@ $gmean.variances
 **** Reading Montgomery's book
 - Chapter 10 presents an interesting discussion and derivation of the dependency
   of the regression coefficients on the ``information matrix''
-  
+*** [2018-04-17 Tue]
+**** Running Steven's Experiments
+First get Steven's data:
+
+#+NAME: update_steven_report
+#+BEGIN_SRC sh :results output
+git clone https://github.com/swhatelse/M2_internship.git || (cd M2_internship && git pull)
+#+END_SRC
+
+#+RESULTS: update_steven_report
+: Already up to date.
+
+I attempted to run the ~scripts/format_data.rb~ script but got errors
+which I was not able to fix. I wrote this Python script to generate the
+~csv~ file in the same way.
+
+#+BEGIN_SRC python :session *Python* :results output
+import csv
+
+yaml_path = ("M2_internship/data/2016_04_08/pilipili2/18_08_24/"
+             "test_space_2016_04_02_end_cleaned.yaml")
+yaml_file = open(yaml_path, "r")
+
+# Drop first line
+yaml_file.readline()
+
+csv_line = []
+headers = [ "elements_number",
+            "y_component_number",
+            "vector_length",
+            "temporary_size",
+            "vector_recompute",
+            "load_overlap",
+            "threads_number",
+            "lws_y",
+            "time_per_pixel"]
+
+with open('/tmp/test.csv', 'w', newline='') as csv_file:
+    writer = csv.writer(csv_file)
+    writer.writerow(headers)
+
+    for line in yaml_file:
+        line = line.split()
+
+        if line[0] == "?":
+            csv_line = [line[2]]
+        elif line[0] == ":":
+            csv_line.append(line[1])
+            writer.writerow(csv_line)
+        else:
+            csv_line.append(line[1])
+        
+#+END_SRC
+
+#+RESULTS:
