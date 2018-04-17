@@ -31539,6 +31539,7 @@ $gmean.variances
   of the regression coefficients on the ``information matrix''
 *** [2018-04-17 Tue]
 **** Running Steven's Experiments
+***** Setup
 First get Steven's data:
 
 #+NAME: update_steven_report
@@ -31553,6 +31554,7 @@ I attempted to run the ~scripts/format_data.rb~ script but got errors
 which I was not able to fix. I wrote this Python script to generate the
 ~csv~ file in the same way.
 
+#+NAME: generate_csv_search_space
 #+BEGIN_SRC python :session *Python* :results output
 import csv
 
@@ -31591,4 +31593,60 @@ with open('/tmp/test.csv', 'w', newline='') as csv_file:
         
 #+END_SRC
 
+#+RESULTS: generate_csv_search_space
+
+***** Looking at the Search Space
+It seems that the ~vector_recompute~ parameter is always set to ~true~:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data = read.csv("/tmp/test.csv", header = TRUE)
+str(data)
+#+END_SRC
+
 #+RESULTS:
+#+begin_example
+'data.frame':	23120 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ vector_recompute  : Factor w/ 1 level "true": 1 1 1 1 1 1 1 1 1 1 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+#+end_example
+
+Filtering the fixed parameter and the response, we can access each point as
+such:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(digest)
+factors = c("elements_number", "y_component_number",
+            "vector_length", "temporary_size",
+            "load_overlap", "threads_number",
+            "lws_y")
+
+data[data$elements_number == 3 &
+     data$y_component_number == 1 &
+     data$vector_length == 16 &
+     data$temporary_size == 2 &
+     data$load_overlap == "false" &
+     data$threads_number == 64 &
+     data$lws_y == 32, ]$time_per_pixel
+#+END_SRC
+
+#+RESULTS:
+: [1] 7.207293e-09
+
+It should be possible to generate D-Optimal designs with ~optFederov~ by giving
+it a small subset of the full factorial. The number of lines used in this step
+should not count for the budget since we don't need the response to compute the
+D-Optimality of a design. We would have to check for validity of each sampled
+line, since not all parameter combinations are valid in this search space.
+
+As Jean-Marc mentioned, Federov's algorithm is similar to a simulated annealing
+or other local search method, so it might be worth implementing our own Federov
+version that samples the search space directly.
