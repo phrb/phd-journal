@@ -31650,3 +31650,35 @@ line, since not all parameter combinations are valid in this search space.
 As Jean-Marc mentioned, Federov's algorithm is similar to a simulated annealing
 or other local search method, so it might be worth implementing our own Federov
 version that samples the search space directly.
+*** [2018-04-18 Wed]
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+fac = gen.factorial(c(2, 2, 2))
+X = model.matrix(~., fac)
+
+X
+det(solve(t(X) %*% X))
+
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  (Intercept) X1 X2 X3
+1           1 -1 -1 -1
+2           1  1 -1 -1
+3           1 -1  1 -1
+4           1  1  1 -1
+5           1 -1 -1  1
+6           1  1 -1  1
+7           1 -1  1  1
+8           1  1  1  1
+attr(,"assign")
+[1] 0 1 2 3
+            (Intercept) X1 X2 X3
+(Intercept)           8  0  0  0
+X1                    0  8  0  0
+X2                    0  0  8  0
+X3                    0  0  0  8
+#+end_example
