@@ -32058,3 +32058,6 @@ X18         0.6708075
 X19         0.7189542
 X20         0.5966851
 #+end_example
+*** [2018-04-19 Thu] 
+**** Statistics Team @ LLJK
+- Clementine Prieur
