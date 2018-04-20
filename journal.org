@@ -31546,7 +31546,7 @@ $gmean.variances
 - Finish porting DoE presentation to org file
 **** Reading Montgomery's book
 - Chapter 10 presents an interesting discussion and derivation of the dependency
-  of the regression coefficients on the ``information matrix''
+  of the regression coefficients on the information matrix
 *** [2018-04-17 Tue]
 **** Running Steven's Experiments
 ***** Setup
@@ -31564,8 +31564,8 @@ I attempted to run the ~scripts/format_data.rb~ script but got errors
 which I was not able to fix. I wrote this Python script to generate the
 ~csv~ file in the same way.
 
-#+NAME: generate_csv_search_space
-#+BEGIN_SRC python :session *Python* :results output
+#+NAME: generate_steven_csv_search_space
+#+BEGIN_SRC python :results output
 import csv
 
 yaml_path = ("M2_internship/data/2016_04_08/pilipili2/18_08_24/"
@@ -31603,18 +31603,19 @@ with open('/tmp/test.csv', 'w', newline='') as csv_file:
         
 #+END_SRC
 
-#+RESULTS: generate_csv_search_space
+#+RESULTS: generate_steven_csv_search_space
 
 ***** Looking at the Search Space
 It seems that the ~vector_recompute~ parameter is always set to ~true~:
 
+#+NAME: read_steven_csv_data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-data = read.csv("/tmp/test.csv", header = TRUE)
-str(data)
+complete_data = read.csv("/tmp/test.csv", header = TRUE)
+str(complete_data)
 #+END_SRC
 
-#+RESULTS:
+#+RESULTS: read_steven_csv_data
 #+begin_example
 'data.frame':	23120 obs. of  9 variables:
  $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
@@ -31633,11 +31634,12 @@ such:
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-library(digest)
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
             "load_overlap", "threads_number",
             "lws_y")
+
+data <- complete_data[, c(factors, "time_per_pixel")]
 
 data[data$elements_number == 3 &
      data$y_component_number == 1 &
@@ -31662,34 +31664,41 @@ or other local search method, so it might be worth implementing our own Federov
 version that samples the search space directly.
 *** [2018-04-18 Wed]
 **** How to Identify Badly Estimated Factors?
+#+NAME: define_factor_efficiency
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
 library(FrF2)
+
+"factor_efficiency" <- function(fac) {
+    X = model.matrix(~., fac)
+    Y = (t(X) %*% X) / nrow(fac)
+    #print(Y)
+    Z = (Y[, rep(2:ncol(X))])^2
+    Z = Z %*% rep(1, ncol(X) - 1)
+    #print(Z)
+    return((1 / Z) * (1 - (Y[, 1])^2)^2)
+}
+#+END_SRC
+
+#+RESULTS: define_factor_efficiency
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
 fac = gen.factorial(c(2, 2, 2, 2, 2, 2, 2))
 
 fac <- fac[sample(nrow(fac), 9), ]
 fac
 
-"parameter_efficiency" <- function(fac) {
-    X = model.matrix(~., fac)
-    Y = (t(X) %*% X) / nrow(fac)
-    print(Y)
-    Z = (Y[, rep(2:ncol(X))])^2
-    Z = Z %*% rep(1, ncol(X) - 1)
-    print(Z)
-    return((1 / Z) * (1 - (Y[, 1])^(2)))
-}
-
-parameter_efficiency(fac)
+factor_efficiency(fac)
 
 fac = FrF2(nfactors = 7, nruns = 8)
-parameter_efficiency(fac)
+factor_efficiency(fac)
 
 pb(16)
 eval.design(~., pb(16))
 
-parameter_efficiency(pb(16))
+factor_efficiency(pb(16))
 
 
 factors = 20
@@ -31698,77 +31707,30 @@ fac = fac[sample(nrow(fac), 300), ]
 output = optFederov(~., fac, nTrials = factors + 1)
 output
 
-p = parameter_efficiency(output$design)
-
-
+factor_efficiency(output$design)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-   X1 X2 X3 X4 X5 X6 X7
-44  1  1 -1  1 -1  1 -1
-52  1  1 -1 -1  1  1 -1
-21 -1 -1  1 -1  1 -1 -1
-20  1  1 -1 -1  1 -1 -1
-86  1 -1  1 -1  1 -1  1
-93 -1 -1  1  1  1 -1  1
-33 -1 -1 -1 -1 -1  1 -1
-96  1  1  1  1  1 -1  1
-2   1 -1 -1 -1 -1 -1 -1
-            (Intercept)         X1         X2         X3         X4         X5
-(Intercept)   1.0000000  0.3333333 -0.1111111 -0.1111111 -0.3333333  0.3333333
-X1            0.3333333  1.0000000  0.5555556 -0.3333333 -0.1111111  0.1111111
-X2           -0.1111111  0.5555556  1.0000000 -0.3333333  0.3333333  0.1111111
-X3           -0.1111111 -0.3333333 -0.3333333  1.0000000  0.3333333  0.5555556
-X4           -0.3333333 -0.1111111  0.3333333  0.3333333  1.0000000 -0.1111111
-X5            0.3333333  0.1111111  0.1111111  0.5555556 -0.1111111  1.0000000
-X6           -0.3333333 -0.1111111  0.3333333 -0.5555556  0.1111111 -0.5555556
-X7           -0.3333333 -0.1111111 -0.1111111  0.7777778  0.5555556  0.3333333
-                    X6         X7
-(Intercept) -0.3333333 -0.3333333
-X1          -0.1111111 -0.1111111
-X2           0.3333333 -0.1111111
-X3          -0.5555556  0.7777778
-X4           0.1111111  0.5555556
-X5          -0.5555556  0.3333333
-X6           1.0000000 -0.3333333
-X7          -0.3333333  1.0000000
-                 [,1]
-(Intercept) 0.5802469
-X1          1.4691358
-X2          1.6666667
-X3          2.5555556
-X4          1.5679012
-X5          1.7654321
-X6          1.8641975
-X7          2.1604938
+    X1 X2 X3 X4 X5 X6 X7
+108  1  1 -1  1 -1  1  1
+34   1 -1 -1 -1 -1  1 -1
+33  -1 -1 -1 -1 -1  1 -1
+53  -1 -1  1 -1  1  1 -1
+23  -1  1  1 -1  1 -1 -1
+82   1 -1 -1 -1  1 -1  1
+45  -1 -1  1  1 -1  1 -1
+75  -1  1 -1  1 -1 -1  1
+115 -1  1 -1 -1  1  1  1
                  [,1]
 (Intercept) 0.0000000
-X1          0.6050420
-X2          0.5925926
-X3          0.3864734
+X1          0.6990291
+X2          0.6299213
+X3          0.5669291
 X4          0.5669291
-X5          0.5034965
-X6          0.4768212
-X7          0.4114286
-            (Intercept) A1 B1 C1 D1 E1 F1 G1
-(Intercept)           1  0  0  0  0  0  0  0
-A1                    0  1  0  0  0  0  0  0
-B1                    0  0  1  0  0  0  0  0
-C1                    0  0  0  1  0  0  0  0
-D1                    0  0  0  0  1  0  0  0
-E1                    0  0  0  0  0  1  0  0
-F1                    0  0  0  0  0  0  1  0
-G1                    0  0  0  0  0  0  0  1
-            [,1]
-(Intercept)    0
-A1             1
-B1             1
-C1             1
-D1             1
-E1             1
-F1             1
-G1             1
+X5          0.6299213
+X6          0.6486486
+X7          0.5031447
             [,1]
 (Intercept)  NaN
 A1             1
@@ -31781,22 +31743,22 @@ G1             1
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
-1  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+1   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 2  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
-3   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
-4  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
-5  -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
-6   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
-7   1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
-8   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
-9   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
-10 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
-11  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
-12 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
-13 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
-14  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-15 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
-16  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+3   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+4   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+5  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+6  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+7  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+8  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+9  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+10  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+11 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+12  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+13 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+14  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+15  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+16  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
 class=design, type= pb
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
@@ -31813,40 +31775,6 @@ $gmean.variances
 [1] 1
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
-            (Intercept) A1 B1 C1 D1 E1 F1 G1 H1 J1 K1 L1 M1 N1 O1 P1
-(Intercept)           1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-A1                    0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-B1                    0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0
-C1                    0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
-D1                    0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
-E1                    0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0
-F1                    0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0
-G1                    0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0
-H1                    0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0
-J1                    0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0
-K1                    0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0
-L1                    0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0
-M1                    0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0
-N1                    0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0
-O1                    0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
-P1                    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1
-            [,1]
-(Intercept)    0
-A1             1
-B1             1
-C1             1
-D1             1
-E1             1
-F1             1
-G1             1
-H1             1
-J1             1
-K1             1
-L1             1
-M1             1
-N1             1
-O1             1
-P1             1
             [,1]
 (Intercept)  NaN
 A1             1
@@ -31865,199 +31793,259 @@ N1             1
 O1             1
 P1             1
 $D
-[1] 0.7794188
+[1] 0.7467966
 
 $A
-[1] 1.742862
+[1] 1.958745
 
 $Ge
-[1] 0.307
+[1] 0.253
 
 $Dea
-[1] 0.104
+[1] 0.052
 
 $design
     X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19 X20
-43   1 -1  1  1 -1 -1 -1 -1 -1  -1  -1  -1   1  -1   1   1   1  -1  -1   1
-50  -1  1  1 -1  1 -1 -1 -1  1   1   1   1   1  -1  -1  -1  -1  -1  -1   1
-58  -1 -1  1 -1  1  1 -1 -1  1  -1  -1   1  -1   1   1   1  -1   1   1   1
-66   1  1 -1 -1 -1 -1  1 -1  1  -1   1  -1  -1   1  -1   1   1  -1  -1   1
-82  -1  1  1  1  1 -1 -1 -1 -1   1  -1  -1   1   1  -1   1   1   1   1   1
-136 -1  1 -1 -1 -1  1  1 -1 -1   1   1  -1  -1  -1   1  -1  -1   1  -1  -1
-145  1 -1  1  1  1  1  1  1 -1  -1   1   1  -1  -1  -1   1   1   1  -1  -1
-149 -1 -1 -1 -1  1 -1  1  1 -1  -1   1  -1   1  -1  -1   1   1  -1   1  -1
-159 -1 -1  1  1 -1 -1 -1 -1  1   1   1  -1  -1   1  -1  -1   1  -1   1  -1
-179 -1  1 -1  1 -1  1  1  1  1   1   1   1   1  -1   1   1  -1  -1  -1   1
-189 -1  1 -1 -1 -1 -1 -1  1 -1  -1  -1   1  -1   1  -1  -1   1   1  -1  -1
-194  1  1 -1 -1 -1  1  1 -1  1  -1  -1   1   1  -1  -1  -1   1   1   1   1
-229 -1 -1  1 -1 -1 -1  1  1  1   1   1   1   1   1  -1   1   1   1  -1  -1
-253  1 -1  1 -1 -1  1 -1  1 -1   1  -1  -1  -1  -1  -1   1   1   1   1  -1
-256  1  1  1 -1  1  1 -1  1  1  -1   1  -1   1  -1   1  -1   1  -1   1   1
-262  1  1  1 -1 -1 -1  1 -1 -1   1  -1   1  -1  -1   1   1   1  -1   1  -1
-266 -1 -1 -1  1  1 -1  1  1  1   1  -1  -1  -1  -1  -1  -1   1  -1  -1  -1
-270  1 -1 -1  1  1  1 -1 -1 -1   1   1   1   1   1   1   1   1  -1  -1  -1
-280  1 -1  1  1  1 -1  1  1 -1   1   1  -1  -1   1   1  -1  -1  -1   1   1
-282 -1  1  1  1  1  1  1  1 -1  -1  -1  -1   1   1  -1  -1  -1  -1  -1  -1
-299  1  1 -1  1  1 -1 -1  1  1  -1   1  -1  -1   1   1   1  -1   1   1  -1
+22  -1 -1 -1 -1 -1  1  1 -1 -1   1   1  -1   1   1   1  -1  -1  -1   1  -1
+36  -1 -1  1 -1 -1  1 -1  1 -1   1   1   1   1  -1   1  -1   1   1  -1   1
+51   1 -1  1 -1  1 -1  1 -1 -1   1   1  -1   1   1  -1   1   1   1   1   1
+53  -1  1 -1  1  1 -1  1 -1  1   1  -1   1   1   1   1   1   1  -1  -1   1
+57  -1  1  1 -1  1  1 -1  1  1   1  -1   1   1   1  -1  -1  -1  -1   1  -1
+65   1 -1 -1 -1 -1 -1 -1  1 -1  -1  -1   1   1   1   1   1  -1  -1  -1   1
+76  -1  1 -1  1 -1  1 -1  1  1   1   1  -1  -1  -1  -1   1  -1  -1   1   1
+91   1  1  1  1  1  1 -1 -1 -1  -1   1   1  -1   1   1   1   1   1   1   1
+93  -1 -1  1  1 -1 -1 -1  1 -1   1   1  -1   1   1   1   1   1   1  -1   1
+116  1 -1  1 -1 -1 -1  1  1  1  -1   1   1  -1  -1   1   1   1  -1   1  -1
+121  1  1 -1  1  1 -1 -1  1 -1   1   1   1   1   1  -1  -1   1   1   1  -1
+128  1 -1  1  1 -1  1 -1 -1 -1  -1  -1   1  -1  -1  -1  -1   1  -1  -1  -1
+131  1 -1  1 -1  1 -1  1  1 -1   1   1   1  -1   1  -1  -1  -1   1  -1   1
+132  1  1 -1 -1 -1  1  1  1 -1   1  -1  -1  -1  -1  -1   1   1   1  -1  -1
+171  1 -1 -1  1  1  1 -1  1  1   1  -1  -1   1   1   1  -1   1   1   1   1
+180  1  1  1 -1 -1 -1  1  1 -1  -1  -1  -1   1  -1  -1  -1  -1  -1   1   1
+184  1  1  1 -1  1  1 -1 -1 -1   1  -1  -1  -1  -1   1   1  -1  -1  -1  -1
+201 -1  1  1  1 -1 -1 -1 -1  1   1  -1   1   1  -1  -1   1  -1   1   1  -1
+245 -1 -1  1  1  1  1  1  1 -1  -1   1  -1   1  -1  -1   1  -1   1  -1   1
+257  1  1  1  1 -1  1 -1  1  1   1   1   1   1   1  -1  -1  -1   1  -1   1
+277 -1  1 -1 -1  1 -1 -1 -1  1  -1   1  -1  -1  -1  -1  -1   1   1  -1   1
 
 $rows
- [1]  43  50  58  66  82 136 145 149 159 179 189 194 229 253 256 262 266 270 280
-[20] 282 299
-            (Intercept)          X1          X2          X3          X4
-(Intercept)  1.00000000 -0.04761905  0.04761905  0.14285714 -0.04761905
-X1          -0.04761905  1.00000000 -0.04761905  0.04761905  0.04761905
-X2           0.04761905 -0.04761905  1.00000000 -0.23809524 -0.23809524
-X3           0.14285714  0.04761905 -0.23809524  1.00000000  0.04761905
-X4          -0.04761905  0.04761905 -0.23809524  0.04761905  1.00000000
-X5           0.04761905 -0.04761905 -0.14285714  0.14285714  0.33333333
-X6          -0.14285714  0.14285714  0.04761905 -0.04761905 -0.04761905
-X7           0.04761905 -0.04761905  0.04761905 -0.23809524 -0.04761905
-X8           0.04761905 -0.04761905 -0.14285714 -0.04761905  0.14285714
-X9          -0.04761905 -0.14285714  0.14285714 -0.14285714 -0.14285714
-X10          0.04761905 -0.23809524 -0.14285714  0.14285714  0.14285714
-X11          0.14285714  0.04761905 -0.04761905 -0.14285714  0.04761905
-X12         -0.14285714 -0.04761905  0.04761905 -0.04761905 -0.23809524
-X13         -0.04761905 -0.14285714  0.14285714  0.04761905  0.04761905
-X14         -0.04761905 -0.14285714 -0.04761905  0.04761905  0.23809524
-X15         -0.14285714  0.33333333  0.04761905 -0.04761905  0.14285714
-X16          0.14285714  0.23809524 -0.23809524  0.04761905  0.04761905
-X17          0.33333333  0.23809524 -0.23809524  0.04761905 -0.14285714
-X18         -0.14285714 -0.04761905  0.04761905 -0.04761905 -0.23809524
-X19         -0.04761905  0.23809524 -0.04761905  0.23809524 -0.14285714
-X20         -0.14285714  0.14285714  0.23809524  0.14285714 -0.04761905
-                     X5          X6          X7          X8          X9
-(Intercept)  0.04761905 -0.14285714  0.04761905  0.04761905 -0.04761905
-X1          -0.04761905  0.14285714 -0.04761905 -0.04761905 -0.14285714
-X2          -0.14285714  0.04761905  0.04761905 -0.14285714  0.14285714
-X3           0.14285714 -0.04761905 -0.23809524 -0.04761905 -0.14285714
-X4           0.33333333 -0.04761905 -0.04761905  0.14285714 -0.14285714
-X5           1.00000000  0.04761905 -0.14285714  0.23809524 -0.04761905
-X6           0.04761905  1.00000000  0.04761905  0.04761905 -0.04761905
-X7          -0.14285714  0.04761905  1.00000000  0.23809524 -0.04761905
-X8           0.23809524  0.04761905  0.23809524  1.00000000 -0.04761905
-X9          -0.04761905 -0.04761905 -0.04761905 -0.04761905  1.00000000
-X10         -0.14285714 -0.14285714  0.04761905 -0.14285714 -0.04761905
-X11          0.14285714 -0.04761905  0.14285714  0.14285714  0.23809524
-X12         -0.14285714  0.23809524  0.04761905 -0.14285714  0.14285714
-X13          0.14285714  0.14285714 -0.04761905 -0.04761905  0.04761905
-X14          0.14285714 -0.23809524 -0.23809524 -0.04761905  0.04761905
-X15          0.04761905  0.23809524 -0.14285714 -0.14285714 -0.04761905
-X16         -0.04761905 -0.04761905 -0.04761905 -0.04761905 -0.14285714
-X17         -0.23809524 -0.23809524 -0.04761905 -0.04761905 -0.14285714
-X18         -0.14285714  0.23809524 -0.14285714  0.04761905 -0.04761905
-X19          0.14285714 -0.04761905 -0.23809524 -0.04761905  0.04761905
-X20          0.04761905  0.04761905 -0.14285714 -0.33333333  0.33333333
-                    X10         X11         X12         X13         X14
-(Intercept)  0.04761905  0.14285714 -0.14285714 -0.04761905 -0.04761905
-X1          -0.23809524  0.04761905 -0.04761905 -0.14285714 -0.14285714
-X2          -0.14285714 -0.04761905  0.04761905  0.14285714 -0.04761905
-X3           0.14285714 -0.14285714 -0.04761905  0.04761905  0.04761905
-X4           0.14285714  0.04761905 -0.23809524  0.04761905  0.23809524
-X5          -0.14285714  0.14285714 -0.14285714  0.14285714  0.14285714
-X6          -0.14285714 -0.04761905  0.23809524  0.14285714 -0.23809524
-X7           0.04761905  0.14285714  0.04761905 -0.04761905 -0.23809524
-X8          -0.14285714  0.14285714 -0.14285714 -0.04761905 -0.04761905
-X9          -0.04761905  0.23809524  0.14285714  0.04761905  0.04761905
-X10          1.00000000  0.14285714  0.04761905 -0.04761905 -0.04761905
-X11          0.14285714  1.00000000 -0.04761905  0.04761905  0.04761905
-X12          0.04761905 -0.04761905  1.00000000  0.14285714 -0.04761905
-X13         -0.04761905  0.04761905  0.14285714  1.00000000 -0.14285714
-X14         -0.04761905  0.04761905 -0.04761905 -0.14285714  1.00000000
-X15          0.04761905  0.14285714  0.04761905 -0.04761905 -0.04761905
-X16         -0.04761905  0.04761905  0.14285714  0.04761905  0.04761905
-X17         -0.04761905 -0.14285714 -0.04761905  0.04761905 -0.14285714
-X18         -0.14285714 -0.23809524  0.23809524 -0.23809524  0.14285714
-X19         -0.04761905 -0.14285714 -0.23809524 -0.14285714  0.04761905
-X20         -0.14285714 -0.04761905  0.04761905  0.33333333 -0.04761905
-                    X15         X16         X17         X18         X19
-(Intercept) -0.14285714  0.14285714  0.33333333 -0.14285714 -0.04761905
-X1           0.33333333  0.23809524  0.23809524 -0.04761905  0.23809524
-X2           0.04761905 -0.23809524 -0.23809524  0.04761905 -0.04761905
-X3          -0.04761905  0.04761905  0.04761905 -0.04761905  0.23809524
-X4           0.14285714  0.04761905 -0.14285714 -0.23809524 -0.14285714
-X5           0.04761905 -0.04761905 -0.23809524 -0.14285714  0.14285714
-X6           0.23809524 -0.04761905 -0.23809524  0.23809524 -0.04761905
-X7          -0.14285714 -0.04761905 -0.04761905 -0.14285714 -0.23809524
-X8          -0.14285714 -0.04761905 -0.04761905  0.04761905 -0.04761905
-X9          -0.04761905 -0.14285714 -0.14285714 -0.04761905  0.04761905
-X10          0.04761905 -0.04761905 -0.04761905 -0.14285714 -0.04761905
-X11          0.14285714  0.04761905 -0.14285714 -0.23809524 -0.14285714
-X12          0.04761905  0.14285714 -0.04761905  0.23809524 -0.23809524
-X13         -0.04761905  0.04761905  0.04761905 -0.23809524 -0.14285714
-X14         -0.04761905  0.04761905 -0.14285714  0.14285714  0.04761905
-X15          1.00000000  0.14285714 -0.42857143 -0.14285714  0.14285714
-X16          0.14285714  1.00000000  0.23809524  0.14285714  0.04761905
-X17         -0.42857143  0.23809524  1.00000000 -0.04761905  0.04761905
-X18         -0.14285714  0.14285714 -0.04761905  1.00000000  0.14285714
-X19          0.14285714  0.04761905  0.04761905  0.14285714  1.00000000
-X20          0.23809524 -0.04761905 -0.23809524 -0.14285714  0.14285714
-                    X20
-(Intercept) -0.14285714
-X1           0.14285714
-X2           0.23809524
-X3           0.14285714
-X4          -0.04761905
-X5           0.04761905
-X6           0.04761905
-X7          -0.14285714
-X8          -0.33333333
-X9           0.33333333
-X10         -0.14285714
-X11         -0.04761905
-X12          0.04761905
-X13          0.33333333
-X14         -0.04761905
-X15          0.23809524
-X16         -0.04761905
-X17         -0.23809524
-X18         -0.14285714
-X19          0.14285714
-X20          1.00000000
-                 [,1]
-(Intercept) 0.2993197
-X1          1.4603175
-X2          1.4058957
-X3          1.2970522
-X4          1.4784580
-X5          1.4421769
-X6          1.3696145
-X7          1.3514739
-X8          1.3696145
-X9          1.3333333
-X10         1.2607710
-X11         1.2970522
-X12         1.3514739
-X13         1.3333333
-X14         1.2970522
-X15         1.5691610
-X16         1.2789116
-X17         1.6235828
-X18         1.4603175
-X19         1.3877551
-X20         1.6417234
+ [1]  22  36  51  53  57  65  76  91  93 116 121 128 131 132 171 180 184 201 245
+[20] 257 277
                  [,1]
 (Intercept) 0.0000000
-X1          0.6832298
-X2          0.7096774
-X3          0.7552448
-X4          0.6748466
-X5          0.6918239
-X6          0.7152318
-X7          0.7382550
-X8          0.7284768
-X9          0.7482993
-X10         0.7913669
-X11         0.7552448
-X12         0.7248322
-X13         0.7482993
-X14         0.7692308
-X15         0.6242775
-X16         0.7659574
-X17         0.5474860
-X18         0.6708075
-X19         0.7189542
-X20         0.5966851
+X1          0.7248322
+X2          0.6432749
+X3          0.7375887
+X4          0.7006369
+X5          0.7586207
+X6          0.8029197
+X7          0.6797386
+X8          0.6979866
+X9          0.6303030
+X10         0.6322581
+X11         0.6545455
+X12         0.7586207
+X13         0.5810056
+X14         0.5641026
+X15         0.6967742
+X16         0.8148148
+X17         0.7284768
+X18         0.5482234
+X19         0.8148148
+X20         0.6011561
 #+end_example
-*** [2018-04-19 Thu] 
+*** [2018-04-19 Thu]
 **** Statistics Team @ LLJK
 - Clementine Prieur
+*** [2018-04-20 Fri]
+**** Finding D-Optimal Designs with Steven's Data
+***** Setup
+#+CALL: update_steven_report()
+
+#+RESULTS:
+: Already up to date.
+
+#+CALL: generate_steven_csv_search_space()
+
+#+RESULTS:
+
+#+CALL: read_steven_csv_data()
+
+#+RESULTS:
+#+begin_example
+'data.frame':	23120 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ vector_recompute  : Factor w/ 1 level "true": 1 1 1 1 1 1 1 1 1 1 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+#+end_example
+
+#+CALL: define_factor_efficiency()
+
+#+RESULTS:
+
+***** Finding D-Optimal Designs with ~optFederov~
+Loading and scaling data:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+
+factors = c("elements_number", "y_component_number",
+            "vector_length", "temporary_size",
+            "load_overlap", "threads_number",
+            "lws_y")
+
+data <- complete_data[, factors]
+
+scaled_data <- data[, factors]
+
+for (name in names(select_if(scaled_data, is.numeric))) {
+    scaled_data[, name] <- scale(scaled_data[, name], center = FALSE)
+}
+
+sampled_data <- scaled_data[sample(nrow(data), 500), ]
+#+END_SRC
+
+#+RESULTS:
+
+Turns out we can give the entire dataset to ~optFederov~:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+output <- optFederov(~., scaled_data, nTrials = 120)
+#+END_SRC
+
+#+RESULTS:
+
+I tried centering and not centering, but the D values for centered
+results were larger than 1. I believe I should not center numerical
+parameters in this case since the factors are not centered.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+output$D
+output$Dea
+#+END_SRC
+
+#+RESULTS:
+: [1] 0.5945303
+: [1] 0.921
+
+Using our preliminar factor efficiency metric gives strange results:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+federov_design <- output$design
+str(federov_design)
+
+# for (name in names(select_if(federov_design, is.numeric))) {
+#     federov_design[, name] <- federov_design[, name] * attr(scaled_data[, name], 'scaled:scale') # + attr(scaled_data[, name], 'scaled:center')
+# }
+# str(federov_design)
+
+factor_efficiency(federov_design)
+test_factor_efficiency(federov_design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	120 obs. of  7 variables:
+ $ elements_number   : num [1:120, 1] 0.0951 0.1902 0.0951 0.0951 0.0951 ...
+ $ y_component_number: num [1:120, 1] 0.26 0.26 0.26 0.26 0.26 ...
+ $ vector_length     : num [1:120, 1] 0.129 0.259 0.129 0.129 0.129 ...
+ $ temporary_size    : num [1:120, 1] 1.274 1.274 0.637 0.637 0.637 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 2 2 2 1 2 1 2 1 ...
+ $ threads_number    : num [1:120, 1] 0.0632 0.2526 0.0632 0.0632 0.0632 ...
+ $ lws_y             : num [1:120, 1] 0.1782 0.7127 0.0891 0.1782 0.0445 ...
+                           [,1]
+(Intercept)        0.0000000000
+elements_number    0.0009172991
+y_component_number 0.0004765555
+vector_length      0.0002939826
+temporary_size     0.0014756142
+load_overlaptrue   0.2349336198
+threads_number     0.0149734973
+lws_y              0.0301536964
+       (Intercept)    elements_number y_component_number      vector_length 
+      0.0000000000       0.0008431110       0.0004329316       0.0002662246 
+    temporary_size   load_overlaptrue     threads_number              lws_y 
+      0.0013221435       0.2115787134       0.0140083031       0.0293836820
+#+end_example
+
+***** Exploring the Factor Efficiency Metric
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+"test_factor_efficiency" <- function(fac) {
+    X = model.matrix(~., fac)
+    Y = ((t(X) %*% X) / nrow(fac)) ^ 2
+    Z = colSums(Y)
+    return(((1 / Z) * (1 - Y[, 1]) ^ 2))
+}
+
+design <- pb(16)
+design
+
+test_factor_efficiency(design)
+
+factors = 20
+fac = gen.factorial(rep(2, factors))
+fac = fac[sample(nrow(fac), 300), ]
+small_output = optFederov(~., fac, nTrials = factors + 1)
+
+test_factor_efficiency(small_output$design)
+small_output$D
+
+test_factor_efficiency(federov_design)
+output$D
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Screening 15 factors in 16 runs involves perfect aliasing of 
+ pairwise interactions of the first six factors with the last factor.
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+1   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+2  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+3   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+4   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+5  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+6  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+7  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+8   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+9  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+10  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+11 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+12 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+13  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+14  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+15 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+16  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+class=design, type= pb
+(Intercept)          A1          B1          C1          D1          E1 
+          0           1           1           1           1           1 
+         F1          G1          H1          J1          K1          L1 
+          1           1           1           1           1           1 
+         M1          N1          O1          P1 
+          1           1           1           1
+(Intercept)          X1          X2          X3          X4          X5 
+  0.0000000   0.8114645   0.6486235   0.6979368   0.7769952   0.7256236 
+         X6          X7          X8          X9         X10         X11 
+  0.6122765   0.7256236   0.7161538   0.6560987   0.7069280   0.7088504 
+        X12         X13         X14         X15         X16         X17 
+  0.6722852   0.6643386   0.6994771   0.7161538   0.7453349   0.6641487 
+        X18         X19         X20 
+  0.6573153   0.6177864   0.7555977
+[1] 0.7782221
+       (Intercept)    elements_number y_component_number      vector_length 
+      0.0000000000       0.0008431110       0.0004329316       0.0002662246 
+    temporary_size   load_overlaptrue     threads_number              lws_y 
+      0.0013221435       0.2115787134       0.0140083031       0.0293836820
+[1] 0.5945303
+#+end_example
