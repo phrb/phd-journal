@@ -31893,7 +31893,6 @@ X20         0.6011561
 Loading, scaling data, and running ~optFederov~. Turns out we can give the
 entire dataset to ~optFederov~:
 
-#+NAME: run_optfederov_steven
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
@@ -31917,7 +31916,7 @@ sampled_data <- scaled_data[sample(nrow(data), 500), ]
 output <- optFederov(~., scaled_data, nTrials = 120)
 #+END_SRC
 
-#+RESULTS: run_optfederov_steven
+#+RESULTS:
 
 I tried centering and not centering, but the D values for centered
 results were larger than 1. I believe I should not center numerical
@@ -32082,392 +32081,147 @@ class=design, type= pb
 
 #+RESULTS:
 
-#+CALL: run_optfederov_steven()
-
-#+RESULTS:
 ***** Running the Design and Fitting a Model
 Rescaling the design back to original values and getting back
 the response from the original complete data:
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-str(output$design)
-output$D
-output$Dea
+library(AlgDesign)
+library(dplyr)
 
-federov_design <- output$design
+results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)  
 
-# for (name in names(select_if(federov_design, is.numeric))) {
-#     # Add the center if data was centered
-#     unscaled <- federov_design[, name] * attr(scaled_data[, name], 'scaled:scale') + attr(scaled_data[, name], 'scaled:center')
-#     # Fix scaling retype issue
-#     federov_design[, name] <- c(unscaled)
-# }
-str(federov_design)
+budget <- 120
+
+iterations <- 200
 
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
             "load_overlap", "threads_number",
             "lws_y")
 
-data <- complete_data[, c(factors, "time_per_pixel")]
+for (i in 1:iterations) {
+    data <- complete_data[, factors]
+    scaled_data <- data[, factors]
 
-str(data)
+    # Trying to use no scaling
+    # for (name in names(select_if(scaled_data, is.numeric))) {
+    #     scaled_data[, name] <- scale(scaled_data[, name], center = TRUE)
+    # }
 
-response <- c()
+    sampled_data <- scaled_data[sample(nrow(data), 500), ]
+    output <- optFederov(~ y_component_number + I(1 / y_component_number) + 
+                        vector_length + lws_y + I(1 / lws_y) +
+                        load_overlap + temporary_size +
+                        elements_number + I(1 / elements_number) +
+                        threads_number + I(1 / threads_number), scaled_data, nTrials = budget)
 
-for (i in 1:nrow(federov_design)) {
-    value <- data[data$elements_number == federov_design[i, "elements_number"] &
-                  data$y_component_number == federov_design[i, "y_component_number"] &
-                  data$vector_length == federov_design[i, "vector_length"] &
-                  data$temporary_size == federov_design[i, "temporary_size"] &
-                  data$load_overlap == federov_design[i, "load_overlap"] &
-                  data$threads_number == federov_design[i, "threads_number"] &
-                  data$lws_y == federov_design[i, "lws_y"], ]$time_per_pixel
+    federov_design <- output$design
 
-    if (length(value) == 0) {
-        print(value)
-        print(federov_design[i, "elements_number"])
-        print(federov_design[i, "y_component_number"])
-        print(federov_design[i, "vector_length"])
-        print(federov_design[i, "temporary_size"])
-        print(federov_design[i, "load_overlap"])
-        print(federov_design[i, "threads_number"])
-        print(federov_design[i, "lws_y"])
+    # Trying to use no scaling
+    # for (name in names(select_if(federov_design, is.numeric))) {
+    #     # Add the center if data was centered
+    #     unscaled <- federov_design[, name] * attr(scaled_data[, name], 'scaled:scale') + attr(scaled_data[, name], 'scaled:center')
+    #     # Fix scaling retype issue
+    #     federov_design[, name] <- c(unscaled)
+    # }
+
+    data <- complete_data[, c(factors, "time_per_pixel")]
+    response <- c()
+
+    for (i in 1:nrow(federov_design)) {
+        value <- data[data$elements_number == federov_design[i, "elements_number"] &
+                      data$y_component_number == federov_design[i, "y_component_number"] &
+                      data$vector_length == federov_design[i, "vector_length"] &
+                      data$temporary_size == federov_design[i, "temporary_size"] &
+                      data$load_overlap == federov_design[i, "load_overlap"] &
+                      data$threads_number == federov_design[i, "threads_number"] &
+                      data$lws_y == federov_design[i, "lws_y"], ]$time_per_pixel
+
+        if (length(value) == 0) {
+            print(value)
+            print(federov_design[i, "elements_number"])
+            print(federov_design[i, "y_component_number"])
+            print(federov_design[i, "vector_length"])
+            print(federov_design[i, "temporary_size"])
+            print(federov_design[i, "load_overlap"])
+            print(federov_design[i, "threads_number"])
+            print(federov_design[i, "lws_y"])
+        }
+
+        response <- c(response, value)
     }
 
-    response <- c(response, value)
+    federov_design$response <- response
+
+    regression_aov <- aov(response ~ y_component_number + I(1 / y_component_number) + 
+                                    vector_length + lws_y + I(1 / lws_y) +
+                                    load_overlap + temporary_size +
+                                    elements_number + I(1 / elements_number) +
+                                    threads_number + I(1 / threads_number),
+                      data = federov_design)
+
+    best <- data[data$time_per_pixel == min(data$time_per_pixel), ]
+    best_row <- rownames(best)
+
+    predicted_best <- data[predict(regression_aov, data) == min(predict(regression_aov, data)), ]
+
+    predicted_best$slowdown <- predicted_best$time_per_pixel / best$time_per_pixel
+    predicted_best$method <- rep("DOPT", nrow(predicted_best))
+    predicted_best$point_number <- rep(budget, nrow(predicted_best))
+    predicted_best$vector_recompute <- rep("true", nrow(predicted_best))
+
+    predicted_best <- predicted_best[, c("elements_number", "y_component_number",
+                                        "vector_length", "temporary_size", "vector_recompute",
+                                        "load_overlap", "threads_number", "lws_y",
+                                        "time_per_pixel", "point_number", "method",
+                                        "slowdown")]
+
+    results <- rbind(results, predicted_best)
 }
 
-str(response)
+write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", row.names = FALSE)
 
-federov_design$response <- response
-
-str(federov_design)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-'data.frame':	120 obs. of  7 variables:
- $ elements_number   : num [1:120, 1] -1.255 -1.255 -1.255 -0.925 -0.76 ...
- $ y_component_number: num [1:120, 1] -1.43 -1.43 -1.43 -1.43 -1.43 ...
- $ vector_length     : num [1:120, 1] -0.912 -0.912 -0.912 -0.719 -0.912 ...
- $ temporary_size    : num [1:120, 1] -0.975 1.025 -0.975 -0.975 1.025 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 1 1 1 2 2 2 1 2 1 1 ...
- $ threads_number    : num [1:120, 1] -0.965 -0.965 -0.965 -0.689 -0.965 ...
- $ lws_y             : num [1:120, 1] -0.254 -0.254 -0.351 -0.254 -0.351 ...
-[1] 1.385959
-[1] 0.942
-[1] 6.052737
-[1] 8.597751
-[1] 1.705961
-[1] 3.440917
-[1] 5.18438
-[1] 5.730104
-[1] 0.9997112
-[1] 2.975087
-[1] 348.2594
-[1] 368.0554
-[1] 163.8265
-[1] 73.58054
-'data.frame':	120 obs. of  7 variables:
- $ elements_number   : num  1 1 1 3 4 1 1 4 4 4 ...
- $ y_component_number: num  1 1 1 1 1 1 1 1 1 1 ...
- $ vector_length     : num  1 1 1 2 1 1 2 1 1 2 ...
- $ temporary_size    : num  2 4 2 2 4 2 2 2 2 4 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 1 1 1 2 2 2 1 2 1 1 ...
- $ threads_number    : num  32 32 32 128 32 32 32 32 32 128 ...
- $ lws_y             : num  32 32 16 32 16 32 8 16 1 32 ...
-'data.frame':	23120 obs. of  8 variables:
- $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
- $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
- $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
- $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 2 1 2 2 1 2 2 2 ...
- $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
- $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
- $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 2
-[1] false
-Levels: false true
-[1] 32
-[1] 32
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 4
-[1] false
-Levels: false true
-[1] 32
-[1] 32
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 2
-[1] false
-Levels: false true
-[1] 32
-[1] 16
-numeric(0)
-[1] 3
-[1] 1
-[1] 2
-[1] 2
-[1] true
-Levels: false true
-[1] 128
-[1] 32
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 2
-[1] true
-Levels: false true
-[1] 32
-[1] 32
-numeric(0)
-[1] 1
-[1] 1
-[1] 2
-[1] 2
-[1] false
-Levels: false true
-[1] 32
-[1] 8
-numeric(0)
-[1] 4
-[1] 1
-[1] 2
-[1] 4
-[1] false
-Levels: false true
-[1] 128
-[1] 32
-numeric(0)
-[1] 4
-[1] 1
-[1] 1
-[1] 4
-[1] false
-Levels: false true
-[1] 128
-[1] 64
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 2
-[1] true
-Levels: false true
-[1] 32
-[1] 1
-numeric(0)
-[1] 1
-[1] 1
-[1] 2
-[1] 2
-[1] true
-Levels: false true
-[1] 32
-[1] 8
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 4
-[1] true
-Levels: false true
-[1] 32
-[1] 32
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 2
-[1] true
-Levels: false true
-[1] 1024
-[1] 1024
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 4
-[1] true
-Levels: false true
-[1] 1024
-[1] 2
-numeric(0)
-[1] 1
-[1] 1
-[1] 1
-[1] 4
-[1] false
-Levels: false true
-[1] 1024
-[1] 1024
-numeric(0)
-[1] 24
-[1] 6
-[1] 2
-[1] 4
-[1] true
-Levels: false true
-[1] 128
-[1] 16
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 2
-[1] false
-Levels: false true
-[1] 1024
-[1] 1024
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 4
-[1] true
-Levels: false true
-[1] 1024
-[1] 1
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 4
-[1] true
-Levels: false true
-[1] 1024
-[1] 1024
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 2
-[1] false
-Levels: false true
-[1] 1024
-[1] 1
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 4
-[1] true
-Levels: false true
-[1] 1024
-[1] 4
-numeric(0)
-[1] 1
-[1] 1
-[1] 16
-[1] 2
-[1] false
-Levels: false true
-[1] 1024
-[1] 2
- num [1:99] 2.34e-09 2.33e-09 3.48e-10 3.33e-10 3.13e-10 ...
-Error in `$<-.data.frame`(`*tmp*`, response, value = c(2.33634554346128e-09,  : 
-  replacement has 99 rows, data has 120
-'data.frame':	120 obs. of  7 variables:
- $ elements_number   : num  1 1 1 3 4 1 1 4 4 4 ...
- $ y_component_number: num  1 1 1 1 1 1 1 1 1 1 ...
- $ vector_length     : num  1 1 1 2 1 1 2 1 1 2 ...
- $ temporary_size    : num  2 4 2 2 4 2 2 2 2 4 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 1 1 1 2 2 2 1 2 1 1 ...
- $ threads_number    : num  32 32 32 128 32 32 32 32 32 128 ...
- $ lws_y             : num  32 32 16 32 16 32 8 16 1 32 ...
-#+end_example
 
-Running ~aov~ and printing summaries:
+****** Plotting from Steven's Report
+#+HEADER: :file ./img/results_hist.pdf :exports none :width 7 :height 8
+#+BEGIN_SRC R :results output graphics  :session *R*
+df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
+library(ggplot2)
+library(plyr)
 
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-regression <- aov(response ~ y_component_number + I(1 / y_component_number) + 
-                             vector_length + lws_y + I(1 / lws_y) +
-                             load_overlap + temporary_size +
-                             elements_number + I(1 / elements_number) +
-                             threads_number + I(1 / threads_number),
-                  data = federov_design)
+df_all_methods$method <- factor(df_all_methods$method, levels = c("RS","LHS","GS","GSR","GA","LM","RQ","DOPT"))
 
-summary.aov(regression)
-summary.lm(regression)
+df_mean = ddply(df_all_methods,.(method), summarize,
+                mean = mean(slowdown))
+
+df_median = ddply(df_all_methods,.(method), summarize,
+                  median = median(slowdown))
+
+df_err = ddply(df_all_methods,.(method), summarize,
+              mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
+df_max = ddply(df_all_methods,.(method), summarize, max = max(slowdown))
+
+ggplot(df_all_methods ) +
+    facet_grid(method~.) +
+    theme_bw() +
+    coord_cartesian(xlim=c(.9,4), ylim=c(0,1000)) +
+    geom_histogram(aes(slowdown),binwidth=.05, fill="gray48") +
+    geom_curve(data=df_max, aes(x=max+.1, y=500, xend=max, yend=5), arrow = arrow(length = unit(0.05, "npc")), curvature=0.3) +
+    geom_text( aes(x=max+.2,y=550,label="max"),data=df_max ) +
+    geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
+    geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=3 ) +
+    geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+    labs(y="Frequency", x="Slowdown compared to the optimal solution") +
+    scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
+    ggtitle("") +
+    theme(legend.position="top")
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-                         Df    Sum Sq   Mean Sq F value   Pr(>F)    
-y_component_number        1 2.260e-16 2.257e-16   5.608  0.01966 *  
-I(1/y_component_number)   1 5.700e-17 5.690e-17   1.414  0.23701    
-vector_length             1 1.508e-15 1.508e-15  37.465 1.53e-08 ***
-lws_y                     1 2.476e-15 2.476e-15  61.518 3.35e-12 ***
-I(1/lws_y)                1 1.840e-16 1.842e-16   4.576  0.03467 *  
-load_overlap              1 1.100e-17 1.090e-17   0.271  0.60372    
-temporary_size            1 1.200e-17 1.190e-17   0.297  0.58716    
-elements_number           1 4.020e-16 4.020e-16   9.989  0.00204 ** 
-I(1/elements_number)      1 3.210e-16 3.212e-16   7.980  0.00563 ** 
-threads_number            1 4.500e-17 4.490e-17   1.116  0.29307    
-I(1/threads_number)       1 1.000e-18 1.300e-18   0.032  0.85767    
-Residuals               108 4.346e-15 4.020e-17                     
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Call:
-aov.default(formula = response ~ y_component_number + I(1/y_component_number) + 
-    vector_length + lws_y + I(1/lws_y) + load_overlap + temporary_size + 
-    elements_number + I(1/elements_number) + threads_number + 
-    I(1/threads_number), data = federov_design)
-
-Residuals:
-       Min         1Q     Median         3Q        Max 
--8.684e-09 -3.644e-09 -1.622e-09  2.952e-09  2.296e-08 
-
-Coefficients:
-                          Estimate Std. Error t value Pr(>|t|)    
-(Intercept)              1.204e-08  1.391e-08   0.866  0.38850    
-y_component_number      -1.123e-09  1.877e-09  -0.598  0.55090    
-I(1/y_component_number) -1.239e-08  1.110e-08  -1.116  0.26682    
-vector_length            5.511e-10  8.874e-11   6.210 1.01e-08 ***
-lws_y                    9.507e-12  1.990e-12   4.777 5.64e-06 ***
-I(1/lws_y)              -2.699e-09  2.064e-09  -1.308  0.19372    
-load_overlaptrue         4.563e-10  1.168e-09   0.391  0.69684    
-temporary_size          -2.928e-10  5.859e-10  -0.500  0.61833    
-elements_number         -1.842e-10  8.816e-11  -2.089  0.03908 *  
-I(1/elements_number)     7.889e-09  2.811e-09   2.806  0.00594 ** 
-threads_number          -2.423e-12  4.256e-12  -0.569  0.57035    
-I(1/threads_number)     -2.592e-08  1.442e-07  -0.180  0.85767    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 6.344e-09 on 108 degrees of freedom
-Multiple R-squared:  0.5467,	Adjusted R-squared:  0.5006 
-F-statistic: 11.84 on 11 and 108 DF,  p-value: 2.931e-14
-#+end_example
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-best <- data[data$time_per_pixel == min(data$time_per_pixel), ]
-best_row <- rownames(best)
-
-best
-
-predict.lm(regression, best)
-#+END_SRC
-
-#+RESULTS:
-:       elements_number y_component_number vector_length temporary_size
-: 13752               6                  6             1              2
-:       load_overlap threads_number lws_y time_per_pixel
-: 13752         true           1024     2   1.165013e-10
-:        13752 
-: 3.448025e-11
+[[file:./img/results_hist.pdf]]
