@@ -32090,11 +32090,11 @@ the response from the original complete data:
 library(AlgDesign)
 library(dplyr)
 
-results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)  
+results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
 
 budget <- 120
 
-iterations <- 200
+iterations <- 1
 
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
@@ -32105,55 +32105,26 @@ for (i in 1:iterations) {
     data <- complete_data[, factors]
     scaled_data <- data[, factors]
 
-    # Trying to use no scaling
-    # for (name in names(select_if(scaled_data, is.numeric))) {
-    #     scaled_data[, name] <- scale(scaled_data[, name], center = TRUE)
-    # }
+    # No need for scaling
+    #
+    # scaled_data <- cbind(scale(select_if(data, is.numeric), center = FALSE, scale = TRUE),
+    #                      select_if(data, Negate(is.numeric)))
 
-    sampled_data <- scaled_data[sample(nrow(data), 500), ]
+    # scaled_data <- scaled_data[, names(data)]
+
+    # We are able to use the full set in this case
+    # sampled_data <- scaled_data[sample(nrow(data), 500), ]
+
     output <- optFederov(~ y_component_number + I(1 / y_component_number) + 
                         vector_length + lws_y + I(1 / lws_y) +
                         load_overlap + temporary_size +
                         elements_number + I(1 / elements_number) +
-                        threads_number + I(1 / threads_number), scaled_data, nTrials = budget)
-
-    federov_design <- output$design
-
-    # Trying to use no scaling
-    # for (name in names(select_if(federov_design, is.numeric))) {
-    #     # Add the center if data was centered
-    #     unscaled <- federov_design[, name] * attr(scaled_data[, name], 'scaled:scale') + attr(scaled_data[, name], 'scaled:center')
-    #     # Fix scaling retype issue
-    #     federov_design[, name] <- c(unscaled)
-    # }
+                        threads_number + I(1 / threads_number),
+                        scaled_data,
+                        nTrials = budget)
 
     data <- complete_data[, c(factors, "time_per_pixel")]
-    response <- c()
-
-    for (i in 1:nrow(federov_design)) {
-        value <- data[data$elements_number == federov_design[i, "elements_number"] &
-                      data$y_component_number == federov_design[i, "y_component_number"] &
-                      data$vector_length == federov_design[i, "vector_length"] &
-                      data$temporary_size == federov_design[i, "temporary_size"] &
-                      data$load_overlap == federov_design[i, "load_overlap"] &
-                      data$threads_number == federov_design[i, "threads_number"] &
-                      data$lws_y == federov_design[i, "lws_y"], ]$time_per_pixel
-
-        if (length(value) == 0) {
-            print(value)
-            print(federov_design[i, "elements_number"])
-            print(federov_design[i, "y_component_number"])
-            print(federov_design[i, "vector_length"])
-            print(federov_design[i, "temporary_size"])
-            print(federov_design[i, "load_overlap"])
-            print(federov_design[i, "threads_number"])
-            print(federov_design[i, "lws_y"])
-        }
-
-        response <- c(response, value)
-    }
-
-    federov_design$response <- response
+    federov_design <- data[output$rows, ]
 
     regression_aov <- aov(response ~ y_component_number + I(1 / y_component_number) + 
                                     vector_length + lws_y + I(1 / lws_y) +
@@ -32181,8 +32152,7 @@ for (i in 1:iterations) {
     results <- rbind(results, predicted_best)
 }
 
-write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", row.names = FALSE)
-
+write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -32190,7 +32160,7 @@ write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_se
 ****** Plotting from Steven's Report
 #+HEADER: :file ./img/results_hist.pdf :exports none :width 7 :height 8
 #+BEGIN_SRC R :results output graphics  :session *R*
-df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
+df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv", strip.white=T, header=T)
 library(ggplot2)
 library(plyr)
 
