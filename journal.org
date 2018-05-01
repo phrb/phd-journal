@@ -32090,11 +32090,11 @@ the response from the original complete data:
 library(AlgDesign)
 library(dplyr)
 
-results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
+results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
 
 budget <- 120
 
-iterations <- 1
+iterations <- 100
 
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
@@ -32105,43 +32105,72 @@ for (i in 1:iterations) {
     data <- complete_data[, factors]
     scaled_data <- data[, factors]
 
-    # No need for scaling
-    #
+    # Comment/Uncomment to toggle scaling
+    
     # scaled_data <- cbind(scale(select_if(data, is.numeric), center = FALSE, scale = TRUE),
     #                      select_if(data, Negate(is.numeric)))
-
     # scaled_data <- scaled_data[, names(data)]
 
     # We are able to use the full set in this case
     # sampled_data <- scaled_data[sample(nrow(data), 500), ]
 
-    output <- optFederov(~ y_component_number + I(1 / y_component_number) + 
-                        vector_length + lws_y + I(1 / lws_y) +
-                        load_overlap + temporary_size +
-                        elements_number + I(1 / elements_number) +
-                        threads_number + I(1 / threads_number),
-                        scaled_data,
-                        nTrials = budget)
-
-    data <- complete_data[, c(factors, "time_per_pixel")]
-    federov_design <- data[output$rows, ]
-
-    regression_aov <- aov(response ~ y_component_number + I(1 / y_component_number) + 
+    # Complete model:
+    output_complete <- optFederov(~ y_component_number + I(1 / y_component_number) + 
                                     vector_length + lws_y + I(1 / lws_y) +
                                     load_overlap + temporary_size +
                                     elements_number + I(1 / elements_number) +
                                     threads_number + I(1 / threads_number),
-                      data = federov_design)
+                                  scaled_data,
+                                  nTrials = 30)
+
+    data <- complete_data[, c(factors, "time_per_pixel")]
+    federov_design <- data[output_complete$rows, ]
+
+    # Complete model:
+    regression_aov <- aov(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
+                                           vector_length + lws_y + I(1 / lws_y) +
+                                           load_overlap + temporary_size +
+                                           elements_number + I(1 / elements_number) +
+                                           threads_number + I(1 / threads_number),
+                          data = federov_design)
+
+    # Checking the summary ANOVA we can identify at least two variables
+    # that seem to have greater impact. Let's try a D-Opt design using
+    # only those variables:
+
+    data <- complete_data[, factors]
+    scaled_data <- data[, factors]
+
+    output <- optFederov(~ vector_length + lws_y + I(1 / lws_y),
+                         scaled_data,
+                         nTrials = 4)
+
+    data <- complete_data[, c(factors, "time_per_pixel")]
+    federov_design <- data[output$rows, ]
+
+    regression <- lm(time_per_pixel ~ vector_length + lws_y + I(1 / lws_y),
+                     data = federov_design)
+
+    # regression <- rq(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
+    #                                   vector_length + lws_y + I(1 / lws_y) +
+    #                                   load_overlap + temporary_size +
+    #                                   elements_number + I(1 / elements_number) +
+    #                                   threads_number + I(1 / threads_number),
+    #                  tau = 0.50,
+    #                  method = "fn",
+    #                  data = federov_design)
+
+    predicted_best <- data[predict(regression, data) == min(predict(regression, data)), ]
 
     best <- data[data$time_per_pixel == min(data$time_per_pixel), ]
     best_row <- rownames(best)
 
-    predicted_best <- data[predict(regression_aov, data) == min(predict(regression_aov, data)), ]
-
     predicted_best$slowdown <- predicted_best$time_per_pixel / best$time_per_pixel
-    predicted_best$method <- rep("DOPT", nrow(predicted_best))
+    predicted_best$method <- rep("DOPTaov", nrow(predicted_best))
     predicted_best$point_number <- rep(budget, nrow(predicted_best))
     predicted_best$vector_recompute <- rep("true", nrow(predicted_best))
+
+    predicted_best <- predicted_best[predicted_best$slowdown == min(predicted_best$slowdown), ]
 
     predicted_best <- predicted_best[, c("elements_number", "y_component_number",
                                         "vector_length", "temporary_size", "vector_recompute",
@@ -32152,7 +32181,7 @@ for (i in 1:iterations) {
     results <- rbind(results, predicted_best)
 }
 
-write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv", row.names = FALSE)
+write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -32160,18 +32189,18 @@ write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all
 ****** Plotting from Steven's Report
 #+HEADER: :file ./img/results_hist.pdf :exports none :width 7 :height 8
 #+BEGIN_SRC R :results output graphics  :session *R*
-df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv", strip.white=T, header=T)
+df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
 library(ggplot2)
 library(plyr)
 
-df_all_methods$method <- factor(df_all_methods$method, levels = c("RS","LHS","GS","GSR","GA","LM","RQ","DOPT"))
+df_all_methods$method <- factor(df_all_methods$method, levels = c("RS","LHS","GS","GSR","GA","LM","RQ","DOPT", "DOPTS", "DOPTQ", "DOPTaov"))
 
 df_mean = ddply(df_all_methods,.(method), summarize,
                 mean = mean(slowdown))
 
 df_median = ddply(df_all_methods,.(method), summarize,
                   median = median(slowdown))
-
+                  
 df_err = ddply(df_all_methods,.(method), summarize,
               mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
 
