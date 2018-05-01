@@ -32094,7 +32094,7 @@ results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_s
 
 budget <- 120
 
-iterations <- 100
+iterations <- 200
 
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
@@ -32187,7 +32187,7 @@ write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_se
 #+RESULTS:
 
 ****** Plotting from Steven's Report
-#+HEADER: :file ./img/results_hist.pdf :exports none :width 7 :height 8
+#+HEADER: :file M2_internship/org/Report/Project-report-template/img/results_hist.pdf :exports none :width 7 :height 8
 #+BEGIN_SRC R :results output graphics  :session *R*
 df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
 library(ggplot2)
@@ -32223,4 +32223,4 @@ ggplot(df_all_methods ) +
 #+END_SRC
 
 #+RESULTS:
-[[file:./img/results_hist.pdf]]
+[[file:M2_internship/org/Report/Project-report-template/img/results_hist.pdf]]
