@@ -31568,8 +31568,7 @@ which I was not able to fix. I wrote this Python script to generate the
 #+BEGIN_SRC python :results output
 import csv
 
-yaml_path = ("M2_internship/data/2016_04_08/pilipili2/18_08_24/"
-             "test_space_2016_04_02_end_cleaned.yaml")
+yaml_path = ("dopt_anova_experiments/data/search_space.yaml")
 yaml_file = open(yaml_path, "r")
 
 # Drop first line
@@ -31586,7 +31585,7 @@ headers = [ "elements_number",
             "lws_y",
             "time_per_pixel"]
 
-with open('/tmp/test.csv', 'w', newline='') as csv_file:
+with open('dopt_anova_experiments/data/search_space.csv', 'w', newline='') as csv_file:
     writer = csv.writer(csv_file)
     writer.writerow(headers)
 
@@ -31611,7 +31610,7 @@ It seems that the ~vector_recompute~ parameter is always set to ~true~:
 #+NAME: read_steven_csv_data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-complete_data = read.csv("/tmp/test.csv", header = TRUE)
+complete_data = read.csv("dopt_anova_experiments/data/search_space.csv", header = TRUE)
 str(complete_data)
 #+END_SRC
 
