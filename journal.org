@@ -32090,19 +32090,26 @@ the response from the original complete data:
 library(AlgDesign)
 library(dplyr)
 
-results <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
+read_file <- "M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv"
+write_file <- "M2_internship/data/2016_04_08/pilipili2/18_08_24/testing_all_search_1000.csv"
+
+results <- read.csv(read_file, strip.white=T, header=T)
 
 budget <- 120
 
-iterations <- 200
+iterations <- 1
 
 factors = c("elements_number", "y_component_number",
             "vector_length", "temporary_size",
             "load_overlap", "threads_number",
             "lws_y")
 
-for (i in 1:iterations) {
-    data <- complete_data[, factors]
+# for (i in 1:iterations) {
+    # str(i)
+
+    used <- 0
+
+    data <- complete_data[, c(factors, "time_per_pixel")]
     scaled_data <- data[, factors]
 
     # Comment/Uncomment to toggle scaling
@@ -32115,81 +32122,307 @@ for (i in 1:iterations) {
     # sampled_data <- scaled_data[sample(nrow(data), 500), ]
 
     # Complete model:
-    output_complete <- optFederov(~ y_component_number + I(1 / y_component_number) + 
-                                    vector_length + lws_y + I(1 / lws_y) +
-                                    load_overlap + temporary_size +
-                                    elements_number + I(1 / elements_number) +
-                                    threads_number + I(1 / threads_number),
-                                  scaled_data,
-                                  nTrials = 30)
-
-    data <- complete_data[, c(factors, "time_per_pixel")]
-    federov_design <- data[output_complete$rows, ]
-
-    # Complete model:
-    regression_aov <- aov(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
-                                           vector_length + lws_y + I(1 / lws_y) +
-                                           load_overlap + temporary_size +
-                                           elements_number + I(1 / elements_number) +
-                                           threads_number + I(1 / threads_number),
-                          data = federov_design)
-
-    # Checking the summary ANOVA we can identify at least two variables
-    # that seem to have greater impact. Let's try a D-Opt design using
-    # only those variables:
-
-    data <- complete_data[, factors]
-    scaled_data <- data[, factors]
-
-    output <- optFederov(~ vector_length + lws_y + I(1 / lws_y),
+    output <- optFederov(~ y_component_number + I(1 / y_component_number) + 
+                           vector_length + lws_y + I(1 / lws_y) +
+                           load_overlap + temporary_size +
+                           elements_number + I(1 / elements_number) +
+                           threads_number + I(1 / threads_number),
                          scaled_data,
-                         nTrials = 4)
+                         nTrials = 24)
 
-    data <- complete_data[, c(factors, "time_per_pixel")]
     federov_design <- data[output$rows, ]
 
-    regression <- lm(time_per_pixel ~ vector_length + lws_y + I(1 / lws_y),
-                     data = federov_design)
+    str(data)
+    str(federov_design)
 
-    # regression <- rq(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
-    #                                   vector_length + lws_y + I(1 / lws_y) +
-    #                                   load_overlap + temporary_size +
-    #                                   elements_number + I(1 / elements_number) +
-    #                                   threads_number + I(1 / threads_number),
-    #                  tau = 0.50,
-    #                  method = "fn",
-    #                  data = federov_design)
+    # Complete model:
+    regression <- aov(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
+                                       vector_length + lws_y + I(1 / lws_y) +
+                                       load_overlap + temporary_size +
+                                       elements_number + I(1 / elements_number) +
+                                       threads_number + I(1 / threads_number),
+                      data = federov_design)
+
+    used <- used + 24
+
+    summary(regression)
+
+    # Checking the ANOVA summary we can identify at least two variables
+    # that seem to have greater impact: 'vector_length' and 'lws_y'.
+    # Let's fix those variables to their best predicted value so far,
+    # then fit a new model without them
 
     predicted_best <- data[predict(regression, data) == min(predict(regression, data)), ]
+    predicted_best
 
-    best <- data[data$time_per_pixel == min(data$time_per_pixel), ]
+    data <- complete_data[complete_data$vector_length == predicted_best$vector_length &
+                          complete_data$lws_y == predicted_best$lws_y, c(factors, "time_per_pixel")]
+    scaled_data <- data[, factors]
+
+    if (nrow(scaled_data) > 24) {
+        output <- optFederov(~ y_component_number + I(1 / y_component_number) + 
+                               load_overlap + temporary_size +
+                               elements_number + I(1 / elements_number) +
+                               threads_number + I(1 / threads_number),
+                             scaled_data,
+                             nTrials = 24)
+
+        federov_design <- data[output$rows, ]
+        used <- used + 24
+    } else {
+        federov_design <- data
+        used <- used + nrow(federov_design)
+    }
+
+    str(data)
+    str(federov_design)
+
+    regression <- aov(time_per_pixel ~ y_component_number + I(1 / y_component_number) + 
+                                       load_overlap + temporary_size +
+                                       elements_number + I(1 / elements_number) +
+                                       threads_number + I(1 / threads_number),
+                      data = federov_design)
+
+    summary(regression)
+
+    # Checking the ANOVA summary we can identify at least two variables
+    # that seem to have greater impact: 'y_component_number' and 'threads_number'.
+    # Let's fix those variables to their best predicted value so far,
+    # then fit a new model without them
+
+    predicted_best <- data[predict(regression, data) == min(predict(regression, data)), ]
+    predicted_best
+
+    data <- complete_data[complete_data$vector_length == predicted_best$vector_length &
+                          complete_data$lws_y == predicted_best$lws_y &
+                          complete_data$y_component_number == predicted_best$y_component_number &
+                          complete_data$threads_number == predicted_best$threads_number, c(factors, "time_per_pixel")]
+    scaled_data <- data[, factors]
+
+    if (nrow(scaled_data) > 24) {
+        output <- optFederov(~ load_overlap + temporary_size +
+                               elements_number + I(1 / elements_number),
+                             scaled_data,
+                             nTrials = 24)
+
+        federov_design <- data[output$rows, ]
+        used <- used + 24
+    } else {
+        federov_design <- data
+        used <- used + nrow(federov_design)
+    }
+    
+    str(data)
+    str(federov_design)
+
+    regression <- aov(time_per_pixel ~ load_overlap + temporary_size +
+                                       elements_number + I(1 / elements_number),
+                      data = federov_design)
+
+    summary(regression)
+
+    # Checking the ANOVA summary we can identify, at last, one variable
+    # that seem to have greater impact: 'elements_number'
+    # and 'elements_number'.
+    # Let's fix it to their best predicted value so far,
+    # then fit a new model without it
+
+    predicted_best <- data[predict(regression, data) == min(predict(regression, data)), ]
+    predicted_best
+
+    data <- complete_data[complete_data$vector_length == predicted_best$vector_length &
+                          complete_data$lws_y == predicted_best$lws_y &
+                          complete_data$y_component_number == predicted_best$y_component_number &
+                          complete_data$threads_number == predicted_best$threads_number &
+                          complete_data$elements_number == predicted_best$elements_number, c(factors, "time_per_pixel")]
+    scaled_data <- data[, factors]
+
+    if (nrow(scaled_data) > 24) {
+        output <- optFederov(~ load_overlap + temporary_size,
+                             scaled_data,
+                             nTrials = 24)
+
+        federov_design <- data[output$rows, ]
+        used <- used + 24
+    } else {
+        federov_design <- data
+        used <- used + nrow(federov_design)
+    }
+
+    str(data)
+    str(federov_design)
+
+    regression <- aov(time_per_pixel ~ load_overlap + temporary_size,
+                      data = federov_design)
+
+    summary(regression)
+
+    predicted_best <- data[predict(regression, data) == min(predict(regression, data)), ]
+    predicted_best
+
+    best <- complete_data[complete_data$time_per_pixel == min(complete_data$time_per_pixel), ]
     best_row <- rownames(best)
 
     predicted_best$slowdown <- predicted_best$time_per_pixel / best$time_per_pixel
     predicted_best$method <- rep("DOPTaov", nrow(predicted_best))
-    predicted_best$point_number <- rep(budget, nrow(predicted_best))
+    predicted_best$point_number <- rep(used, nrow(predicted_best))
     predicted_best$vector_recompute <- rep("true", nrow(predicted_best))
-
-    predicted_best <- predicted_best[predicted_best$slowdown == min(predicted_best$slowdown), ]
 
     predicted_best <- predicted_best[, c("elements_number", "y_component_number",
                                         "vector_length", "temporary_size", "vector_recompute",
                                         "load_overlap", "threads_number", "lws_y",
                                         "time_per_pixel", "point_number", "method",
                                         "slowdown")]
-
+    predicted_best                                    
     results <- rbind(results, predicted_best)
-}
+# }
 
-write.csv(results, "M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", row.names = FALSE)
+write.csv(results, write_file, row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+'data.frame':	23120 obs. of  8 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+'data.frame':	24 obs. of  8 variables:
+ $ elements_number   : int  1 4 4 3 4 3 4 1 4 24 ...
+ $ y_component_number: int  1 1 1 3 1 3 1 1 1 6 ...
+ $ vector_length     : int  1 1 1 1 16 16 1 16 16 16 ...
+ $ temporary_size    : int  2 2 2 4 4 4 4 4 4 2 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 2 1 1 1 2 2 2 2 1 ...
+ $ threads_number    : int  32 256 32 128 32 32 256 256 1024 128 ...
+ $ lws_y             : int  32 32 1 32 32 1 1 1 16 1 ...
+ $ time_per_pixel    : num  5.38e-09 6.59e-10 3.48e-10 8.00e-10 1.05e-08 ...
+                        Df    Sum Sq   Mean Sq F value Pr(>F)  
+y_component_number       1 7.800e-19 7.800e-19   0.085 0.7751  
+I(1/y_component_number)  1 1.185e-17 1.185e-17   1.305 0.2757  
+vector_length            1 6.332e-17 6.332e-17   6.972 0.0216 *
+lws_y                    1 8.329e-17 8.329e-17   9.170 0.0105 *
+I(1/lws_y)               1 4.312e-17 4.312e-17   4.747 0.0500 .
+load_overlap             1 1.030e-17 1.030e-17   1.134 0.3078  
+temporary_size           1 2.100e-19 2.100e-19   0.023 0.8826  
+elements_number          1 4.750e-18 4.750e-18   0.523 0.4834  
+I(1/elements_number)     1 2.170e-18 2.170e-18   0.239 0.6339  
+threads_number           1 2.113e-17 2.113e-17   2.326 0.1531  
+I(1/threads_number)      1 1.510e-18 1.510e-18   0.166 0.6904  
+Residuals               12 1.090e-16 9.080e-18                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+      elements_number y_component_number vector_length temporary_size
+19339              16                  4             1              2
+      load_overlap threads_number lws_y time_per_pixel
+19339         true           1024     1   2.141271e-10
+'data.frame':	576 obs. of  8 variables:
+ $ elements_number   : int  2 4 4 1 3 3 3 4 4 4 ...
+ $ y_component_number: int  2 1 1 1 1 3 1 2 2 1 ...
+ $ vector_length     : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ temporary_size    : int  2 4 2 4 4 2 2 4 4 4 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 1 1 1 1 1 2 1 2 1 ...
+ $ threads_number    : int  128 64 128 256 256 128 512 64 64 512 ...
+ $ lws_y             : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ time_per_pixel    : num  1.58e-10 3.03e-10 3.01e-10 2.36e-10 3.33e-10 ...
+'data.frame':	24 obs. of  8 variables:
+ $ elements_number   : int  3 2 4 4 4 4 1 1 2 24 ...
+ $ y_component_number: int  3 2 1 1 1 1 1 1 2 6 ...
+ $ vector_length     : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ temporary_size    : int  2 2 2 4 2 4 4 2 4 2 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 1 1 2 1 2 1 1 1 ...
+ $ threads_number    : int  128 32 32 256 256 32 32 128 256 32 ...
+ $ lws_y             : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ time_per_pixel    : num  1.42e-10 3.55e-10 3.48e-10 3.10e-10 3.09e-10 ...
+                        Df    Sum Sq   Mean Sq F value   Pr(>F)    
+y_component_number       1 1.343e-19 1.343e-19  37.848 1.85e-05 ***
+I(1/y_component_number)  1 1.223e-20 1.223e-20   3.448  0.08307 .  
+load_overlap             1 9.480e-21 9.480e-21   2.672  0.12291    
+temporary_size           1 4.470e-21 4.470e-21   1.259  0.27950    
+elements_number          1 5.600e-22 5.600e-22   0.159  0.69615    
+I(1/elements_number)     1 5.000e-23 5.000e-23   0.014  0.90834    
+threads_number           1 4.830e-21 4.830e-21   1.362  0.26146    
+I(1/threads_number)      1 3.814e-20 3.814e-20  10.750  0.00508 ** 
+Residuals               15 5.322e-20 3.550e-21                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+      elements_number y_component_number vector_length temporary_size
+19283               6                  6             1              2
+      load_overlap threads_number lws_y time_per_pixel
+19283        false            256     1    1.18202e-10
+'data.frame':	16 obs. of  8 variables:
+ $ elements_number   : int  18 24 12 18 6 12 12 6 24 12 ...
+ $ y_component_number: int  6 6 6 6 6 6 6 6 6 6 ...
+ $ vector_length     : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ temporary_size    : int  4 2 2 2 4 4 4 4 2 2 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 1 1 1 2 1 2 2 2 ...
+ $ threads_number    : int  256 256 256 256 256 256 256 256 256 256 ...
+ $ lws_y             : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ time_per_pixel    : num  1.64e-10 1.47e-10 1.39e-10 1.64e-10 1.20e-10 ...
+'data.frame':	16 obs. of  8 variables:
+ $ elements_number   : int  18 24 12 18 6 12 12 6 24 12 ...
+ $ y_component_number: int  6 6 6 6 6 6 6 6 6 6 ...
+ $ vector_length     : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ temporary_size    : int  4 2 2 2 4 4 4 4 2 2 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 1 1 1 2 1 2 2 2 ...
+ $ threads_number    : int  256 256 256 256 256 256 256 256 256 256 ...
+ $ lws_y             : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ time_per_pixel    : num  1.64e-10 1.47e-10 1.39e-10 1.64e-10 1.20e-10 ...
+                     Df    Sum Sq   Mean Sq F value   Pr(>F)    
+load_overlap          1 8.000e-25 8.000e-25    0.01 0.922913    
+temporary_size        1 0.000e+00 0.000e+00    0.00 0.992840    
+elements_number       1 2.496e-21 2.496e-21   29.25 0.000214 ***
+I(1/elements_number)  1 9.991e-22 9.991e-22   11.71 0.005706 ** 
+Residuals            11 9.387e-22 8.530e-23                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+     elements_number y_component_number vector_length temporary_size
+8697               6                  6             1              4
+     load_overlap threads_number lws_y time_per_pixel
+8697        false            256     1   1.198868e-10
+'data.frame':	4 obs. of  8 variables:
+ $ elements_number   : int  6 6 6 6
+ $ y_component_number: int  6 6 6 6
+ $ vector_length     : int  1 1 1 1
+ $ temporary_size    : int  4 4 2 2
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 2 1
+ $ threads_number    : int  256 256 256 256
+ $ lws_y             : int  1 1 1 1
+ $ time_per_pixel    : num  1.20e-10 1.20e-10 1.18e-10 1.18e-10
+'data.frame':	4 obs. of  8 variables:
+ $ elements_number   : int  6 6 6 6
+ $ y_component_number: int  6 6 6 6
+ $ vector_length     : int  1 1 1 1
+ $ temporary_size    : int  4 4 2 2
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 2 1
+ $ threads_number    : int  256 256 256 256
+ $ lws_y             : int  1 1 1 1
+ $ time_per_pixel    : num  1.20e-10 1.20e-10 1.18e-10 1.18e-10
+               Df    Sum Sq   Mean Sq F value Pr(>F)  
+load_overlap    1 6.000e-27 6.000e-27   0.137 0.7746  
+temporary_size  1 3.575e-24 3.575e-24  84.289 0.0691 .
+Residuals       1 4.200e-26 4.200e-26                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+      elements_number y_component_number vector_length temporary_size
+17258               6                  6             1              2
+      load_overlap threads_number lws_y time_per_pixel
+17258         true            256     1     1.1792e-10
+      elements_number y_component_number vector_length temporary_size
+17258               6                  6             1              2
+      vector_recompute load_overlap threads_number lws_y time_per_pixel
+17258             true         true            256     1     1.1792e-10
+      point_number  method slowdown
+17258           68 DOPTaov 1.012177
+#+end_example
 
 ****** Plotting from Steven's Report
 #+HEADER: :file M2_internship/org/Report/Project-report-template/img/results_hist.pdf :exports none :width 7 :height 8
 #+BEGIN_SRC R :results output graphics  :session *R*
-df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/dopt_all_search_1000.csv", strip.white=T, header=T)
+df_all_methods <- read.csv("M2_internship/data/2016_04_08/pilipili2/18_08_24/clean_all_search_1000.csv", strip.white=T, header=T)
 library(ggplot2)
 library(plyr)
 
@@ -32224,3 +32457,145 @@ ggplot(df_all_methods ) +
 
 #+RESULTS:
 [[file:M2_internship/org/Report/Project-report-template/img/results_hist.pdf]]
+
+#+HEADER: :results output :session *R* :exports both
+#+BEGIN_SRC R
+summary(df_all_methods[df_all_methods$method == "RS",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "LHS",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "GS",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "GSR",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "GA",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "LM",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "RQ",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "DOPT",]$slowdown)
+summary(df_all_methods[df_all_methods$method == "DOPTaov",]$slowdown)
+
+mean(df_all_methods[df_all_methods$method == "RS",]$point_number)
+mean(df_all_methods[df_all_methods$method == "LHS",]$point_number)
+mean(df_all_methods[df_all_methods$method == "GS",]$point_number)
+mean(df_all_methods[df_all_methods$method == "GSR",]$point_number)
+mean(df_all_methods[df_all_methods$method == "GA",]$point_number)
+mean(df_all_methods[df_all_methods$method == "LM",]$point_number)
+mean(df_all_methods[df_all_methods$method == "RQ",]$point_number)
+mean(df_all_methods[df_all_methods$method == "DOPT",]$point_number)
+mean(df_all_methods[df_all_methods$method == "DOPTaov",]$point_number)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   1.027   1.079   1.102   1.178   1.388
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   1.087   1.188   1.175   1.244   1.524
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   1.348   1.799   6.460   6.314 124.764
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   1.072   1.187   1.227   1.333   3.164
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   1.018   1.086   1.118   1.187   1.646
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.012   1.012   1.012   1.022   1.012   3.771
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.012   1.012   1.012   1.019   1.012   2.064
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.380   1.640   1.643   1.683   1.643   2.913
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.012   1.012   1.012   1.017   1.012   1.083
+[1] 120
+[1] 98.918
+[1] 22.171
+[1] 120
+[1] 120
+[1] 119
+[1] 119
+[1] 120
+[1] 68
+#+end_example
+
+*** [2018-05-02 Wed]
+**** Summarizing the D-Optimal + ANOVA Strategy for Steven's Experiments
+1. Use ~optFederov~ to find 24 experiments for the full model:
+
+\begin{equation}
+    Y ~ y_component_number + 1 / y_component_number + 
+        vector_length + lws_y + 1 / lws_y +
+        load_overlap + temporary_size +
+        elements_number + 1 / elements_number +
+        threads_number + 1 / threads_number
+\end{equation}
+
+2. Use ~aov~ to fit the full model, spending the 24 evaluations:
+
+\begin{equation}
+      time_per_pixel ~ y_component_number + 1 / y_component_number + 
+                       vector_length + lws_y + 1 / lws_y +
+                       load_overlap + temporary_size +
+                       elements_number + 1 / elements_number +
+                       threads_number + 1 / threads_number
+\end{equation}
+
+4. Identify the most significant factors from the ANOVA summary. In this
+   case, they are $vector_length$ and $lws_y$.
+5. Use the fitted model to predict the best $time_per_pixel$ value in the
+   entire dataset
+6. Prune the dataset using the predicted best values for $vector_length$ and $lws_y$
+7. Use ~optFederov~ to find 24 experiments for the pruned model. If there are less
+   than or exactly 24 candidates, use the full candidate set.
+
+\begin{equation}
+    Y ~ y_component_number + 1 / y_component_number + 
+        load_overlap + temporary_size +
+        elements_number + 1 / elements_number +
+        threads_number + 1 / threads_number
+\end{equation}
+
+8. Use ~aov~ to fit the pruned model, spending the 24 evaluations:
+
+\begin{equation}
+      time_per_pixel ~ y_component_number + 1 / y_component_number + 
+                       load_overlap + temporary_size +
+                       elements_number + 1 / elements_number +
+                       threads_number + 1 / threads_number
+\end{equation}
+9. Identify the most significant factors from the ANOVA summary. In this
+   case, they are $y_component_number$ and $threads_number$.
+10. Use the fitted model to predict the best $time_per_pixel$ value in the
+    entire dataset
+11. Prune the dataset using the predicted best values for $y_component_number$ and
+    $threads_number$
+12. Use ~optFederov~ to find 24 experiments for the pruned model. If there are less
+    than or exactly 24 candidates, use the full candidate set.
+
+\begin{equation}
+    Y ~ load_overlap + temporary_size +
+        elements_number + 1 / elements_number
+\end{equation}
+
+13. Use ~aov~ to fit the pruned model, spending the 24 evaluations:
+
+\begin{equation}
+      time_per_pixel ~ load_overlap + temporary_size +
+                       elements_number + 1 / elements_number
+\end{equation}
+14. Identify the most significant factors from the ANOVA summary. In this
+    case, it is $elements_number$
+15. Use the fitted model to predict the best $time_per_pixel$ value in the
+    entire dataset
+16. Prune the dataset using the predicted best values for $elements_number$
+12. Use ~optFederov~ to find 24 experiments for the pruned model. If there are less
+    than or exactly 24 candidates, use the full candidate set.
+
+\begin{equation}
+    Y ~ load_overlap + temporary_size
+\end{equation}
+
+13. Use ~aov~ to fit the pruned model, spending the 24 evaluations:
+
+\begin{equation}
+      time_per_pixel ~ load_overlap + temporary_size
+\end{equation}
+15. Use the fitted model to predict the best $time_per_pixel$ value in the
+    entire dataset
+16. Compare the predicted $time_per_pixel$ with the global optimum
+
+
