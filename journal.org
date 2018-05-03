@@ -32597,3 +32597,5 @@ git clone https://github.com/phrb/dopt_anova_experiments.git || (cd dopt_anova_e
 
 #+RESULTS: update_dopt_aov_experiments
 : Already up to date.
+
+This [[file:./dopt_anova_experiments/org/report.pdf][file]] contains the report.
