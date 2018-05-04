@@ -32081,9 +32081,6 @@ class=design, type= pb
 #+RESULTS:
 
 ***** Running the Design and Fitting a Model
-Rescaling the design back to original values and getting back
-the response from the original complete data:
-
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
@@ -32599,3 +32596,29 @@ git clone https://github.com/phrb/dopt_anova_experiments.git || (cd dopt_anova_e
 : Already up to date.
 
 This [[file:./dopt_anova_experiments/org/report.pdf][file]] contains the report.
+*** [2018-05-04 Fri]
+**** Looking at Model Fit and Predicted Effects
+#+HEADER: :results output graphics :session *R* :exports both
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 600 :height 400
+#+BEGIN_SRC R
+library(ggplot2)
+
+A = data.frame(x = sample(1:10, 100, replace = T),
+               y = sample(2:30, 100, replace = T),
+               z = sample(30:40, 100, replace = T))
+
+A$Y = (2 * A$x) + (4 * A$y) + (5 * A$z)
+
+big_model = lm(Y ~ x + y + z, data = A)
+small_model = lm(Y ~ x, data = A)
+
+str(A)
+
+ggplot(data = A, aes(x = x, y = Y, z = z, z2 = y)) + 
+       geom_point() +
+       stat_smooth(method = "lm", col = "red", formula = y ~ x + z2 + z)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-4699geC/figure4699O7A.png]]
