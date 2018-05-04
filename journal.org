@@ -32600,25 +32600,55 @@ This [[file:./dopt_anova_experiments/org/report.pdf][file]] contains the report.
 **** Looking at Model Fit and Predicted Effects
 #+HEADER: :results output graphics :session *R* :exports both
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 600 :height 400
+#+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
 library(ggplot2)
+library(dplyr)
+library(gridExtra)
 
-A = data.frame(x = sample(1:10, 100, replace = T),
-               y = sample(2:30, 100, replace = T),
-               z = sample(30:40, 100, replace = T))
+A = data.frame(x = 1:100,
+               y = 1:100,
+               z = 1:100)
 
-A$Y = (2 * A$x) + (4 * A$y) + (5 * A$z)
+A$Y = rnorm(n = 100, mean = A$x, sd = 0.4 * A$x)
 
 big_model = lm(Y ~ x + y + z, data = A)
 small_model = lm(Y ~ x, data = A)
 
-str(A)
+# A_big_predict = cbind(A, predict(big_model, interval = "confidence"))
+# A_small_predict = cbind(A, predict(small_model, interval = "confidence"))
+# 
+# p_small_x <- ggplot(A_small_predict, aes(x, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_line(aes(x, fit), alpha = 0.8, color = "red1", size = 1)
+# 
+# p_small_y <- ggplot(A_small_predict, aes(y, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_point(aes(y, fit), alpha = 0.2, color = "red1", size = 4)
+# 
+# p_small_z <- ggplot(A_small_predict, aes(z, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_point(aes(z, fit), alpha = 0.2, color = "red1", size = 4)
+# 
+# p_big_x <- ggplot(A_big_predict, aes(x, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_point(aes(x, fit), alpha = 0.2, color = "red1", size = 4)
+# 
+# p_big_y <- ggplot(A_big_predict, aes(y, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_point(aes(y, fit), alpha = 0.2, color = "red1", size = 4)
+# 
+# p_big_z <- ggplot(A_big_predict, aes(z, Y)) +
+#                     geom_point(color = "black", alpha = 1) +
+#                     geom_point(aes(z, fit), alpha = 0.2, color = "red1", size = 4)
 
-ggplot(data = A, aes(x = x, y = Y, z = z, z2 = y)) + 
-       geom_point() +
-       stat_smooth(method = "lm", col = "red", formula = y ~ x + z2 + z)
+par(mfrow = c(2, 1))
+plot(small_model, which = c(1))
+plot(big_model, which = c(1))
+
+# grid.arrange(p_small_x, p_small_y, p_small_z,
+#              p_big_x, p_big_y, p_big_z, nrow = 2)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-4699geC/figure4699O7A.png]]
+[[file:/tmp/babel-4699geC/figure4699SNF.png]]
