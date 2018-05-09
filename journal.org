@@ -32094,7 +32094,7 @@ ggplot(results) +
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 800
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 library(AlgDesign)
 library(dplyr)
@@ -32132,10 +32132,10 @@ generate_model_plot <- function(big_model, small_model, results, full_data, metr
          geom_point(data = bm_min, size = 3, alpha = 1.0,
                     aes(x = bm_min[metric], y = time_per_pixel,
                         color = "Big Model", shape = 7)) +
-         geom_point(data = sm_min, size = 4, alpha = 1.0,
+         geom_point(data = sm_min, size = 3, alpha = 1.0,
                     aes(x = sm_min[metric], y = time_per_pixel,
                         color = "Small Model", shape = 8)) +
-         geom_point(data = global_min, size = 5, alpha = 1.0,
+         geom_point(data = global_min, size = 3, alpha = 1.0,
                     aes(x = global_min[metric], y = time_per_pixel,
                         color = "Global Minimum", shape = 9)) +
          theme_bw() + 
@@ -32202,6 +32202,27 @@ p_lwsy <- generate_model_plot(regression, small_model,
                               scaled_data, data,
                               "lws_y")
 
+random_data <- complete_data[sample(nrow(complete_data), nrow(federov_design)), c(factors, "time_per_pixel")]
+
+big_random <- lm(time_per_pixel ~ y_component_number + I(1 / y_component_number) +
+                                  vector_length + lws_y + I(1 / lws_y) +
+                                  load_overlap + temporary_size +
+                                  elements_number + I(1 / elements_number) +
+                                  threads_number + I(1 / threads_number),
+                 data = random_data)
+
+small_random <- lm(time_per_pixel ~ vector_length + lws_y + I(1 / lws_y),
+                   data = random_data)
+
+
+r_lwsy <- generate_model_plot(big_random, small_random,
+                              random_data, data,
+                              "lws_y")
+
+r_vectorlength <- generate_model_plot(big_random, small_random,
+                                      random_data, data,
+                                      "vector_length")
+
 used <- used + nrow(federov_design)
 
 # Checking the ANOVA summary we can identify at least two variables
@@ -32250,6 +32271,27 @@ p_threadsnumber <- generate_model_plot(regression, small_model,
                                        scaled_data, data,
                                        "threads_number")
 
+random_data <- complete_data[sample(nrow(complete_data), nrow(federov_design)), c(factors, "time_per_pixel")]
+
+big_random <- lm(time_per_pixel ~ y_component_number + I(1 / y_component_number) +
+                                  load_overlap + temporary_size +
+                                  elements_number + I(1 / elements_number) +
+                                  threads_number + I(1 / threads_number),
+                 data = random_data)
+
+small_random <- lm(time_per_pixel ~ y_component_number + I(1 / y_component_number) +
+                                    threads_number + I(1 / threads_number),
+                   data = random_data)
+
+
+r_ycomponentnumber <- generate_model_plot(big_random, small_random,
+                                          random_data, data,
+                                          "y_component_number")
+
+r_threadsnumber <- generate_model_plot(big_random, small_random,
+                                       random_data, data,
+                                       "threads_number")
+
 # Checking the ANOVA summary we can identify at least two variables
 # that seem to have greater impact: 'y_component_number' and 'threads_number'.
 # Let's fix those variables to their best predicted value so far,
@@ -32287,6 +32329,19 @@ small_model <- lm(time_per_pixel ~ elements_number + I(1 / elements_number),
 
 p_elementsnumber <- generate_model_plot(regression, small_model,
                                         scaled_data, data,
+                                        "elements_number")
+
+random_data <- complete_data[sample(nrow(complete_data), nrow(federov_design)), c(factors, "time_per_pixel")]
+
+big_random <- lm(time_per_pixel ~ load_overlap + temporary_size +
+                                  elements_number + I(1 / elements_number),
+                 data = random_data)
+
+small_random <- lm(time_per_pixel ~ elements_number + I(1 / elements_number),
+                   data = random_data)
+
+r_elementsnumber <- generate_model_plot(big_random, small_random,
+                                        random_data, data,
                                         "elements_number")
 
 # Checking the ANOVA summary we can identify, at last, one variable
@@ -32336,10 +32391,13 @@ predicted_best <- predicted_best[, c("elements_number", "y_component_number",
                                     "time_per_pixel", "point_number", "method",
                                     "slowdown")]
 
-grid.arrange(p_vectorlength, p_lwsy,
-             p_ycomponentnumber, p_threadsnumber,
-             p_elementsnumber, nrow = 3)
+grid.arrange(p_vectorlength + ggtitle("First Step"), p_lwsy + ggtitle(" "),
+             r_vectorlength + ggtitle("Random Selection"), r_lwsy + ggtitle(" "),
+             p_ycomponentnumber + ggtitle("Second Step"), p_threadsnumber + ggtitle(" "),
+             r_ycomponentnumber + ggtitle("Random Selection"), r_threadsnumber + ggtitle(" "),
+             p_elementsnumber + ggtitle("Third Step"),
+             r_elementsnumber + ggtitle("Random Selection"), nrow = 3)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-27096ysq/figure27096IvL.png]]
+[[file:/tmp/babel-27096ysq/figure27096Jpe.png]]
