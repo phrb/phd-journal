@@ -32455,6 +32455,8 @@ experiment used the same variables from the ``DOPTaov'' experiement at each
 step.
 
 **** Trying to Mitigate Heteroscedasticity
+Using some ideas from [[https://www.r-bloggers.com/how-to-detect-heteroscedasticity-and-rectify-it/][this website]].
+
 ***** For a Uniformly Sampled Design
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
