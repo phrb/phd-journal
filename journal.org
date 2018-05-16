@@ -32778,4 +32778,35 @@ plot(transformed_regression, which = c(3))
 #+RESULTS:
 [[file:/tmp/babel-1306ie-/figure1306j_N.png]]
 *** [2018-05-16 Wed]
+**** Power Transforms on Generated Heteroscedastic Data
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(car)
+set.seed(1234)
+x <- 1:1000
+y <- abs(rnorm(n = 1000, mean = x, sd = 0.4 * x))
+
+data <- data.frame(x, y)
+plot(lm(y ~ x, data = data), which = c(1))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-1306ie-/figure1306Ypt.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+power_transform <- powerTransform(lm(y ~ x,  data = data))#, family = "bcnPower")
+coef(power_transform, round = TRUE)
+transformed_regression <- lm(bcPower(y, power_transform$roundlam) ~ x, data = data)
+                                      #gamma = power_transform$gamma) ~ x, data = data)
+
+plot(transformed_regression, which = c(1))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-1306ie-/figure1306xRP.png]]
 
