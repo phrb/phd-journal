@@ -31048,7 +31048,7 @@ library(FrF2)
     Z = (Y[, rep(2:ncol(X))])^2
     Z = Z %*% rep(1, ncol(X) - 1)
     #print(Z)
-    return((1 / Z) * (1 - (Y[, 1])^2)^2)
+    return((1 / Z) * (1 - (Y[, 1])^2))
 }
 #+END_SRC
 
@@ -31084,24 +31084,24 @@ factor_efficiency(output$design)
 #+RESULTS:
 #+begin_example
     X1 X2 X3 X4 X5 X6 X7
-108  1  1 -1  1 -1  1  1
-34   1 -1 -1 -1 -1  1 -1
-33  -1 -1 -1 -1 -1  1 -1
-53  -1 -1  1 -1  1  1 -1
-23  -1  1  1 -1  1 -1 -1
-82   1 -1 -1 -1  1 -1  1
-45  -1 -1  1  1 -1  1 -1
-75  -1  1 -1  1 -1 -1  1
-115 -1  1 -1 -1  1  1  1
+60   1  1 -1  1  1  1 -1
+90   1 -1 -1  1  1 -1  1
+65  -1 -1 -1 -1 -1 -1  1
+93  -1 -1  1  1  1 -1  1
+37  -1 -1  1 -1 -1  1 -1
+103 -1  1  1 -1 -1  1  1
+57  -1 -1 -1  1  1  1 -1
+71  -1  1  1 -1 -1 -1  1
+95  -1  1  1  1  1 -1  1
                  [,1]
 (Intercept) 0.0000000
-X1          0.6990291
-X2          0.6299213
-X3          0.5669291
-X4          0.5669291
-X5          0.6299213
-X6          0.6486486
-X7          0.5031447
+X1          0.4148148
+X2          0.8421053
+X3          0.5594406
+X4          0.4371585
+X5          0.4371585
+X6          0.5925926
+X7          0.4768212
             [,1]
 (Intercept)  NaN
 A1             1
@@ -31114,22 +31114,22 @@ G1             1
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
-1   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-2  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
-3   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
-4   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
-5  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
-6  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
-7  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
-8  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
-9  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
-10  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
-11 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
-12  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
-13 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
-14  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
-15  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
-16  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+1   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+2  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+3   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+4   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+5  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+6  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+7   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+8   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+9   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+10 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+11 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+12  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+13 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+14 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+15 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+16  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
 class=design, type= pb
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
@@ -31164,66 +31164,66 @@ N1             1
 O1             1
 P1             1
 $D
-[1] 0.7467966
+[1] 0.7380576
 
 $A
-[1] 1.958745
+[1] 1.901439
 
 $Ge
-[1] 0.253
+[1] 0.232
 
 $Dea
-[1] 0.052
+[1] 0.037
 
 $design
     X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19 X20
-22  -1 -1 -1 -1 -1  1  1 -1 -1   1   1  -1   1   1   1  -1  -1  -1   1  -1
-36  -1 -1  1 -1 -1  1 -1  1 -1   1   1   1   1  -1   1  -1   1   1  -1   1
-51   1 -1  1 -1  1 -1  1 -1 -1   1   1  -1   1   1  -1   1   1   1   1   1
-53  -1  1 -1  1  1 -1  1 -1  1   1  -1   1   1   1   1   1   1  -1  -1   1
-57  -1  1  1 -1  1  1 -1  1  1   1  -1   1   1   1  -1  -1  -1  -1   1  -1
-65   1 -1 -1 -1 -1 -1 -1  1 -1  -1  -1   1   1   1   1   1  -1  -1  -1   1
-76  -1  1 -1  1 -1  1 -1  1  1   1   1  -1  -1  -1  -1   1  -1  -1   1   1
-91   1  1  1  1  1  1 -1 -1 -1  -1   1   1  -1   1   1   1   1   1   1   1
-93  -1 -1  1  1 -1 -1 -1  1 -1   1   1  -1   1   1   1   1   1   1  -1   1
-116  1 -1  1 -1 -1 -1  1  1  1  -1   1   1  -1  -1   1   1   1  -1   1  -1
-121  1  1 -1  1  1 -1 -1  1 -1   1   1   1   1   1  -1  -1   1   1   1  -1
-128  1 -1  1  1 -1  1 -1 -1 -1  -1  -1   1  -1  -1  -1  -1   1  -1  -1  -1
-131  1 -1  1 -1  1 -1  1  1 -1   1   1   1  -1   1  -1  -1  -1   1  -1   1
-132  1  1 -1 -1 -1  1  1  1 -1   1  -1  -1  -1  -1  -1   1   1   1  -1  -1
-171  1 -1 -1  1  1  1 -1  1  1   1  -1  -1   1   1   1  -1   1   1   1   1
-180  1  1  1 -1 -1 -1  1  1 -1  -1  -1  -1   1  -1  -1  -1  -1  -1   1   1
-184  1  1  1 -1  1  1 -1 -1 -1   1  -1  -1  -1  -1   1   1  -1  -1  -1  -1
-201 -1  1  1  1 -1 -1 -1 -1  1   1  -1   1   1  -1  -1   1  -1   1   1  -1
-245 -1 -1  1  1  1  1  1  1 -1  -1   1  -1   1  -1  -1   1  -1   1  -1   1
-257  1  1  1  1 -1  1 -1  1  1   1   1   1   1   1  -1  -1  -1   1  -1   1
-277 -1  1 -1 -1  1 -1 -1 -1  1  -1   1  -1  -1  -1  -1  -1   1   1  -1   1
+5    1 -1 -1  1 -1 -1  1 -1  1   1   1   1   1   1   1  -1  -1   1  -1  -1
+26   1  1  1 -1 -1  1 -1 -1  1   1  -1   1   1  -1   1   1  -1  -1  -1   1
+39   1  1  1 -1  1  1  1 -1 -1   1   1   1  -1  -1   1  -1  -1  -1   1   1
+62  -1 -1  1 -1  1 -1  1 -1  1   1   1  -1   1   1  -1  -1   1   1   1  -1
+95   1 -1  1 -1 -1 -1 -1  1 -1  -1   1   1  -1  -1  -1   1   1   1  -1   1
+110  1 -1 -1 -1 -1  1  1 -1 -1  -1   1  -1   1  -1  -1  -1  -1  -1   1  -1
+115  1 -1 -1 -1 -1 -1 -1  1 -1   1  -1  -1   1   1   1   1  -1  -1  -1  -1
+161  1  1  1  1  1  1  1  1 -1  -1   1  -1   1   1   1   1   1   1   1  -1
+173  1 -1  1  1  1 -1  1 -1 -1  -1  -1   1   1   1  -1  -1  -1  -1  -1  -1
+195 -1  1 -1  1 -1 -1 -1  1 -1  -1  -1   1  -1   1   1   1   1  -1   1  -1
+201  1  1 -1  1  1 -1 -1 -1 -1   1   1  -1  -1   1  -1   1   1  -1   1   1
+216  1 -1  1  1 -1 -1 -1 -1 -1   1  -1  -1  -1  -1   1  -1   1  -1   1   1
+217  1  1  1 -1 -1  1 -1  1  1  -1   1  -1  -1   1  -1  -1   1  -1  -1  -1
+222  1 -1  1 -1 -1  1 -1  1  1  -1  -1  -1  -1   1  -1   1  -1   1   1  -1
+224  1  1  1  1 -1 -1  1  1  1   1   1   1  -1  -1  -1   1   1  -1  -1  -1
+239 -1  1  1  1 -1 -1 -1  1 -1   1  -1  -1  -1   1  -1  -1  -1   1  -1   1
+243  1  1  1 -1  1 -1 -1  1  1  -1   1  -1   1  -1   1  -1  -1  -1   1  -1
+253 -1 -1  1  1 -1  1  1  1  1  -1   1  -1  -1  -1   1   1  -1  -1  -1   1
+260 -1  1 -1 -1  1  1  1  1  1  -1  -1  -1  -1  -1   1   1   1   1  -1   1
+284 -1 -1  1 -1  1  1 -1 -1 -1   1   1  -1  -1  -1  -1   1  -1   1  -1  -1
+297  1  1 -1 -1 -1 -1  1 -1 -1  -1   1  -1  -1   1   1   1  -1  -1  -1  -1
 
 $rows
- [1]  22  36  51  53  57  65  76  91  93 116 121 128 131 132 171 180 184 201 245
-[20] 257 277
+ [1]   5  26  39  62  95 110 115 161 173 195 201 216 217 222 224 239 243 253 260
+[20] 284 297
                  [,1]
 (Intercept) 0.0000000
-X1          0.7248322
-X2          0.6432749
-X3          0.7375887
-X4          0.7006369
-X5          0.7586207
-X6          0.8029197
-X7          0.6797386
-X8          0.6979866
-X9          0.6303030
-X10         0.6322581
-X11         0.6545455
-X12         0.7586207
-X13         0.5810056
-X14         0.5641026
-X15         0.6967742
-X16         0.8148148
-X17         0.7284768
-X18         0.5482234
-X19         0.8148148
-X20         0.6011561
+X1          0.5389222
+X2          0.7284768
+X3          0.6853147
+X4          0.6878981
+X5          0.6227545
+X6          0.6390533
+X7          0.6748466
+X8          0.5641026
+X9          0.7552448
+X10         0.7096774
+X11         0.6797386
+X12         0.7050360
+X13         0.5683060
+X14         0.6432749
+X15         0.7482993
+X16         0.6708075
+X17         0.6792453
+X18         0.6380368
+X19         0.7346939
+X20         0.5810056
 #+end_example
 *** [2018-04-19 Thu]
 **** Statistics Team @ LLJK
@@ -31360,21 +31360,29 @@ lws_y              3.047610e-02
     return(((1 / Z) * (1 - Y[, 1]) ^ 2))
 }
 
+"factor_efficiency" <- function(fac) {
+    X = model.matrix(~., fac)
+    Y = (t(X) %*% X) / nrow(fac)
+    #print(Y)
+    Z = (Y[, rep(2:ncol(X))])^2
+    Z = Z %*% rep(1, ncol(X) - 1)
+    #print(Z)
+    return((1 / Z) * (1 - (Y[, 1])^2))
+}
+
 design <- pb(16)
 design
 
-test_factor_efficiency(design)
+factor_efficiency(design)
 
 factors = 20
 fac = gen.factorial(rep(2, factors))
 fac = fac[sample(nrow(fac), 300), ]
+
 small_output = optFederov(~., fac, nTrials = factors + 1)
 
-test_factor_efficiency(small_output$design)
+factor_efficiency(small_output$design)
 small_output$D
-
-test_factor_efficiency(federov_design)
-output$D
 #+END_SRC
 
 #+RESULTS:
@@ -31382,43 +31390,63 @@ output$D
 Screening 15 factors in 16 runs involves perfect aliasing of 
  pairwise interactions of the first six factors with the last factor.
     A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
-1   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-2  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
-3   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
-4   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
-5  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
-6  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
-7  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
-8   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+1  -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+2   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+3   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+4  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+5   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+6  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+7  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+8   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 9  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
-10  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
-11 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
-12 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
-13  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+10 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+11  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+12 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+13 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
 14  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
-15 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
-16  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+15  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+16  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
 class=design, type= pb
-(Intercept)          A1          B1          C1          D1          E1 
-          0           1           1           1           1           1 
-         F1          G1          H1          J1          K1          L1 
-          1           1           1           1           1           1 
-         M1          N1          O1          P1 
-          1           1           1           1
-(Intercept)          X1          X2          X3          X4          X5 
-  0.0000000   0.8114645   0.6486235   0.6979368   0.7769952   0.7256236 
-         X6          X7          X8          X9         X10         X11 
-  0.6122765   0.7256236   0.7161538   0.6560987   0.7069280   0.7088504 
-        X12         X13         X14         X15         X16         X17 
-  0.6722852   0.6643386   0.6994771   0.7161538   0.7453349   0.6641487 
-        X18         X19         X20 
-  0.6573153   0.6177864   0.7555977
-[1] 0.7782221
-       (Intercept)    elements_number y_component_number      vector_length 
-      0.0000000000       0.0008431110       0.0004329316       0.0002662246 
-    temporary_size   load_overlaptrue     threads_number              lws_y 
-      0.0013221435       0.2115787134       0.0140083031       0.0293836820
-[1] 0.5945303
+            [,1]
+(Intercept)  NaN
+A1             1
+B1             1
+C1             1
+D1             1
+E1             1
+F1             1
+G1             1
+H1             1
+J1             1
+K1             1
+L1             1
+M1             1
+N1             1
+O1             1
+P1             1
+                 [,1]
+(Intercept) 0.0000000
+X1          0.6624204
+X2          0.6792453
+X3          0.6010929
+X4          0.6432749
+X5          0.6967742
+X6          0.6390533
+X7          0.6540881
+X8          0.6285714
+X9          0.7006369
+X10         0.7248322
+X11         0.7448276
+X12         0.5600000
+X13         0.5759162
+X14         0.7152318
+X15         0.7375887
+X16         0.6285714
+X17         0.7448276
+X18         0.7913669
+X19         0.7284768
+X20         0.6358382
+[1] 0.7552252
 #+end_example
 *** [2018-04-30 Mon]
 **** Using D-Optimal Designs in Steven's Data
@@ -32516,31 +32544,31 @@ lm(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) +
 
 Residuals:
        Min         1Q     Median         3Q        Max 
--4.511e-09 -1.119e-09 -2.675e-10  6.654e-10  1.105e-08 
+-6.687e-09 -1.046e-09 -1.469e-10  5.563e-10  8.666e-09 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)    
-(Intercept)              4.137e-12  2.114e-09   0.002 0.998443    
-y_component_number       1.979e-10  3.367e-10   0.588 0.558111    
-I(1/y_component_number) -2.856e-09  2.029e-09  -1.408 0.162792    
-vector_length            2.354e-10  5.620e-11   4.189 6.65e-05 ***
-lws_y                    6.725e-12  2.070e-12   3.249 0.001643 ** 
-I(1/lws_y)              -3.269e-09  9.190e-10  -3.557 0.000606 ***
-load_overlaptrue         3.391e-10  5.268e-10   0.644 0.521492    
-temporary_size           1.892e-10  2.661e-10   0.711 0.479012    
-elements_number         -1.091e-10  7.662e-11  -1.424 0.158111    
-I(1/elements_number)     5.551e-09  1.866e-09   2.975 0.003782 ** 
-threads_number          -4.908e-13  9.850e-13  -0.498 0.619553    
-I(1/threads_number)      9.446e-08  3.444e-08   2.743 0.007381 ** 
+(Intercept)             -1.019e-09  1.829e-09  -0.557 0.578791    
+y_component_number       4.245e-10  3.114e-10   1.363 0.176303    
+I(1/y_component_number) -1.516e-09  1.774e-09  -0.854 0.395276    
+vector_length            1.481e-10  3.826e-11   3.869 0.000209 ***
+lws_y                    1.257e-11  1.292e-12   9.733 1.27e-15 ***
+I(1/lws_y)              -1.589e-09  6.900e-10  -2.303 0.023611 *  
+load_overlaptrue         5.742e-10  4.373e-10   1.313 0.192630    
+temporary_size          -2.444e-11  2.154e-10  -0.113 0.909941    
+elements_number         -1.293e-10  6.037e-11  -2.141 0.035025 *  
+I(1/elements_number)     3.721e-09  2.355e-09   1.580 0.117678    
+threads_number           3.000e-13  9.281e-13   0.323 0.747316    
+I(1/threads_number)      5.964e-08  2.745e-08   2.172 0.032511 *  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 2.432e-09 on 88 degrees of freedom
-Multiple R-squared:  0.5353,	Adjusted R-squared:  0.4772 
-F-statistic: 9.216 on 11 and 88 DF,  p-value: 9.261e-11
+Residual standard error: 2.02e-09 on 88 degrees of freedom
+Multiple R-squared:  0.6835,	Adjusted R-squared:  0.6439 
+F-statistic: 17.27 on 11 and 88 DF,  p-value: < 2.2e-16
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 75.3276    Df = 1     p = 3.987466e-18
+Chisquare = 147.0183    Df = 1     p = 7.775729e-34
    Y1 
 -0.33
 
@@ -32553,52 +32581,52 @@ lm(formula = bcPower(time_per_pixel, boxcox_transform$roundlam) ~
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--1648.78  -466.22   -15.96   389.25  1562.05 
+-1360.65  -458.00   -81.85   427.87  1346.29 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)    
-(Intercept)             -4939.7545   588.7813  -8.390 7.38e-13 ***
-y_component_number        174.7323    93.7689   1.863   0.0657 .  
-I(1/y_component_number)   787.7420   565.0278   1.394   0.1668    
-vector_length             116.1834    15.6521   7.423 6.88e-11 ***
-lws_y                       4.5580     0.5765   7.906 7.20e-12 ***
-I(1/lws_y)              -1331.3031   255.9323  -5.202 1.27e-06 ***
-load_overlaptrue          -24.9857   146.7133  -0.170   0.8652    
-temporary_size             59.3464    74.1074   0.801   0.4254    
-elements_number           -40.8231    21.3367  -1.913   0.0590 .  
-I(1/elements_number)     1214.6397   519.6273   2.338   0.0217 *  
-threads_number             -0.5848     0.2743  -2.132   0.0358 *  
-I(1/threads_number)     21573.6652  9590.7131   2.249   0.0270 *  
+(Intercept)             -2919.5704   583.3570  -5.005 2.84e-06 ***
+y_component_number       -124.1127    99.3191  -1.250  0.21475    
+I(1/y_component_number)  -605.0674   565.7834  -1.069  0.28780    
+vector_length              97.8093    12.2025   8.016 4.31e-12 ***
+lws_y                       3.3485     0.4119   8.129 2.53e-12 ***
+I(1/lws_y)              -1041.1237   220.0439  -4.731 8.44e-06 ***
+load_overlaptrue          -84.8944   139.4673  -0.609  0.54429    
+temporary_size            -31.2706    68.7013  -0.455  0.65011    
+elements_number           -16.0872    19.2519  -0.836  0.40563    
+I(1/elements_number)      702.7164   751.0018   0.936  0.35199    
+threads_number             -0.9935     0.2960  -3.357  0.00117 ** 
+I(1/threads_number)     19520.4029  8754.4028   2.230  0.02831 *  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 677.2 on 88 degrees of freedom
-Multiple R-squared:  0.7344,	Adjusted R-squared:  0.7012 
-F-statistic: 22.12 on 11 and 88 DF,  p-value: < 2.2e-16
+Residual standard error: 644.1 on 88 degrees of freedom
+Multiple R-squared:  0.708,	Adjusted R-squared:  0.6715 
+F-statistic:  19.4 on 11 and 88 DF,  p-value: < 2.2e-16
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 0.003074374    Df = 1     p = 0.9557823
+Chisquare = 0.4176077    Df = 1     p = 0.5181332
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-plot(regression, which = c(3))
+plot(regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-1306ie-/figure1306JkN.png]]
+[[file:/tmp/babel-1306ie-/figure1306yLi.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-plot(transformed_regression, which = c(3))
+plot(transformed_regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-1306ie-/figure1306j4Z.png]]
+[[file:/tmp/babel-1306ie-/figure1306Zq0.png]]
 
 ***** For a D-Optimal Design
 #+HEADER: :results output :session *R*
@@ -32630,6 +32658,7 @@ regression <- lm(time_per_pixel ~ y_component_number + I(1 / y_component_number)
                   data = federov_design)
 
 summary(regression)
+summary.aov(regression)
 ncvTest(regression)
 
 data[predict(regression, data) == min(predict(regression, data)), ]
@@ -32650,6 +32679,7 @@ transformed_regression <- lm(bcPower(time_per_pixel, boxcox_transform$roundlam) 
                              data = federov_design)
 
 summary(transformed_regression)
+summary.aov(transformed_regression)
 ncvTest(transformed_regression)
 
 data[predict(transformed_regression, data) == min(predict(transformed_regression, data)), ]
@@ -32668,115 +32698,166 @@ data[predict(transformed_regression, data) == min(predict(transformed_regression
  $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
  $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
 'data.frame':	24 obs. of  9 variables:
- $ elements_number   : int  1 1 3 4 4 1 8 24 6 6 ...
- $ y_component_number: int  1 1 3 1 1 1 2 6 6 6 ...
- $ vector_length     : int  1 1 1 1 1 1 16 1 16 1 ...
- $ temporary_size    : int  4 2 4 2 2 4 2 2 4 2 ...
+ $ elements_number   : int  1 3 4 1 4 1 24 8 6 1 ...
+ $ y_component_number: int  1 3 1 1 1 1 6 2 6 1 ...
+ $ vector_length     : int  1 16 1 16 16 1 16 1 1 1 ...
+ $ temporary_size    : int  2 4 2 4 4 2 2 2 2 4 ...
  $ vector_recompute  : Factor w/ 1 level "true": 1 1 1 1 1 1 1 1 1 1 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 1 1 2 2 2 2 1 1 ...
- $ threads_number    : int  256 32 128 32 256 32 128 1024 256 1024 ...
- $ lws_y             : int  1 1 32 32 1 32 128 1 1 1024 ...
- $ time_per_pixel    : num  2.31e-10 5.83e-10 8.00e-10 4.49e-09 3.09e-10 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 1 1 2 2 1 1 1 1 ...
+ $ threads_number    : int  128 256 32 256 256 32 256 256 1024 1024 ...
+ $ lws_y             : int  32 32 32 1 256 1 1 32 1024 1024 ...
+ $ time_per_pixel    : num  1.36e-09 3.53e-09 4.49e-09 2.01e-09 1.05e-08 ...
 
 Call:
-lm(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+lm.default(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) + 
     vector_length + lws_y + I(1/lws_y) + load_overlap + temporary_size + 
     elements_number + I(1/elements_number) + threads_number + 
     I(1/threads_number), data = federov_design)
 
 Residuals:
        Min         1Q     Median         3Q        Max 
--8.270e-09 -3.781e-09 -8.368e-10  3.219e-09  1.504e-08 
+-7.456e-09 -3.335e-09 -1.255e-09  1.621e-09  1.515e-08 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)  
-(Intercept)             -2.157e-08  1.373e-08  -1.571   0.1422  
-y_component_number       1.858e-09  2.026e-09   0.917   0.3771  
-I(1/y_component_number)  9.462e-09  1.181e-08   0.801   0.4387  
-vector_length            5.959e-10  2.120e-10   2.811   0.0157 *
-lws_y                    1.094e-11  4.856e-12   2.252   0.0438 *
-I(1/lws_y)              -5.360e-09  3.781e-09  -1.418   0.1817  
-load_overlaptrue         6.320e-09  3.166e-09   1.996   0.0691 .
-temporary_size           1.937e-09  1.588e-09   1.220   0.2461  
-elements_number         -1.729e-10  3.048e-10  -0.567   0.5809  
-I(1/elements_number)     5.547e-09  6.638e-09   0.836   0.4197  
-threads_number          -5.420e-13  5.946e-12  -0.091   0.9289  
-I(1/threads_number)      1.180e-07  1.992e-07   0.592   0.5645  
+(Intercept)              1.113e-08  1.394e-08   0.798   0.4403  
+y_component_number      -1.263e-09  2.066e-09  -0.611   0.5524  
+I(1/y_component_number) -9.948e-09  1.233e-08  -0.807   0.4353  
+vector_length            4.813e-10  2.057e-10   2.340   0.0374 *
+lws_y                    9.078e-12  4.925e-12   1.843   0.0901 .
+I(1/lws_y)              -4.929e-09  3.663e-09  -1.345   0.2034  
+load_overlaptrue         4.487e-10  3.095e-09   0.145   0.8871  
+temporary_size          -2.481e-10  1.541e-09  -0.161   0.8748  
+elements_number         -2.654e-10  2.862e-10  -0.927   0.3720  
+I(1/elements_number)    -1.359e-09  6.410e-09  -0.212   0.8357  
+threads_number           6.502e-13  5.784e-12   0.112   0.9124  
+I(1/threads_number)      1.923e-07  1.863e-07   1.032   0.3223  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 7.597e-09 on 12 degrees of freedom
-Multiple R-squared:  0.693,	Adjusted R-squared:  0.4115 
-F-statistic: 2.462 on 11 and 12 DF,  p-value: 0.0684
+Residual standard error: 7.404e-09 on 12 degrees of freedom
+Multiple R-squared:  0.5901,	Adjusted R-squared:  0.2143 
+F-statistic:  1.57 on 11 and 12 DF,  p-value: 0.2248
+                        Df    Sum Sq   Mean Sq F value Pr(>F)  
+y_component_number       1 9.000e-19 9.000e-19   0.017 0.8981  
+I(1/y_component_number)  1 6.790e-17 6.790e-17   1.238 0.2876  
+vector_length            1 2.354e-16 2.354e-16   4.293 0.0605 .
+lws_y                    1 3.902e-16 3.902e-16   7.119 0.0205 *
+I(1/lws_y)               1 8.940e-17 8.940e-17   1.632 0.2256  
+load_overlap             1 1.400e-18 1.400e-18   0.025 0.8770  
+temporary_size           1 1.800e-18 1.800e-18   0.034 0.8576  
+elements_number          1 5.200e-17 5.200e-17   0.949 0.3492  
+I(1/elements_number)     1 5.000e-18 5.000e-18   0.091 0.7683  
+threads_number           1 4.440e-17 4.440e-17   0.809 0.3860  
+I(1/threads_number)      1 5.840e-17 5.840e-17   1.065 0.3223  
+Residuals               12 6.578e-16 5.480e-17                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 12.56438    Df = 1     p = 0.0003931688
+Chisquare = 15.47987    Df = 1     p = 8.338879e-05
       elements_number y_component_number vector_length temporary_size
-15827              12                  3             1              2
+14995              24                  6             1              4
       vector_recompute load_overlap threads_number lws_y time_per_pixel
-15827             true        false           1024     1   2.380298e-10
+14995             true        false            512     1   1.630422e-10
 Y1 
  0
 
 Call:
-lm(formula = bcPower(time_per_pixel, boxcox_transform$roundlam) ~ 
+lm.default(formula = bcPower(time_per_pixel, boxcox_transform$roundlam) ~ 
     y_component_number + I(1/y_component_number) + vector_length + 
         lws_y + I(1/lws_y) + load_overlap + temporary_size + 
         elements_number + I(1/elements_number) + threads_number + 
         I(1/threads_number), data = federov_design)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--1.31579 -0.38855 -0.08444  0.51082  1.25849 
+    Min      1Q  Median      3Q     Max 
+-1.1455 -0.3417  0.1035  0.3159  0.8019 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)    
-(Intercept)             -2.191e+01  1.732e+00 -12.650 2.68e-08 ***
-y_component_number       1.214e-01  2.557e-01   0.475  0.64330    
-I(1/y_component_number)  6.528e-01  1.491e+00   0.438  0.66923    
-vector_length            1.016e-01  2.675e-02   3.800  0.00253 ** 
-lws_y                    2.303e-03  6.127e-04   3.758  0.00273 ** 
-I(1/lws_y)              -1.171e+00  4.770e-01  -2.454  0.03036 *  
-load_overlaptrue         1.937e-01  3.995e-01   0.485  0.63659    
-temporary_size           6.394e-02  2.004e-01   0.319  0.75518    
-elements_number         -4.296e-02  3.846e-02  -1.117  0.28578    
-I(1/elements_number)     2.906e-01  8.376e-01   0.347  0.73465    
-threads_number          -6.391e-04  7.503e-04  -0.852  0.41098    
-I(1/threads_number)      2.561e+01  2.513e+01   1.019  0.32819    
+(Intercept)             -2.126e+01  1.345e+00 -15.812 2.12e-09 ***
+y_component_number      -7.228e-02  1.993e-01  -0.363 0.723149    
+I(1/y_component_number)  1.856e-01  1.189e+00   0.156 0.878568    
+vector_length            1.243e-01  1.985e-02   6.261 4.18e-05 ***
+lws_y                    2.175e-03  4.751e-04   4.577 0.000635 ***
+I(1/lws_y)              -1.280e+00  3.534e-01  -3.623 0.003496 ** 
+load_overlaptrue        -2.839e-01  2.986e-01  -0.951 0.360509    
+temporary_size           5.341e-02  1.487e-01   0.359 0.725731    
+elements_number         -1.790e-02  2.761e-02  -0.648 0.528977    
+I(1/elements_number)     9.279e-02  6.184e-01   0.150 0.883208    
+threads_number          -3.236e-04  5.580e-04  -0.580 0.572725    
+I(1/threads_number)      3.823e+01  1.797e+01   2.127 0.054852 .  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.9586 on 12 degrees of freedom
-Multiple R-squared:  0.8103,	Adjusted R-squared:  0.6365 
-F-statistic: 4.661 on 11 and 12 DF,  p-value: 0.006655
+Residual standard error: 0.7143 on 12 degrees of freedom
+Multiple R-squared:  0.8956,	Adjusted R-squared:  0.7999 
+F-statistic: 9.361 on 11 and 12 DF,  p-value: 0.0002682
+                        Df Sum Sq Mean Sq F value   Pr(>F)    
+y_component_number       1  1.912   1.912   3.748  0.07677 .  
+I(1/y_component_number)  1  0.000   0.000   0.000  0.99418    
+vector_length            1 15.878  15.878  31.121  0.00012 ***
+lws_y                    1 20.126  20.126  39.448 4.06e-05 ***
+I(1/lws_y)               1  6.725   6.725  13.181  0.00345 ** 
+load_overlap             1  0.427   0.427   0.837  0.37833    
+temporary_size           1  0.084   0.084   0.166  0.69129    
+elements_number          1  0.427   0.427   0.837  0.37832    
+I(1/elements_number)     1  0.000   0.000   0.000  0.98817    
+threads_number           1  4.646   4.646   9.105  0.01071 *  
+I(1/threads_number)      1  2.308   2.308   4.524  0.05485 .  
+Residuals               12  6.122   0.510                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 1.221579    Df = 1     p = 0.269051
-      elements_number y_component_number vector_length temporary_size
-14494              24                  6             1              2
-      vector_recompute load_overlap threads_number lws_y time_per_pixel
-14494             true        false           1024     1   1.911056e-10
+Chisquare = 1.516322    Df = 1     p = 0.2181769
+     elements_number y_component_number vector_length temporary_size
+9129              24                  6             1              2
+     vector_recompute load_overlap threads_number lws_y time_per_pixel
+9129             true         true           1024     1   1.910582e-10
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-plot(regression, which = c(3))
+plot(regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-1306ie-/figure1306JrB.png]]
+[[file:/tmp/babel-1306ie-/figure1306_cc.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+hist(regression$model$time_per_pixel, breaks = 10)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-1306ie-/figure1306Z_Q.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 600
 #+BEGIN_SRC R
-plot(transformed_regression, which = c(3))
+plot(transformed_regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-1306ie-/figure1306j_N.png]]
+[[file:/tmp/babel-1306ie-/figure1306Mni.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+hist(transformed_regression$model["bcPower(time_per_pixel, boxcox_transform$roundlam)"][[1]])
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-1306ie-/figure1306AXv.png]]
+
 *** [2018-05-16 Wed]
 **** Power Transforms on Generated Heteroscedastic Data
 #+HEADER: :results graphics output :session *R*
