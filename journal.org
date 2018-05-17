@@ -32692,6 +32692,7 @@ data[predict(transformed_regression, data) == min(predict(transformed_regression
 
 #+RESULTS:
 #+begin_example
+Loading required package: carData
 'data.frame':	23120 obs. of  9 variables:
  $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
  $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
@@ -32703,15 +32704,15 @@ data[predict(transformed_regression, data) == min(predict(transformed_regression
  $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
  $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
 'data.frame':	24 obs. of  9 variables:
- $ elements_number   : int  1 3 1 4 1 4 24 1 6 4 ...
- $ y_component_number: int  1 3 1 1 1 1 6 1 6 1 ...
- $ vector_length     : int  1 16 16 1 1 16 1 1 1 16 ...
- $ temporary_size    : int  4 2 4 2 2 4 2 2 4 2 ...
+ $ elements_number   : int  1 4 2 3 1 4 4 2 1 4 ...
+ $ y_component_number: int  1 1 2 3 1 1 1 2 1 1 ...
+ $ vector_length     : int  1 16 16 16 1 1 1 1 1 16 ...
+ $ temporary_size    : int  2 2 4 4 2 4 4 2 4 4 ...
  $ vector_recompute  : Factor w/ 1 level "true": 1 1 1 1 1 1 1 1 1 1 ...
- $ load_overlap      : Factor w/ 2 levels "false","true": 1 2 1 2 2 2 1 2 2 1 ...
- $ threads_number    : int  32 256 256 128 32 1024 256 1024 256 1024 ...
- $ lws_y             : int  32 1 1 64 1 32 1 16 32 1 ...
- $ time_per_pixel    : num  5.37e-09 1.18e-09 2.01e-09 2.32e-09 5.83e-10 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 2 1 1 2 1 1 1 1 2 2 ...
+ $ threads_number    : int  256 32 32 128 256 32 128 32 32 1024 ...
+ $ lws_y             : int  1 1 1 128 32 1 64 32 32 16 ...
+ $ time_per_pixel    : num  2.31e-10 7.75e-10 1.70e-09 2.79e-08 7.27e-10 ...
 
 Call:
 lm(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) + 
@@ -32721,50 +32722,50 @@ lm(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) +
 
 Residuals:
        Min         1Q     Median         3Q        Max 
--8.009e-09 -4.539e-09 -2.062e-09  2.885e-09  1.849e-08 
+-8.775e-09 -4.543e-09 -1.968e-09  2.959e-09  1.856e-08 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)  
-(Intercept)             -1.646e-08  1.691e-08  -0.974   0.3494  
-y_component_number       1.485e-09  2.325e-09   0.639   0.5348  
-I(1/y_component_number)  3.642e-09  1.441e-08   0.253   0.8047  
-vector_length            4.962e-10  2.495e-10   1.989   0.0700 .
-lws_y                    1.266e-11  6.030e-12   2.100   0.0576 .
-I(1/lws_y)              -3.772e-09  4.318e-09  -0.874   0.3994  
-load_overlaptrue         9.455e-10  3.696e-09   0.256   0.8024  
-temporary_size           1.091e-09  1.866e-09   0.584   0.5698  
-elements_number          6.367e-11  3.436e-10   0.185   0.8561  
-I(1/elements_number)     1.102e-08  8.217e-09   1.341   0.2047  
-threads_number          -6.756e-14  7.149e-12  -0.009   0.9926  
-I(1/threads_number)      1.489e-07  2.289e-07   0.650   0.5276  
+(Intercept)              1.084e-08  1.609e-08   0.674   0.5134  
+y_component_number      -1.401e-09  2.450e-09  -0.572   0.5778  
+I(1/y_component_number) -1.300e-08  1.447e-08  -0.898   0.3867  
+vector_length            5.744e-10  2.591e-10   2.216   0.0467 *
+lws_y                    1.121e-11  6.242e-12   1.796   0.0977 .
+I(1/lws_y)              -4.183e-09  4.583e-09  -0.913   0.3793  
+load_overlaptrue        -1.279e-09  3.862e-09  -0.331   0.7462  
+temporary_size          -2.925e-11  1.926e-09  -0.015   0.9881  
+elements_number         -4.281e-11  3.725e-10  -0.115   0.9104  
+I(1/elements_number)     1.238e-08  8.077e-09   1.532   0.1514  
+threads_number          -3.511e-12  7.437e-12  -0.472   0.6453  
+I(1/threads_number)     -6.241e-08  2.281e-07  -0.274   0.7890  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 8.967e-09 on 12 degrees of freedom
-Multiple R-squared:  0.5676,	Adjusted R-squared:  0.1712 
-F-statistic: 1.432 on 11 and 12 DF,  p-value: 0.273
+Residual standard error: 9.262e-09 on 12 degrees of freedom
+Multiple R-squared:  0.5646,	Adjusted R-squared:  0.1655 
+F-statistic: 1.415 on 11 and 12 DF,  p-value: 0.2797
                         Df    Sum Sq   Mean Sq F value Pr(>F)  
-y_component_number       1 4.900e-18 4.900e-18   0.061 0.8085  
-I(1/y_component_number)  1 5.920e-17 5.920e-17   0.737 0.4076  
-vector_length            1 3.499e-16 3.499e-16   4.352 0.0590 .
-lws_y                    1 4.918e-16 4.918e-16   6.117 0.0293 *
-I(1/lws_y)               1 6.240e-17 6.240e-17   0.777 0.3955  
-load_overlap             1 6.800e-18 6.800e-18   0.085 0.7759  
-temporary_size           1 2.730e-17 2.730e-17   0.340 0.5709  
-elements_number          1 1.250e-17 1.250e-17   0.156 0.6999  
-I(1/elements_number)     1 1.680e-16 1.680e-16   2.089 0.1740  
-threads_number           1 4.940e-17 4.940e-17   0.615 0.4482  
-I(1/threads_number)      1 3.400e-17 3.400e-17   0.423 0.5276  
-Residuals               12 9.648e-16 8.040e-17                 
+y_component_number       1 6.980e-17 6.980e-17   0.814 0.3848  
+I(1/y_component_number)  1 2.000e-18 2.000e-18   0.024 0.8805  
+vector_length            1 3.875e-16 3.875e-16   4.517 0.0550 .
+lws_y                    1 5.023e-16 5.023e-16   5.856 0.0323 *
+I(1/lws_y)               1 6.970e-17 6.970e-17   0.812 0.3851  
+load_overlap             1 6.900e-18 6.900e-18   0.080 0.7818  
+temporary_size           1 3.200e-18 3.200e-18   0.037 0.8499  
+elements_number          1 5.620e-17 5.620e-17   0.655 0.4340  
+I(1/elements_number)     1 2.175e-16 2.175e-16   2.536 0.1372  
+threads_number           1 1.340e-17 1.340e-17   0.156 0.7001  
+I(1/threads_number)      1 6.400e-18 6.400e-18   0.075 0.7890  
+Residuals               12 1.029e-15 8.580e-17                 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 18.48128    Df = 1     p = 1.715816e-05
+Chisquare = 14.05733    Df = 1     p = 0.0001773212
       elements_number y_component_number vector_length temporary_size
-18758               8                  2             1              2
+18584               4                  1             1              4
       vector_recompute load_overlap threads_number lws_y time_per_pixel
-18758             true        false           1024     1   2.767443e-10
+18584             true         true           1024     1    3.37552e-10
 Y1 
  0
 
@@ -32777,50 +32778,50 @@ lm(formula = bcPower(time_per_pixel, boxcox_transform$roundlam) ~
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--0.78166 -0.47570 -0.02851  0.44031  0.91203 
+-0.89985 -0.44415 -0.00551  0.42496  0.77873 
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)    
-(Intercept)             -2.237e+01  1.387e+00 -16.129 1.69e-09 ***
-y_component_number       1.981e-01  1.907e-01   1.039 0.319475    
-I(1/y_component_number)  1.542e+00  1.182e+00   1.304 0.216694    
-vector_length            1.116e-01  2.047e-02   5.451 0.000147 ***
-lws_y                    2.471e-03  4.947e-04   4.994 0.000312 ***
-I(1/lws_y)              -1.209e+00  3.542e-01  -3.413 0.005141 ** 
-load_overlaptrue        -1.768e-01  3.032e-01  -0.583 0.570584    
-temporary_size          -1.386e-02  1.531e-01  -0.091 0.929347    
-elements_number          2.175e-03  2.819e-02   0.077 0.939761    
-I(1/elements_number)     2.756e-01  6.742e-01   0.409 0.689868    
-threads_number          -1.098e-03  5.866e-04  -1.872 0.085718 .  
-I(1/threads_number)      2.596e+01  1.878e+01   1.383 0.191992    
+(Intercept)             -2.050e+01  1.298e+00 -15.790 2.16e-09 ***
+y_component_number      -2.236e-01  1.976e-01  -1.131 0.279986    
+I(1/y_component_number) -1.623e+00  1.168e+00  -1.389 0.189939    
+vector_length            1.129e-01  2.091e-02   5.401 0.000160 ***
+lws_y                    2.404e-03  5.036e-04   4.775 0.000453 ***
+I(1/lws_y)              -1.355e+00  3.697e-01  -3.664 0.003240 ** 
+load_overlaptrue        -7.992e-02  3.116e-01  -0.257 0.801908    
+temporary_size           2.625e-01  1.554e-01   1.689 0.117043    
+elements_number          2.314e-02  3.005e-02   0.770 0.456153    
+I(1/elements_number)     1.718e+00  6.516e-01   2.636 0.021735 *  
+threads_number          -1.205e-03  6.000e-04  -2.009 0.067569 .  
+I(1/threads_number)      2.967e+00  1.840e+01   0.161 0.874607    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.7357 on 12 degrees of freedom
-Multiple R-squared:  0.8972,	Adjusted R-squared:  0.8029 
-F-statistic: 9.517 on 11 and 12 DF,  p-value: 0.000247
+Residual standard error: 0.7472 on 12 degrees of freedom
+Multiple R-squared:  0.8907,	Adjusted R-squared:  0.7906 
+F-statistic: 8.894 on 11 and 12 DF,  p-value: 0.0003456
                         Df Sum Sq Mean Sq F value   Pr(>F)    
-y_component_number       1  0.650   0.650   1.201 0.294719    
-I(1/y_component_number)  1  0.974   0.974   1.800 0.204493    
-vector_length            1 18.709  18.709  34.569 7.49e-05 ***
-lws_y                    1 16.170  16.170  29.878 0.000144 ***
-I(1/lws_y)               1  7.324   7.324  13.533 0.003156 ** 
-load_overlap             1  0.183   0.183   0.339 0.571173    
-temporary_size           1  0.006   0.006   0.012 0.914684    
-elements_number          1  0.002   0.002   0.004 0.948377    
-I(1/elements_number)     1  0.469   0.469   0.868 0.370006    
-threads_number           1 11.131  11.131  20.568 0.000683 ***
-I(1/threads_number)      1  1.034   1.034   1.911 0.191992    
-Residuals               12  6.494   0.541                     
+y_component_number       1  1.389   1.389   2.487 0.140751    
+I(1/y_component_number)  1  0.021   0.021   0.037 0.850581    
+vector_length            1 15.974  15.974  28.609 0.000174 ***
+lws_y                    1 19.156  19.156  34.308 7.75e-05 ***
+I(1/lws_y)               1  7.195   7.195  12.886 0.003715 ** 
+load_overlap             1  0.110   0.110   0.198 0.664444    
+temporary_size           1  1.205   1.205   2.157 0.167606    
+elements_number          1  0.122   0.122   0.218 0.648767    
+I(1/elements_number)     1  4.369   4.369   7.824 0.016127 *  
+threads_number           1  5.071   5.071   9.083 0.010786 *  
+I(1/threads_number)      1  0.015   0.015   0.026 0.874607    
+Residuals               12  6.700   0.558                     
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 Non-constant Variance Score Test 
 Variance formula: ~ fitted.values 
-Chisquare = 0.8621423    Df = 1     p = 0.3531399
+Chisquare = 0.1956185    Df = 1     p = 0.658281
       elements_number y_component_number vector_length temporary_size
-22265              12                  3             1              4
+15927               4                  1             1              2
       vector_recompute load_overlap threads_number lws_y time_per_pixel
-22265             true         true           1024     1   2.314589e-10
+15927             true         true           1024     1   3.368082e-10
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
@@ -32831,7 +32832,7 @@ plot(regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-15923bT/figure1592rk0.png]]
+[[file:/tmp/babel-169411LY/figure169411rg.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -32851,7 +32852,7 @@ plot(transformed_regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-15923bT/figure15923CQ.png]]
+[[file:/tmp/babel-169411LY/figure16941OUC.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -32861,7 +32862,7 @@ hist(transformed_regression$model["bcPower(time_per_pixel, boxcox_transform$roun
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-1306ie-/figure1306AXv.png]]
+[[file:/tmp/babel-169411LY/figure16941beI.png]]
 
 *** [2018-05-16 Wed]
 **** Power Transforms on Generated Heteroscedastic Data
@@ -32872,14 +32873,24 @@ hist(transformed_regression$model["bcPower(time_per_pixel, boxcox_transform$roun
 library(car)
 set.seed(1234)
 x <- 1:1000
-y <- abs(rnorm(n = 1000, mean = x, sd = 0.4 * x))
+y <- abs(rnorm(n = 1000, mean = x, sd = 0.9 * x))
 
 data <- data.frame(x, y)
 plot(lm(y ~ x, data = data), which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-15923bT/figure159237b.png]]
+[[file:/tmp/babel-169411LY/figure16941ppV.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ncvTest(lm(y ~ x, data = data))
+#+END_SRC
+
+#+RESULTS:
+: Non-constant Variance Score Test 
+: Variance formula: ~ fitted.values 
+: Chisquare = 365.3147    Df = 1     p = 1.960365e-81
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -32894,7 +32905,18 @@ plot(transformed_regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-15923bT/figure1592RQo.png]]
+[[file:/tmp/babel-169411LY/figure169412zb.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+ncvTest(transformed_regression)
+#+END_SRC
+
+#+RESULTS:
+: Non-constant Variance Score Test 
+: Variance formula: ~ fitted.values 
+: Chisquare = 41.63823    Df = 1     p = 1.098246e-10
+
 *** [2018-05-17 Thu]
 **** Looking for Autotuning Benchmarks
 Some candidates:
