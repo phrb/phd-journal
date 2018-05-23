@@ -32931,3 +32931,74 @@ Some candidates:
 - CollectiveKnowledge has great flag space descriptions
 - If we go back to compiler flag tuning we can tune
   any of the well-stablished HPC benchmarks
+*** [2018-05-23 Wed]
+**** Orio Setup Scripts
+I've forked the Orio repository so I can freely change the code while keeping
+version control.
+
+To clone the most recent version, pick a path for the repository by editing the
+source block below, using absolute paths.
+
+#+NAME: setup_orio
+#+HEADER: :results output
+#+HEADER: :var ORIO_PATH="/home/phrb/code/orio"
+#+BEGIN_SRC shell
+git clone --depth=1 https://github.com/phrb/Orio.git $ORIO_PATH || echo "Orio already installed"
+#+END_SRC
+
+#+RESULTS: setup_orio
+: Orio already installed
+
+***** Lazy Python Databases with =Dataset=
+With this it is possible to create a database from python scripts without much hassle:
+
+#+HEADER: :results output :session *Shell*
+#+BEGIN_SRC shell
+sudo pip install dataset
+#+END_SRC
+
+#+RESULTS:
+: sudo pip install dataset
+: Requirement already satisfied: dataset in /usr/lib/python3.6/site-packages
+
+#+HEADER: :results output :session *Python*
+#+BEGIN_SRC python
+import dataset
+db = dataset.connect('sqlite:///mydatabase.db')
+table = db['user']
+table.insert(dict(name='John Doe', age=46, country='China'))
+table.insert(dict(name='Jane Doe', age=37, country='France', gender='female'))
+table.update(dict(name='John Doe', age=47), ['name'])
+#+END_SRC
+
+#+RESULTS:
+: Python 3.6.5 (default, May 11 2018, 04:00:52)
+: [GCC 8.1.0] on linux
+: Type "help", "copyright", "credits" or "license" for more information.
+: python.el: native completion setup loaded
+
+#+HEADER: :results output :session *Python*
+#+BEGIN_SRC python
+print(db.tables)
+print(db['user'].columns)
+print(len(db['user']))
+users = db['user'].all()
+print(users)
+db.commit()
+#+END_SRC
+
+#+RESULTS:
+: ['user']
+: ['id', 'name', 'age', 'country', 'gender']
+: 2
+: <dataset.util.ResultIter object at 0x7f7f34e974a8>
+
+Cleaning up:
+
+#+HEADER: :results output :session *Shell*
+#+BEGIN_SRC shell
+rm mydatabase.db
+#+END_SRC
+
+#+RESULTS:
+: rm mydatabase.db
