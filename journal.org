@@ -1562,19 +1562,20 @@ algdesign = importr("AlgDesign")
 **** Implementing the D-Optimal Design + AOV Approach in Python
 #+HEADER: :results output :session *Python*
 #+BEGIN_SRC python
+import math
 from rpy2.robjects.packages import importr
 from rpy2.robjects import IntVector, StrVector, Formula, r
 
-def load_rpackages():
-    base      = importr("base")
-    utils     = importr("utils")
-    stats     = importr("stats")
-    algdesign = importr("AlgDesign")
-    car       = importr("car")
+base      = importr("base")
+utils     = importr("utils")
+stats     = importr("stats")
+algdesign = importr("AlgDesign")
+car       = importr("car")
 
 def opt_federov(design_formula, data, trials):
     output = algdesign.optFederov(Formula(design_formula),
                                   data,
+                                  maxIteration = 1000,
                                   nTrials = trials)
     return output
 
@@ -1582,19 +1583,20 @@ def transform_design(design, lm_formula, full_model, response):
     transform = car.powerTransform(Formula(lm_formula),
                                    data = design)
 
-    stats.coef(transform, round = True)
-    transformed_response = car.bcPower(design.rx(response[0]), transform.rx("roundlam")[0])
-    design = base.cbind(design, transformed_response)
+    print("Power Transform Step:")
+    print(transform)
+    transformed_response = car.bcPower(design.rx(response[0]), transform.rx("lambda")[0])
+    design               = base.cbind(design, transformed_response)
     transform_lm_formula = "{0}".format(base.names(transformed_response)[0]) + full_model
 
-    return transform_lm_formula
+    return design, transform_lm_formula
 
 def anova(design, formula):
-    regression = stats.aov(Formula(formula),
+    regression = stats.lm(Formula(formula),
                           data = design)
 
     summary_regression = stats.summary_aov(regression)
-
+    print("Regression Step:")
     print(summary_regression)
 
     prf_values = {}
@@ -1611,81 +1613,243 @@ def predict_best(regression, data):
 
     p_min = min(predicted)
     i = 0
+
     for k in range(len(predicted)):
-        if predicted[k] == p_min:
-            print(p_min, predicted[k])
+        if math.isclose(predicted[k], p_min, rel_tol = 1e-6):
             i += 1
 
-    print(i)
+    print("Identical predictions (tol = 1e-17): {0}".format(i))
+    return data.rx(predicted_best, True)
 
-    return data.rx(predicted_best, StrVector(factors + response))
+def prune_data(data, fixed_variables):
+    pruned_data = data
+    for k, v in fixed_variables.items():
+        pruned_data = pruned_data.rx((pruned_data.rx2(str(k)).ro == str(v)),
+                                     True)
 
-def dopt_anova_step(full_model, response, factors, inverse_factors, data):
-    design_formula         = full_model
-    lm_formula             = response[0] + full_model
-    data                   = data.rx(StrVector(factors + response))
-    trials                 = round(2 * (len(factors) + len(inverse_factors) + 1))
-    output                 = opt_federov(design_formula, data, trials)
-    design                 = output.rx("design")[0]
-    transform_lm_formula   = transform_design(design, lm_formula, full_model, response)
-    #regression, prf_values = anova(design, transform_lm_formula)
-    regression, prf_values = anova(design, lm_formula)
-    ordered_prf_keys       = sorted(prf_values, key = prf_values.get)
-    predicted_best         = predict_best(regression, data)
+    print("Dimensions of Pruned Data: " + str(base.dim(pruned_data)))
+    return pruned_data
 
-    return prf_values, ordered_prf_keys, predicted_best
+def get_fixed_variables(predicted_best, ordered_prf_keys, fixed_factors, threshold = 2):
+    variables = ordered_prf_keys
+    variables = [v.strip("I)(/1 ") for v in variables]
 
-load_rpackages()
+    unique_variables = []
 
-data = utils.read_csv("dopt_anova_experiments/data/search_space.csv")
-#+END_SRC
+    for v in variables:
+        if v not in unique_variables:
+            unique_variables.append(v)
+        if len(unique_variables) >= threshold:
+            break
 
-#+RESULTS:
+    fixed_variables = fixed_factors
+    for v in unique_variables:
+        fixed_variables[v] = predicted_best.rx2(str(v))[0]
 
-#+HEADER: :results output :session *Python*
-#+BEGIN_SRC python
-factors         = ["elements_number", "y_component_number",
-                   "vector_length", "temporary_size",
-                   "load_overlap", "threads_number", "lws_y"]
-inverse_factors = ["y_component_number", "lws_y",
-                   "elements_number", "threads_number"]
-response        = ["time_per_pixel"]
-full_model      = "".join([" ~ ",
-                           " + ".join(factors), " + ",
-                           " + ".join(["I(1 / {0})".format(f) for f in inverse_factors])])
+    print("Fixed Variables: " + str(fixed_variables))
+    return fixed_variables
 
-prf_values, ordered_prf_keys, predicted_best = dopt_anova_step(full_model, response,
-                                                               factors, inverse_factors,
-                                                               data)
-print(prf_values)
-print(ordered_prf_keys)
-print(predicted_best)
+def prune_model(factors, inverse_factors, ordered_prf_keys, threshold = 2):
+    variables = ordered_prf_keys
+    variables = [v.strip("I)(/1 ") for v in variables]
+
+    unique_variables = []
+
+    for v in variables:
+        if v not in unique_variables:
+            unique_variables.append(v)
+        if len(unique_variables) >= threshold:
+            break
+
+    pruned_factors = [f for f in factors if not f in unique_variables]
+    pruned_inverse_factors = [f for f in inverse_factors if not f in unique_variables]
+
+    return pruned_factors, pruned_inverse_factors
+
+def dopt_anova_step(response, factors, inverse_factors, data, fixed_factors, budget):
+    full_model     = "".join([" ~ ",
+                              " + ".join(factors), " + ",
+                              " + ".join(["I(1 / {0})".format(f) for f in inverse_factors])])
+
+    design_formula = full_model
+    lm_formula     = response[0] + full_model
+    trials         = round(2 * (len(factors) + len(inverse_factors) + 1))
+
+    fixed_variables = fixed_factors
+
+    if budget - len(data[0]) < 0:
+        print("Full data does not fit on budget")
+        if trials < len(data[0]):
+            print("Computing D-Optimal Design")
+            output = opt_federov(design_formula, data, trials)
+            design = output.rx("design")[0]
+        else:
+            print("Too few data points for a D-Optimal design")
+            design = data
+
+        used_experiments = len(design[0])
+
+        heteroscedasticity_test = car.ncvTest(stats.lm(Formula(lm_formula), data = design))
+        print("Heteroscedasticity Test p-value:")
+        print(heteroscedasticity_test.rx("p")[0][0])
+
+        if heteroscedasticity_test.rx("p")[0][0] < 0.05:
+            design, transform_lm_formula = transform_design(design, lm_formula,
+                                                            full_model, response)
+            heteroscedasticity_test = car.ncvTest(stats.lm(Formula(transform_lm_formula),
+                                                           data = design))
+            print("Heteroscedasticity Test p-value:")
+            print(heteroscedasticity_test.rx("p")[0][0])
+        else:
+            print("No need to power transform")
+            transform_lm_formula = lm_formula
+
+        regression, prf_values = anova(design, transform_lm_formula)
+        ordered_prf_keys       = sorted(prf_values, key = prf_values.get)
+        predicted_best         = predict_best(regression, data)
+        fixed_variables        = get_fixed_variables(predicted_best, ordered_prf_keys,
+                                                     fixed_factors)
+        pruned_data            = prune_data(data, fixed_variables)
+
+        pruned_factors, pruned_inverse_factors = prune_model(factors, inverse_factors,
+                                                            ordered_prf_keys)
+    else:
+        print("Full data fits on budget, picking best value")
+        used_experiments = len(data[0])
+        prf_values = []
+        ordered_prf_keys = []
+        pruned_data = []
+        pruned_factors = []
+        pruned_inverse_factors = []
+        predicted_best = data.rx((data.rx2(response[0]).ro == min(data.rx(response[0])[0])),
+                                  True)
+
+    return {"prf_values": prf_values,
+            "ordered_prf_keys": ordered_prf_keys,
+            "predicted_best": predicted_best,
+            "pruned_data": pruned_data,
+            "pruned_factors": pruned_factors,
+            "pruned_inverse_factors": pruned_inverse_factors,
+            "fixed_factors": fixed_variables,
+            "used_experiments": used_experiments}
+
+def dopt_anova():
+    data = utils.read_csv("dopt_anova_experiments/data/search_space.csv")
+
+    initial_factors = ["elements_number", "y_component_number",
+                       "vector_length", "temporary_size",
+                       "load_overlap", "threads_number", "lws_y"]
+
+    initial_inverse_factors = ["y_component_number", "lws_y",
+                               "elements_number", "threads_number"]
+
+    response = ["time_per_pixel"]
+
+    data = data.rx(StrVector(initial_factors + response))
+    data_best = data.rx((data.rx2(response[0]).ro == min(data.rx(response[0])[0])),
+                        True)
+
+    step_factors = initial_factors
+    step_inverse_factors = initial_inverse_factors
+    step_space = data
+
+    fixed_factors = {}
+
+    initial_budget = 58
+    budget = initial_budget
+    used_experiments = 0
+    iterations = 3
+
+    for i in range(iterations):
+        if step_space == []:
+            break
+
+        step_data = dopt_anova_step(response,
+                                    step_factors,
+                                    step_inverse_factors,
+                                    step_space,
+                                    fixed_factors,
+                                    budget)
+
+        step_space = step_data["pruned_data"]
+        step_factors = step_data["pruned_factors"]
+        step_inverse_factors = step_data["pruned_inverse_factors"]
+        budget -= step_data["used_experiments"]
+        used_experiments += step_data["used_experiments"]
+        fixed_factors = step_data["fixed_factors"]
+
+        print("Fixed Factors: " + str(fixed_factors))
+        print("Slowdown: " + str(step_data["predicted_best"].rx(response[0])[0][0] / data_best.rx(response[0])[0][0]))
+        print("Budget: {0}/{1}".format(used_experiments, initial_budget))
+
+dopt_anova()
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-Df    Sum Sq   Mean Sq F value Pr(>F)
-elements_number          1 2.840e-17 2.840e-17   0.539 0.4770
-y_component_number       1 3.350e-17 3.350e-17   0.638 0.4401
-vector_length            1 1.872e-16 1.872e-16   3.558 0.0837 .
-temporary_size           1 4.390e-17 4.390e-17   0.835 0.3788
-load_overlap             1 7.250e-17 7.250e-17   1.378 0.2632
-threads_number           1 1.296e-16 1.296e-16   2.463 0.1426
-lws_y                    1 4.762e-16 4.762e-16   9.051 0.0109 *
-I(1/y_component_number)  1 2.170e-17 2.170e-17   0.413 0.5324
-I(1/lws_y)               1 1.130e-17 1.130e-17   0.215 0.6508
-I(1/elements_number)     1 1.958e-16 1.958e-16   3.722 0.0777 .
-I(1/threads_number)      1 2.680e-17 2.680e-17   0.510 0.4888
-Residuals               12 6.314e-16 5.260e-17
+Full data does not fit on budget
+Computing D-Optimal Design
+Heteroscedasticity Test p-value:
+1.4768156028647769e-06
+Power Transform Step:
+Estimated transformation parameter
+          Y1
+-0.006433772
+
+Heteroscedasticity Test p-value:
+0.19708030193217177
+Regression Step:
+                        Df   Sum Sq  Mean Sq F value  Pr(>F)
+elements_number          1 0.000129 0.000129   1.318 0.27337
+y_component_number       1 0.000136 0.000136   1.393 0.26084
+vector_length            1 0.001178 0.001178  12.081 0.00458 **
+temporary_size           1 0.000050 0.000050   0.513 0.48736
+load_overlap             1 0.000001 0.000001   0.006 0.93856
+threads_number           1 0.000002 0.000002   0.018 0.89671
+lws_y                    1 0.003902 0.003902  40.007 3.8e-05 ***
+I(1/y_component_number)  1 0.000028 0.000028   0.287 0.60185
+I(1/lws_y)               1 0.000894 0.000894   9.167 0.01051 *
+I(1/elements_number)     1 0.000031 0.000031   0.322 0.58090
+I(1/threads_number)      1 0.000147 0.000147   1.512 0.24238
+Residuals               12 0.001170 0.000098
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
--1.0559208101119646e-08 -1.0559208101119646e-08
-1
-{'elements_number': 0.47697762081081774, 'y_component_number': 0.440100332694207, 'vector_length': 0.08369653392267278, 'temporary_size': 0.37877883860071804, 'load_overlap': 0.26324975542579954, 'threads_number': 0.1425549771572477, 'lws_y': 0.01089346971574004, 'I(1/y_component_number)': 0.5324229453688916, 'I(1/lws_y)': 0.6508030975482334, 'I(1/elements_number)': 0.0776728942528778, 'I(1/threads_number)': 0.48875892183218406}
-['lws_y', 'I(1/elements_number)', 'vector_length', 'threads_number', 'load_overlap', 'temporary_size', 'y_component_number', 'elements_number', 'I(1/threads_number)', 'I(1/y_component_number)', 'I(1/lws_y)']
-      elements_number y_component_number vector_length temporary_size
-19796               6                  2             2              4
-      load_overlap threads_number lws_y time_per_pixel
-19796        false            256   256   4.196701e-09
+Identical predictions (tol = 1e-17): 1
+Fixed Variables: {'lws_y': 128, 'vector_length': 4}
+Dimensions of Pruned Data: [1] 384   8
+
+Fixed Factors: {'lws_y': 128, 'vector_length': 4}
+Slowdown: 4.84106670713802
+Budget: 24/58
+Full data does not fit on budget
+Computing D-Optimal Design
+Heteroscedasticity Test p-value:
+0.05480248022659142
+No need to power transform
+Regression Step:
+                        Df    Sum Sq   Mean Sq F value  Pr(>F)
+elements_number          1 5.891e-17 5.891e-17   7.685 0.02168 *
+y_component_number       1 4.130e-18 4.130e-18   0.539 0.48142
+temporary_size           1 1.157e-17 1.157e-17   1.509 0.25050
+load_overlap             1 1.000e-19 1.000e-19   0.013 0.91215
+threads_number           1 1.418e-16 1.418e-16  18.490 0.00199 **
+I(1/y_component_number)  1 7.200e-19 7.200e-19   0.093 0.76680
+I(1/elements_number)     1 8.386e-17 8.386e-17  10.939 0.00912 **
+I(1/threads_number)      1 3.065e-17 3.065e-17   3.998 0.07663 .
+Residuals                9 6.899e-17 7.670e-18
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Identical predictions (tol = 1e-17): 1
+Fixed Variables: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
+Dimensions of Pruned Data: [1] 12  8
+
+Fixed Factors: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
+Slowdown: 12.250258645798533
+Budget: 42/58
+Full data fits on budget, picking best value
+Fixed Factors: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
+Slowdown: 12.230545595782589
+Budget: 54/58
 #+end_example
