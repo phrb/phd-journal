@@ -1565,6 +1565,7 @@ algdesign = importr("AlgDesign")
 import math
 from rpy2.robjects.packages import importr
 from rpy2.robjects import IntVector, StrVector, Formula, r
+from rpy2.robjects.lib.dplyr import dplyr
 
 base      = importr("base")
 utils     = importr("utils")
@@ -1592,6 +1593,21 @@ def transform_design(design, lm_formula, full_model, response):
     return design, transform_lm_formula
 
 def anova(design, formula):
+    heteroscedasticity_test = car.ncvTest(stats.lm(Formula(formula), data = design))
+    print("Heteroscedasticity Test p-value:")
+    print(heteroscedasticity_test.rx("p")[0][0])
+
+    if heteroscedasticity_test.rx("p")[0][0] < 0.05:
+        transform_lm_formula = transform_design(design, formula,
+                                                full_model, response)
+        heteroscedasticity_test = car.ncvTest(stats.lm(Formula(transform_lm_formula),
+                                                        data = design))
+        print("Heteroscedasticity Test p-value:")
+        print(heteroscedasticity_test.rx("p")[0][0])
+    else:
+        print("No need to power transform")
+        transform_lm_formula = lm_formula
+
     regression = stats.lm(Formula(formula),
                           data = design)
 
@@ -1622,12 +1638,14 @@ def predict_best(regression, data):
     return data.rx(predicted_best, True)
 
 def prune_data(data, fixed_variables):
+    print(fixed_variables)
     pruned_data = data
     for k, v in fixed_variables.items():
         pruned_data = pruned_data.rx((pruned_data.rx2(str(k)).ro == str(v)),
                                      True)
 
     print("Dimensions of Pruned Data: " + str(base.dim(pruned_data)))
+    print("Dimensions of Full Data: " + str(base.dim(data)))
     return pruned_data
 
 def get_fixed_variables(predicted_best, ordered_prf_keys, fixed_factors, threshold = 2):
@@ -1688,23 +1706,7 @@ def dopt_anova_step(response, factors, inverse_factors, data, fixed_factors, bud
             design = data
 
         used_experiments = len(design[0])
-
-        heteroscedasticity_test = car.ncvTest(stats.lm(Formula(lm_formula), data = design))
-        print("Heteroscedasticity Test p-value:")
-        print(heteroscedasticity_test.rx("p")[0][0])
-
-        if heteroscedasticity_test.rx("p")[0][0] < 0.05:
-            design, transform_lm_formula = transform_design(design, lm_formula,
-                                                            full_model, response)
-            heteroscedasticity_test = car.ncvTest(stats.lm(Formula(transform_lm_formula),
-                                                           data = design))
-            print("Heteroscedasticity Test p-value:")
-            print(heteroscedasticity_test.rx("p")[0][0])
-        else:
-            print("No need to power transform")
-            transform_lm_formula = lm_formula
-
-        regression, prf_values = anova(design, transform_lm_formula)
+        regression, prf_values = anova(design, lm_formula)
         ordered_prf_keys       = sorted(prf_values, key = prf_values.get)
         predicted_best         = predict_best(regression, data)
         fixed_variables        = get_fixed_variables(predicted_best, ordered_prf_keys,
@@ -1734,7 +1736,7 @@ def dopt_anova_step(response, factors, inverse_factors, data, fixed_factors, bud
             "used_experiments": used_experiments}
 
 def dopt_anova():
-    data = utils.read_csv("dopt_anova_experiments/data/search_space.csv")
+    data = utils.read_csv("dopt_anova_experiments/data/search_space.csv", header = True)
 
     initial_factors = ["elements_number", "y_component_number",
                        "vector_length", "temporary_size",
@@ -1790,66 +1792,87 @@ dopt_anova()
 Full data does not fit on budget
 Computing D-Optimal Design
 Heteroscedasticity Test p-value:
-1.4768156028647769e-06
+0.000231109380007393
 Power Transform Step:
 Estimated transformation parameter
-          Y1
--0.006433772
+         Y1
+-0.08680373
 
 Heteroscedasticity Test p-value:
-0.19708030193217177
+0.9475422563588601
 Regression Step:
-                        Df   Sum Sq  Mean Sq F value  Pr(>F)
-elements_number          1 0.000129 0.000129   1.318 0.27337
-y_component_number       1 0.000136 0.000136   1.393 0.26084
-vector_length            1 0.001178 0.001178  12.081 0.00458 **
-temporary_size           1 0.000050 0.000050   0.513 0.48736
-load_overlap             1 0.000001 0.000001   0.006 0.93856
-threads_number           1 0.000002 0.000002   0.018 0.89671
-lws_y                    1 0.003902 0.003902  40.007 3.8e-05 ***
-I(1/y_component_number)  1 0.000028 0.000028   0.287 0.60185
-I(1/lws_y)               1 0.000894 0.000894   9.167 0.01051 *
-I(1/elements_number)     1 0.000031 0.000031   0.322 0.58090
-I(1/threads_number)      1 0.000147 0.000147   1.512 0.24238
-Residuals               12 0.001170 0.000098
+                        Df Sum Sq Mean Sq F value   Pr(>F)
+elements_number          1  2.290   2.290  11.967 0.004723 **
+y_component_number       1  0.529   0.529   2.765 0.122202
+vector_length            1  3.766   3.766  19.676 0.000813 ***
+temporary_size           1  0.235   0.235   1.225 0.290002
+load_overlap             1  0.079   0.079   0.413 0.532456
+threads_number           1  0.018   0.018   0.092 0.767416
+lws_y                    1  7.271   7.271  37.987 4.85e-05 ***
+I(1/y_component_number)  1  0.110   0.110   0.574 0.463168
+I(1/lws_y)               1  2.861   2.861  14.949 0.002242 **
+I(1/elements_number)     1  0.164   0.164   0.859 0.372333
+I(1/threads_number)      1  0.432   0.432   2.259 0.158663
+Residuals               12  2.297   0.191
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Identical predictions (tol = 1e-17): 1
-Fixed Variables: {'lws_y': 128, 'vector_length': 4}
-Dimensions of Pruned Data: [1] 384   8
+Fixed Variables: {'lws_y': 16, 'vector_length': 1}
+{'lws_y': 16, 'vector_length': 1}
+Dimensions of Pruned Data: [1] 576   8
 
-Fixed Factors: {'lws_y': 128, 'vector_length': 4}
-Slowdown: 4.84106670713802
+Dimensions of Full Data: [1] 23120     8
+
+Fixed Factors: {'lws_y': 16, 'vector_length': 1}
+Slowdown: 11.64335230377803
 Budget: 24/58
 Full data does not fit on budget
 Computing D-Optimal Design
 Heteroscedasticity Test p-value:
-0.05480248022659142
+0.06519543239335164
 No need to power transform
 Regression Step:
-                        Df    Sum Sq   Mean Sq F value  Pr(>F)
-elements_number          1 5.891e-17 5.891e-17   7.685 0.02168 *
-y_component_number       1 4.130e-18 4.130e-18   0.539 0.48142
-temporary_size           1 1.157e-17 1.157e-17   1.509 0.25050
-load_overlap             1 1.000e-19 1.000e-19   0.013 0.91215
-threads_number           1 1.418e-16 1.418e-16  18.490 0.00199 **
-I(1/y_component_number)  1 7.200e-19 7.200e-19   0.093 0.76680
-I(1/elements_number)     1 8.386e-17 8.386e-17  10.939 0.00912 **
-I(1/threads_number)      1 3.065e-17 3.065e-17   3.998 0.07663 .
-Residuals                9 6.899e-17 7.670e-18
+                        Df    Sum Sq   Mean Sq F value   Pr(>F)
+elements_number          1 6.930e-19 6.930e-19   8.120   0.0191 *
+y_component_number       1 4.960e-19 4.960e-19   5.814   0.0392 *
+temporary_size           1 5.100e-20 5.100e-20   0.599   0.4589
+load_overlap             1 5.400e-20 5.400e-20   0.638   0.4451
+threads_number           1 5.024e-18 5.024e-18  58.829 3.09e-05 ***
+I(1/y_component_number)  1 2.100e-20 2.100e-20   0.251   0.6284
+I(1/elements_number)     1 8.200e-20 8.200e-20   0.959   0.3530
+I(1/threads_number)      1 5.726e-18 5.726e-18  67.049 1.84e-05 ***
+Residuals                9 7.690e-19 8.500e-20
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Identical predictions (tol = 1e-17): 1
-Fixed Variables: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
-Dimensions of Pruned Data: [1] 12  8
+Fixed Variables: {'lws_y': 16, 'vector_length': 1, 'threads_number': 512, 'elements_number': 8}
+{'lws_y': 16, 'vector_length': 1, 'threads_number': 512, 'elements_number': 8}
+Dimensions of Pruned Data: [1] 8 8
 
-Fixed Factors: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
-Slowdown: 12.250258645798533
+Dimensions of Full Data: [1] 576   8
+
+Fixed Factors: {'lws_y': 16, 'vector_length': 1, 'threads_number': 512, 'elements_number': 8}
+Slowdown: 1.8225092523512674
 Budget: 42/58
 Full data fits on budget, picking best value
-Fixed Factors: {'lws_y': 128, 'vector_length': 4, 'threads_number': 256, 'elements_number': 12}
-Slowdown: 12.230545595782589
-Budget: 54/58
+Fixed Factors: {'lws_y': 16, 'vector_length': 1, 'threads_number': 512, 'elements_number': 8}
+Slowdown: 1.265157794114108
+Budget: 50/58
 #+end_example
+*** [2018-06-04 Mon]
+**** Implementing the DOPT-Anova in Orio
+I've started implementing our approach in benchmark problems from SPAPT, which
+is provided with Orio. I've been understanding Orio's source code implementing
+the glue code, with =rpy2=, to be able to use R packages in Python.
+
+I've reached a problem with =optFederov=. One of the benchmark applications
+has ~10^{14}~ possible combinations in total. My first approach was trying to
+generate a subset of this search space, as I did before, but this did not work.
+The function kept finding "singular design" errors, which mean the determinant
+of the candidates it tested are negative according to the documentation.
+
+It is not clear how to fix this, so I am now trying to use the optMonteCarlo
+function, which tries to generate samples of the search space as it explores
+it with the Federov algorithm.
