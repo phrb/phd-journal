@@ -1070,6 +1070,7 @@ ncvTest(transformed_regression)
 
 #+RESULTS:
 #+begin_example
+Loading required package: carData
 'data.frame':	23120 obs. of  9 variables:
  $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
  $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
@@ -1089,31 +1090,31 @@ lm(formula = time_per_pixel ~ y_component_number + I(1/y_component_number) +
 
 Residuals:
        Min         1Q     Median         3Q        Max
--4.385e-09 -1.439e-09 -5.607e-10  7.722e-10  2.050e-08
+-4.992e-09 -1.997e-09 -2.596e-10  1.126e-09  2.464e-08
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)
-(Intercept)              4.640e-09  2.683e-09   1.730 0.087162 .
-y_component_number       2.525e-10  4.415e-10   0.572 0.568779
-I(1/y_component_number) -3.084e-09  2.909e-09  -1.060 0.291920
-vector_length            2.159e-10  5.708e-11   3.782 0.000283 ***
-lws_y                    5.337e-12  2.070e-12   2.578 0.011586 *
-I(1/lws_y)              -3.475e-09  1.114e-09  -3.120 0.002447 **
-load_overlaptrue        -6.051e-10  6.322e-10  -0.957 0.341092
-temporary_size          -2.720e-10  3.238e-10  -0.840 0.403193
-elements_number         -1.574e-10  8.187e-11  -1.922 0.057852 .
-I(1/elements_number)     3.519e-09  2.471e-09   1.424 0.158012
-threads_number          -2.695e-12  1.168e-12  -2.307 0.023428 *
-I(1/threads_number)     -3.587e-08  4.294e-08  -0.835 0.405763
+(Intercept)             -5.683e-09  3.382e-09  -1.680 0.096446 .
+y_component_number       1.206e-09  5.251e-10   2.298 0.023956 *
+I(1/y_component_number)  5.124e-09  3.369e-09   1.521 0.131863
+vector_length            2.597e-10  7.338e-11   3.540 0.000643 ***
+lws_y                    1.020e-11  2.951e-12   3.458 0.000841 ***
+I(1/lws_y)              -2.800e-09  1.270e-09  -2.205 0.030027 *
+load_overlaptrue         1.963e-10  8.042e-10   0.244 0.807695
+temporary_size           1.977e-10  4.144e-10   0.477 0.634476
+elements_number         -1.128e-10  1.048e-10  -1.076 0.284946
+I(1/elements_number)     3.968e-09  3.270e-09   1.214 0.228123
+threads_number          -2.453e-12  1.856e-12  -1.322 0.189660
+I(1/threads_number)      2.043e-08  5.497e-08   0.372 0.711005
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 3.021e-09 on 88 degrees of freedom
-Multiple R-squared:  0.385,	Adjusted R-squared:  0.3081
-F-statistic: 5.007 on 11 and 88 DF,  p-value: 5.161e-06
+Residual standard error: 3.891e-09 on 88 degrees of freedom
+Multiple R-squared:  0.3924,	Adjusted R-squared:  0.3165
+F-statistic: 5.167 on 11 and 88 DF,  p-value: 3.271e-06
 Non-constant Variance Score Test
 Variance formula: ~ fitted.values
-Chisquare = 123.7992    Df = 1     p = 9.321284e-29
+Chisquare = 148.428    Df = 1     p = 3.824548e-34
 
 Call:
 lm(formula = bcPower(time_per_pixel, boxcox_transform$lambda) ~
@@ -1124,31 +1125,31 @@ lm(formula = bcPower(time_per_pixel, boxcox_transform$lambda) ~
 
 Residuals:
     Min      1Q  Median      3Q     Max
--99.277 -25.514  -1.197  24.576  74.215
+-277.65  -81.92  -10.22   79.59  220.80
 
 Coefficients:
                           Estimate Std. Error t value Pr(>|t|)
-(Intercept)             -311.19430   33.58445  -9.266 1.16e-14 ***
-y_component_number         9.37434    5.52707   1.696  0.09341 .
-I(1/y_component_number)   31.64722   36.41957   0.869  0.38723
-vector_length              4.78811    0.71459   6.701 1.90e-09 ***
-lws_y                      0.16840    0.02592   6.498 4.72e-09 ***
-I(1/lws_y)               -98.65756   13.94378  -7.075 3.43e-10 ***
-load_overlaptrue          -5.35579    7.91470  -0.677  0.50038
-temporary_size            -4.04669    4.05333  -0.998  0.32084
-elements_number           -2.35733    1.02500  -2.300  0.02382 *
-I(1/elements_number)      33.24638   30.94041   1.075  0.28552
-threads_number            -0.04473    0.01463  -3.058  0.00295 **
-I(1/threads_number)      696.62810  537.57264   1.296  0.19841
+(Intercept)             -890.45549   99.17068  -8.979 4.53e-14 ***
+y_component_number        37.61691   15.39476   2.443   0.0165 *
+I(1/y_component_number)  154.21569   98.77625   1.561   0.1221
+vector_length             11.59971    2.15156   5.391 5.80e-07 ***
+lws_y                      0.50504    0.08652   5.838 8.69e-08 ***
+I(1/lws_y)              -258.56389   37.22493  -6.946 6.20e-10 ***
+load_overlaptrue         -24.95474   23.57916  -1.058   0.2928
+temporary_size             2.76899   12.15003   0.228   0.8203
+elements_number           -6.89838    3.07364  -2.244   0.0273 *
+I(1/elements_number)     125.77409   95.86892   1.312   0.1930
+threads_number            -0.09253    0.05442  -1.700   0.0926 .
+I(1/threads_number)     2668.72370 1611.82566   1.656   0.1013
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 37.82 on 88 degrees of freedom
-Multiple R-squared:  0.7056,	Adjusted R-squared:  0.6688
-F-statistic: 19.18 on 11 and 88 DF,  p-value: < 2.2e-16
+Residual standard error: 114.1 on 88 degrees of freedom
+Multiple R-squared:  0.7041,	Adjusted R-squared:  0.6672
+F-statistic: 19.04 on 11 and 88 DF,  p-value: < 2.2e-16
 Non-constant Variance Score Test
 Variance formula: ~ fitted.values
-Chisquare = 0.2554079    Df = 1     p = 0.6132927
+Chisquare = 0.4543362    Df = 1     p = 0.5002829
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
@@ -1159,7 +1160,7 @@ plot(regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-zZp0Xe/figurengDOOJ.png]]
+[[file:/tmp/babel-IVw6xY/figureecbKUS.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -1414,7 +1415,7 @@ plot(lm(y ~ x, data = data), which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-zZp0Xe/figureWg4uDg.png]]
+[[file:/tmp/babel-5x1ltg/figureDpsnk9.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -1439,7 +1440,7 @@ plot(transformed_regression, which = c(1))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-zZp0Xe/figureyukhqL.png]]
+[[file:/tmp/babel-5x1ltg/figureKMbSqa.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -2444,3 +2445,24 @@ $design
   - Global Learning Objective
   - Local data
 - Proximal Gradient Algorithms
+*** [2018-06-28 Thu]
+**** Tweaking DLMT
+***** Initial Sample for =OptFederov=
+- Will take a long time to generate if we choose a large size, because
+  constraint checking restricts a lot of the search space
+- Will not provide enough candidates for =OptFederov= if the sample size is
+  small. This can result in small D-Efficiency for the generated experiments
+***** =OptFederov= Function
+****** nTrials
+- The simplest way to deal with runtime errors is to increase the number of
+  experiments generated by =OptFederov=
+- Using more trials allows for more failures before ANOVA breaks
+- Should we re-generate the design after failures?
+****** frml
+- Using the inverse of variables in the initial model requires special care to
+  remove 2-level factors that may appear due to constraints
+***** Problems in Analysis
+- When valid experiments in the design fail, what happens with the validity of ANOVA?
+- What are the best ways to go around that?
+***** Threshold for Removing Variables
+- We are using an heuristic to select how many variables to remove at each step
