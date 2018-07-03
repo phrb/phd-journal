@@ -2466,3 +2466,10 @@ $design
 - What are the best ways to go around that?
 ***** Threshold for Removing Variables
 - We are using an heuristic to select how many variables to remove at each step
+** July
+*** [2018-07-03 Tue]
+**** Round Table LIG Day
+- Blockchain
+- HPC & Big Data Convergence
+- Machine Learning
+- Reproducibility
