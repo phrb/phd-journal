@@ -441,7 +441,6 @@ pwd | tr -d "\n"
 #+BEGIN_SRC sh :results output
 git clone https://github.com/phrb/autotuning_screening_experiment.git || (cd autotuning_screening_experiment && git pull)
 #+END_SRC
-* Bibliography
 * 2018
 ** May
 *** [2018-05-02 Wed]
@@ -2473,3 +2472,201 @@ $design
 - HPC & Big Data Convergence
 - Machine Learning
 - Reproducibility
+*** [2018-07-04 Wed]
+**** Plotting Sampling Strategies
+***** Random Sampling
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+
+data = data.frame(x1 = sample(0:20, 100, replace = T),
+                  x2 = sample(0:20, 100, replace = T))
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figure7g2xWl.png]]
+
+***** LHS Sampling
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(DoE.wrapper)
+
+data <- lhs.design(nruns = 100 ,nfactors = 2, digits = 0, type = "maximin",
+                   factor.names = list(x1 = c(0, 20), x2 = c(0, 20)))
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figureUvZvfi.png]]
+***** D-Optimal Sampling
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(AlgDesign)
+
+full_factorial <- gen.factorial(c(20, 20))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~., full_factorial, nTrials = 20)
+data <- output$design
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figuretQupRL.png]]
+
+***** D-Optimal Sampling with Interactions
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(AlgDesign)
+
+full_factorial <- gen.factorial(c(20, 20))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~ . + .^2, full_factorial, nTrials = 20)
+data <- output$design
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figureCsk30V.png]]
+***** D-Optimal Sampling with Quadratic Terms
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(AlgDesign)
+
+full_factorial <- gen.factorial(c(20, 20))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = 30)
+data <- output$design
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figure4tuLAm.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+head(model.matrix(~. + I(x1 ^ 2) + I(x2 ^ 2), full_factorial))
+#+END_SRC
+
+#+RESULTS:
+:   (Intercept)  x1  x2 I(x1^2) I(x2^2)
+: 1           1 -19 -19     361     361
+: 2           1 -17 -19     289     361
+: 3           1 -15 -19     225     361
+: 4           1 -13 -19     169     361
+: 5           1 -11 -19     121     361
+: 6           1  -9 -19      81     361
+
+***** D-Optimal Sampling with Cubic Terms
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(AlgDesign)
+
+full_factorial <- gen.factorial(c(20, 20))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~ . + cubic(.), full_factorial, nTrials = 30)
+data <- output$design
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figurel94xYu.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+head(model.matrix(~ . + cubic(.), full_factorial))
+#+END_SRC
+
+#+RESULTS:
+:   (Intercept)  x1  x2 I(x1^2) I(x2^2) I(x1^3) I(x2^3) x1:x2
+: 1           1 -19 -19     361     361   -6859   -6859   361
+: 2           1 -17 -19     289     361   -4913   -6859   323
+: 3           1 -15 -19     225     361   -3375   -6859   285
+: 4           1 -13 -19     169     361   -2197   -6859   247
+: 5           1 -11 -19     121     361   -1331   -6859   209
+: 6           1  -9 -19      81     361    -729   -6859   171
+***** I-Optimal Sampling
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(AlgDesign)
+
+full_factorial <- gen.factorial(c(20, 20))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~., full_factorial, criterion = "I", nTrials = 60)
+data <- output$design
+
+ggplot(data, aes(x = x1, y = x2)) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XeXoRm/figure0Y9ZHG.png]]
+**** Experiments with the ATAX application
+I've been using the smallest input size for the atax application. So far I am
+not sure if the larger sizes even work properly, since some of then do not use
+the validation code. Some of the also do not have the same parameters.
+
+Experiments with DLMT using all factors and their inverses, when applicable, is
+not giving results much different than random search. The model might be more or
+less complex. The D-Optimality of the designs is usually low.
+
+I am also not sure of the impact of sample sizes in the two steps where they are
+used: the sample for the Fedorov algorithm and the sample for predicting the
+best result. These samples are not evaluated, but must be validated using the
+constraints provided by the application.
+
+Next steps:
+- Run DLMT experiments with a simpler model
+- Run DLMT experiments using interactions in the model (is it worth it?)
+- Compare results for other applications and input sizes
+- Compare results with other search algorithms
+- Address issues in [[Tweaking DLMT][Tweaking DLMT]]
