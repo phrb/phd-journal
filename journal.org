@@ -2776,3 +2776,38 @@ Residuals    6  0.000   0.000
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
+*** [2018-07-09 Mon]
+**** Paper Review: Assessing Time Predictability Features of ARM big.LITTLE Multicores
+This paper presents qualitative and quantitative assessments of some
+characteristics of the ARM big.LITTLE architecture. The objective of the paper
+is to measure the applicability of this architecture to critical real-time
+embedded systems. The paper is well organized, and it was easy to read and
+understand.
+
+The qualitative assessment uses the technical reference manuals of the ARM
+Cortex-A53 processor and the ARM Juno R2 board. The quantitative assessment uses
+a simple stress benchmark application and measures the cycles per memory access
+in different scenarios.
+
+The quantitative assessment is based on three experiments: a scenario without
+contention, or isolated, a scenario with contention, and a scenario with
+contention and no-ops between memory accesses. The results in Figures 3 and 4
+show the median of 1000 measurements for each vector size. The Figures do not
+show the standard deviations of the measurements.
+
+It is not discussed whether the median is the best choice to represent the
+measurements, or whether the variability of measurements was relevant. Without
+knowing the variability of measurements it is hard to know if the differences
+observed in each experimental scenario are meaningful. I suggest to include the
+standard deviation of each measurement in the data presented. Also, unless there
+is a strong reason for using the median, I suggest using the mean of the 1000
+measurements. I believe this will provide better support for the conclusions of
+the paper.
+
+I also believe that measuring the cycles per access in a more comprehensive
+benchmark suite would help support the arguments presented in the paper, as well
+as using real applications on critical real-time embedded systems. My
+recommendation is that this paper should be submitted again after addressing the
+issues with data presentation and analysis, and possibly with more experimental
+evaluations using different benchmark applications, potentially using
+measurements in real applications.
