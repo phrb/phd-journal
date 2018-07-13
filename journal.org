@@ -2872,3 +2872,65 @@ removed_interactions
 
 #+RESULTS:
 : [1] "(Intercept)"
+*** [2018-07-13 Fri]
+**** Interesting Paper using SPAPT
+- [[file:~/Dropbox/papers/autotuning/2017/ogilvie2017minimizing.pdf][Minimizing the Cost of Iterative Compilation with Active Learning]]
+**** Building Models with Quadratic Terms
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+data <- data.frame(x1 = runif(10),
+                   x2 = runif(10),
+                   x3 = runif(10),
+                   x4 = runif(10),
+                   x5 = runif(10),
+                   x6 = runif(10))
+
+data$y <- 2 * data$x1 + data$x2 + 1.2 * data$x3 + 1.4 * data$x4 + 1.3 * data$x4 + 1.9 * data$x5 + 1.7 * data$x6 + (2.6 * data$x3 * data$x2 * data$x4)
+
+head(data)
+#+END_SRC
+
+#+RESULTS:
+:           x1        x2        x3         x4        x5        x6        y
+: 1 0.03468630 0.5173048 0.1087729 0.08684336 0.6359173 0.9587616 3.802525
+: 2 0.98720044 0.4519941 0.9221820 0.28453285 0.9660307 0.4632033 7.232514
+: 3 0.31504150 0.9030804 0.4090276 0.21641727 0.5562343 0.5831133 4.864308
+: 4 0.48529389 0.7517897 0.3670082 0.37152128 0.9808670 0.4651149 6.086757
+: 5 0.07717325 0.1913457 0.3366301 0.82366125 0.7304363 0.9233006 6.068915
+: 6 0.29731807 0.5504496 0.2815305 0.21052078 0.8033675 0.7820747 4.992076
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+model_matrix <- model.matrix(~ I(x2 ^ 2) + x1 + x2 + x3 + x4 + x5 + x6, data)
+head(model_matrix)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  (Intercept)    I(x2^2)         x1        x2        x3         x4        x5
+1           1 0.26760424 0.03468630 0.5173048 0.1087729 0.08684336 0.6359173
+2           1 0.20429871 0.98720044 0.4519941 0.9221820 0.28453285 0.9660307
+3           1 0.81555417 0.31504150 0.9030804 0.4090276 0.21641727 0.5562343
+4           1 0.56518779 0.48529389 0.7517897 0.3670082 0.37152128 0.9808670
+5           1 0.03661316 0.07717325 0.1913457 0.3366301 0.82366125 0.7304363
+6           1 0.30299480 0.29731807 0.5504496 0.2815305 0.21052078 0.8033675
+         x6
+1 0.9587616
+2 0.4632033
+3 0.5831133
+4 0.4651149
+5 0.9233006
+6 0.7820747
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+model_matrix <- as.data.frame(model_matrix)
+removed_interactions <- names(Filter(function(x)(length(unique(x)) == 1), model_matrix))
+removed_interactions
+#+END_SRC
+
+#+RESULTS:
+: [1] "(Intercept)"
