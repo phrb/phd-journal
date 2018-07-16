@@ -2667,7 +2667,7 @@ constraints provided by the application.
 
 Next steps:
 - Run DLMT experiments with a simpler model
-- Run DLMT experiments using interactions in the model (is it worth it?)
+- Run DLMT experiments using interactions in the model
 - Compare results for other applications and input sizes
 - Compare results with other search algorithms
 - Address issues in [[Tweaking DLMT][Tweaking DLMT]]
@@ -2934,3 +2934,217 @@ removed_interactions
 
 #+RESULTS:
 : [1] "(Intercept)"
+*** [2018-07-16 Mon]
+**** Some Solutions for Tweaking DLMT
+- Using quadratic terms yielded better results: Importance of the model
+- Comparing with O2: The same was done in this [[Interesting Paper using SPAPT]]
+- Removed binary variables: Caused runtime errors; Removed in other works too
+- Less iterations: Trying to minimize executions
+**** Plotting Orio Experiments Data (atax, O2, quadratic terms, xeon e5)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output
+#+BEGIN_SRC shell
+cd orio_experiments/testsuite/SPAPT/atax/xeon_e5_2630_v2/atax1_O2_quad/ && ./db2csv.py
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+
+data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e5_2630_v2/atax1_O2_quad/results.csv")
+str(data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup_O3))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup_O3))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup_O3),
+                   err = 2 * sd(speedup_O3) / sqrt(length(speedup_O3)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup_O3))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	199 obs. of  18 variables:
+ $ id        : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ RT_K      : int  8 8 8 8 8 8 8 8 8 8 ...
+ $ T1_I      : int  1 16 1 16 16 1 16 16 32 1 ...
+ $ T1_J      : int  16 16 128 16 256 256 128 256 16 128 ...
+ $ T1_K      : int  32 64 512 512 1 512 256 1 64 128 ...
+ $ U_K       : int  1 26 28 1 11 1 1 21 26 12 ...
+ $ U_J       : int  18 28 19 11 1 22 8 10 26 1 ...
+ $ U_I       : int  10 1 1 17 8 11 8 1 1 12 ...
+ $ technique : Factor w/ 2 levels "DLMT","RS": 2 2 2 2 2 2 2 2 2 2 ...
+ $ U1_I      : int  27 14 20 14 23 21 9 1 19 3 ...
+ $ speedup_O3: num  1.68 1.67 1.66 1.71 1.68 ...
+ $ T2_K      : int  2048 256 1 1024 256 1024 512 128 1 256 ...
+ $ T2_J      : int  2048 256 2048 256 256 1 128 256 128 1024 ...
+ $ T2_I      : int  1 1024 1 256 2048 1024 64 512 512 1 ...
+ $ points    : int  100 100 100 100 100 100 100 100 100 100 ...
+ $ RT_I      : int  1 8 8 8 1 1 1 8 8 1 ...
+ $ cost_mean : num  0.109 0.109 0.11 0.107 0.109 ...
+ $ RT_J      : int  8 1 1 1 8 8 1 1 1 8 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup_O3), #, y = 0.1 * ..density..),
+    binwidth = 0.05) +
+    labs(y = "Frequency", x = "Speedup vs O2") +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 100)) +
+    geom_curve(data = data_max, aes(x = max + 0.1, y = 30, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    geom_text(aes(x = max + 0.12, y = 30, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "", breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-AyGCXu/figuredHQe3Y.png]]
+**** Plotting Orio Experiments Data (atax, O2, quadratic terms, xeon e3 12)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output
+#+BEGIN_SRC shell
+cd orio_experiments/testsuite/SPAPT/atax/xeon_e3_1230_v2/atax0_O2_quad/ && ./db2csv.py
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+
+data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e3_1230_v2/atax0_O2_quad/results.csv")
+str(data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup_O3))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup_O3))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup_O3),
+                   err = 2 * sd(speedup_O3) / sqrt(length(speedup_O3)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup_O3))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	199 obs. of  18 variables:
+ $ id        : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ RT_K      : int  8 8 8 8 8 8 8 8 8 8 ...
+ $ T1_I      : int  512 512 1 32 64 128 16 512 32 512 ...
+ $ T1_J      : int  16 512 1 1 1 512 1 512 16 128 ...
+ $ T1_K      : int  128 1 512 1 1 1 128 512 1 512 ...
+ $ U_K       : int  1 1 1 30 1 1 1 12 1 17 ...
+ $ U_J       : int  16 21 24 21 22 15 17 1 9 21 ...
+ $ U_I       : int  22 15 6 1 10 15 18 19 21 1 ...
+ $ technique : Factor w/ 2 levels "DLMT","RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ U1_I      : int  28 30 5 16 14 4 9 2 16 15 ...
+ $ speedup_O3: num  1.51 1.53 1.5 1.52 1.52 ...
+ $ T2_K      : int  256 1 1 1 1 2048 256 2048 2048 1 ...
+ $ T2_J      : int  2048 1024 128 1024 512 1 1 1 2048 2048 ...
+ $ T2_I      : int  2048 1 2048 128 1 1 256 2048 2048 2048 ...
+ $ points    : int  105 105 162 136 139 114 126 115 123 118 ...
+ $ RT_I      : int  8 8 1 8 8 8 8 8 8 8 ...
+ $ cost_mean : num  0.0938 0.093 0.0945 0.0935 0.0934 ...
+ $ RT_J      : int  1 1 8 1 1 1 1 1 1 1 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup_O3), #, y = 0.01 * ..density..),
+    binwidth = 0.05) +
+    labs(y = "Frequency", x = "Speedup vs O2") +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 100)) +
+    geom_curve(data = data_max, aes(x = max + 0.1, y = 30, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    geom_text(aes(x = max + 0.12, y = 30, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-AyGCXu/figureKUTrtW.png]]
+**** Building Models with Quadratic Terms II
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+data <- data.frame(x1 = runif(10),
+                   x2 = runif(10),
+                   x3 = runif(10),
+                   x4 = runif(10),
+                   x5 = runif(10),
+                   x6 = runif(10))
+
+data$y <- 2 * data$x1 + data$x2 + 1.2 * data$x3 + 1.4 * data$x4 + 1.3 * data$x4 + 1.9 * data$x5 + 1.7 * data$x6 + (2.6 * data$x3 * data$x2 * data$x4)
+
+head(data)
+#+END_SRC
+
+#+RESULTS:
+:          x1         x2        x3        x4         x5          x6        y
+: 1 0.6778492 0.92349391 0.1576724 0.9815172 0.77496216 0.282501746 7.442764
+: 2 0.7088311 0.51079715 0.2335002 0.5522585 0.22558065 0.005148194 4.308371
+: 3 0.5280327 0.03529519 0.5537724 0.2926394 0.67773583 0.236637721 4.250867
+: 4 0.4423366 0.93826929 0.4526374 0.7090073 0.84701227 0.157596670 6.940557
+: 5 0.2282255 0.37932004 0.5559482 0.7280456 0.04624094 0.923890930 5.526287
+: 6 0.7575107 0.69316315 0.1938151 0.7458463 0.29209639 0.149164932 5.523634
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+model_matrix <- model.matrix(~ I(x2 ^ 2) + I(x1 ^ 2) + I(x3 ^ 2) + I(x4 ^ 2) + (x1 + x2 + x3 + x4) ^ 2 + x5 + x6, data)
+head(model_matrix)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  (Intercept)     I(x2^2)   I(x1^2)    I(x3^2)   I(x4^2)        x1         x2
+1           1 0.852840999 0.4594796 0.02486059 0.9633761 0.6778492 0.92349391
+2           1 0.260913733 0.5024415 0.05452236 0.3049895 0.7088311 0.51079715
+3           1 0.001245751 0.2788185 0.30666389 0.0856378 0.5280327 0.03529519
+4           1 0.880349268 0.1956617 0.20488059 0.5026914 0.4423366 0.93826929
+5           1 0.143883695 0.0520869 0.30907835 0.5300504 0.2282255 0.37932004
+6           1 0.480475149 0.5738224 0.03756428 0.5562866 0.7575107 0.69316315
+         x3        x4         x5          x6      x1:x2     x1:x3     x1:x4
+1 0.1576724 0.9815172 0.77496216 0.282501746 0.62598964 0.1068781 0.6653207
+2 0.2335002 0.5522585 0.22558065 0.005148194 0.36206889 0.1655122 0.3914580
+3 0.5537724 0.2926394 0.67773583 0.236637721 0.01863702 0.2924099 0.1545232
+4 0.4526374 0.7090073 0.84701227 0.157596670 0.41503088 0.2002181 0.3136199
+5 0.5559482 0.7280456 0.04624094 0.923890930 0.08657052 0.1268816 0.1661586
+6 0.1938151 0.7458463 0.29209639 0.149164932 0.52507848 0.1468170 0.5649865
+      x2:x3      x2:x4     x3:x4
+1 0.1456095 0.90642520 0.1547582
+2 0.1192713 0.28209208 0.1289525
+3 0.0195455 0.01032876 0.1620556
+4 0.4246957 0.66523981 0.3209232
+5 0.2108823 0.27616229 0.4047556
+6 0.1343455 0.51699314 0.1445562
+#+end_example
