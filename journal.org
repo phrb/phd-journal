@@ -3015,7 +3015,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AyGCXu/figuredHQe3Y.png]]
+[[file:/tmp/babel-XqTCQN/figure6NdsNM.png]]
 **** Plotting Orio Experiments Data (atax, O2, quadratic terms, xeon e3 12)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3149,19 +3149,24 @@ head(model_matrix)
 6 0.1343455 0.51699314 0.1445562
 #+end_example
 *** [2018-07-17 Tue]
-**** Plotting the entire Search Space
+**** Plotting atax0 O2 Uniform + D-Optimal Sampling
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
-library(plyr)
-
 data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e5_2630_v2/atax1_O2_quad/search_space.csv")
+
+data <- data[data$correct_result == "True", ]
 str(data)
+
+O2_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_K == 1, ]
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-'data.frame':	21105 obs. of  20 variables:
+'data.frame':	20999 obs. of  20 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
  $ runs                        : int  30 30 30 30 30 30 30 30 30 30 ...
@@ -3188,8 +3193,75 @@ str(data)
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
-ggplot(data) + geom_histogram(aes(cost_mean)) + theme_bw()
+ggplot(data) +
+    geom_histogram(aes(cost_mean)) +
+    geom_vline(aes(xintercept = cost_mean), O2_baseline, color = "black", linetype = 2) +
+    geom_text(aes(x = cost_mean + 0.03, y = 6000, label = "-O2 baseline"), data = O2_baseline) +
+    theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dbsK7s/figure4FZ5OA.png]]
+[[file:/tmp/babel-XqTCQN/figureKW30vP.png]]
+*** [2018-07-18 Wed]
+**** Plotting atax1 O3 Random Uniform Sample
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e5_2630_v2/atax1_O3/search_space.csv")
+
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$ACOPY_x == "False" & data$ACOPY_y == "False" &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2 == "False", ]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	729 obs. of  26 variables:
+ $ id                          : int  1 2 4 5 6 7 8 9 11 12 ...
+ $ T2_K                        : int  2048 64 2048 256 1 128 64 512 256 1 ...
+ $ T2_J                        : int  128 128 2048 256 1 256 1 2048 1 512 ...
+ $ T2_I                        : int  512 1 256 512 1024 128 128 256 1 2048 ...
+ $ mean_confidence_interval_inf: num  0.183 0.101 0.218 0.113 0.183 ...
+ $ RT_K                        : int  1 1 32 8 8 8 1 1 1 1 ...
+ $ T1_I                        : int  512 512 64 256 256 32 16 64 128 256 ...
+ $ T1_J                        : int  128 32 16 16 64 128 64 128 256 32 ...
+ $ T1_K                        : int  512 16 64 16 256 128 16 16 1 1 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1 2 1 2 2 1 1 1 2 1 ...
+ $ VEC1                        : Factor w/ 2 levels "False","True": 2 1 2 1 1 1 2 2 1 1 ...
+ $ SCR                         : Factor w/ 2 levels "False","True": 2 2 1 1 2 1 1 2 1 2 ...
+ $ ACOPY_x                     : Factor w/ 2 levels "False","True": 1 1 1 1 1 2 2 1 1 1 ...
+ $ ACOPY_y                     : Factor w/ 2 levels "False","True": 2 1 1 1 2 2 2 2 1 1 ...
+ $ U1_I                        : int  4 2 11 2 23 11 10 22 15 2 ...
+ $ RT_J                        : int  32 1 1 8 8 1 1 1 1 8 ...
+ $ runs                        : int  30 30 30 30 30 30 30 30 30 30 ...
+ $ mean_confidence_interval_sup: num  0.183 0.104 0.224 0.117 0.189 ...
+ $ cost_std                    : num  0.000204 0.00477 0.008259 0.006777 0.008412 ...
+ $ cost_mean                   : num  0.183 0.102 0.221 0.115 0.186 ...
+ $ U_J                         : int  8 1 1 1 22 1 1 20 8 4 ...
+ $ U_I                         : int  22 18 28 7 1 10 28 1 1 18 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ U_K                         : int  1 28 11 1 16 25 14 24 9 1 ...
+ $ RT_I                        : int  1 8 1 1 1 8 8 8 32 8 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean)) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    geom_text(aes(x = cost_mean + 0.03, y = 125, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XqTCQN/figureGlddsS.png]]
