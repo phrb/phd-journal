@@ -2940,7 +2940,7 @@ removed_interactions
 - Comparing with O2: The same was done in this [[Interesting Paper using SPAPT]]
 - Removed binary variables: Caused runtime errors; Removed in other works too
 - Less iterations: Trying to minimize executions
-**** Plotting Orio Experiments Data (atax, O2, quadratic terms, xeon e5)
+**** Plotting Orio Experiments Data (atax, O2, quadratic terms, Xeon E5 2630 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
@@ -3016,7 +3016,7 @@ ggplot(data) +
 
 #+RESULTS:
 [[file:/tmp/babel-XqTCQN/figure6NdsNM.png]]
-**** Plotting Orio Experiments Data (atax, O2, quadratic terms, xeon e3 12)
+**** Plotting Orio Experiments Data (atax, O2, quadratic terms, Xeon E3 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
@@ -3149,7 +3149,7 @@ head(model_matrix)
 6 0.1343455 0.51699314 0.1445562
 #+end_example
 *** [2018-07-17 Tue]
-**** Plotting atax0 O2 Uniform + D-Optimal Sampling
+**** Plotting atax0 O2 Uniform + D-Optimal Sampling (Xeon E5 2630 v2)
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3203,12 +3203,13 @@ ggplot(data) +
 #+RESULTS:
 [[file:/tmp/babel-XqTCQN/figureKW30vP.png]]
 *** [2018-07-18 Wed]
-**** Plotting atax1 O3 Random Uniform Sample
+**** Plotting atax1 O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
 data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e5_2630_v2/atax1_O3/search_space.csv")
 
+dim(data)
 data <- data[data$correct_result == "True", ]
 str(data)
 
@@ -3223,7 +3224,8 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
 
 #+RESULTS:
 #+begin_example
-'data.frame':	729 obs. of  26 variables:
+[1] 1600   26
+'data.frame':	1443 obs. of  26 variables:
  $ id                          : int  1 2 4 5 6 7 8 9 11 12 ...
  $ T2_K                        : int  2048 64 2048 256 1 128 64 512 256 1 ...
  $ T2_J                        : int  128 128 2048 256 1 256 1 2048 1 512 ...
@@ -3259,9 +3261,224 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
 ggplot(data) +
     geom_histogram(aes(cost_mean)) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    geom_text(aes(x = cost_mean + 0.03, y = 125, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, 0.6), ylim = c(0, 250)) +
+    geom_text(aes(x = cost_mean + 0.04, y = 200, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XqTCQN/figureGlddsS.png]]
+[[file:/tmp/babel-gGwScO/figure35TVyk.png]]
+*** [2018-07-19 Thu]
+**** Plotting bigckernel O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/bicgkernel/xeon_e5_2630_v2/src1_O3_binary/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$RT_I == 1 & data$RT_J == 1 &
+                    data$SCR == "False" & data$OMP == "False" &
+                    data$VEC1 == "False" & data$VEC2 == "False", ]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 3001   21
+'data.frame':	2980 obs. of  21 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ runs                        : int  35 35 35 35 35 35 35 35 35 35 ...
+ $ mean_confidence_interval_sup: num  0.0847 0.0308 0.086 0.3751 0.2981 ...
+ $ mean_confidence_interval_inf: num  0.0819 0.0278 0.0798 0.3741 0.2933 ...
+ $ T1_I                        : int  16 1 1 1 128 32 64 256 1 1 ...
+ $ T1_J                        : int  128 1 256 1 128 32 128 64 64 128 ...
+ $ cost_mean                   : num  0.0833 0.0293 0.0829 0.3746 0.2957 ...
+ $ U_J                         : int  1 1 1 4 6 1 1 7 4 24 ...
+ $ U_I                         : int  5 16 24 1 1 14 12 1 1 1 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ T2_I                        : int  2048 128 256 2048 2048 256 1 2048 2048 256 ...
+ $ cost_std                    : num  0.00432 0.00452 0.00938 0.00145 0.00713 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ T2_J                        : int  1 1 512 128 128 128 1024 2048 1024 2048 ...
+ $ U1_I                        : int  5 28 18 16 5 5 30 26 6 2 ...
+ $ OMP                         : Factor w/ 2 levels "False","True": 1 2 2 1 1 1 1 2 1 1 ...
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1 2 1 2 2 1 1 1 2 1 ...
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1 1 2 2 2 2 2 2 1 1 ...
+ $ RT_I                        : int  8 8 1 32 1 32 32 32 1 1 ...
+ $ SCR                         : Factor w/ 2 levels "False","True": 2 2 1 1 1 1 2 2 1 1 ...
+ $ RT_J                        : int  1 1 32 1 32 1 1 1 32 1 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean)) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 500)) +
+    geom_text(aes(x = cost_mean + 0.04, y = 100, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gGwScO/figure2eH8KA.png]]
+**** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1505M v6)
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e3_1505M_v6/atax1_O3/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$ACOPY_x == "False" & data$ACOPY_y == "False" &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2 == "False", ]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 211  26
+'data.frame':	189 obs. of  26 variables:
+ $ id                          : int  1 2 3 5 6 7 8 9 11 12 ...
+ $ T2_K                        : int  1 512 1 512 128 256 1024 1024 128 1 ...
+ $ T2_J                        : int  128 128 2048 2048 2048 1 128 1024 1 1024 ...
+ $ T2_I                        : int  64 2048 256 64 1024 128 512 512 512 1024 ...
+ $ mean_confidence_interval_inf: num  0.787 0.735 0.254 0.402 0.614 ...
+ $ RT_K                        : int  1 8 8 1 1 8 32 1 1 1 ...
+ $ T1_I                        : int  16 256 128 16 1 16 128 64 128 1 ...
+ $ T1_J                        : int  1 16 32 512 512 128 32 512 1 256 ...
+ $ T1_K                        : int  32 128 256 128 16 64 16 16 1 16 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1 1 2 2 2 2 2 1 2 1 ...
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1 2 1 2 1 2 1 1 1 1 ...
+ $ SCR                         : Factor w/ 2 levels "False","True": 1 2 2 1 1 1 1 1 2 2 ...
+ $ ACOPY_x                     : Factor w/ 2 levels "False","True": 2 1 1 1 1 2 2 1 2 1 ...
+ $ ACOPY_y                     : Factor w/ 2 levels "False","True": 1 2 2 1 1 1 1 1 2 1 ...
+ $ U1_I                        : int  7 28 9 27 13 29 19 12 7 12 ...
+ $ RT_J                        : int  1 8 1 1 32 8 1 8 1 32 ...
+ $ runs                        : int  30 30 30 30 30 30 30 30 30 30 ...
+ $ mean_confidence_interval_sup: num  0.807 0.744 0.255 0.403 0.628 ...
+ $ cost_std                    : num  0.02843 0.0131 0.00178 0.00149 0.02003 ...
+ $ cost_mean                   : num  0.797 0.74 0.255 0.403 0.621 ...
+ $ U_J                         : int  12 16 1 17 20 1 21 1 7 2 ...
+ $ U_I                         : int  1 1 11 15 24 17 1 22 1 1 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ U_K                         : int  9 11 30 1 1 28 19 18 12 3 ...
+ $ RT_I                        : int  1 1 8 8 1 1 1 1 32 1 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean)) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 30)) +
+    geom_text(aes(x = cost_mean + 0.1, y = 20, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gGwScO/figurea3updp.png]]
+**** Paper Review: GASPOW: An Autotunable System for Accelerating General Sliding-Window Streaming Operators on GPU
+***** Overall merit
+ 1. Reject
+ 2. Weak reject
+ * 3. Weak accept
+ 4. Accept
+ 5. Strong accept
+***** Reviewer expertise
+ 1. No familiarity
+ * 2. Some familiarity
+ 3. Knowledgeable
+ 4. Expert
+***** Paper short summary
+The paper presents a system for offloading stream processing workloads to GPUs.
+The system applies the concept of distinct sliding windows that can be run in
+parallel in GPUs. It uses online learning and a raindrop algorithm to optimize
+the concurrency level and the batch length that should be used in each
+application. Experiments with two queries are presented, showing significant
+improvements in comparison with execution on CPUs.
+***** Comments for PC (hidden from authors) - optional
+***** Novelty
+ 1. Published before or openly commercialized
+ * 2. Incremental improvement
+ 3. New contribution
+ 4. Surprisingly new contribution
+***** Strengths
+- Presentation: Clear tables and figures
+- Application of the parallel windows inside sliding batches approach on GPUs
+- Provides open-source code
+***** Weaknesses
+- Text could be made clearer
+- Evaluation based on only 2 applications and 1 architecture
+- Proposed autotuning strategy was not compared with other strategies
+***** Well situated regarding previous work
+ 1. Low
+ * 2. Medium
+ 3. High
+***** Detailed comments for author:
+****** Disclaimer
+Since this was a double blind review, it was not possible to access the source
+code used in the experiments or some of the references to previous work.
+****** Section 5: Evaluation
+It would be interesting to present more explanation on the selection of the
+queries for the evaluation, and why only two different queries where selected.
+Evaluation on more than a single GPU and CPU would also help support the
+conclusions of the paper.
+******* Section 5.2: Mechanism Evaluation
+The autotuning search space for this problem has two parameters and 150 possible
+combinations. This is a very small search space in relation to common autotuning
+problems in other domains. The entire search spaces of two scenarios of query 1
+are represented in the heatmaps of Figure 11.
+
+As far as I understood there is no diference in result throughput between points
+in and out of the Pareto frontier, at least with respect to the number of
+replicas. If this is the case, it would be interesting to compare the results of
+the active learning approach with much simpler autotuning approaches such as
+random uniform sampling or latin hypersquare sampling. If most query search
+spaces are like the ones presented in Figure 11, such simple approaches should
+have interesting results while consuming few resources.
+******* Section 5.3: Autotuning Evaluation
+In the last paragraph of this subsection, it is claimed that "[in] almost all
+cases the raindrop-based strategy ends up in an optimal configuration on the
+Pareto frontier. Only in few cases it picks a point not on the frontier but
+still very close to it.".
+
+According to the table, only in 5 out of the 12 scenarios the configuration
+found by the raindrop strategy was at distance zero from the Pareto Frontier.
+Since the space of configurations is discrete, it may be the case that distances
+smaller than 1 could be as close as possible, but if that is the case more
+clarification on the meaning of this distance should be provided.
+****** Text Clarity
+The paper could be made clearer by further text revision. An example, which
+appears in the last paragraph of subsubsection "Maximum sustainable input rate"
+of subsection 5.1, is the following:
+
+Original:   "The CPU version has a latency lower of some orders of magnitude [..]"
+Suggestion: "The CPU version has latency lower by 3 orders of magnitude [...]"
+
+****** Style and Formatting
+The following are some style and formatting suggestions:
+- Abbreviations such as "a.k.a", used in the first page, might not be
+  immediately understood by non-native english speakers, and can easily be
+  replaced by clearer expressions. In the first page, for example: "[...]" has
+  been applied to sliding-window queries [8] (a.k.a. windowed queries) that
+  [...]" could be rewritten as "[...] has been applied to sliding-window, or
+  windowed, queries [8] that [...]".
+- The intent of other abbreviations such as "e.g." and "i.e.", widely used in
+  the text, can be more clearly conveyed by replacing them by "for example" and
+  "that is".
