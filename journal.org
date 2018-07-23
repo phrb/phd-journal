@@ -3150,6 +3150,11 @@ head(model_matrix)
 #+end_example
 *** [2018-07-17 Tue]
 **** Plotting atax0 O2 Uniform + D-Optimal Sampling (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3204,6 +3209,11 @@ ggplot(data) +
 [[file:/tmp/babel-XqTCQN/figureKW30vP.png]]
 *** [2018-07-18 Wed]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3259,17 +3269,22 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    geom_histogram(aes(cost_mean)) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, 0.6), ylim = c(0, 250)) +
-    geom_text(aes(x = cost_mean + 0.04, y = 200, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, 0.6), ylim = c(0, 180)) +
+    geom_text(aes(x = cost_mean + 0.04, y = 170, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gGwScO/figure35TVyk.png]]
+[[file:/tmp/babel-Zspy18/figureMuK9H7.png]]
 *** [2018-07-19 Thu]
 **** Plotting bigckernel O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3319,16 +3334,21 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 &
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    geom_histogram(aes(cost_mean)) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 500)) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 300)) +
     geom_text(aes(x = cost_mean + 0.04, y = 100, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gGwScO/figure2eH8KA.png]]
+[[file:/tmp/babel-Zspy18/figurePjtyj6.png]]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1505M v6)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3384,15 +3404,15 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    geom_histogram(aes(cost_mean)) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 30)) +
-    geom_text(aes(x = cost_mean + 0.1, y = 20, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 12)) +
+    geom_text(aes(x = cost_mean + 0.1, y = 12, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gGwScO/figurea3updp.png]]
+[[file:/tmp/babel-OIl2Ho/figureW5OgZc.png]]
 **** Paper Review: GASPOW: An Autotunable System for Accelerating General Sliding-Window Streaming Operators on GPU
 ***** Overall merit
  1. Reject
@@ -3482,3 +3502,324 @@ The following are some style and formatting suggestions:
 - The intent of other abbreviations such as "e.g." and "i.e.", widely used in
   the text, can be more clearly conveyed by replacing them by "for example" and
   "that is".
+*** [2018-07-20 Fri]
+**** Plotting stencil3d O3 No Binary Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630/stencil_O3_nobinary/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 &
+                    data$RT1_K == 1, ]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 840  20
+'data.frame':	838 obs. of  20 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 12 ...
+ $ RT1_K                       : int  1 8 1 8 8 1 1 32 1 1 ...
+ $ RT1_J                       : int  8 1 1 1 8 1 8 1 8 1 ...
+ $ T1_Ja                       : int  64 256 1024 1024 1024 128 1 64 2048 1 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ mean_confidence_interval_inf: num  0.1117 0.1941 0.0965 0.2412 0.1994 ...
+ $ T1_I                        : int  1 512 16 256 512 1 128 256 1 32 ...
+ $ T1_J                        : int  1 32 512 512 1 1 32 32 32 64 ...
+ $ T1_Ia                       : int  64 2048 128 2048 512 256 512 256 512 128 ...
+ $ cost_mean                   : num  0.1144 0.1959 0.0996 0.2464 0.1999 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ T1_K                        : int  32 32 64 64 16 1 1 512 128 128 ...
+ $ T1_Ka                       : int  128 256 512 64 256 2048 256 512 2048 2048 ...
+ $ U1_K                        : int  28 7 1 23 7 22 19 9 3 22 ...
+ $ U1_J                        : int  2 1 13 1 16 29 20 1 1 1 ...
+ $ U1_I                        : int  1 1 27 19 1 1 1 17 13 18 ...
+ $ runs                        : int  35 35 35 35 35 35 35 35 35 35 ...
+ $ RT1_I                       : int  1 8 1 8 1 32 8 1 8 32 ...
+ $ mean_confidence_interval_sup: num  0.117 0.198 0.103 0.252 0.201 ...
+ $ cost_std                    : num  0.00828 0.00525 0.00948 0.01567 0.00174 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 230)) +
+    geom_text(aes(x = cost_mean + 0.02, y = 230, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-Zspy18/figureFGWnK1.png]]
+**** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1230 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/atax/xeon_e3_1230_v2/atax0_O3_nobinary/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1, ]
+
+str(O3_baseline$cost_mean)
+
+best <- data[data$cost_mean == min(data$cost_mean), ]
+str(best$cost_mean)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 63289    20
+'data.frame':	63009 obs. of  20 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ runs                        : int  30 30 30 30 30 30 30 30 30 30 ...
+ $ mean_confidence_interval_sup: num  0.225 0.11 0.188 0.251 0.153 ...
+ $ RT_K                        : int  8 1 1 1 32 8 1 8 1 8 ...
+ $ T1_I                        : int  64 128 16 64 1 1 512 32 1 512 ...
+ $ T1_J                        : int  1 64 16 16 512 32 32 32 64 1 ...
+ $ T1_K                        : int  32 1 16 64 512 128 256 512 16 1 ...
+ $ U_K                         : int  30 1 29 1 5 1 13 30 17 1 ...
+ $ U_J                         : int  1 22 1 14 16 28 1 4 21 28 ...
+ $ U_I                         : int  30 11 22 16 1 23 30 1 1 30 ...
+ $ U1_I                        : int  6 14 4 29 25 30 18 29 2 29 ...
+ $ T2_K                        : int  256 1024 2048 64 1 1 1024 1 1 1 ...
+ $ T2_J                        : int  1024 512 128 1 1 2048 1 256 2048 1 ...
+ $ T2_I                        : int  64 256 2048 1 128 64 1 512 512 512 ...
+ $ mean_confidence_interval_inf: num  0.224 0.109 0.188 0.251 0.153 ...
+ $ cost_std                    : num  1.36e-03 1.35e-04 6.58e-05 4.17e-04 5.96e-05 ...
+ $ RT_I                        : int  1 1 1 32 1 8 8 8 32 1 ...
+ $ cost_mean                   : num  0.225 0.11 0.188 0.251 0.153 ...
+ $ RT_J                        : int  8 1 8 1 1 1 8 1 1 8 ...
+ num 0.142
+ num 0.0802
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 380)) +
+    geom_text(aes(x = cost_mean + 0.1, y = 12, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-InAPVd/figureKGd8Rb.png]]
+**** Plotting dgem1 O3 Random Uniform Sample (Xeon E3 1230 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e3_1230_v2/dgemv1/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
+                    data$T1_Ja == 1 & data$T3_I == 1 & data$T3_J == 1 &
+                    data$T3_Ia == 1 & data$T3_Ja == 1 & data$T5_I == 1 &
+                    data$T5_J == 1 & data$T5_Ia == 1 & data$T5_Ja == 1 &
+                    data$T7_I == 1 & data$T7_J == 1 & data$T7_Ia == 1 &
+                    data$T7_Ja == 1 & data$U1_I == 1 & data$U1_J == 1 &
+                    data$U2_I == 1 & data$U3_I == 1 & data$U3_J == 1 &
+                    data$U4_I == 1 & data$U5_I == 1 & data$U5_J == 1 &
+                    data$U6_I == 1 & data$U7_I == 1 & data$U7_J == 1 &
+                    data$U8_I == 1 & data$U9_I == 1 & data$U10_I == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT3_I == 1 &
+                    data$RT3_J == 1 & data$RT5_I == 1 & data$RT5_J == 1 &
+                    data$RT7_I == 1 & data$RT7_J == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2  == "False" & data$VEC3 == "False" &
+                    data$VEC4 == "False" & data$VEC5 == "False" & data$VEC6 == "False" &
+                    data$VEC7 == "False" & data$VEC8 == "False" & data$VEC9 == "False" &
+                    data$VEC10 == "False", ]
+
+str(O3_baseline$cost_mean)
+best <- data[data$cost_mean == min(data$cost_mean), ]
+
+str(best$cost_mean)
+#+END_SRC
+
+#+RESULTS:
+: [1] 3001   57
+:  num 0.0929
+:  num 0.0651
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 620)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 620, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-Zspy18/figureynmmvV.png]]
+*** [2018-07-23 Mon]
+**** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630/stencil_O3/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+str(data)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 &
+                    data$RT1_K == 1, ]
+
+str(O3_baseline)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 1799   37
+'data.frame':	1796 obs. of  37 variables:
+ $ id                          : int  2 3 4 5 6 7 8 9 10 11 ...
+ $ RT1_K                       : int  8 1 32 1 1 1 1 8 1 32 ...
+ $ RT1_J                       : int  1 1 1 32 8 1 1 1 32 1 ...
+ $ T1_Ja                       : int  1 1024 1024 64 1024 128 1024 1024 256 2048 ...
+ $ RT1_I                       : int  1 32 1 1 8 8 32 1 1 1 ...
+ $ T2_K                        : int  16 512 1 64 512 64 256 128 16 64 ...
+ $ T2_J                        : int  16 16 64 64 64 512 32 512 512 256 ...
+ $ T2_I                        : int  16 32 16 256 32 64 64 512 32 1 ...
+ $ T2_Ja                       : int  128 2048 256 256 256 2048 1024 2048 1 256 ...
+ $ U2_I                        : int  1 1 1 23 19 28 3 30 27 21 ...
+ $ mean_confidence_interval_inf: num  0.0778 0.3177 0.1435 0.3858 0.2973 ...
+ $ T1_I                        : int  32 512 1 128 64 1 64 64 32 128 ...
+ $ T1_J                        : int  64 512 64 32 64 16 16 64 1 128 ...
+ $ T1_K                        : int  128 256 16 128 1 512 16 256 16 64 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ RT2_J                       : int  1 32 32 8 32 1 1 32 1 8 ...
+ $ VEC2                        : Factor w/ 2 levels "False","True": 2 2 1 2 2 2 2 1 2 1 ...
+ $ VEC1                        : Factor w/ 2 levels "False","True": 2 2 1 1 1 1 1 2 1 1 ...
+ $ SCR                         : Factor w/ 2 levels "False","True": 2 2 2 2 1 2 1 1 1 1 ...
+ $ T1_Ia                       : int  1 1 1024 1 128 1024 256 256 1024 1 ...
+ $ T1_Ka                       : int  1024 1024 1024 128 1 1024 1024 1 512 128 ...
+ $ OMP1                        : Factor w/ 2 levels "False","True": 2 2 2 2 1 2 2 1 2 1 ...
+ $ U1_K                        : int  1 21 1 1 2 3 1 15 18 15 ...
+ $ U1_J                        : int  15 20 1 28 30 1 2 1 30 1 ...
+ $ U1_I                        : int  28 1 3 9 1 24 21 29 1 13 ...
+ $ T2_Ka                       : int  1 1 1 64 1 1024 256 2048 2048 128 ...
+ $ RT2_I                       : int  1 1 1 1 1 1 1 1 8 8 ...
+ $ runs                        : int  35 35 35 35 35 35 35 35 35 35 ...
+ $ T2_Ia                       : int  128 128 128 1024 128 512 512 1 2048 256 ...
+ $ U2_J                        : int  7 18 23 16 25 1 1 1 27 17 ...
+ $ U2_K                        : int  26 15 8 1 1 22 3 29 1 1 ...
+ $ cost_mean                   : num  0.0799 0.3211 0.1464 0.3899 0.3016 ...
+ $ RT2_K                       : int  32 1 1 8 1 1 32 1 8 1 ...
+ $ OMP2                        : Factor w/ 2 levels "False","True": 2 1 1 2 1 1 2 2 2 2 ...
+ $ cost_std                    : num  0.0064 0.01032 0.00867 0.01229 0.01317 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ mean_confidence_interval_sup: num  0.082 0.325 0.149 0.394 0.306 ...
+'data.frame':	1 obs. of  37 variables:
+ $ id                          : int 301
+ $ RT1_K                       : int 1
+ $ RT1_J                       : int 1
+ $ T1_Ja                       : int 1
+ $ RT1_I                       : int 1
+ $ T2_K                        : int 1
+ $ T2_J                        : int 1
+ $ T2_I                        : int 1
+ $ T2_Ja                       : int 1
+ $ U2_I                        : int 1
+ $ mean_confidence_interval_inf: num 0.0721
+ $ T1_I                        : int 1
+ $ T1_J                        : int 1
+ $ T1_K                        : int 1
+ $ technique                   : Factor w/ 1 level "RS": 1
+ $ RT2_J                       : int 1
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1
+ $ SCR                         : Factor w/ 2 levels "False","True": 1
+ $ T1_Ia                       : int 1
+ $ T1_Ka                       : int 1
+ $ OMP1                        : Factor w/ 2 levels "False","True": 1
+ $ U1_K                        : int 1
+ $ U1_J                        : int 1
+ $ U1_I                        : int 1
+ $ T2_Ka                       : int 1
+ $ RT2_I                       : int 1
+ $ runs                        : int 35
+ $ T2_Ia                       : int 1
+ $ U2_J                        : int 1
+ $ U2_K                        : int 1
+ $ cost_mean                   : num 0.0736
+ $ RT2_K                       : int 1
+ $ OMP2                        : Factor w/ 2 levels "False","True": 1
+ $ cost_std                    : num 0.0047
+ $ correct_result              : Factor w/ 2 levels "False","True": 2
+ $ mean_confidence_interval_sup: num 0.0752
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 90)) +
+    geom_text(aes(x = cost_mean + 0.05, y = 90, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-Zspy18/figureg6RFXq.png]]
