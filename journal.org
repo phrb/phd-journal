@@ -3829,7 +3829,7 @@ str(best$cost_mean)
 #+END_SRC
 
 #+RESULTS:
-: [1] 804  57
+: [1] 1001   57
 :  num 0.114
 :  num 0.0757
 
@@ -3840,10 +3840,10 @@ str(best$cost_mean)
 ggplot(data) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 170)) +
-    geom_text(aes(x = cost_mean - 0.02, y = 170, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 200)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 200, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ppprzS/figurezCWUzD.png]]
+[[file:/tmp/babel-ppprzS/figure7ryc4D.png]]
