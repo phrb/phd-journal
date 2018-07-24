@@ -3699,7 +3699,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Zspy18/figureynmmvV.png]]
+[[file:/tmp/babel-ppprzS/figureolVn8f.png]]
 *** [2018-07-23 Mon]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3725,13 +3725,13 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
                     data$RT1_I == 1 & data$RT1_J == 1 &
                     data$RT1_K == 1, ]
 
-str(O3_baseline)
+str(O3_baseline$cost_mean)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-[1] 1799   37
-'data.frame':	1796 obs. of  37 variables:
+[1] 2458   37
+'data.frame':	2454 obs. of  37 variables:
  $ id                          : int  2 3 4 5 6 7 8 9 10 11 ...
  $ RT1_K                       : int  8 1 32 1 1 1 1 8 1 32 ...
  $ RT1_J                       : int  1 1 1 32 8 1 1 1 32 1 ...
@@ -3769,44 +3769,7 @@ str(O3_baseline)
  $ cost_std                    : num  0.0064 0.01032 0.00867 0.01229 0.01317 ...
  $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
  $ mean_confidence_interval_sup: num  0.082 0.325 0.149 0.394 0.306 ...
-'data.frame':	1 obs. of  37 variables:
- $ id                          : int 301
- $ RT1_K                       : int 1
- $ RT1_J                       : int 1
- $ T1_Ja                       : int 1
- $ RT1_I                       : int 1
- $ T2_K                        : int 1
- $ T2_J                        : int 1
- $ T2_I                        : int 1
- $ T2_Ja                       : int 1
- $ U2_I                        : int 1
- $ mean_confidence_interval_inf: num 0.0721
- $ T1_I                        : int 1
- $ T1_J                        : int 1
- $ T1_K                        : int 1
- $ technique                   : Factor w/ 1 level "RS": 1
- $ RT2_J                       : int 1
- $ VEC2                        : Factor w/ 2 levels "False","True": 1
- $ VEC1                        : Factor w/ 2 levels "False","True": 1
- $ SCR                         : Factor w/ 2 levels "False","True": 1
- $ T1_Ia                       : int 1
- $ T1_Ka                       : int 1
- $ OMP1                        : Factor w/ 2 levels "False","True": 1
- $ U1_K                        : int 1
- $ U1_J                        : int 1
- $ U1_I                        : int 1
- $ T2_Ka                       : int 1
- $ RT2_I                       : int 1
- $ runs                        : int 35
- $ T2_Ia                       : int 1
- $ U2_J                        : int 1
- $ U2_K                        : int 1
- $ cost_mean                   : num 0.0736
- $ RT2_K                       : int 1
- $ OMP2                        : Factor w/ 2 levels "False","True": 1
- $ cost_std                    : num 0.0047
- $ correct_result              : Factor w/ 2 levels "False","True": 2
- $ mean_confidence_interval_sup: num 0.0752
+ num 0.0736
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
@@ -3816,10 +3779,71 @@ str(O3_baseline)
 ggplot(data) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 90)) +
-    geom_text(aes(x = cost_mean + 0.05, y = 90, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 120)) +
+    geom_text(aes(x = cost_mean + 0.05, y = 123, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Zspy18/figureg6RFXq.png]]
+[[file:/tmp/babel-ppprzS/figure3lKvyY.png]]
+*** [2018-07-24 Tue]
+**** Plotting dgem1 O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
+                    data$T1_Ja == 1 & data$T3_I == 1 & data$T3_J == 1 &
+                    data$T3_Ia == 1 & data$T3_Ja == 1 & data$T5_I == 1 &
+                    data$T5_J == 1 & data$T5_Ia == 1 & data$T5_Ja == 1 &
+                    data$T7_I == 1 & data$T7_J == 1 & data$T7_Ia == 1 &
+                    data$T7_Ja == 1 & data$U1_I == 1 & data$U1_J == 1 &
+                    data$U2_I == 1 & data$U3_I == 1 & data$U3_J == 1 &
+                    data$U4_I == 1 & data$U5_I == 1 & data$U5_J == 1 &
+                    data$U6_I == 1 & data$U7_I == 1 & data$U7_J == 1 &
+                    data$U8_I == 1 & data$U9_I == 1 & data$U10_I == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT3_I == 1 &
+                    data$RT3_J == 1 & data$RT5_I == 1 & data$RT5_J == 1 &
+                    data$RT7_I == 1 & data$RT7_J == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2  == "False" & data$VEC3 == "False" &
+                    data$VEC4 == "False" & data$VEC5 == "False" & data$VEC6 == "False" &
+                    data$VEC7 == "False" & data$VEC8 == "False" & data$VEC9 == "False" &
+                    data$VEC10 == "False", ]
+
+str(O3_baseline$cost_mean)
+best <- data[data$cost_mean == min(data$cost_mean), ]
+
+str(best$cost_mean)
+#+END_SRC
+
+#+RESULTS:
+: [1] 804  57
+:  num 0.114
+:  num 0.0757
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 170)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 170, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-ppprzS/figurezCWUzD.png]]
