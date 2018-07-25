@@ -3847,3 +3847,57 @@ ggplot(data) +
 
 #+RESULTS:
 [[file:/tmp/babel-ppprzS/figure7ryc4D.png]]
+*** [2018-07-25 Wed]
+**** Plotting dgem1 O3 Random Uniform Sample (Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/gemver/xeon_e5_2630_v2/gemver_O3/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T2_I == 1 & data$T2_J == 1 & data$T2_Ia == 1 &
+                    data$T2_Ja == 1 & data$T4_I == 1 & data$T4_J == 1 &
+                    data$T4_Ia == 1 & data$T4_Ja == 1 &
+                    data$U1_I == 1 & data$U2_I == 1 & data$U2_J == 1 &
+                    data$U3_I == 1 & data$U4_I == 1 & data$U4_J == 1 &
+                    data$RT2_I == 1 & data$RT2_J == 1 & data$RT4_I == 1 &
+                    data$RT4_J == 1 &
+                    data$VEC1 == "False" & data$VEC2  == "False" & data$VEC3 == "False" &
+                    data$VEC4 == "False" & data$SCR == "False" &
+                    data$OMP == "False", ]
+
+str(O3_baseline$cost_mean)
+best <- data[data$cost_mean == min(data$cost_mean), ]
+
+str(best$cost_mean)
+#+END_SRC
+
+#+RESULTS:
+: [1] 792  32
+:  num 0.356
+:  num 0.108
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 50)) +
+    geom_text(aes(x = cost_mean + 0.1, y = 50, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-13txH3/figureqdT5pj.png]]
