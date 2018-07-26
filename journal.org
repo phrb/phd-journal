@@ -3722,8 +3722,14 @@ str(data)
 O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
                     data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
                     data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
-                    data$RT1_I == 1 & data$RT1_J == 1 &
-                    data$RT1_K == 1, ]
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$T2_Ia == 1 & data$T2_Ja == 1 & data$T2_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT1_K == 1 &
+                    data$U2_I == 1 & data$U2_J == 1 & data$U2_K == 1 &
+                    data$RT2_I == 1 & data$RT2_J == 1 & data$RT2_K == 1 &
+                    data$SCR == "False" & data$VEC1 == "False" & data$VEC2 == "False" &
+                    data$OMP1 == "False" & data$OMP2 == "False", ]
 
 str(O3_baseline$cost_mean)
 #+END_SRC
@@ -3785,7 +3791,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ppprzS/figure3lKvyY.png]]
+[[file:/tmp/babel-WG3kRj/figureVjb1Rk.png]]
 *** [2018-07-24 Tue]
 **** Plotting dgem1 O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3846,7 +3852,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ppprzS/figure7ryc4D.png]]
+[[file:/tmp/babel-WG3kRj/figurecOXV9z.png]]
 *** [2018-07-25 Wed]
 **** Plotting gemver O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3864,6 +3870,7 @@ data <- read.csv("orio_experiments/testsuite/SPAPT/gemver/xeon_e5_2630_v2/gemver
 
 dim(data)
 data <- data[data$correct_result == "True", ]
+dim(data)
 
 O3_baseline <- data[data$T2_I == 1 & data$T2_J == 1 & data$T2_Ia == 1 &
                     data$T2_Ja == 1 & data$T4_I == 1 & data$T4_J == 1 &
@@ -3883,7 +3890,8 @@ str(best$cost_mean)
 #+END_SRC
 
 #+RESULTS:
-: [1] 792  32
+: [1] 1921   32
+: [1] 1917   32
 :  num 0.356
 :  num 0.108
 
@@ -3894,13 +3902,13 @@ str(best$cost_mean)
 ggplot(data) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 50)) +
-    geom_text(aes(x = cost_mean + 0.1, y = 50, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 130)) +
+    geom_text(aes(x = cost_mean + 0.1, y = 130, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-13txH3/figureqdT5pj.png]]
+[[file:/tmp/babel-WG3kRj/figuredep1LQ.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3930,8 +3938,8 @@ str(O3_baseline$cost_mean)
 
 #+RESULTS:
 #+begin_example
-[1] 868  37
-'data.frame':	863 obs. of  37 variables:
+[1] 1925   37
+'data.frame':	1919 obs. of  37 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ RT1_K                       : int  32 1 1 1 1 32 1 32 8 1 ...
  $ RT1_J                       : int  1 1 8 1 1 1 8 1 8 1 ...
@@ -3979,10 +3987,18 @@ str(O3_baseline$cost_mean)
 ggplot(data) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 120)) +
-    geom_text(aes(x = cost_mean + 0.05, y = 123, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 150)) +
+    geom_text(aes(x = cost_mean + 0.05, y = 150, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-13txH3/figureSdCKkZ.png]]
+[[file:/tmp/babel-WG3kRj/figurewYYk57.png]]
+*** [2018-07-26 Thu]
+**** Running DLMT for stencil3d O3 (Xeon E5 1230 v2)
+Started running DLMT for stencil3d. Added a timeout of 20 minutes in the program
+running command because some applications take 1h+ to compile and still don't
+finish. Timeout length should be exposed as a configuration parameter.
+
+The initial model was linear for all 2-level binary factors and for the second
+and third levels of the parameters controlling loop unrolling, tiling, etc.
