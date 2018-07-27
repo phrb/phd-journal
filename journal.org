@@ -3699,7 +3699,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ppprzS/figureolVn8f.png]]
+[[file:/tmp/babel-C2GnlH/figureHB1IdH.png]]
 *** [2018-07-23 Mon]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3791,7 +3791,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WG3kRj/figureVjb1Rk.png]]
+[[file:/tmp/babel-C2GnlH/figureI5LCRN.png]]
 *** [2018-07-24 Tue]
 **** Plotting dgem1 O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3852,7 +3852,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WG3kRj/figurecOXV9z.png]]
+[[file:/tmp/babel-C2GnlH/figurefKjfCU.png]]
 *** [2018-07-25 Wed]
 **** Plotting gemver O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3908,7 +3908,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WG3kRj/figuredep1LQ.png]]
+[[file:/tmp/babel-C2GnlH/figuresHW2CG.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3993,12 +3993,17 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WG3kRj/figurewYYk57.png]]
+[[file:/tmp/babel-C2GnlH/figurexUeHjC.png]]
 *** [2018-07-26 Thu]
 **** Running DLMT for stencil3d O3 (Xeon E5 1230 v2)
-Started running DLMT for stencil3d. Added a timeout of 20 minutes in the program
-running command because some applications take 1h+ to compile and still don't
-finish. Timeout length should be exposed as a configuration parameter.
+- Started running DLMT for stencil3d. Added a timeout of 20 minutes in the program
+  running command because some applications take 1h+ to compile and still don't
+  finish. Timeout length should be exposed as a configuration parameter.
 
-The initial model was linear for all 2-level binary factors and for the second
-and third levels of the parameters controlling loop unrolling, tiling, etc.
+- The initial model used is linear for all 2-level binary factors and for the second
+  and third levels of the parameters controlling loop unrolling, tiling, etc.
+
+- The search space for this problem has "few" valid configurations, so sampling takes
+  a very long time. I opted to add more experiments and use a smaller sample
+  size. This seemed to improve the D-Efficiency of the designs, but this can
+  simply be a result of having more experiments.
