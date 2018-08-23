@@ -2555,7 +2555,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XeXoRm/figureCsk30V.png]]
+[[file:/tmp/babel-pKA0GA/figure9Cfi2s.png]]
 ***** D-Optimal Sampling with Quadratic Terms
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -2577,7 +2577,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XeXoRm/figure4tuLAm.png]]
+[[file:/tmp/babel-pKA0GA/figureXQIyzR.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -2614,7 +2614,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XeXoRm/figurel94xYu.png]]
+[[file:/tmp/babel-pKA0GA/figureTljFYC.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -2650,7 +2650,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XeXoRm/figure0Y9ZHG.png]]
+[[file:/tmp/babel-pKA0GA/figurecZgDnj.png]]
 **** Experiments with the ATAX application
 I've been using the smallest input size for the atax application. So far I am
 not sure if the larger sizes even work properly, since some of then do not use
@@ -3652,7 +3652,7 @@ git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments &
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
-data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e3_1230_v2/dgemv1/search_space.csv")
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e3_1230_v2/dgemv1/search_space/search_space.csv")
 
 dim(data)
 data <- data[data$correct_result == "True", ]
@@ -3699,7 +3699,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-C2GnlH/figureHB1IdH.png]]
+[[file:/tmp/babel-pKA0GA/figurekQC7UN.png]]
 *** [2018-07-23 Mon]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3832,12 +3832,73 @@ str(O3_baseline$cost_mean)
 best <- data[data$cost_mean == min(data$cost_mean), ]
 
 str(best$cost_mean)
+str(best)
 #+END_SRC
 
 #+RESULTS:
-: [1] 1001   57
-:  num 0.114
-:  num 0.0757
+#+begin_example
+[1] 1001   57
+ num 0.114
+ num 0.0757
+'data.frame':	1 obs. of  57 variables:
+ $ id                          : int 171
+ $ T5_I                        : int 64
+ $ T1_Ja                       : int 256
+ $ technique                   : Factor w/ 1 level "RS": 1
+ $ RT1_J                       : int 8
+ $ RT7_I                       : int 1
+ $ VEC10                       : Factor w/ 2 levels "False","True": 2
+ $ RT7_J                       : int 32
+ $ T5_J                        : int 64
+ $ VEC9                        : Factor w/ 2 levels "False","True": 1
+ $ T3_J                        : int 512
+ $ T3_I                        : int 256
+ $ RT1_I                       : int 8
+ $ VEC6                        : Factor w/ 2 levels "False","True": 2
+ $ mean_confidence_interval_inf: num 0.0755
+ $ T1_I                        : int 16
+ $ T1_J                        : int 16
+ $ T5_Ia                       : int 2048
+ $ T3_Ja                       : int 1024
+ $ VEC7                        : Factor w/ 2 levels "False","True": 2
+ $ VEC4                        : Factor w/ 2 levels "False","True": 1
+ $ VEC5                        : Factor w/ 2 levels "False","True": 2
+ $ T7_J                        : int 16
+ $ VEC3                        : Factor w/ 2 levels "False","True": 2
+ $ T7_I                        : int 32
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1
+ $ T7_Ia                       : int 256
+ $ VEC8                        : Factor w/ 2 levels "False","True": 1
+ $ U10_I                       : int 4
+ $ U6_I                        : int 16
+ $ T1_Ia                       : int 64
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1
+ $ U5_J                        : int 1
+ $ U5_I                        : int 4
+ $ U1_J                        : int 12
+ $ U1_I                        : int 1
+ $ U8_I                        : int 16
+ $ U7_I                        : int 4
+ $ U7_J                        : int 1
+ $ cost_std                    : num 0.000546
+ $ runs                        : int 35
+ $ mean_confidence_interval_sup: num 0.0759
+ $ U2_I                        : int 16
+ $ cost_mean                   : num 0.0757
+ $ U9_I                        : int 4
+ $ RT3_I                       : int 1
+ $ RT3_J                       : int 8
+ $ correct_result              : Factor w/ 1 level "True": 1
+ $ T7_Ja                       : int 1
+ $ T5_Ja                       : int 1
+ $ U4_I                        : int 16
+ $ T3_Ia                       : int 1024
+ $ SCR                         : Factor w/ 2 levels "False","True": 2
+ $ U3_I                        : int 12
+ $ RT5_J                       : int 8
+ $ RT5_I                       : int 8
+ $ U3_J                        : int 1
+#+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4007,3 +4068,254 @@ ggplot(data) +
   a very long time. I opted to add more experiments and use a smaller sample
   size. This seemed to improve the D-Efficiency of the designs, but this can
   simply be a result of having more experiments.
+*** [2018-07-30 Mon]
+**** Plotting Orio Experiments Data (dgemv3, O3, Xeon E3 1230 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e3_1230_v2/dgemv1/experiments/results.csv")
+
+data[data$technique == "DLMT" & data$points <= 70, "experiment"] = "DLMT_small"
+data[data$technique == "RS" & data$points <= 70, "experiment"] = "RS_small"
+data[data$technique == "DLMT" & data$points > 70, "experiment"] = "DLMT_large"
+data[data$technique == "RS" & data$points > 70, "experiment"] = "RS_large"
+data$experiment
+
+data_mean <- ddply(data, .(experiment), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(experiment), summarize, median = median(speedup))
+data_error <- ddply(data, .(experiment), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(experiment), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+:  [1] "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large"
+:  [6] "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large"
+: [11] "RS_large"   "RS_large"   "RS_large"   "RS_large"   "RS_large"
+: [16] "RS_large"   "RS_large"   "RS_large"   "RS_large"   "RS_large"
+: [21] "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small"
+: [26] "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small"
+: [31] "RS_small"   "RS_small"   "RS_small"   "RS_small"   "RS_small"
+: [36] "RS_small"   "RS_small"   "RS_small"   "RS_small"   "RS_small"
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(experiment ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 5)) +
+    geom_curve(data = data_max, aes(x = max + 0.1, y = 3, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    geom_text(aes(x = max + 0.12, y = 3, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-pKA0GA/figurew57u1j.png]]
+** August
+*** [2018-08-22 Wed]
+**** Paper Review for WSCAD: Performance and Energy Efficiency Evaluation for HPC
+***** Grades
+- Originality: 2
+- Relevance: 4
+- Technical Merit: 2
+- Text: 2
+- References:
+- Evaluation: 2
+- Verdict: 2
+- Reviewer Expertise: 4
+
+***** Comments to Authors
+****** Paper Summary
+The paper presents an evaluation of performance and power consumption of five
+experiments, two of which consist of real-world applications, in different
+architecture setups. With the results, the paper suggests an architecture setup
+for each experiment depending on the optimization objective.
+
+****** Section 4: Results
+Assuming that the data presented consists of means of several repetitions, the
+number of repetitions of each experiment and the variance of repeated executions
+are not discussed in the paper. Other values such as the standard error and
+standard deviation are also not discusssed. Without this crucial information
+about the experiments and results it is difficult to support any conclusion
+based on the data presented.
+
+I recommend that the relevant statistics are added to the plots, and that a
+discussion regarding their values is added to the paper. This information will
+help sustain the conclusions of the paper and complete the presentation of the
+results.
+****** Writing Comments and Suggestions
+The text would benefit from a revision in all sections. The current text is hard
+to read and to understand at certain points. Some sentences to improve and
+improvement suggestions are listed below, although I still recommend a thorough
+revision.
+
+******* Abstract
+
+1. Original sentence:
+
+"Those experiments, executed on a range of heterogeneous architectures and
+programming models, contributes by studying how such applications execute using
+metrics that take into account not just performance, but also the power
+consumption for an energy efficient HPC system."
+
+Suggestion:
+
+Here, "contributes" should agree with "Those experiments". It is also hard
+to extract the meaning of the sentence, perhaps because it is trying to convey
+too much information. A possible rewrite is:
+
+"Our results enable analysing the performance and power consumption of the
+selected applications, and help to achieve energy efficiency in HPC systems."
+
+******* Introduction
+1. Original:
+
+"Scientific computing usually requires huge processing power resources' to
+perform large scale experiments and run simulations in a reasonable time."
+
+Suggestion:
+
+Remove the typo "'".
+
+2. Original:
+
+"These demands have been addressed by High Performance Computing (HPC), which
+makes them invaluable tool for modern scientific research."
+
+Suggestion:
+
+It is not clear which are those demands, or how they are made an invaluable
+tool. Perhaps more explanations could be given before, in separate sentences.
+
+3. Original:
+
+"To this end, it is important to understand the relationships among performance
+(in this work we consider as time to solution and scalability), power
+consumption, and the characteristics of each scientific application."
+
+Suggestion:
+
+Replace "among" with "between". It is not clear what is the "end" or "objective"
+which is pursued. An introductory sentence to the paragraph could be added.
+
+******* Related Work
+1. Original:
+
+"A lot of works are focused on alternative and heterogeneous architectures [...]"
+
+Suggestion:
+
+Avoid using "a lot of", use instead expressions such as "many", or "multiple".
+
+2. Original:
+
+"The work [Okina et al. 2016] discusses [...]"
+"In [Castro et al. 2016] is presented [...]"
+(and others)
+
+Suggestion:
+
+Avoid using the reference marker as part of the text, as shown in the examples
+above. This style choice does not work in all reference systems, and the
+sentence will lose its meaning if the reference system changes to a superscript,
+for example.
+
+3. Original:
+
+"[...] particularly those representing the behavior of physical phenomenon such
+as seismic activity."
+
+Suggestion:
+
+"[...] particularly those representing the behavior of physical phenomena such
+as seismic activity."
+
+or
+
+"[...] particularly those representing the behavior of a physical phenomenon such
+as seismic activity."
+
+******* Experimental Setup (3.3)
+1. Original:
+
+"The form to collect the data from the internal sensors and the hardware param-
+eters, for each architecture, differ from each other."
+
+Suggestion:
+
+This sentence is hard to read. Changing the ordering of terms can help, such as:
+
+"Collecting data from sensors and hardware parameters is done in a different way
+in each architecture."
+
+2. Original:
+
+"For this reason, it was developed a [..] tool [...]"
+"[...] it was developed a module [...]"
+
+Suggestion:
+
+Replace "it was developed a X" by "X was developed", or "we developed X".
+
+3.Original:
+
+"These power and the execution time are used [..]"
+
+Suggestion:
+
+Replace "These" by "The", for example.
+
+******* Results
+1. Original:
+
+"The hatched area displays the EC of the application while the solid color of
+the system."
+
+Suggestion:
+
+"The hatched and solid areas displays the EC of the application and the system, respectively."
+
+2. Original:
+
+"This is in stark contrast when [...]"
+
+Suggestion:
+
+"This is in stark contrast to when [..]"
+"This is in stark contrast to the case when [..]"
+
+Or, to avoid imprecise expressions:
+
+"This is the opposite of when [...]"
+"This is the opposite of the case when [...]"
+
+******* Final Considerations and Future Works
+1. Original:
+
+"[...] the execution of scientific applications on a myriad of environments [...]"
+"[...] executed on a range of heterogeneous architectures [...]"
+
+Suggestion:
+
+Avoid imprecise or grandiose terms such as "range" and "myriad". Always use an
+exact number when possible. When an exact number can't be obtained, use "many"
+or "multiple".
