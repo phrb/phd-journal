@@ -3699,7 +3699,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-pKA0GA/figurekQC7UN.png]]
+[[file:/tmp/babel-uAeVrZ/figureqVYiYt.png]]
 *** [2018-07-23 Mon]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3913,7 +3913,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-C2GnlH/figurefKjfCU.png]]
+[[file:/tmp/babel-uAeVrZ/figureP5SsUi.png]]
 *** [2018-07-25 Wed]
 **** Plotting gemver O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -4117,7 +4117,7 @@ ggplot(data) +
     geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
     binwidth = 0.01) +
     labs(y = "Frequency", x = "Speedup vs O3") +
-    coord_cartesian(xlim = c(1, 2), ylim = c(0, 5)) +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 4)) +
     geom_curve(data = data_max, aes(x = max + 0.1, y = 3, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
     geom_text(aes(x = max + 0.12, y = 3, label = "max"), data = data_max) +
     geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
@@ -4129,7 +4129,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-pKA0GA/figurew57u1j.png]]
+[[file:/tmp/babel-uAeVrZ/figurehA27ws.png]]
 ** August
 *** [2018-08-22 Wed]
 **** Paper Review for WSCAD: Performance and Energy Efficiency Evaluation for HPC
@@ -4319,3 +4319,40 @@ Suggestion:
 Avoid imprecise or grandiose terms such as "range" and "myriad". Always use an
 exact number when possible. When an exact number can't be obtained, use "many"
 or "multiple".
+*** [2018-08-23 Thu]
+**** Topics for Meeting with Arnaud
+***** Evaluation letter for CAPES and visa Extension
+- Alfredo, Brice and Jean-Marc should sign
+***** Recent Autotuning "Review" Paper
+- Balaprakash (Orio, SPAPT), Dongarra, Gamblin, Hall, Hollingsworth,
+  Norris (Orio, SPAPT), Vuduc
+***** Current SPAPT Experiments
+****** Uniform Random Samples of Search Spaces
+- Sampled spaces for some problems do not seem good targets for
+  our approach, since most configurations are better than the default
+****** Original SPAPT Paper
+- Uses mean of 35 executions in evaluations
+- I was not able to reproduce the "densities" of runtime
+  for the problems in the paper
+****** O3 Usage
+- My initial assumption was that they used O3 with all parameters set to zero
+  as the initial point, and then kept using O3 for all other points measured
+- I also assumed that removing O3 and only using code transformations would
+  always decrease performance
+- Additionally, initial experiments with O2, O1 and O0 showed similar sample
+  distributions as in the O3 case
+****** Using Designs for Autotuning
+******* Choosing the Initial Model
+- Implemented a way to specify model terms in the Orio problem specification
+- It is possible to add interactions cubic and quadratic terms
+- In my experiments I am only using linear and quadratic terms so far, without interactions
+- How to select the best model for each application?
+- Adding more terms decreases D-Efficiency and increases the number of experiments
+******* Pruning the Model
+- In some cases, points sampled during the design ended up
+  having better performance than the best predicted point after fitting
+- When that happened, I fixed the most "relevant" factors to the
+  value of the best point on the design, instead of to the value of the best
+  predicted point
+- Removed the second sampling for the prediction using the fitted model,
+  the prediction is now made on the initial uniformly sampled set
