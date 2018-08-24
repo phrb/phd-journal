@@ -3015,7 +3015,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XqTCQN/figure6NdsNM.png]]
+[[file:/tmp/babel-AiL4Pb/figureG457Cf.png]]
 **** Plotting Orio Experiments Data (atax, O2, quadratic terms, Xeon E3 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3277,7 +3277,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Zspy18/figureMuK9H7.png]]
+[[file:/tmp/babel-AiL4Pb/figureiwM7yj.png]]
 *** [2018-07-19 Thu]
 **** Plotting bigckernel O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3567,7 +3567,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Zspy18/figureFGWnK1.png]]
+[[file:/tmp/babel-AiL4Pb/figureqnEtDp.png]]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3837,66 +3837,66 @@ str(best)
 
 #+RESULTS:
 #+begin_example
-[1] 1001   57
+[1] 3915   57
  num 0.114
- num 0.0757
+ num 0.0728
 'data.frame':	1 obs. of  57 variables:
- $ id                          : int 171
+ $ id                          : int 887
  $ T5_I                        : int 64
- $ T1_Ja                       : int 256
- $ technique                   : Factor w/ 1 level "RS": 1
- $ RT1_J                       : int 8
- $ RT7_I                       : int 1
+ $ T1_Ja                       : int 2048
+ $ technique                   : Factor w/ 2 levels "DLMT","RS": 1
+ $ RT1_J                       : int 32
+ $ RT7_I                       : int 8
  $ VEC10                       : Factor w/ 2 levels "False","True": 2
- $ RT7_J                       : int 32
- $ T5_J                        : int 64
+ $ RT7_J                       : int 1
+ $ T5_J                        : int 512
  $ VEC9                        : Factor w/ 2 levels "False","True": 1
- $ T3_J                        : int 512
- $ T3_I                        : int 256
- $ RT1_I                       : int 8
- $ VEC6                        : Factor w/ 2 levels "False","True": 2
- $ mean_confidence_interval_inf: num 0.0755
- $ T1_I                        : int 16
- $ T1_J                        : int 16
+ $ T3_J                        : int 128
+ $ T3_I                        : int 512
+ $ RT1_I                       : int 1
+ $ VEC6                        : Factor w/ 2 levels "False","True": 1
+ $ mean_confidence_interval_inf: num 0.0728
+ $ T1_I                        : int 32
+ $ T1_J                        : int 64
  $ T5_Ia                       : int 2048
- $ T3_Ja                       : int 1024
+ $ T3_Ja                       : int 128
  $ VEC7                        : Factor w/ 2 levels "False","True": 2
  $ VEC4                        : Factor w/ 2 levels "False","True": 1
  $ VEC5                        : Factor w/ 2 levels "False","True": 2
- $ T7_J                        : int 16
- $ VEC3                        : Factor w/ 2 levels "False","True": 2
- $ T7_I                        : int 32
+ $ T7_J                        : int 1
+ $ VEC3                        : Factor w/ 2 levels "False","True": 1
+ $ T7_I                        : int 1
  $ VEC2                        : Factor w/ 2 levels "False","True": 1
- $ T7_Ia                       : int 256
- $ VEC8                        : Factor w/ 2 levels "False","True": 1
- $ U10_I                       : int 4
+ $ T7_Ia                       : int 2048
+ $ VEC8                        : Factor w/ 2 levels "False","True": 2
+ $ U10_I                       : int 16
  $ U6_I                        : int 16
- $ T1_Ia                       : int 64
+ $ T1_Ia                       : int 1
  $ VEC1                        : Factor w/ 2 levels "False","True": 1
  $ U5_J                        : int 1
  $ U5_I                        : int 4
- $ U1_J                        : int 12
- $ U1_I                        : int 1
+ $ U1_J                        : int 1
+ $ U1_I                        : int 4
  $ U8_I                        : int 16
- $ U7_I                        : int 4
+ $ U7_I                        : int 1
  $ U7_J                        : int 1
- $ cost_std                    : num 0.000546
+ $ cost_std                    : num 8.57e-05
  $ runs                        : int 35
- $ mean_confidence_interval_sup: num 0.0759
- $ U2_I                        : int 16
- $ cost_mean                   : num 0.0757
- $ U9_I                        : int 4
- $ RT3_I                       : int 1
+ $ mean_confidence_interval_sup: num 0.0728
+ $ U2_I                        : int 4
+ $ cost_mean                   : num 0.0728
+ $ U9_I                        : int 16
+ $ RT3_I                       : int 8
  $ RT3_J                       : int 8
  $ correct_result              : Factor w/ 1 level "True": 1
- $ T7_Ja                       : int 1
- $ T5_Ja                       : int 1
+ $ T7_Ja                       : int 256
+ $ T5_Ja                       : int 512
  $ U4_I                        : int 16
- $ T3_Ia                       : int 1024
+ $ T3_Ia                       : int 1
  $ SCR                         : Factor w/ 2 levels "False","True": 2
- $ U3_I                        : int 12
- $ RT5_J                       : int 8
- $ RT5_I                       : int 8
+ $ U3_I                        : int 1
+ $ RT5_J                       : int 1
+ $ RT5_I                       : int 1
  $ U3_J                        : int 1
 #+end_example
 
@@ -3904,16 +3904,16 @@ str(best)
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
-ggplot(data) +
+ggplot(data[data$technique == "RS", ]) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 200)) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 1050)) +
     geom_text(aes(x = cost_mean - 0.02, y = 200, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-uAeVrZ/figureP5SsUi.png]]
+[[file:/tmp/babel-AiL4Pb/figured8ABQO.png]]
 *** [2018-07-25 Wed]
 **** Plotting gemver O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -4089,7 +4089,6 @@ data[data$technique == "DLMT" & data$points <= 70, "experiment"] = "DLMT_small"
 data[data$technique == "RS" & data$points <= 70, "experiment"] = "RS_small"
 data[data$technique == "DLMT" & data$points > 70, "experiment"] = "DLMT_large"
 data[data$technique == "RS" & data$points > 70, "experiment"] = "RS_large"
-data$experiment
 
 data_mean <- ddply(data, .(experiment), summarize, mean = mean(speedup))
 data_median <- ddply(data, .(experiment), summarize, median = median(speedup))
@@ -4099,14 +4098,6 @@ data_max <- ddply(data, .(experiment), summarize, max = max(speedup))
 #+END_SRC
 
 #+RESULTS:
-:  [1] "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large"
-:  [6] "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large" "DLMT_large"
-: [11] "RS_large"   "RS_large"   "RS_large"   "RS_large"   "RS_large"
-: [16] "RS_large"   "RS_large"   "RS_large"   "RS_large"   "RS_large"
-: [21] "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small"
-: [26] "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small" "DLMT_small"
-: [31] "RS_small"   "RS_small"   "RS_small"   "RS_small"   "RS_small"
-: [36] "RS_small"   "RS_small"   "RS_small"   "RS_small"   "RS_small"
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4129,7 +4120,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figurebmoJWF.png]]
+[[file:/tmp/babel-AiL4Pb/figureHQnKL8.png]]
 ** August
 *** [2018-08-22 Wed]
 **** Paper Review for WSCAD: Performance and Energy Efficiency Evaluation for HPC
@@ -4371,7 +4362,7 @@ or "multiple".
 - http://www.ipdps.org/ipdps2019/2019-organization.html
 - http://iwapt.org/2019/
 - Invite Steven
-- I believe we can write a nice paper for IPDPS 19, or to
+- I believe we can write a paper for IPDPS 19, or to
   the autotuning workshop that usually happens in it
 - As a strong motivation, present results obtained in Steven's problem
 - Finish experiments with Orio and SPAPT
@@ -4392,12 +4383,6 @@ library(ggplot2)
 library(plyr)
 
 data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/results.csv")
-
-# data[data$technique == "DLMT" & data$points <= 70, "experiment"] = "DLMT_small"
-# data[data$technique == "RS" & data$points <= 70, "experiment"] = "RS_small"
-# data[data$technique == "DLMT" & data$points > 70, "experiment"] = "DLMT_large"
-# data[data$technique == "RS" & data$points > 70, "experiment"] = "RS_large"
-# data$experiment
 
 data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
 data_median <- ddply(data, .(technique), summarize, median = median(speedup))
@@ -4429,4 +4414,120 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figure5Nun0I.png]]
+[[file:/tmp/babel-AiL4Pb/figure9uuuic.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/search_space.csv")
+
+dim(data)
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
+                    data$T1_Ja == 1 & data$T3_I == 1 & data$T3_J == 1 &
+                    data$T3_Ia == 1 & data$T3_Ja == 1 & data$T5_I == 1 &
+                    data$T5_J == 1 & data$T5_Ia == 1 & data$T5_Ja == 1 &
+                    data$T7_I == 1 & data$T7_J == 1 & data$T7_Ia == 1 &
+                    data$T7_Ja == 1 & data$U1_I == 1 & data$U1_J == 1 &
+                    data$U2_I == 1 & data$U3_I == 1 & data$U3_J == 1 &
+                    data$U4_I == 1 & data$U5_I == 1 & data$U5_J == 1 &
+                    data$U6_I == 1 & data$U7_I == 1 & data$U7_J == 1 &
+                    data$U8_I == 1 & data$U9_I == 1 & data$U10_I == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT3_I == 1 &
+                    data$RT3_J == 1 & data$RT5_I == 1 & data$RT5_J == 1 &
+                    data$RT7_I == 1 & data$RT7_J == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2  == "False" & data$VEC3 == "False" &
+                    data$VEC4 == "False" & data$VEC5 == "False" & data$VEC6 == "False" &
+                    data$VEC7 == "False" & data$VEC8 == "False" & data$VEC9 == "False" &
+                    data$VEC10 == "False", ]
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[2, "technique"] <- "RS"
+str(O3_baseline$cost_mean)
+best <- data[data$cost_mean == min(data$cost_mean), ]
+
+str(best$cost_mean)
+str(best)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 3915   57
+ num [1:2] 0.114 0.114
+ num 0.0728
+'data.frame':	1 obs. of  57 variables:
+ $ id                          : int 887
+ $ T5_I                        : int 64
+ $ T1_Ja                       : int 2048
+ $ technique                   : Factor w/ 2 levels "DLMT","RS": 1
+ $ RT1_J                       : int 32
+ $ RT7_I                       : int 8
+ $ VEC10                       : Factor w/ 2 levels "False","True": 2
+ $ RT7_J                       : int 1
+ $ T5_J                        : int 512
+ $ VEC9                        : Factor w/ 2 levels "False","True": 1
+ $ T3_J                        : int 128
+ $ T3_I                        : int 512
+ $ RT1_I                       : int 1
+ $ VEC6                        : Factor w/ 2 levels "False","True": 1
+ $ mean_confidence_interval_inf: num 0.0728
+ $ T1_I                        : int 32
+ $ T1_J                        : int 64
+ $ T5_Ia                       : int 2048
+ $ T3_Ja                       : int 128
+ $ VEC7                        : Factor w/ 2 levels "False","True": 2
+ $ VEC4                        : Factor w/ 2 levels "False","True": 1
+ $ VEC5                        : Factor w/ 2 levels "False","True": 2
+ $ T7_J                        : int 1
+ $ VEC3                        : Factor w/ 2 levels "False","True": 1
+ $ T7_I                        : int 1
+ $ VEC2                        : Factor w/ 2 levels "False","True": 1
+ $ T7_Ia                       : int 2048
+ $ VEC8                        : Factor w/ 2 levels "False","True": 2
+ $ U10_I                       : int 16
+ $ U6_I                        : int 16
+ $ T1_Ia                       : int 1
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1
+ $ U5_J                        : int 1
+ $ U5_I                        : int 4
+ $ U1_J                        : int 1
+ $ U1_I                        : int 4
+ $ U8_I                        : int 16
+ $ U7_I                        : int 1
+ $ U7_J                        : int 1
+ $ cost_std                    : num 8.57e-05
+ $ runs                        : int 35
+ $ mean_confidence_interval_sup: num 0.0728
+ $ U2_I                        : int 4
+ $ cost_mean                   : num 0.0728
+ $ U9_I                        : int 16
+ $ RT3_I                       : int 8
+ $ RT3_J                       : int 8
+ $ correct_result              : Factor w/ 1 level "True": 1
+ $ T7_Ja                       : int 256
+ $ T5_Ja                       : int 512
+ $ U4_I                        : int 16
+ $ T3_Ia                       : int 1
+ $ SCR                         : Factor w/ 2 levels "False","True": 2
+ $ U3_I                        : int 1
+ $ RT5_J                       : int 1
+ $ RT5_I                       : int 1
+ $ U3_J                        : int 1
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 1050)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 200, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-qRxgOj/figureEfCU03.png]]
