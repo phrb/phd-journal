@@ -4129,7 +4129,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-uAeVrZ/figurehA27ws.png]]
+[[file:/tmp/babel-AiL4Pb/figurebmoJWF.png]]
 ** August
 *** [2018-08-22 Wed]
 **** Paper Review for WSCAD: Performance and Energy Efficiency Evaluation for HPC
@@ -4323,10 +4323,15 @@ or "multiple".
 **** Topics for Meeting with Arnaud
 ***** Evaluation letter for CAPES and visa Extension
 - Alfredo, Brice and Jean-Marc should sign
-***** Recent Autotuning "Review" Paper
+***** Recent Autotuning "Review" Paper :ATTACH:
+:PROPERTIES:
+:Attachments: balaprakash2018autotuning.pdf
+:ID:       b9173855-f4a8-42df-8ce4-ce4cba2d9935
+:END:
 - Balaprakash (Orio, SPAPT), Dongarra, Gamblin, Hall, Hollingsworth,
   Norris (Orio, SPAPT), Vuduc
 ***** Current SPAPT Experiments
+- Tests with other search techniques?
 ****** Uniform Random Samples of Search Spaces
 - Sampled spaces for some problems do not seem good targets for
   our approach, since most configurations are better than the default
@@ -4356,3 +4361,71 @@ or "multiple".
   predicted point
 - Removed the second sampling for the prediction using the fitted model,
   the prediction is now made on the initial uniformly sampled set
+******* Finding Good Points
+- Usually the first evaluated design has good results, which is usually not improved
+  upon too much by further iterations
+- We are more interested in finding a good point than in finding the
+  perfect model for the problem, so good solutions should be prioritized
+  against the solutions predicted by the model
+***** IPDPS Submission
+- http://www.ipdps.org/ipdps2019/2019-organization.html
+- Invite Steven
+- I believe we can write a nice paper for IPDPS 19, or to
+  the autotuning workshop that usually happens in it
+- As a strong motivation, present results obtained in Steven's problem
+- Finish experiments with Orio and SPAPT
+- Discuss the performance of our approach in different problems
+*** [2018-08-24 Fri]
+**** Plotting Orio Experiments Data (dgemv3, O3, Xeon E5 2630 v2)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/results.csv")
+
+# data[data$technique == "DLMT" & data$points <= 70, "experiment"] = "DLMT_small"
+# data[data$technique == "RS" & data$points <= 70, "experiment"] = "RS_small"
+# data[data$technique == "DLMT" & data$points > 70, "experiment"] = "DLMT_large"
+# data[data$technique == "RS" & data$points > 70, "experiment"] = "RS_large"
+# data$experiment
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 2)) +
+    geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-AiL4Pb/figurexz5IEn.png]]
