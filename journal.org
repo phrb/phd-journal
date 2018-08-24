@@ -4345,7 +4345,7 @@ or "multiple".
 - I also assumed that removing O3 and only using code transformations would
   always decrease performance
 - Additionally, initial experiments with O2, O1 and O0 showed similar sample
-  distributions as in the O3 case
+  distributions as in the O3 case, but this was not tested for all problems
 ****** Using Designs for Autotuning
 ******* Choosing the Initial Model
 - Implemented a way to specify model terms in the Orio problem specification
@@ -4428,4 +4428,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figurexz5IEn.png]]
+[[file:/tmp/babel-AiL4Pb/figure5Nun0I.png]]
