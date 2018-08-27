@@ -3206,7 +3206,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XqTCQN/figureKW30vP.png]]
+[[file:/tmp/babel-dLTdMe/figurej8zchR.png]]
 *** [2018-07-18 Wed]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3277,7 +3277,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figureiwM7yj.png]]
+[[file:/tmp/babel-dLTdMe/figureAJmYGl.png]]
 *** [2018-07-19 Thu]
 **** Plotting bigckernel O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3929,9 +3929,9 @@ git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments &
 library(ggplot2)
 data <- read.csv("orio_experiments/testsuite/SPAPT/gemver/xeon_e5_2630_v2/gemver_O3/search_space.csv")
 
-dim(data)
 data <- data[data$correct_result == "True", ]
-dim(data)
+
+str(data)
 
 O3_baseline <- data[data$T2_I == 1 & data$T2_J == 1 & data$T2_Ia == 1 &
                     data$T2_Ja == 1 & data$T4_I == 1 & data$T4_J == 1 &
@@ -3951,10 +3951,43 @@ str(best$cost_mean)
 #+END_SRC
 
 #+RESULTS:
-: [1] 1921   32
-: [1] 1917   32
-:  num 0.356
-:  num 0.108
+#+begin_example
+'data.frame':	1917 obs. of  32 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  256 64 256 512 1 64 1 256 512 32 ...
+ $ T2_I                        : int  512 512 16 32 256 128 16 1 32 32 ...
+ $ T4_I                        : int  1 128 1 1 64 512 32 256 32 128 ...
+ $ T4_J                        : int  64 128 256 16 512 32 512 32 16 256 ...
+ $ mean_confidence_interval_inf: num  0.363 0.49 0.255 0.117 1.229 ...
+ $ T2_Ja                       : int  256 256 256 1024 1 1024 64 1024 1024 1 ...
+ $ T2_Ia                       : int  1024 1 512 512 1 1024 128 256 1 128 ...
+ $ technique                   : Factor w/ 1 level "RS": 1 1 1 1 1 1 1 1 1 1 ...
+ $ T4_Ia                       : int  256 128 512 64 1 512 1 2048 1 1024 ...
+ $ VEC4                        : Factor w/ 2 levels "False","True": 2 2 2 2 1 1 2 2 1 2 ...
+ $ VEC2                        : Factor w/ 2 levels "False","True": 2 2 1 2 2 1 1 2 1 1 ...
+ $ VEC3                        : Factor w/ 2 levels "False","True": 1 1 2 2 2 1 2 1 2 2 ...
+ $ VEC1                        : Factor w/ 2 levels "False","True": 1 1 2 1 2 1 1 1 1 2 ...
+ $ U4_J                        : int  1 15 1 2 3 16 5 12 23 1 ...
+ $ U2_J                        : int  20 24 9 13 24 11 2 19 9 5 ...
+ $ SCR                         : Factor w/ 2 levels "False","True": 2 2 2 2 1 2 1 2 1 2 ...
+ $ U4_I                        : int  3 1 22 1 1 1 1 1 1 9 ...
+ $ U1_I                        : int  16 23 2 22 22 7 9 22 10 7 ...
+ $ RT2_I                       : int  8 1 32 1 32 1 1 8 8 8 ...
+ $ runs                        : int  35 35 35 35 35 35 35 35 35 35 ...
+ $ U2_I                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ RT2_J                       : int  8 32 1 8 1 8 8 8 1 8 ...
+ $ cost_mean                   : num  0.364 0.491 0.255 0.122 1.23 ...
+ $ cost_std                    : num  0.00371 0.00271 0.00244 0.01616 0.00498 ...
+ $ correct_result              : Factor w/ 2 levels "False","True": 2 2 2 2 2 2 2 2 2 2 ...
+ $ OMP                         : Factor w/ 2 levels "False","True": 1 1 1 2 1 2 1 2 1 1 ...
+ $ RT4_J                       : int  8 8 8 1 8 8 1 1 1 8 ...
+ $ RT4_I                       : int  1 1 8 8 1 8 32 32 8 1 ...
+ $ T4_Ja                       : int  2048 512 512 1024 1024 2048 2048 1 1 2048 ...
+ $ mean_confidence_interval_sup: num  0.365 0.492 0.256 0.128 1.232 ...
+ $ U3_I                        : int  13 21 15 20 1 21 17 7 3 7 ...
+ num 0.356
+ num 0.108
+#+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -3969,7 +4002,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-C2GnlH/figuresHW2CG.png]]
+[[file:/tmp/babel-dLTdMe/figureqG8ab3.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -4368,7 +4401,7 @@ or "multiple".
 - Finish experiments with Orio and SPAPT
 - Discuss the performance of our approach in different problems
 *** [2018-08-24 Fri]
-**** Plotting Orio Experiments Data (dgemv3, O3, Xeon E5 2630 v2)
+**** Plotting Orio Experiments Data (dgemv3, O3, Xeon E5 2630 v2, Fixing Factors with Design Best)
 #+HEADER: :results output
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
@@ -4382,7 +4415,7 @@ git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments &
 library(ggplot2)
 library(plyr)
 
-data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/results.csv")
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_best/results.csv")
 
 data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
 data_median <- ddply(data, .(technique), summarize, median = median(speedup))
@@ -4414,14 +4447,13 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figure9uuuic.png]]
+[[file:/tmp/babel-dLTdMe/figureFUVqNF.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
-data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/dgemv3_O3/search_space.csv")
+data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_best/search_space.csv")
 
-dim(data)
 data <- data[data$correct_result == "True", ]
 
 O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
@@ -4444,77 +4476,10 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
 
 O3_baseline <- O3_baseline[c(1,1), ]
 O3_baseline[2, "technique"] <- "RS"
-str(O3_baseline$cost_mean)
 best <- data[data$cost_mean == min(data$cost_mean), ]
-
-str(best$cost_mean)
-str(best)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-[1] 3915   57
- num [1:2] 0.114 0.114
- num 0.0728
-'data.frame':	1 obs. of  57 variables:
- $ id                          : int 887
- $ T5_I                        : int 64
- $ T1_Ja                       : int 2048
- $ technique                   : Factor w/ 2 levels "DLMT","RS": 1
- $ RT1_J                       : int 32
- $ RT7_I                       : int 8
- $ VEC10                       : Factor w/ 2 levels "False","True": 2
- $ RT7_J                       : int 1
- $ T5_J                        : int 512
- $ VEC9                        : Factor w/ 2 levels "False","True": 1
- $ T3_J                        : int 128
- $ T3_I                        : int 512
- $ RT1_I                       : int 1
- $ VEC6                        : Factor w/ 2 levels "False","True": 1
- $ mean_confidence_interval_inf: num 0.0728
- $ T1_I                        : int 32
- $ T1_J                        : int 64
- $ T5_Ia                       : int 2048
- $ T3_Ja                       : int 128
- $ VEC7                        : Factor w/ 2 levels "False","True": 2
- $ VEC4                        : Factor w/ 2 levels "False","True": 1
- $ VEC5                        : Factor w/ 2 levels "False","True": 2
- $ T7_J                        : int 1
- $ VEC3                        : Factor w/ 2 levels "False","True": 1
- $ T7_I                        : int 1
- $ VEC2                        : Factor w/ 2 levels "False","True": 1
- $ T7_Ia                       : int 2048
- $ VEC8                        : Factor w/ 2 levels "False","True": 2
- $ U10_I                       : int 16
- $ U6_I                        : int 16
- $ T1_Ia                       : int 1
- $ VEC1                        : Factor w/ 2 levels "False","True": 1
- $ U5_J                        : int 1
- $ U5_I                        : int 4
- $ U1_J                        : int 1
- $ U1_I                        : int 4
- $ U8_I                        : int 16
- $ U7_I                        : int 1
- $ U7_J                        : int 1
- $ cost_std                    : num 8.57e-05
- $ runs                        : int 35
- $ mean_confidence_interval_sup: num 0.0728
- $ U2_I                        : int 4
- $ cost_mean                   : num 0.0728
- $ U9_I                        : int 16
- $ RT3_I                       : int 8
- $ RT3_J                       : int 8
- $ correct_result              : Factor w/ 1 level "True": 1
- $ T7_Ja                       : int 256
- $ T5_Ja                       : int 512
- $ U4_I                        : int 16
- $ T3_Ia                       : int 1
- $ SCR                         : Factor w/ 2 levels "False","True": 2
- $ U3_I                        : int 1
- $ RT5_J                       : int 1
- $ RT5_I                       : int 1
- $ U3_J                        : int 1
-#+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4530,4 +4495,119 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-qRxgOj/figureEfCU03.png]]
+[[file:/tmp/babel-dLTdMe/figurekxWgId.png]]
+*** [2018-08-27 Mon]
+**** Plotting Orio Experiments Data (dgemv3, O3, Xeon E5 2630 v2, Fixing Factors with Predicted Best)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+
+random_sample_data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_best/results.csv")
+experiment_data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_predicted/results.csv")
+
+data <- bind_rows(random_sample_data[random_sample_data$technique == "RS", ], experiment_data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+: There were 15 warnings (use warnings() to see them)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(1, 2), ylim = c(0, 2)) +
+    geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-dLTdMe/figureeVlWKp.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+
+random_sample_data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_best/search_space.csv")
+experiment_data <- read.csv("orio_experiments/testsuite/SPAPT/dgemv3/xeon_e5_2630_v2/full_model_fixed_predicted/search_space.csv")
+data <- bind_rows(random_sample_data[random_sample_data$technique == "RS", ], experiment_data)
+
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_Ia == 1 &
+                    data$T1_Ja == 1 & data$T3_I == 1 & data$T3_J == 1 &
+                    data$T3_Ia == 1 & data$T3_Ja == 1 & data$T5_I == 1 &
+                    data$T5_J == 1 & data$T5_Ia == 1 & data$T5_Ja == 1 &
+                    data$T7_I == 1 & data$T7_J == 1 & data$T7_Ia == 1 &
+                    data$T7_Ja == 1 & data$U1_I == 1 & data$U1_J == 1 &
+                    data$U2_I == 1 & data$U3_I == 1 & data$U3_J == 1 &
+                    data$U4_I == 1 & data$U5_I == 1 & data$U5_J == 1 &
+                    data$U6_I == 1 & data$U7_I == 1 & data$U7_J == 1 &
+                    data$U8_I == 1 & data$U9_I == 1 & data$U10_I == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT3_I == 1 &
+                    data$RT3_J == 1 & data$RT5_I == 1 & data$RT5_J == 1 &
+                    data$RT7_I == 1 & data$RT7_J == 1 & data$SCR == "False" &
+                    data$VEC1 == "False" & data$VEC2  == "False" & data$VEC3 == "False" &
+                    data$VEC4 == "False" & data$VEC5 == "False" & data$VEC6 == "False" &
+                    data$VEC7 == "False" & data$VEC8 == "False" & data$VEC9 == "False" &
+                    data$VEC10 == "False", ]
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[2, "technique"] <- "RS"
+best <- data[data$cost_mean == min(data$cost_mean), ]
+#+END_SRC
+
+#+RESULTS:
+: Warning messages:
+: 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 3: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 1050)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 200, label = "-O3 baseline"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-dLTdMe/figurecbnX91.png]]
+**** Interesting Papers on Autotuner Performance Comparison :ATTACH:
+:PROPERTIES:
+:Attachments: knijnenburg2003combined.pdf seymour2008comparison.pdf
+:ID:       b4e4b662-3cd1-4c9e-ad70-68bf9a907e1b
+:END:
