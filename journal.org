@@ -3214,6 +3214,9 @@ ggplot(data) +
 git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments && git pull)
 #+END_SRC
 
+#+RESULTS:
+: Already up to date.
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -3277,7 +3280,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dLTdMe/figureAJmYGl.png]]
+[[file:/tmp/babel-dwa8la/figure2iRWvN.png]]
 *** [2018-07-19 Thu]
 **** Plotting bigckernel O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3342,7 +3345,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Zspy18/figurePjtyj6.png]]
+[[file:/tmp/babel-dwa8la/figuresXTXrP.png]]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1505M v6)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3515,7 +3518,7 @@ git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments &
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
-data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630/stencil_O3_nobinary/search_space.csv")
+data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630_v2/old_results/stencil_O3_nobinary/search_space.csv")
 
 dim(data)
 data <- data[data$correct_result == "True", ]
@@ -3567,7 +3570,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-AiL4Pb/figureqnEtDp.png]]
+[[file:/tmp/babel-dwa8la/figure9grgau.png]]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -3713,7 +3716,7 @@ git clone https://github.com/phrb/orio_experiments.git || (cd orio_experiments &
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
-data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630/stencil_O3/search_space.csv")
+data <- read.csv("orio_experiments/testsuite/SPAPT/stencil3d/xeon_e5_2630_v2/old_results/stencil_O3/search_space.csv")
 
 dim(data)
 data <- data[data$correct_result == "True", ]
@@ -3791,7 +3794,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-C2GnlH/figureI5LCRN.png]]
+[[file:/tmp/babel-dwa8la/figureRaW8Tf.png]]
 *** [2018-07-24 Tue]
 **** Plotting dgem1 O3 Random Uniform Sample (Xeon E5 2630 v2)
 #+HEADER: :results output
@@ -3994,15 +3997,15 @@ str(best$cost_mean)
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_histogram(aes(cost_mean), binwidth = 0.1) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 130)) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 500)) +
     geom_text(aes(x = cost_mean + 0.1, y = 130, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dLTdMe/figureqG8ab3.png]]
+[[file:/tmp/babel-dwa8la/figureIOTGMG.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -4525,19 +4528,12 @@ data_max <- ddply(data, .(technique), summarize, max = max(speedup))
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-5: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-6: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-#+end_example
+: Warning messages:
+: 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 3: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -4549,8 +4545,8 @@ ggplot(data) +
     binwidth = 0.01) +
     labs(y = "Frequency", x = "Speedup vs O3") +
     coord_cartesian(xlim = c(1, 2), ylim = c(0, 2)) +
-    geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
-    geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
+    #geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max + 0.05, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    #geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
     geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
     geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
     geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
@@ -4560,7 +4556,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-BqTaxy/figureGU3t0i.png]]
+[[file:/tmp/babel-dwa8la/figurebVggUp.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -4612,15 +4608,156 @@ ggplot(data) +
     facet_grid(technique ~ .) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 1050)) +
-    geom_text(aes(x = cost_mean - 0.02, y = 200, label = "-O3 baseline"), data = O3_baseline) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 1400)) +
+    geom_text(aes(x = cost_mean + 0.02, y = 700, label = "-O3 baseline"), data = O3_baseline) +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-BqTaxy/figuredMyU8a.png]]
+[[file:/tmp/babel-dwa8la/figure5hHf6R.png]]
 **** Interesting Papers on Autotuner Performance Comparison :ATTACH:
 :PROPERTIES:
 :Attachments: knijnenburg2003combined.pdf seymour2008comparison.pdf
 :ID:       b4e4b662-3cd1-4c9e-ad70-68bf9a907e1b
 :END:
+
+Both papers present performance comparisons of different autotuning strategies
+based on search, such as simulated annealing and particle swarm optimization.
+The conclusion of both studies is that, in general, those techniques are
+marginally better than a random search in the problems tested.
+*** [2018-08-28 Tue]
+**** Experimental Settings on the Xeon E5 2630 v2
+The tables in this section are for keeping track of what would be interesting to
+measure and what was already measured.
+
+***** Uniform Random Sampling
+|----+--------------------+---------|
+|    | Application        | Sampled |
+|----+--------------------+---------|
+|  1 | stencil3d          | DONE    |
+|  2 | dgemv3             | DONE    |
+|  3 | atax               | DONE    |
+|  4 | gemver             | DONE    |
+|  5 | bicgkernel         | DONE    |
+|  6 | trmm               |         |
+|  7 | adi                |         |
+|  8 | gesummv            |         |
+|  9 | mvt                |         |
+| 10 | fdtd               |         |
+| 11 | correlation        |         |
+| 12 | lu                 |         |
+| 13 | tensor-contraction |         |
+| 14 | mm                 |         |
+| 15 | jacobi             |         |
+| 16 | covariance         |         |
+| 17 | hessian            |         |
+| 18 | seidel             |         |
+|----+--------------------+---------|
+***** Setting 1
+- "Large" (8) number of ANOVA steps
+- Model with linear and quadratic terms
+- Using complete model for prediction
+
+|----+--------------------+------+-----+-----+------+------+-----+------|
+|    | Application        | RS   | RSL | EXH | SIMA | SIMP | MLS | DLMT |
+|----+--------------------+------+-----+-----+------+------+-----+------|
+|  1 | stencil3d          |      |     |     |      |      |     |      |
+|  2 | dgemv3             | DONE |     |     |      |      |     | DONE |
+|  3 | atax               |      |     |     |      |      |     |      |
+|  4 | gemver             |      |     |     |      |      |     |      |
+|  5 | bicgkernel         |      |     |     |      |      |     |      |
+|  6 | trmm               |      |     |     |      |      |     |      |
+|  7 | adi                |      |     |     |      |      |     |      |
+|  8 | gesummv            |      |     |     |      |      |     |      |
+|  9 | mvt                |      |     |     |      |      |     |      |
+| 10 | fdtd               |      |     |     |      |      |     |      |
+| 11 | correlation        |      |     |     |      |      |     |      |
+| 12 | lu                 |      |     |     |      |      |     |      |
+| 13 | tensor-contraction |      |     |     |      |      |     |      |
+| 14 | mm                 |      |     |     |      |      |     |      |
+| 15 | jacobi             |      |     |     |      |      |     |      |
+| 16 | covariance         |      |     |     |      |      |     |      |
+| 17 | hessian            |      |     |     |      |      |     |      |
+| 18 | seidel             |      |     |     |      |      |     |      |
+|----+--------------------+------+-----+-----+------+------+-----+------|
+***** Setting 2
+- "Large" (8) number of ANOVA steps
+- Model with linear and quadratic terms
+- Using only relevant variables on model for prediction
+
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|    | Application        | RS | RSL | EXH | SIMA | SIMP | MLS | DLMT |
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|  1 | stencil3d          |    |     |     |      |      |     |      |
+|  2 | dgemv3             |    |     |     |      |      |     |      |
+|  3 | atax               |    |     |     |      |      |     |      |
+|  4 | gemver             |    |     |     |      |      |     |      |
+|  5 | bicgkernel         |    |     |     |      |      |     |      |
+|  6 | trmm               |    |     |     |      |      |     |      |
+|  7 | adi                |    |     |     |      |      |     |      |
+|  8 | gesummv            |    |     |     |      |      |     |      |
+|  9 | mvt                |    |     |     |      |      |     |      |
+| 10 | fdtd               |    |     |     |      |      |     |      |
+| 11 | correlation        |    |     |     |      |      |     |      |
+| 12 | lu                 |    |     |     |      |      |     |      |
+| 13 | tensor-contraction |    |     |     |      |      |     |      |
+| 14 | mm                 |    |     |     |      |      |     |      |
+| 15 | jacobi             |    |     |     |      |      |     |      |
+| 16 | covariance         |    |     |     |      |      |     |      |
+| 17 | hessian            |    |     |     |      |      |     |      |
+| 18 | seidel             |    |     |     |      |      |     |      |
+|----+--------------------+----+-----+-----+------+------+-----+------|
+***** Setting 3
+- "Small" (?) number of ANOVA steps
+- Model with linear and quadratic terms
+- Using complete model for prediction
+
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|    | Application        | RS | RSL | EXH | SIMA | SIMP | MLS | DLMT |
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|  1 | stencil3d          |    |     |     |      |      |     |      |
+|  2 | dgemv3             |    |     |     |      |      |     |      |
+|  3 | atax               |    |     |     |      |      |     |      |
+|  4 | gemver             |    |     |     |      |      |     |      |
+|  5 | bicgkernel         |    |     |     |      |      |     |      |
+|  6 | trmm               |    |     |     |      |      |     |      |
+|  7 | adi                |    |     |     |      |      |     |      |
+|  8 | gesummv            |    |     |     |      |      |     |      |
+|  9 | mvt                |    |     |     |      |      |     |      |
+| 10 | fdtd               |    |     |     |      |      |     |      |
+| 11 | correlation        |    |     |     |      |      |     |      |
+| 12 | lu                 |    |     |     |      |      |     |      |
+| 13 | tensor-contraction |    |     |     |      |      |     |      |
+| 14 | mm                 |    |     |     |      |      |     |      |
+| 15 | jacobi             |    |     |     |      |      |     |      |
+| 16 | covariance         |    |     |     |      |      |     |      |
+| 17 | hessian            |    |     |     |      |      |     |      |
+| 18 | seidel             |    |     |     |      |      |     |      |
+|----+--------------------+----+-----+-----+------+------+-----+------|
+***** Setting 4
+- "Small" (?) number of ANOVA steps
+- Model with linear and quadratic terms
+- Using only relevant variables on model for prediction
+
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|    | Application        | RS | RSL | EXH | SIMA | SIMP | MLS | DLMT |
+|----+--------------------+----+-----+-----+------+------+-----+------|
+|  1 | stencil3d          |    |     |     |      |      |     |      |
+|  2 | dgemv3             |    |     |     |      |      |     |      |
+|  3 | atax               |    |     |     |      |      |     |      |
+|  4 | gemver             |    |     |     |      |      |     |      |
+|  5 | bicgkernel         |    |     |     |      |      |     |      |
+|  6 | trmm               |    |     |     |      |      |     |      |
+|  7 | adi                |    |     |     |      |      |     |      |
+|  8 | gesummv            |    |     |     |      |      |     |      |
+|  9 | mvt                |    |     |     |      |      |     |      |
+| 10 | fdtd               |    |     |     |      |      |     |      |
+| 11 | correlation        |    |     |     |      |      |     |      |
+| 12 | lu                 |    |     |     |      |      |     |      |
+| 13 | tensor-contraction |    |     |     |      |      |     |      |
+| 14 | mm                 |    |     |     |      |      |     |      |
+| 15 | jacobi             |    |     |     |      |      |     |      |
+| 16 | covariance         |    |     |     |      |      |     |      |
+| 17 | hessian            |    |     |     |      |      |     |      |
+| 18 | seidel             |    |     |     |      |      |     |      |
+|----+--------------------+----+-----+-----+------+------+-----+------|
