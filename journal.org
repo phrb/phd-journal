@@ -4631,55 +4631,55 @@ The tables in this section are for keeping track of what would be interesting to
 measure and what was already measured.
 
 ***** Uniform Random Sampling
-|----+--------------------+---------|
-|    | Application        | Sampled |
-|----+--------------------+---------|
-|  1 | stencil3d          | DONE    |
-|  2 | dgemv3             | DONE    |
-|  3 | atax               | DONE    |
-|  4 | gemver             | DONE    |
-|  5 | bicgkernel         | DONE    |
-|  6 | trmm               |         |
-|  7 | adi                |         |
-|  8 | gesummv            |         |
-|  9 | mvt                |         |
-| 10 | fdtd               |         |
-| 11 | correlation        |         |
-| 12 | lu                 |         |
-| 13 | tensor-contraction |         |
-| 14 | mm                 |         |
-| 15 | jacobi             |         |
-| 16 | covariance         |         |
-| 17 | hessian            |         |
-| 18 | seidel             |         |
-|----+--------------------+---------|
+|----+--------------------+------------|
+|    | Application        | Sampled    |
+|----+--------------------+------------|
+|  1 | stencil3d          | DONE       |
+|  2 | dgemv3             | DONE       |
+|  3 | atax               | DONE       |
+|  4 | gemver             | DONE       |
+|  5 | bicgkernel         | DONE       |
+|  6 | trmm               |            |
+|  7 | adi                | PRIORITIZE |
+|  8 | gesummv            |            |
+|  9 | mvt                |            |
+| 10 | fdtd               | PRIORITIZE |
+| 11 | correlation        |            |
+| 12 | lu                 |            |
+| 13 | tensor-contraction |            |
+| 14 | mm                 |            |
+| 15 | jacobi             |            |
+| 16 | covariance         |            |
+| 17 | hessian            |            |
+| 18 | seidel             |            |
+|----+--------------------+------------|
 ***** Setting 1
 - "Large" (8) number of ANOVA steps
 - Model with linear and quadratic terms
 - Using complete model for prediction
 
-|----+--------------------+------+-----+-----+------+------+-----+------|
-|    | Application        | RS   | RSL | EXH | SIMA | SIMP | MLS | DLMT |
-|----+--------------------+------+-----+-----+------+------+-----+------|
-|  1 | stencil3d          |      |     |     |      |      |     |      |
-|  2 | dgemv3             | DONE |     |     |      |      |     | DONE |
-|  3 | atax               |      |     |     |      |      |     |      |
-|  4 | gemver             |      |     |     |      |      |     |      |
-|  5 | bicgkernel         |      |     |     |      |      |     |      |
-|  6 | trmm               |      |     |     |      |      |     |      |
-|  7 | adi                |      |     |     |      |      |     |      |
-|  8 | gesummv            |      |     |     |      |      |     |      |
-|  9 | mvt                |      |     |     |      |      |     |      |
-| 10 | fdtd               |      |     |     |      |      |     |      |
-| 11 | correlation        |      |     |     |      |      |     |      |
-| 12 | lu                 |      |     |     |      |      |     |      |
-| 13 | tensor-contraction |      |     |     |      |      |     |      |
-| 14 | mm                 |      |     |     |      |      |     |      |
-| 15 | jacobi             |      |     |     |      |      |     |      |
-| 16 | covariance         |      |     |     |      |      |     |      |
-| 17 | hessian            |      |     |     |      |      |     |      |
-| 18 | seidel             |      |     |     |      |      |     |      |
-|----+--------------------+------+-----+-----+------+------+-----+------|
+|----+--------------------+-------+-----+-----+------+------+-----+-------|
+|    | Application        | RS    | RSL | EXH | SIMA | SIMP | MLS | DLMT  |
+|----+--------------------+-------+-----+-----+------+------+-----+-------|
+|  1 | stencil3d          | DOING |     |     |      |      |     | DOING |
+|  2 | dgemv3             | DONE  |     |     |      |      |     | DONE  |
+|  3 | atax               |       |     |     |      |      |     |       |
+|  4 | gemver             |       |     |     |      |      |     |       |
+|  5 | bicgkernel         |       |     |     |      |      |     |       |
+|  6 | trmm               |       |     |     |      |      |     |       |
+|  7 | adi                |       |     |     |      |      |     |       |
+|  8 | gesummv            |       |     |     |      |      |     |       |
+|  9 | mvt                |       |     |     |      |      |     |       |
+| 10 | fdtd               |       |     |     |      |      |     |       |
+| 11 | correlation        |       |     |     |      |      |     |       |
+| 12 | lu                 |       |     |     |      |      |     |       |
+| 13 | tensor-contraction |       |     |     |      |      |     |       |
+| 14 | mm                 |       |     |     |      |      |     |       |
+| 15 | jacobi             |       |     |     |      |      |     |       |
+| 16 | covariance         |       |     |     |      |      |     |       |
+| 17 | hessian            |       |     |     |      |      |     |       |
+| 18 | seidel             |       |     |     |      |      |     |       |
+|----+--------------------+-------+-----+-----+------+------+-----+-------|
 ***** Setting 2
 - "Large" (8) number of ANOVA steps
 - Model with linear and quadratic terms
