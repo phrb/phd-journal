@@ -4972,7 +4972,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-rB9l61/figurewkIgnU.png]]
+[[file:/tmp/babel-ldbTGg/figurewTiIr7.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -5023,4 +5023,36 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-rB9l61/figureDSmJSF.png]]
+[[file:/tmp/babel-ldbTGg/figureeQqrqU.png]]
+*** [2018-08-31 Fri]
+**** Learning About Grid5000 and Setting up Experiments
+Basic information on how to allocate resources and deploy images:
+
+- https://www.grid5000.fr/mediawiki/index.php/Getting_Started
+
+Creating permanent images after configuration:
+
+- https://www.grid5000.fr/mediawiki/index.php/Advanced_Kadeploy
+
+Visualizing status of all clusters:
+
+- https://api.grid5000.fr/3.0/ui/visualizations/status.html
+
+Hardware:
+
+- List of all hardware: https://www.grid5000.fr/mediawiki/index.php/Hardware
+- Targetting the Xeon E5 2630 v3 because it is the most numerous
+
+- Target server: Nancy
+  - Target clusters: grisou, grimoire, graoully
+
+- Target server: Rennes
+  - Target clusters: parasilo, paravance
+
+Setting up the SSH Agent and Agent Forwarding:
+
+- https://www.grid5000.fr/mediawiki/index.php/SSH#Using_the_SSH_agent
+
+GitHub repository with configuration files for the Grid5000 deploy:
+
+- https://github.com/phrb/orio_experiments_g5kjob
