@@ -5171,3 +5171,932 @@ ggplot(data) +
 
 #+RESULTS:
 [[file:/tmp/babel-tx7FNd/figureRGvzcs.png]]
+**** DOE + Autotuning Summaries (Collected from previous entries)
+I aggregated all past entries that contain summaries and explanations on DoE and
+Autotuning. I repeat them here because the performance of the other journal file
+is very bad.
+
+***** Some References on Optimal Multi-Level Supersaturated Designs
+I was looking into works that cited that Addelman and Kempthorne paper and found
+that one way to name those kinds of designs is "Optimal Multi-Level
+Supersaturated".
+
+Searching by that term I found some more recent references which I believe will
+take some time to digest, but that present some ways to construct those designs:
+
+https://projecteuclid.org/download/pdfview_1/euclid.aos/1140191674
+https://projecteuclid.org/download/pdfview_1/euclid.ssu/1244555797
+
+Those works also seem to present ways to measure optimality for those designs,
+but I still haven't read them.
+
+There is also a reference which seems interesting by its abstract, but I was not
+able to find it yet:
+
+https://www.sciencedirect.com/science/article/pii/S0378375812003084
+
+I also found this book on factorial designs which I did not know of, but that
+does not seem to discuss Addelman Kempthorne designs directly. It could be
+useful for me to study more about DoE in general.
+
+https://www.springer.com/gp/book/9780387319919
+***** Reading About Design of Experiments, Factorial Designs, Supersaturated Designs
+- [[file:~/Dropbox/papers/design-of-experiments/georgiou2014supersaturated.pdf][Georgiou's paper on Supersaturated Designs]]
+- [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's Book]]
+***** [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book on Factorial Designs]]
+- The introduction points to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's Book on Design of Experiments]], which seems very nice, especially:
+  - Chapter 7: Other Design and Analysis Techniques for Experiments at More than
+    Two Levels
+  - Chapter 8: Nonregular Designs: Construction and Properties
+***** Generating Good/Optimal Mixed-Level Designs
+Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's book]] on Factorial Designs pointed to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's book]] on Design of
+Experiments, which has two chapters (7 & 8) on the design and analysis of
+multi-level experimental designs.
+
+Search for more specific terms such as "multi-" or "mixed-level experimental
+designs" led to finding [[file:~/Dropbox/papers/design-of-experiments/fontana2013algebraic.pdf][Fontana's paper]] on algebraic generation of minimum
+orthogonal designs. A [[file:~/Dropbox/papers/design-of-experiments/fontana2017generalized.pdf][later paper]] from the same author generalized these
+constructions to mixed-level orthogonal arrays, which can be used to generate
+mixed-level optimal designs. Fontana [[file:~/Dropbox/papers/design-of-experiments/fontana2013minimum.pdf][implemented his algorithm]] using the
+proprietary software SAS.
+
+Fontana later collaborated with Ulrike, from the ~DoE~ R packages, to implement
+this construction in the ~DoE.MIParray~ R [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.pdf][package]]. The [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][description]] of the
+implementation mentions that proprietary solvers such as ~gurobi~ where used in
+the solution.
+
+We now have a way of generating optimal mixed-level orthogonal experimental
+designs using R, albeit using proprietary software. Would it be worth evaluating
+the difficulty of implementing this using open-source software?
+
+***** Tuning FPGAs using Experimental Design
+Looking for works that cited Fontana's paper I came across a 2018 JPDC paper on
+[[file:~/Dropbox/papers/design-of-experiments/tuzov2018tuning.pdf][tuning synthesis flags on FPGAs]]. This work uses fractional factorial
+experimental designs to explore a subset of flags that control synthesis in
+FPGAs, targeting a specific architecture.
+
+The 9 optimization flags they tested in this paper were selected because they
+were the most common flags across multiple FPGA synthesis tools. The authors
+give no other reason to select those flags. The total number of flags and
+optimizations in the targeted system was 72.
+
+Of those 9 flags, it is not entirely clear which are multi-level factors and
+which are only boolean or two-level factors. It is also not clear whether the
+other 63 flags on the system are multi-level, integers, or other. It seems they
+converted some flags to string selections, but this is not explained further.
+
+They used a 2^{9 - 4}_{IV} fractional factorial design with 32 runs to measure
+the impact of the 9 flags. The entire search space in this case has 512
+different configurations. They use a set of 24 response variables to measure the
+effectiveness of each configuration, and attempt to fit linear models using the
+9 factors for each response variable, separately.
+
+One particularly weird choice of this study was to use the fitted linear models,
+that used 32 configurations, to compute the values of the response variables for
+the remaining 480 configurations. This is strange because the using ANOVA
+attempts to measure whether each factor impacts the response variables, but not
+necessarily gives a correct model, since factor levels are mapped to [0, 1] in
+this case.
+
+They did not re-evaluate the predicted points to check for accuracy and did not
+show where in the search space the 32 actually measured points were.
+***** Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book]] on Factorial Designs
+Chapter 2 provides fundamental definitions of concepts related to factorial
+designs. Its definition of contrasts is a little bit different from [[https://en.wikipedia.org/wiki/Contrast_(statistics)][this one]].
+The [[https://en.wikipedia.org/wiki/Kronecker_product][Kronecker product]] is also a useful concept presented in this chapter.
+
+This book is much more mathematically denser than any other DoE book I have read
+so far. It seems to be a good mathematical foundation for the concepts presented
+in books such as [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's]], but does not offer much in terms of practical
+algorithms or implementations.
+
+A more practical reference is [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's]] Orthogonal Arrays: Theory and
+Applications. That book gives an algorithm for the expansive and contractive
+replacement techniques for constructing orthogonal arrays from existing
+orthogonal arrays.
+
+***** Expansive & Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]]
+Section 9.3 of this book presents the expansive and contractive replacement
+methods, two apparently simple strategies to construct mixed-level designs from
+other designs, or from parts from the same design.
+
+The expansive replacement method can be used to insert runs from designs with
+factors with less levels into designs with factors with more levels, by
+replacing selected columns. This seems straightforward because it "encodes" a
+set of columns with more levels to a column with less levels.
+
+The contractive replacement method seems more directly applicable in our case.
+This method is what the AutoDesign system [[http://www.functionbay.co.kr/documentation/onlinehelp/default.htm#!Documents/plackettandburmandesign.htm][claims to use]] to generate its
+mixed-level Plackett-Burman designs. The method requires finding a set of
+columns in the original design that fulfill certain properties. Those columns
+are used to encode a new factor with more levels, in a process similar to the
+one discussed with Arnaud. The main advantages of this method are the guarantee
+of not losing orthogonality of the design and not changing the number of runs.
+
+****** The Contractive Replacement Method
+One notation for orthogonal arrays is $OA(N, s_1, \dots, s_k, t)$, where
+$N$ is the number of rows, $s_1, \dots, s_k$ are the factors, where each $s_i$
+represents the number of levels, and $t$ is the strength.
+
+To use the contractive method on an array $A = OA(N, s_1, \dots, s_k, 2)$, we
+need to find an OA $B = OA(N, s_u, \forall u \in U, 2)$, constructed from a
+subset $U$ of columns of $A$. $B$ must have the following properties:
+
+1. $B$ is composed of $N / L$ repetitions of the same rows, where $L$ denotes
+   the number of levels of the new factor
+2. $L = 1 - u + \sum\limits_{u \in U}{s_u}$
+
+If we can find $B$, we then encode each unique row as $0, 1, \dots, L - 1$ and
+replace the corresponding rows of $A$, in columns in $U$, with this new
+encoding. This effectively "contracts" the columns in $U$ into a new column
+represeting a factor with L levels.
+
+***** Thoughts on the Contractive Replacement Method
+It seems that Plackett-Burman designs are not very well suited
+for using this method, since no groups of columns seem to have
+the necessary properties. Maybe there is something wrong with my
+implementation.
+
+Future steps could be:
+
+1. Re-implement this checking in R using FrF2's ~pb~
+2. Try this with different classes of OAs (full factorial?)
+3. Debug the checking implementation
+
+***** ~DoE.MIParray~
+This technique does not seem to be the best approach for our problem,
+since the construction involves solving a mixed integer problem that
+dependes on the number of levels. From a note in the documentation:
+
+#+BEGIN_QUOTE
+The package is not meant for situations, for which a full factorial design would
+be huge; the mixed integer problem to be solved has at least prod(nlevels)
+binary or general integer variables and will likely be untractable, if this
+number is too large. (For extending an existing designs, since some variables
+are fixed, the limit moves out a bit.)
+#+END_QUOTE
+
+Therefore, attempting to construct a design for more than a 100 factors with
+multiple levels each would not be feasible.
+
+***** Summarizing Strategies for Multi-Level Designs
+
+****** 2-Level Screening with Random Sampling of Levels
+
+In this strategy factors with more than two unordered levels are sampled at two
+random levels. This enables the usage of a small design such as the
+Plackett-Burman screening design.
+
+Advantages are the small design size and good estimation capability for main
+effects. Disadvantages are the incapability of estimating interactions, but
+mainly the lack of information regarding the response for levels not selected in
+the initial screening.
+
+****** Level Projection, Factor Merging or Contractive Replacement
+
+An initial 2-Level design is used to generated mixed-level designs by reencoding
+some columns into a new single column represeting a multi-level factor. The
+contractive replacement of Addelman-Kempthorne is a strategy of this kind.
+
+Advantages are also small design size and good estimation capability of main
+effects. Additionally, the contractive replacement technique is keeps
+orthogonality of designs. Disadvantages are the requirements on the initial
+designs. Not all 2-Level designs can be contracted with those methods if we want
+to keep orthogonality.
+
+****** Direct Generation
+
+The work from [[file:~/Dropbox/papers/design-of-experiments/ulrike2018algorithm.pdf][Grömping and Fontana]] enables the generation of multi-level
+designs with the Generalized Minimum Aberration optimality criterion by
+solving mixed integer problems.
+
+Advantages are the direct generation of multi-level designs and the optimality
+criteria. Disadvantages are the use of proprietary MIP solvers and the
+limitations on the size and shape of the designs that can be generated.
+
+****** Optimal Designs
+
+This strategy consists of generating optimal multi-level designs. I still did not
+find any algorithms or papers related to this.
+
+***** Reading Triefenbach's Bachelor Thesis on D-Optimal Designs
+The [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][thesis]] presents some of the theory behind D-Optimal Designs in a simple way.
+It discusses a modification to the model matrix that enables constructing less
+model-dependent D-Optimal designs, but does not details why this "Bayesian
+modification" helps.
+
+Constructing D-Optimal designs seems to be the most straightforward way of
+generating large multi-level designs I have found so far. In theory, it is
+possible to generate designs of any number of runs, with any number of factors
+with any number of different levels. At first, it seems that this is the best
+candidate so far.
+
+In practice, even though the tools from ~AlgDesign~ generate designs for
+arbitrary numbers of factors and levels, that implementation does not work for
+even slightly larger designs. I believe this happens due to implementation
+choices and not "theoretical" or algorithmic limitations.
+
+****** Constructing D-Optimal Designs
+A D-Optimal design is a selection from a set of possible experiments that
+minimizes some optimality criterion.
+
+For example, imagine we have a full factorial design. We decide that we want
+to analyse this design using a "simple linear model", such as =~.=. Therefore,
+the *set of possible experiments*, or *model matrix* for this experiment is
+obtained by adding a column of ones to the original full factorial design. If we
+had interations, quadratic terms, and so on, we would simply compute the
+correspondent columns using original columns in the original design.
+
+With the model matrix defined, the criterion of our D-Optimal design could be
+minimizing the determinant of the *information matrix*. This new matrix is
+defined by multiplying the previously generated model matrix by its inverse.
+
+Now, the hard part is finding a selection of experiments from the *model matrix*
+that minimizes the determinant of the *information matrix*. Common algorithms
+for this task seem to be pretty straightforward, relying on swapping columns of
+an existing matrix with columns in the possible runs and measuring changes in
+the determinant.
+***** Understanding D-Efficiency
+I've found conflicting definitions for the D-Efficiency criteria.
+
+****** In the ~AlgDesign~ Package
+The first definition is from the ~AlgDesign~ [[https://cran.r-project.org/web/packages/AlgDesign/AlgDesign.pdf][R package]]:
+
+\begin{equation}
+  D_{elb} = exp(1 - 1 / G_e)
+\end{equation}
+
+Where $G_e$ is given by:
+
+\begin{equation}
+  G_e = k / max(x\prime{}(X\prime{}X)x, \forall x \in X))
+\end{equation}
+
+Where $k$ is the number of of column in the model matrix $X$, and each $x$ is a
+row in $X$ that describes an experiment.
+
+I was not able to find a paper or book describing or explaining this criteria.
+
+****** From DETMAX, SAS, and Castillo's Book                    :ATTACH:
+:PROPERTIES:
+:Attachments: castillo2007process.pdf
+:ID:       21aa2891-9cc8-4e49-8f75-ad668b71ea93
+:END:
+
+Mitchell's [[https://www.tandfonline.com/doi/abs/10.1080/00401706.1974.10489176][second paper on the DETMAX algorithm]] and Castillo's book (Process
+Optimization: A Statistical Approach, annexed to this section) present a
+different criteria for D-Efficiency:
+
+\begin{equation}
+  D_{elb} = det(X\prime{}X)^(1/k) / N
+\end{equation}
+
+Where $X$ is the model matrix, $k$ is its number of columns and $N$ its number
+of rows.
+
+Castillo mentions that this is a lower bound on the D-Efficiency of a design,
+more specifically, from section 5.7.2, page 152 of Castillo's book, this version
+of D-Efficiency "[...] is a measure of D-optimality with respect to a
+hypothetical orthogonal design (which would be D-optimal)[...]".
+
+****** From Fedorov's Theory of Optimal Designs                 :ATTACH:
+:PROPERTIES:
+:Attachments: fedorov1972theory.pdf
+:ID:       1c941f7d-bd93-40ab-a1a5-4033eab52841
+:END:
+
+***** Understanding D-Efficiency: The Box and Draper Encoding
+:PROPERTIES:
+:Attachments: box2007response.pdf
+:ID:       c8cb30f5-a404-4ea8-bb9e-90bd726c00a0
+:END:
+
+Box and Draper's 2007 edition of "Response Surfaces, Mixtures and Ridge
+Analyses" is a very clear book which explains the encoding used in the
+computation of the D-Efficiency metric used in the DETMAX paper and Castillo's
+book (See attachment in [[From DETMAX, SAS, and Castillo's Book]]). I am currently
+reading Chapter 14, Variance Optimal Designs, where the book describes D-Optimal
+designs and the encoding used. The intuition is that this metric compares
+***** Simple Terminology for Design of Experiments
+****** Basic Concepts
+- An *experimental design* is a plan for running a set of *experiments*,
+  can be displayed as a matrix
+- *Factors* are the columns of an experimental design matrix, and
+  represent experimental variables with at least two possible values, or *levels*
+- *Categorical factors* have unordered levels, that is, there is no sense of progression
+  from one level to another
+- *Numerical factors* can be *continuous*, such as floating-point values, or *discrete*,
+  such as integer values
+- The rows of an experimental design matrix are individual
+  *treatments*, *experiments*, or *runs*
+- Each *run* provides a measurement of a *dependent variable*, or
+  *response*, subject to a specific assignment of *factor levels*
+- Running all *experiments* in a design gives some information that allows
+  studying the *effects* of *factor levels* in the *response variable*
+- Two *effects* are *aliased* or *confounded* when it is not possible to
+  distinguish them from the data obtained from running a given design
+- The *resolution* of a design indicates which *effects* are independently
+  *estimated* in a design. There is less *aliasing* or *confounding* between
+  *effects* as the *resolution* increases
+- A *full-factorial design* is an experimental design containing all
+  possible combinations of *factor levels*
+- A *fractional-factorial design* is a subset of the rows of a *full-factorial
+  design*
+- An experimental design is *balanced* when each *level* occurs equally often
+  within every *factor*
+- An experimental design is *orthogonal* when every *pair of levels* occurs
+  equally often in all *pairs of factors*. A design can also be *orthogonal*
+  when the occurence frequencies of *pairs of levels* are proportional
+****** Modelling and Analysing
+- A *model* specifies which *factors* and *factor relationships* will be considered in
+  a posterior *linear regression* or *analysis of variance*, using the measured
+  *responses*
+- A *model matrix* or *design matrix* is constructed with an original
+  *experimental design* and according to a *model*. Each column, or set of
+  columns for categorical factors, in a *model matrix* represents one *effect*
+- *Contrasts* can be used to encode *categorical factors* in a *model matrix*
+  using extra columns. *Contrast matrices* specify the encoding for each level
+  of a *categorical factor*
+- An *information matrix* is defined as the multiplication of the transpose of
+  a *model matrix* and the *model matrix* itself. The inverse of the *information matrix*
+  is the *dispersion matrix*, or *covariance matrix*
+****** Design Efficiency
+- In a *least-squares linear regression*, considering a *linear relationship* between
+  variables, *parameter estimates* are proportional to a design's *covariance matrix*
+- The *eigenvalues* of the *covariance matrix* of a design represent its "size" in a certain sense
+- The *A-Efficiency* of a design is inversely proportional to the *arithmetic mean* of the *eigenvalues*
+  of the design's *covariance matrix*
+- The *D-Efficiency* of a design is inversely proportional to the *geometric mean* of the *eigenvalues*
+  of the design's *covariance matrix*
+- For a given set of *factors*, a hypothetical *balanced* an *orthogonal* design has optimal *A-Efficiency* and
+  *D-Efficiency*
+- A design with $N$ rows is *balanced and orthogonal* when the *dispersion matrix* is diagonal
+  and equals to $\dfrac{1}{N}\mathbf{I}$
+  - The following designs are all *balanced and orthogonal*:
+    #+HEADER: :results output :session *R*
+    #+BEGIN_SRC R
+    library(AlgDesign)
+    library(FrF2)
+
+    design <- gen.factorial(c(2, 2, 2, 2))
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+
+    eval.design(~., design)
+
+    design <- pb(16)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+
+    design <- FrF2(nruns = 8, nfactors = 4)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+    #+END_SRC
+
+    #+RESULTS:
+    #+begin_example
+       X1 X2 X3 X4
+    1  -1 -1 -1 -1
+    2   1 -1 -1 -1
+    3  -1  1 -1 -1
+    4   1  1 -1 -1
+    5  -1 -1  1 -1
+    6   1 -1  1 -1
+    7  -1  1  1 -1
+    8   1  1  1 -1
+    9  -1 -1 -1  1
+    10  1 -1 -1  1
+    11 -1  1 -1  1
+    12  1  1 -1  1
+    13 -1 -1  1  1
+    14  1 -1  1  1
+    15 -1  1  1  1
+    16  1  1  1  1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+       (Intercept) X1 X2 X3 X4
+    1            1 -1 -1 -1 -1
+    2            1  1 -1 -1 -1
+    3            1 -1  1 -1 -1
+    4            1  1  1 -1 -1
+    5            1 -1 -1  1 -1
+    6            1  1 -1  1 -1
+    7            1 -1  1  1 -1
+    8            1  1  1  1 -1
+    9            1 -1 -1 -1  1
+    10           1  1 -1 -1  1
+    11           1 -1  1 -1  1
+    12           1  1  1 -1  1
+    13           1 -1 -1  1  1
+    14           1  1 -1  1  1
+    15           1 -1  1  1  1
+    16           1  1  1  1  1
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept) X1 X2 X3 X4
+    (Intercept)           1  0  0  0  0
+    X1                    0  1  0  0  0
+    X2                    0  0  1  0  0
+    X3                    0  0  0  1  0
+    X4                    0  0  0  0  1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+    Screening 15 factors in 16 runs involves perfect aliasing of
+     pairwise interactions of the first six factors with the last factor.
+        A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+    1  -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+    2   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+    3   1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+    4  -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+    5   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+    6  -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+    7  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+    8   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+    9  -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+    10  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    11 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+    12 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+    13  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+    14 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+    15  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+    16  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+       (Intercept)  A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+    1            1 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+    2            1  1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+    3            1  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+    4            1 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+    5            1  1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+    6            1 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+    7            1 -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+    8            1  1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+    9            1 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+    10           1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    11           1 -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+    12           1 -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+    13           1  1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+    14           1 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+    15           1  1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+    16           1  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+    attr(,"assign")
+     [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+                (Intercept) A B C D E F G H J K L M N O P
+    (Intercept)           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    A                     0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    B                     0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+    C                     0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+    D                     0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+    E                     0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+    F                     0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+    G                     0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+    H                     0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+    J                     0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+    K                     0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+    L                     0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+    M                     0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+    N                     0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+    O                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+    P                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+       A  B  C  D
+    1  1 -1 -1  1
+    2 -1  1  1 -1
+    3  1 -1  1 -1
+    4 -1 -1  1  1
+    5  1  1 -1 -1
+    6  1  1  1  1
+    7 -1 -1 -1 -1
+    8 -1  1 -1  1
+    $determinant
+    [1] 1
+
+    $A
+    [1] 1
+
+    $diagonality
+    [1] 1
+
+    $gmean.variances
+    [1] 1
+      (Intercept)  A  B  C  D
+    1           1  1 -1 -1  1
+    2           1 -1  1  1 -1
+    3           1  1 -1  1 -1
+    4           1 -1 -1  1  1
+    5           1  1  1 -1 -1
+    6           1  1  1  1  1
+    7           1 -1 -1 -1 -1
+    8           1 -1  1 -1  1
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept) A B C D
+    (Intercept)           1 0 0 0 0
+    A                     0 1 0 0 0
+    B                     0 0 1 0 0
+    C                     0 0 0 1 0
+    D                     0 0 0 0 1
+    #+end_example
+- A design is *orthogonal* when the *dispersion matrix* is diagonal, excluding the row and column
+  correspondent to the *intercept*, that is, there can be non-zero elements in the *intercept* row
+  and column
+  - The following designs are all *orthogonal*, but not *balanced*:
+    #+HEADER: :results output :session *R*
+    #+BEGIN_SRC R
+    library(AlgDesign)
+    library(FrF2)
+
+    design <- oa.design(nfactors = 6, nlevels = 3)
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+
+    t(model_matrix) %*% model_matrix
+
+    design <- oa.design(nlevels=c(4,3,3,2))
+    design <- data.frame(design)
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+    #+END_SRC
+
+    #+RESULTS:
+    #+begin_example
+    The columns of the array have been used in order of appearance.
+    For designs with relatively few columns,
+    the properties can sometimes be substantially improved
+    using option columns with min3 or even min34.
+       A B C D E F
+    1  1 3 2 3 2 1
+    2  3 3 1 1 2 2
+    3  2 2 2 2 2 2
+    4  3 2 1 2 1 3
+    5  3 2 2 1 3 1
+    6  2 3 1 2 3 1
+    7  2 1 1 3 2 3
+    8  3 1 2 3 1 2
+    9  2 2 3 3 1 1
+    10 3 3 3 3 3 3
+    11 1 2 3 1 2 3
+    12 2 1 3 1 3 2
+    13 2 3 2 1 1 3
+    14 1 2 1 3 3 2
+    15 1 1 2 2 3 3
+    16 3 1 3 2 2 1
+    17 1 3 3 2 1 2
+    18 1 1 1 1 1 1
+    $determinant
+    [1] 0.7064227
+
+    $A
+    [1] 6.571429
+
+    $diagonality
+    [1] 0.261
+
+    $gmean.variances
+    [1] 1.5
+       (Intercept) A B C D E F
+    1            1 1 3 2 3 2 1
+    2            1 3 3 1 1 2 2
+    3            1 2 2 2 2 2 2
+    4            1 3 2 1 2 1 3
+    5            1 3 2 2 1 3 1
+    6            1 2 3 1 2 3 1
+    7            1 2 1 1 3 2 3
+    8            1 3 1 2 3 1 2
+    9            1 2 2 3 3 1 1
+    10           1 3 3 3 3 3 3
+    11           1 1 2 3 1 2 3
+    12           1 2 1 3 1 3 2
+    13           1 2 3 2 1 1 3
+    14           1 1 2 1 3 3 2
+    15           1 1 1 2 2 3 3
+    16           1 3 1 3 2 2 1
+    17           1 1 3 3 2 1 2
+    18           1 1 1 1 1 1 1
+    attr(,"assign")
+    [1] 0 1 2 3 4 5 6
+                (Intercept)    A    B    C    D    E    F
+    (Intercept)          37 -3.0 -3.0 -3.0 -3.0 -3.0 -3.0
+    A                    -3  1.5  0.0  0.0  0.0  0.0  0.0
+    B                    -3  0.0  1.5  0.0  0.0  0.0  0.0
+    C                    -3  0.0  0.0  1.5  0.0  0.0  0.0
+    D                    -3  0.0  0.0  0.0  1.5  0.0  0.0
+    E                    -3  0.0  0.0  0.0  0.0  1.5  0.0
+    F                    -3  0.0  0.0  0.0  0.0  0.0  1.5
+                (Intercept)  A  B  C  D  E  F
+    (Intercept)          18 36 36 36 36 36 36
+    A                    36 84 72 72 72 72 72
+    B                    36 72 84 72 72 72 72
+    C                    36 72 72 84 72 72 72
+    D                    36 72 72 72 84 72 72
+    E                    36 72 72 72 72 84 72
+    F                    36 72 72 72 72 72 84
+    creating full factorial with 72 runs ...
+       A B C D
+    1  1 3 2 1
+    2  2 1 1 2
+    3  2 3 1 1
+    4  3 3 3 1
+    5  2 1 3 1
+    6  2 1 3 2
+    7  1 1 2 2
+    8  2 2 1 1
+    9  3 1 3 1
+    10 1 3 3 1
+    11 4 1 2 1
+    12 4 2 2 2
+    13 2 2 2 1
+    14 4 1 2 2
+    15 4 3 1 2
+    16 2 2 2 2
+    17 3 2 3 1
+    18 3 2 2 2
+    19 4 1 1 1
+    20 1 3 1 1
+    21 3 2 1 1
+    22 2 3 2 1
+    23 3 3 1 1
+    24 3 2 1 2
+    25 4 1 3 1
+    26 2 1 2 2
+    27 1 1 3 1
+    28 4 1 1 2
+    29 1 1 1 1
+    30 1 2 2 2
+    31 2 1 1 1
+    32 1 3 3 2
+    33 4 2 1 1
+    34 3 3 2 1
+    35 4 3 2 2
+    36 1 3 2 2
+    37 1 1 1 2
+    38 2 2 1 2
+    39 3 1 2 2
+    40 3 2 2 1
+    41 1 3 1 2
+    42 2 2 3 1
+    43 4 2 3 1
+    44 3 1 3 2
+    45 4 2 3 2
+    46 1 2 3 1
+    47 2 2 3 2
+    48 2 3 1 2
+    49 3 1 2 1
+    50 1 1 2 1
+    51 3 1 1 1
+    52 3 3 2 2
+    53 4 2 2 1
+    54 4 3 3 2
+    55 4 2 1 2
+    56 4 3 2 1
+    57 2 3 3 2
+    58 4 1 3 2
+    59 3 3 1 2
+    60 2 1 2 1
+    61 1 2 1 1
+    62 3 3 3 2
+    63 3 2 3 2
+    64 1 2 3 2
+    65 1 2 1 2
+    66 2 3 3 1
+    67 3 1 1 2
+    68 4 3 1 1
+    69 1 2 2 1
+    70 1 1 3 2
+    71 4 3 3 1
+    72 2 3 2 2
+    $determinant
+    [1] 0.6738039
+
+    $A
+    [1] 6.96
+
+    $diagonality
+    [1] 0.31
+
+    $gmean.variances
+    [1] 1.638073
+       (Intercept) A B C D
+    1            1 1 3 2 1
+    2            1 2 1 1 2
+    3            1 2 3 1 1
+    4            1 3 3 3 1
+    5            1 2 1 3 1
+    6            1 2 1 3 2
+    7            1 1 1 2 2
+    8            1 2 2 1 1
+    9            1 3 1 3 1
+    10           1 1 3 3 1
+    11           1 4 1 2 1
+    12           1 4 2 2 2
+    13           1 2 2 2 1
+    14           1 4 1 2 2
+    15           1 4 3 1 2
+    16           1 2 2 2 2
+    17           1 3 2 3 1
+    18           1 3 2 2 2
+    19           1 4 1 1 1
+    20           1 1 3 1 1
+    21           1 3 2 1 1
+    22           1 2 3 2 1
+    23           1 3 3 1 1
+    24           1 3 2 1 2
+    25           1 4 1 3 1
+    26           1 2 1 2 2
+    27           1 1 1 3 1
+    28           1 4 1 1 2
+    29           1 1 1 1 1
+    30           1 1 2 2 2
+    31           1 2 1 1 1
+    32           1 1 3 3 2
+    33           1 4 2 1 1
+    34           1 3 3 2 1
+    35           1 4 3 2 2
+    36           1 1 3 2 2
+    37           1 1 1 1 2
+    38           1 2 2 1 2
+    39           1 3 1 2 2
+    40           1 3 2 2 1
+    41           1 1 3 1 2
+    42           1 2 2 3 1
+    43           1 4 2 3 1
+    44           1 3 1 3 2
+    45           1 4 2 3 2
+    46           1 1 2 3 1
+    47           1 2 2 3 2
+    48           1 2 3 1 2
+    49           1 3 1 2 1
+    50           1 1 1 2 1
+    51           1 3 1 1 1
+    52           1 3 3 2 2
+    53           1 4 2 2 1
+    54           1 4 3 3 2
+    55           1 4 2 1 2
+    56           1 4 3 2 1
+    57           1 2 3 3 2
+    58           1 4 1 3 2
+    59           1 3 3 1 2
+    60           1 2 1 2 1
+    61           1 1 2 1 1
+    62           1 3 3 3 2
+    63           1 3 2 3 2
+    64           1 1 2 3 2
+    65           1 1 2 1 2
+    66           1 2 3 3 1
+    67           1 3 1 1 2
+    68           1 4 3 1 1
+    69           1 1 2 2 1
+    70           1 1 1 3 2
+    71           1 4 3 3 1
+    72           1 2 3 2 2
+    attr(,"assign")
+    [1] 0 1 2 3 4
+                (Intercept)             A    B    C  D
+    (Intercept)          27 -2.000000e+00 -3.0 -3.0 -6
+    A                    -2  8.000000e-01  0.0  0.0  0
+    B                    -3  0.000000e+00  1.5  0.0  0
+    C                    -3  0.000000e+00  0.0  1.5  0
+    D                    -6  4.440892e-16  0.0  0.0  4
+    #+end_example
+- A design is *balanced* when the elements of the *intercept* row and column are all zero, except
+  for the element in the diagonal, that is, there can be non-zero elements in every other row and
+  column
+  - The following designs are all *balanced* but not *orthogonal*:
+    #+HEADER: :results output :session *R*
+    #+BEGIN_SRC R
+    library(AlgDesign)
+    library(FrF2)
+
+    design <- data.frame(x1 = c(1, -1, 1, -1, 1, -1),
+                         x2 = c(1, 1, 1, -1, -1, -1),
+                         x3 = c(-1, 1, 1, 1, -1, -1))
+    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, as.numeric)
+    design
+
+    eval.design(~., design)
+
+    model_matrix <- model.matrix(~., design)
+    model_matrix
+
+    solve(t(model_matrix) %*% model_matrix) * nrow(design)
+
+    eval.design(~., design)
+    #+END_SRC
+
+    #+RESULTS:
+    #+begin_example
+      x1 x2 x3
+    1  1  1 -1
+    2 -1  1  1
+    3  1  1  1
+    4 -1 -1  1
+    5  1 -1 -1
+    6 -1 -1 -1
+    $determinant
+    [1] 0.8773827
+
+    $A
+    [1] 1.375
+
+    $diagonality
+    [1] 0.84
+
+    $gmean.variances
+    [1] 1.5
+      (Intercept) x1 x2 x3
+    1           1  1  1 -1
+    2           1 -1  1  1
+    3           1  1  1  1
+    4           1 -1 -1  1
+    5           1  1 -1 -1
+    6           1 -1 -1 -1
+    attr(,"assign")
+    [1] 0 1 2 3
+                (Intercept)    x1    x2    x3
+    (Intercept)           1  0.00  0.00  0.00
+    x1                    0  1.50 -0.75  0.75
+    x2                    0 -0.75  1.50 -0.75
+    x3                    0  0.75 -0.75  1.50
+    $determinant
+    [1] 0.8773827
+
+    $A
+    [1] 1.375
+
+    $diagonality
+    [1] 0.84
+
+    $gmean.variances
+    [1] 1.5
+    #+end_example
