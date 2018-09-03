@@ -9929,7 +9929,7 @@ MEPlot(reg)
 **** POLARIS Meeting
 - As last time, the pad is at https://tinyurl.com/polaris-inria
 - Deciding "high-level" titles and themes for presentations
-**** Some References on Optimal Multi-Level Supersaturated Designs
+**** Some References on Optimal Multi-Level Supersaturated Designs :DOE:Autotuning:
 I was looking into works that cited that Addelman and Kempthorne paper and found
 that one way to name those kinds of designs is "Optimal Multi-Level
 Supersaturated".
@@ -11010,18 +11010,19 @@ me_plot <- MEPlot(reg)
 
 #+RESULTS:
 [[file:/tmp/babel-29856R_X/figure29856P4r.png]]
-**** Reading About Design of Experiments, Factorial Designs, Supersaturated Designs
+**** Reading About Design of Experiments, Factorial Designs, Supersaturated Designs :DOE:Autotuning:
 - [[file:~/Dropbox/papers/design-of-experiments/georgiou2014supersaturated.pdf][Georgiou's paper on Supersaturated Designs]]
 - [[file:~/Dropbox/papers/design-of-experiments/montgomery2013design.pdf][Montgomery's Book]]
-**** [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book on Factorial Designs]]
+**** [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book on Factorial Designs]]                 :DOE:Autotuning:
 - The introduction points to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's Book on Design of Experiments]], which seems very nice, especially:
   - Chapter 7: Other Design and Analysis Techniques for Experiments at More than
     Two Levels
   - Chapter 8: Nonregular Designs: Construction and Properties
 *** [2018-02-15 Thu]
-**** Generating Good/Optimal Mixed-Level Designs
-Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's book]] on Factorial Designs pointed to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's book]] on Design of Experiments,
-which has two chapters (7 & 8) on the design and analysis of multi-level experimental designs.
+**** Generating Good/Optimal Mixed-Level Designs          :DOE:Autotuning:
+Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's book]] on Factorial Designs pointed to [[file:~/Dropbox/papers/design-of-experiments/wu2000experiments.pdf][Wu's book]] on Design of
+Experiments, which has two chapters (7 & 8) on the design and analysis of
+multi-level experimental designs.
 
 Search for more specific terms such as "multi-" or "mixed-level experimental
 designs" led to finding [[file:~/Dropbox/papers/design-of-experiments/fontana2013algebraic.pdf][Fontana's paper]] on algebraic generation of minimum
@@ -11039,7 +11040,7 @@ We now have a way of generating optimal mixed-level orthogonal experimental
 designs using R, albeit using proprietary software. Would it be worth evaluating
 the difficulty of implementing this using open-source software?
 
-**** Tuning FPGAs using Experimental Design
+**** Tuning FPGAs using Experimental Design               :DOE:Autotuning:
 Looking for works that cited Fontana's paper I came across a 2018 JPDC paper on
 [[file:~/Dropbox/papers/design-of-experiments/tuzov2018tuning.pdf][tuning synthesis flags on FPGAs]]. This work uses fractional factorial
 experimental designs to explore a subset of flags that control synthesis in
@@ -11308,7 +11309,7 @@ Reading the [[https://cran.r-project.org/web/packages/DoE.MIParray/DoE.MIParray.
 kinds of designs can be generated with this technique and if those designs fit
 our objective.
 *** [2018-02-20 Tue]
-**** Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book]] on Factorial Designs
+**** Reading [[file:~/Dropbox/papers/design-of-experiments/mukerjee2006modern.pdf][Mukerjee's Book]] on Factorial Designs         :DOE:Autotuning:
 Chapter 2 provides fundamental definitions of concepts related to factorial
 designs. Its definition of contrasts is a little bit different from [[https://en.wikipedia.org/wiki/Contrast_(statistics)][this one]].
 The [[https://en.wikipedia.org/wiki/Kronecker_product][Kronecker product]] is also a useful concept presented in this chapter.
@@ -11323,7 +11324,7 @@ Applications. That book gives an algorithm for the expansive and contractive
 replacement techniques for constructing orthogonal arrays from existing
 orthogonal arrays.
 
-**** Expansive & Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]]
+**** Expansive & Contractive Replacement Method from [[file:~/Dropbox/papers/design-of-experiments/hedayat1999orthogonal.pdf][Hedayat's Orthogonal Arrays]] :DOE:Autotuning:
 Section 9.3 of this book presents the expansive and contractive replacement
 methods, two apparently simple strategies to construct mixed-level designs from
 other designs, or from parts from the same design.
@@ -11477,7 +11478,7 @@ find_contractible_columns(DataFrame(plackett_burman(16)), 2, 5)
 : Running for 4 columns...
 : Running for 5 columns...
 : Dict{Int64,Any}()
-**** Thoughts on the Contractive Replacement Method
+**** Thoughts on the Contractive Replacement Method       :DOE:Autotuning:
 It seems that Plackett-Burman designs are not very well suited
 for using this method, since no groups of columns seem to have
 the necessary properties. Maybe there is something wrong with my
@@ -12377,7 +12378,7 @@ From the last steps:
      and still did not get any contractible sets using
      my Plackett-Burman implementation
 *** [2018-02-23 Fri]
-**** ~DoE.MIParray~
+**** ~DoE.MIParray~                                       :DOE:Autotuning:
 This technique does not seem to be the best approach for our problem,
 since the construction involves solving a mixed integer problem that
 dependes on the number of levels. From a note in the documentation:
@@ -12393,7 +12394,7 @@ are fixed, the limit moves out a bit.)
 Therefore, attempting to construct a design for more than a 100 factors with
 multiple levels each would not be feasible.
 
-**** Summarizing Strategies for Multi-Level Designs
+**** Summarizing Strategies for Multi-Level Designs       :DOE:Autotuning:
 
 ***** 2-Level Screening with Random Sampling of Levels
 
@@ -12868,7 +12869,7 @@ generate_factorial (generic function with 2 methods)
  1
  0
 #+end_example
-**** Reading Triefenbach's Bachelor Thesis on D-Optimal Designs
+**** Reading Triefenbach's Bachelor Thesis on D-Optimal Designs :DOE:Autotuning:
 The [[http://www8.cs.umu.se/education/examina/Rapporter/FabianTtriefenbach.pdf][thesis]] presents some of the theory behind D-Optimal Designs in a simple way.
 It discusses a modification to the model matrix that enables constructing less
 model-dependent D-Optimal designs, but does not details why this "Bayesian
@@ -16945,7 +16946,7 @@ plot_subsets(sampled_subsets)
 #+RESULTS:
 : Created new window in existing browser session.
 *** [2018-03-19 Mon]
-**** Understanding D-Efficiency
+**** Understanding D-Efficiency                           :DOE:Autotuning:
 I've found conflicting definitions for the D-Efficiency criteria.
 
 ***** In the ~AlgDesign~ Package
@@ -18932,7 +18933,7 @@ plot_subsets(sampled_subsets)
 
 #+RESULTS:
 : Created new window in existing browser session.
-**** Understanding D-Efficiency: The Box and Draper Encoding      :ATTACH:
+**** Understanding D-Efficiency: The Box and Draper Encoding :DOE:Autotuning:ATTACH:
 :PROPERTIES:
 :Attachments: box2007response.pdf
 :ID:       c8cb30f5-a404-4ea8-bb9e-90bd726c00a0
@@ -30287,7 +30288,7 @@ $gmean.variances
 [1] 1
 #+end_example
 *** [2018-04-12 Thu]
-**** Simple Terminology for Design of Experiments
+**** Simple Terminology for Design of Experiments         :DOE:Autotuning:
 ***** Basic Concepts
 - An *experimental design* is a plan for running a set of *experiments*,
   can be displayed as a matrix

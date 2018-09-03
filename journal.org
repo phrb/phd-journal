@@ -5056,3 +5056,118 @@ Setting up the SSH Agent and Agent Forwarding:
 GitHub repository with configuration files for the Grid5000 deploy:
 
 - https://github.com/phrb/orio_experiments_g5kjob
+*** [2018-09-03 Mon]
+**** Plotting stencil3d (Linear, Xeon E5 2630 v3)
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+target_dir <-"dlmt_spapt_experiments/data/stencil3d/completed_runs/"
+csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+: There were 38 warnings (use warnings() to see them)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
+    #geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max + 0.05, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
+    #geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-tx7FNd/figureJqeP42.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+
+target_dir <-"dlmt_spapt_experiments/data/stencil3d/completed_runs/"
+csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data <- data[data$correct_result == "True", ]
+
+data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
+                 SCR, OMP1, OMP2, .keep_all = TRUE)
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$T2_Ia == 1 & data$T2_Ja == 1 & data$T2_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT1_K == 1 &
+                    data$U2_I == 1 & data$U2_J == 1 & data$U2_K == 1 &
+                    data$RT2_I == 1 & data$RT2_J == 1 & data$RT2_K == 1 &
+                    data$SCR == "False" & data$VEC1 == "False" & data$VEC2 == "False" &
+                    data$OMP1 == "False" & data$OMP2 == "False", ]
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[2, "technique"] <- "RS"
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+5: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 160)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-tx7FNd/figureRGvzcs.png]]
