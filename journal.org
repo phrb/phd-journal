@@ -6125,9 +6125,14 @@ library(ggplot2)
 library(plyr)
 library(dplyr)
 
-target_dir <-"dlmt_spapt_experiments/data/atax/"
+target_dir <-"dlmt_spapt_experiments/data/atax/8_steps/"
 csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
 data <- lapply(csv_files, read.csv)
 data <- bind_rows(data)
 
@@ -6136,20 +6141,43 @@ data_median <- ddply(data, .(technique), summarize, median = median(speedup))
 data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
                    err = 2 * sd(speedup) / sqrt(length(speedup)))
 data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+
+data
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-Error in read.table(file = file, header = header, sep = sep, quote = quote,  :
-  no lines available in input
-Error in summarise_impl(.data, dots) :
-  Evaluation error: object 'speedup' not found.
-Error in summarise_impl(.data, dots) :
-  Evaluation error: object 'speedup' not found.
-Error in summarise_impl(.data, dots) :
-  Evaluation error: object 'speedup' not found.
-Error in summarise_impl(.data, dots) :
-  Evaluation error: object 'speedup' not found.
+There were 50 or more warnings (use warnings() to see the first 50)
+   id  speedup T2_K T2_J T2_I RT_K T1_I T1_J T1_K technique  VEC2  VEC1  SCR
+1   1 1.834602 1024   64 2048    1    1    1  512      DLMT  True False True
+2   1 2.049705 2048  128  512    1  512   64    1        RS  True  True True
+3   1 2.019761  128  512    1    8    1   32   64        RS  True  True True
+4   1 2.030533    1  256    1    1    1   64  512        RS False False True
+5   1 2.017838  256  512 2048    8  512    1  256      DLMT  True  True True
+6   1 2.029979    1 2048   64    1   32  512  512        RS  True  True True
+7   1 2.028045    1   64 2048    1  128   64    1        RS  True False True
+8   1 1.995390  256 2048    1    1    1  256  256        RS  True  True True
+9   1 1.969344  256    1  256    1    1  256    1      DLMT False  True True
+10  1 2.026006  512  512  128    1   64  256    1        RS False  True True
+11  1 2.020716 2048   64  256    1   64   32    1        RS  True False True
+12  1 2.024634 2048  512 1024    1  512    1    1        RS  True  True True
+13  1 2.012197 2048  512 2048    1    1   64    1      DLMT  True False True
+14  1 2.010278    1  128 2048    8  512   16  512        RS  True  True True
+   ACOPY_x ACOPY_y U1_I RT_J RT_I  cost_mean U_J U_I U_K points
+1    False   False   24    1    1 0.09691799   1   4  28    149
+2    False   False   28    8    8 0.08694766  21   7   1    300
+3    False   False   22    1    1 0.08783455   1  10  14    300
+4    False   False   28    8    8 0.08707989  21   1  12    300
+5    False   False    7    1    8 0.08797877  28  30   1    175
+6    False   False   29    8    8 0.08777191  24  23   1    300
+7     True    True    2    1    8 0.08794370  16  22   1    300
+8     True   False   21    8    8 0.08942583   1   1   8    300
+9     True   False   29    8    8 0.09055202   1   3   4    174
+10   False   False   28    8    8 0.08794657  28   1   6    300
+11    True   False   21    8    8 0.08796997  30  27   1    300
+12   False   False   11    8    8 0.08812996   1  16  30    300
+13   False   False   18    1    1 0.08807111   8   8   1    161
+14   False   False   10    1    8 0.08826882  14   1  13    300
 #+end_example
 
 #+HEADER: :results graphics output :session *R*
@@ -6171,7 +6199,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-0ID0rx/figuresuUpDw.png]]
+[[file:/tmp/babel-isKHns/figureE2RTPg.png]]
 
 ***** Boxplot (better suited for the small number of repetitions)
 #+HEADER: :results graphics output :session *R*
@@ -6187,43 +6215,45 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-0ID0rx/figure5HXmEv.png]]
+[[file:/tmp/babel-isKHns/figure0aFgfd.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
 
-target_dir <-"dlmt_spapt_experiments/data/stencil3d/"
+target_dir <-"dlmt_spapt_experiments/data/atax/8_steps/"
 csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
 data <- lapply(csv_files, read.csv)
 data <- bind_rows(data)
 
 data <- data[data$correct_result == "True", ]
 
 O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
-                    data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
-                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
                     data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
-                    data$T2_Ia == 1 & data$T2_Ja == 1 & data$T2_Ka == 1 &
-                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
-                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT1_K == 1 &
-                    data$U2_I == 1 & data$U2_J == 1 & data$U2_K == 1 &
-                    data$RT2_I == 1 & data$RT2_J == 1 & data$RT2_K == 1 &
-                    data$SCR == "False" & data$VEC1 == "False" & data$VEC2 == "False" &
-                    data$OMP1 == "False" & data$OMP2 == "False", ]
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1 & data$SCR == "False" & data$VEC1 == "False" &
+                    data$VEC2 == "False", ]
+
 
 O3_baseline <- O3_baseline[c(1,1), ]
 O3_baseline[1, "technique"] <- "DLMT"
 O3_baseline[2, "technique"] <- "RS"
 
-data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
-                 SCR, OMP1, OMP2, .keep_all = TRUE)
+data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
+                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, SCR,
+                 VEC1, VEC2, .keep_all = TRUE)
 #+END_SRC
 
 #+RESULTS:
-: There were 15 warnings (use warnings() to see them)
+: There were 21 warnings (use warnings() to see them)
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6239,7 +6269,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-0ID0rx/figuretnmLQn.png]]
+[[file:/tmp/babel-isKHns/figure0yLeon.png]]
 **** Experimental Settings on the Xeon E5 2630 v2
 The tables in this section are for keeping track of what would be interesting to
 measure and what was already measured.
@@ -6249,7 +6279,7 @@ measure and what was already measured.
 |    | Application        | RS    | RSL | SIMA | SIMP | MLS | DLMT  |
 |----+--------------------+-------+-----+------+------+-----+-------|
 |  1 | stencil3d          | DONE  |     |      |      |     | DONE  |
-|  2 | dgemv3             |       |     |      |      |     |       |
+|  2 | dgemv3             | DOING |     |      |      |     | DOING |
 |  3 | atax               | DOING |     |      |      |     | DOING |
 |  4 | gemver             |       |     |      |      |     |       |
 |  5 | bicgkernel         |       |     |      |      |     |       |
