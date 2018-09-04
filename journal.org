@@ -5986,7 +5986,8 @@ designs and the encoding used. The intuition is that this metric compares
     $gmean.variances
     [1] 1.5
     #+end_example
-**** Plotting stencil3d (Linear, Xeon E5 2630 v3)
+**** Application: stencil3d (Linear Model, Xeon E5 2630 v3)
+***** Clonning/Pulling the Repository
 #+HEADER: :results output
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
@@ -5995,13 +5996,14 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 #+RESULTS:
 : Already up to date.
 
+***** Histogram of Autotuning Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
 library(plyr)
 library(dplyr)
 
-target_dir <-"dlmt_spapt_experiments/data/stencil3d/completed_runs/"
+target_dir <-"dlmt_spapt_experiments/data/stencil3d/"
 csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
 data <- lapply(csv_files, read.csv)
@@ -6027,8 +6029,6 @@ ggplot(data) +
     binwidth = 0.01) +
     labs(y = "Frequency", x = "Speedup vs O3") +
     coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
-    #geom_curve(data = data_max, aes(x = max + 0.1, y = 2, xend = max + 0.05, yend = max), arrow = arrow(length = unit(0.03, "npc")), curvature = 0.2) +
-    #geom_text(aes(x = max + 0.12, y = 2, label = "max"), data = data_max) +
     geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
     geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
     geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
@@ -6038,22 +6038,36 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-tx7FNd/figure5Bh57u.png]]
+[[file:/tmp/babel-0ID0rx/figuresuUpDw.png]]
 
+***** Boxplot (better suited for the small number of repetitions)
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip() +
+    #facet_grid(technique ~ .) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-0ID0rx/figure5HXmEv.png]]
+
+***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
 
-target_dir <-"dlmt_spapt_experiments/data/stencil3d/completed_runs/"
+target_dir <-"dlmt_spapt_experiments/data/stencil3d/"
 csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
 data <- lapply(csv_files, read.csv)
 data <- bind_rows(data)
 
 data <- data[data$correct_result == "True", ]
-
-data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
-                 SCR, OMP1, OMP2, .keep_all = TRUE)
 
 O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
                     data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
@@ -6068,26 +6082,15 @@ O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
                     data$OMP1 == "False" & data$OMP2 == "False", ]
 
 O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[1, "technique"] <- "DLMT"
 O3_baseline[2, "technique"] <- "RS"
+
+data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
+                 SCR, OMP1, OMP2, .keep_all = TRUE)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-5: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-6: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-7: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-#+end_example
+: There were 15 warnings (use warnings() to see them)
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6099,8 +6102,191 @@ ggplot(data) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
     coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 220)) +
     geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-0ID0rx/figuretnmLQn.png]]
+*** [2018-09-04 Tue]
+**** Application: atax (Linear Model, Xeon E5 2630 v3)
+***** Clonning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+***** Histogram of Autotuning Results
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+target_dir <-"dlmt_spapt_experiments/data/atax/"
+csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Error in read.table(file = file, header = header, sep = sep, quote = quote,  :
+  no lines available in input
+Error in summarise_impl(.data, dots) :
+  Evaluation error: object 'speedup' not found.
+Error in summarise_impl(.data, dots) :
+  Evaluation error: object 'speedup' not found.
+Error in summarise_impl(.data, dots) :
+  Evaluation error: object 'speedup' not found.
+Error in summarise_impl(.data, dots) :
+  Evaluation error: object 'speedup' not found.
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
     theme_bw()
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-tx7FNd/figurebLv39j.png]]
+[[file:/tmp/babel-0ID0rx/figuresuUpDw.png]]
+
+***** Boxplot (better suited for the small number of repetitions)
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip() +
+    #facet_grid(technique ~ .) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-0ID0rx/figure5HXmEv.png]]
+
+***** Histogram of Explored Search Spaces
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+
+target_dir <-"dlmt_spapt_experiments/data/stencil3d/"
+csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T1_Ia == 1 & data$T1_Ja == 1 & data$T1_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$T2_Ia == 1 & data$T2_Ja == 1 & data$T2_Ka == 1 &
+                    data$U1_I == 1 & data$U1_J == 1 & data$U1_K == 1 &
+                    data$RT1_I == 1 & data$RT1_J == 1 & data$RT1_K == 1 &
+                    data$U2_I == 1 & data$U2_J == 1 & data$U2_K == 1 &
+                    data$RT2_I == 1 & data$RT2_J == 1 & data$RT2_K == 1 &
+                    data$SCR == "False" & data$VEC1 == "False" & data$VEC2 == "False" &
+                    data$OMP1 == "False" & data$OMP2 == "False", ]
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[1, "technique"] <- "DLMT"
+O3_baseline[2, "technique"] <- "RS"
+
+data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
+                 SCR, OMP1, OMP2, .keep_all = TRUE)
+#+END_SRC
+
+#+RESULTS:
+: There were 15 warnings (use warnings() to see them)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 220)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-0ID0rx/figuretnmLQn.png]]
+**** Experimental Settings on the Xeon E5 2630 v2
+The tables in this section are for keeping track of what would be interesting to
+measure and what was already measured.
+
+***** Tracking Table Grid5000 Xeon E5 2630 v3
+|----+--------------------+-------+-----+------+------+-----+-------|
+|    | Application        | RS    | RSL | SIMA | SIMP | MLS | DLMT  |
+|----+--------------------+-------+-----+------+------+-----+-------|
+|  1 | stencil3d          | DONE  |     |      |      |     | DONE  |
+|  2 | dgemv3             |       |     |      |      |     |       |
+|  3 | atax               | DOING |     |      |      |     | DOING |
+|  4 | gemver             |       |     |      |      |     |       |
+|  5 | bicgkernel         |       |     |      |      |     |       |
+|  6 | trmm               |       |     |      |      |     |       |
+|  7 | adi                |       |     |      |      |     |       |
+|  8 | gesummv            |       |     |      |      |     |       |
+|  9 | mvt                |       |     |      |      |     |       |
+| 10 | fdtd               |       |     |      |      |     |       |
+| 11 | correlation        |       |     |      |      |     |       |
+| 12 | lu                 |       |     |      |      |     |       |
+| 13 | tensor-contraction |       |     |      |      |     |       |
+| 14 | mm                 |       |     |      |      |     |       |
+| 15 | jacobi             |       |     |      |      |     |       |
+| 16 | covariance         |       |     |      |      |     |       |
+| 17 | hessian            |       |     |      |      |     |       |
+| 18 | seidel             |       |     |      |      |     |       |
+|----+--------------------+-------+-----+------+------+-----+-------|
+
+****** DLMT:
+- "Large" (8) number of ANOVA steps
+- Model with linear terms
+- Using complete model for prediction
+
+******* Properties to measure:
+Experiment size:
+- "Large" (8) number of ANOVA steps
+- "Small" (?) number of ANOVA steps
+
+Model:
+- Model with linear terms
+- More complex models (?)
+
+Prediction:
+- Using complete model for prediction
+- Using only relevant variables on model for prediction
+
+******* Other concerns
+- Size of initial sampled space (multipliers)
+- Sampling again for prediction?
+- Extra experiments due to runtime failures
