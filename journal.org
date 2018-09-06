@@ -4005,7 +4005,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dwa8la/figureIOTGMG.png]]
+[[file:/tmp/babel-YBOcEp/figure6ysM8I.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -4972,7 +4972,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ldbTGg/figurewTiIr7.png]]
+[[file:/tmp/babel-efDreH/figuregtIPAU.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -5023,7 +5023,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ldbTGg/figureeQqrqU.png]]
+[[file:/tmp/babel-efDreH/figure07533Y.png]]
 *** [2018-08-31 Fri]
 **** Learning About Grid5000 and Setting up Experiments
 Basic information on how to allocate resources and deploy images:
@@ -6014,10 +6014,58 @@ data_median <- ddply(data, .(technique), summarize, median = median(speedup))
 data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
                    err = 2 * sd(speedup) / sqrt(length(speedup)))
 data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+
+dim(data[data$technique == "RS", ])
+dim(data[data$technique == "DLMT", ])
+mean(data[data$technique == "RS", "points"])
+mean(data[data$technique == "DLMT", "points"])
+
+str(data)
 #+END_SRC
 
 #+RESULTS:
-: There were 50 or more warnings (use warnings() to see the first 50)
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+[1] 10 34
+[1] 10 34
+[1] 300
+[1] 235.3
+'data.frame':	20 obs. of  34 variables:
+ $ id       : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ RT1_K    : int  1 1 32 1 1 32 1 8 1 1 ...
+ $ RT1_J    : int  1 1 1 32 32 1 32 1 1 1 ...
+ $ T1_Ja    : int  1 2048 256 256 64 64 128 2048 1024 1 ...
+ $ RT1_I    : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ T2_K     : int  512 16 512 1 128 512 1 512 16 256 ...
+ $ T2_J     : int  256 128 16 1 16 512 16 32 16 16 ...
+ $ T2_I     : int  512 1 1 32 64 16 32 16 256 64 ...
+ $ T2_Ja    : int  256 512 1 1024 64 1 1024 1 1024 1 ...
+ $ U2_I     : int  11 19 9 13 24 30 13 30 13 8 ...
+ $ T1_I     : int  1 16 64 32 512 16 128 1 32 1 ...
+ $ T1_J     : int  128 512 1 128 16 1 16 32 256 1 ...
+ $ T1_K     : int  256 1 1 32 1 128 128 512 512 1 ...
+ $ technique: chr  "RS" "RS" "DLMT" "RS" ...
+ $ speedup  : num  0.871 1.002 0.668 1.371 0.907 ...
+ $ RT2_J    : int  1 1 32 8 1 1 1 1 1 32 ...
+ $ VEC2     : chr  "True" "True" "True" "True" ...
+ $ VEC1     : chr  "True" "False" "False" "False" ...
+ $ SCR      : chr  "True" "True" "True" "False" ...
+ $ T1_Ia    : int  1 2048 64 1 1 1 1024 1 128 64 ...
+ $ T1_Ka    : int  1 256 1 2048 256 256 1024 1 512 128 ...
+ $ OMP1     : chr  "True" "False" "False" "True" ...
+ $ U1_K     : int  7 1 1 29 2 4 18 1 5 1 ...
+ $ U1_J     : int  1 30 6 1 12 1 13 5 1 1 ...
+ $ U1_I     : int  14 28 17 6 1 4 1 16 26 17 ...
+ $ T2_Ka    : int  1 256 1 1024 1024 2048 2048 2048 512 1 ...
+ $ RT2_I    : int  8 1 1 1 8 1 1 1 8 1 ...
+ $ T2_Ia    : int  1 512 1 1 1024 1 512 1 256 1 ...
+ $ U2_J     : int  19 15 1 28 9 1 21 1 1 5 ...
+ $ U2_K     : int  1 1 27 1 1 29 1 1 25 1 ...
+ $ cost_mean: num  0.0596 0.0528 0.0772 0.0384 0.0585 ...
+ $ RT2_K    : int  1 1 1 8 1 32 32 32 8 1 ...
+ $ OMP2     : chr  "True" "False" "False" "True" ...
+ $ points   : int  300 300 198 300 300 237 300 240 300 247 ...
+#+end_example
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6038,7 +6086,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-p93KzI/figureIOL2yq.png]]
+[[file:/tmp/babel-daFKax/figurecXzenc.png]]
 
 ***** Boxplot (better suited for the small number of repetitions)
 #+HEADER: :results graphics output :session *R*
@@ -6049,22 +6097,33 @@ ggplot(data, aes(x = technique, y = speedup)) +
     geom_boxplot() +
     #coord_flip() +
     #facet_grid(technique ~ .) +
+    geom_jitter() +
     ggtitle("") +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-p93KzI/figureFmsibA.png]]
+[[file:/tmp/babel-efDreH/figurefptjRn.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
+library(dplyr)
+library(plyr)
 library(ggplot2)
+library(RColorBrewer)
+library(colorRamps)
+
+read.csv.id <- function(filename) {
+    data <- read.csv(filename)
+    data$file <- rep(filename, nrow(data))
+    return(data)
+}
 
 target_dir <-"dlmt_spapt_experiments/data/stencil3d/"
 csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
-data <- lapply(csv_files, read.csv)
+data <- lapply(csv_files, read.csv.id)
 data <- bind_rows(data)
 
 data <- data[data$correct_result == "True", ]
@@ -6087,6 +6146,7 @@ O3_baseline[2, "technique"] <- "RS"
 
 data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
                  SCR, OMP1, OMP2, .keep_all = TRUE)
+
 #+END_SRC
 
 #+RESULTS:
@@ -6096,17 +6156,22 @@ data <- distinct(data, T1_I, T1_Ia, U1_I, T2_I, T2_Ia, U1_I, RT1_I, U2_I, RT2_I,
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
-ggplot(data) +
+colourCount <- length(unique(data$file))
+getPalette <- colorRampPalette(brewer.pal(9, "Spectral"))
+
+ggplot(data, aes(fill = file)) +
+    scale_fill_manual(values = colorRampPalette(brewer.pal(12, "Spectral"))(colourCount)) +
     facet_grid(technique ~ .) +
     geom_histogram(aes(cost_mean), binwidth = 0.01) +
     geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
     coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 250)) +
     geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
-    theme_bw(base_size = 18)
+    theme_bw(base_size = 18) +
+    theme(legend.position="none")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-p93KzI/figureQbntGB.png]]
+[[file:/tmp/babel-SrcUCi/figurel2BbOo.png]]
 *** [2018-09-04 Tue]
 **** Application: atax (8 Steps, Linear Model, Xeon E5 2630 v3)
 ***** Clonning/Pulling the Repository
@@ -6125,7 +6190,7 @@ library(ggplot2)
 library(plyr)
 library(dplyr)
 
-target_dir <-"dlmt_spapt_experiments/data/atax/8_steps/"
+target_dir <-"dlmt_spapt_experiments/data/atax/"
 csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
 csv_files <- paste0(target_dir, csv_files)
 
@@ -6142,118 +6207,106 @@ data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
                    err = 2 * sd(speedup) / sqrt(length(speedup)))
 data_max <- ddply(data, .(technique), summarize, max = max(speedup))
 
-data
+dim(data[data$technique == "RS", ])
+dim(data[data$technique == "DLMT", ])
+mean(data[data$technique == "RS", "points"])
+mean(data[data$technique == "DLMT", "points"])
+#+END_SRC
+
+#+RESULTS:
+: There were 31 warnings (use warnings() to see them)
+: [1] 10 18
+: [1] 10 18
+: [1] 131
+: [1] 115.7
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-efDreH/figure903s2q.png]]
+
+***** Boxplot (better suited for the small number of repetitions)
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip() +
+    #facet_grid(technique ~ .) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-YBOcEp/figureybvd4R.png]]
+
+***** Histogram of Explored Search Spaces
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+
+target_dir <-"dlmt_spapt_experiments/data/atax/"
+csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1 & data$SCR == "False" & data$VEC1 == "False" &
+                    data$VEC2 == "False", ]
+
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[1, "technique"] <- "DLMT"
+O3_baseline[2, "technique"] <- "RS"
+
+data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
+                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, SCR,
+                 VEC1, VEC2, .keep_all = TRUE)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-   id  speedup T2_K T2_J T2_I RT_K T1_I T1_J T1_K technique  VEC2  VEC1  SCR
-1   1 1.834602 1024   64 2048    1    1    1  512      DLMT  True False True
-2   1 2.049705 2048  128  512    1  512   64    1        RS  True  True True
-3   1 2.019761  128  512    1    8    1   32   64        RS  True  True True
-4   1 2.030533    1  256    1    1    1   64  512        RS False False True
-5   1 2.017838  256  512 2048    8  512    1  256      DLMT  True  True True
-6   1 2.029979    1 2048   64    1   32  512  512        RS  True  True True
-7   1 2.028045    1   64 2048    1  128   64    1        RS  True False True
-8   1 1.995390  256 2048    1    1    1  256  256        RS  True  True True
-9   1 1.969344  256    1  256    1    1  256    1      DLMT False  True True
-10  1 2.026006  512  512  128    1   64  256    1        RS False  True True
-11  1 2.020716 2048   64  256    1   64   32    1        RS  True False True
-12  1 2.024634 2048  512 1024    1  512    1    1        RS  True  True True
-13  1 2.012197 2048  512 2048    1    1   64    1      DLMT  True False True
-14  1 2.010278    1  128 2048    8  512   16  512        RS  True  True True
-   ACOPY_x ACOPY_y U1_I RT_J RT_I  cost_mean U_J U_I U_K points
-1    False   False   24    1    1 0.09691799   1   4  28    149
-2    False   False   28    8    8 0.08694766  21   7   1    300
-3    False   False   22    1    1 0.08783455   1  10  14    300
-4    False   False   28    8    8 0.08707989  21   1  12    300
-5    False   False    7    1    8 0.08797877  28  30   1    175
-6    False   False   29    8    8 0.08777191  24  23   1    300
-7     True    True    2    1    8 0.08794370  16  22   1    300
-8     True   False   21    8    8 0.08942583   1   1   8    300
-9     True   False   29    8    8 0.09055202   1   3   4    174
-10   False   False   28    8    8 0.08794657  28   1   6    300
-11    True   False   21    8    8 0.08796997  30  27   1    300
-12   False   False   11    8    8 0.08812996   1  16  30    300
-13   False   False   18    1    1 0.08807111   8   8   1    161
-14   False   False   10    1    8 0.08826882  14   1  13    300
+Warning message:
+Trying to compute distinct() for variables not found in the data:
+- `SCR`, `VEC1`, `VEC2`
+This is an error, but only a warning is raised for compatibility reasons.
+The following variables will be used:
+- T1_I
+- T1_J
+- T1_K
+- T2_I
+- T2_J
+- (8 more)
 #+end_example
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data) +
-    facet_grid(technique ~ .) +
-    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
-    binwidth = 0.01) +
-    labs(y = "Frequency", x = "Speedup vs O3") +
-    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
-    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
-    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
-    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
-    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
-    ggtitle("") +
-    theme_bw()
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-isKHns/figureE2RTPg.png]]
-
-***** Boxplot (better suited for the small number of repetitions)
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data, aes(x = technique, y = speedup)) +
-    geom_boxplot() +
-    #coord_flip() +
-    #facet_grid(technique ~ .) +
-    ggtitle("") +
-    theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-isKHns/figure0aFgfd.png]]
-
-***** Histogram of Explored Search Spaces
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-library(ggplot2)
-
-target_dir <-"dlmt_spapt_experiments/data/atax/8_steps/"
-csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
-csv_files <- paste0(target_dir, csv_files)
-
-info <- file.info(csv_files)
-non_empty <- rownames(info[info$size != 0, ])
-csv_files <- csv_files[csv_files %in% non_empty]
-
-data <- lapply(csv_files, read.csv)
-data <- bind_rows(data)
-
-data <- data[data$correct_result == "True", ]
-
-O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
-                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
-                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
-                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
-                    data$RT_K == 1 & data$SCR == "False" & data$VEC1 == "False" &
-                    data$VEC2 == "False", ]
-
-
-O3_baseline <- O3_baseline[c(1,1), ]
-O3_baseline[1, "technique"] <- "DLMT"
-O3_baseline[2, "technique"] <- "RS"
-
-data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
-                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, SCR,
-                 VEC1, VEC2, .keep_all = TRUE)
-#+END_SRC
-
-#+RESULTS:
-: There were 21 warnings (use warnings() to see them)
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6269,161 +6322,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-isKHns/figure0yLeon.png]]
-**** Application: atax (3 Steps, Linear Model, Xeon E5 2630 v3)
-***** Clonning/Pulling the Repository
-#+HEADER: :results output
-#+BEGIN_SRC shell
-git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
-#+END_SRC
-
-#+RESULTS:
-: Already up to date.
-
-***** Histogram of Autotuning Results
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-library(ggplot2)
-library(plyr)
-library(dplyr)
-
-target_dir <-"dlmt_spapt_experiments/data/atax/3_steps"
-csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
-csv_files <- paste0(target_dir, csv_files)
-
-csv_files
-
-info <- file.info(csv_files)
-non_empty <- rownames(info[info$size != 0, ])
-csv_files <- csv_files[csv_files %in% non_empty]
-
-data <- lapply(csv_files, read.csv)
-data <- bind_rows(data)
-
-data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
-data_median <- ddply(data, .(technique), summarize, median = median(speedup))
-data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
-                   err = 2 * sd(speedup) / sqrt(length(speedup)))
-data_max <- ddply(data, .(technique), summarize, max = max(speedup))
-
-data
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
- [1] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-14_1536069463/results.csv"
- [2] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-14_1536072499/results.csv"
- [3] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-14_1536082362/results.csv"
- [4] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-15_1536069465/results.csv"
- [5] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-15_1536077134/results.csv"
- [6] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-15_1536082362/results.csv"
- [7] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-3_1536069463/results.csv"
- [8] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-3_1536070120/results.csv"
- [9] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-3_1536082362/results.csv"
-[10] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-5_1536069461/results.csv"
-[11] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-5_1536075932/results.csv"
-[12] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-5_1536082362/results.csv"
-[13] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-6_1536069463/results.csv"
-[14] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-6_1536069850/results.csv"
-[15] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-6_1536082362/results.csv"
-[16] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-6_1536082647/results.csv"
-[17] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-7_1536069465/results.csv"
-[18] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-7_1536074232/results.csv"
-[19] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-7_1536082362/results.csv"
-[20] "dlmt_spapt_experiments/data/atax/3_stepsxeon_e5_2630_v3_graoully-7_1536084278/results.csv"
-# A tibble: 0 x 0
-#+end_example
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data) +
-    facet_grid(technique ~ .) +
-    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
-    binwidth = 0.01) +
-    labs(y = "Frequency", x = "Speedup vs O3") +
-    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
-    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
-    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
-    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
-    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
-    ggtitle("") +
-    theme_bw()
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-isKHns/figureE2RTPg.png]]
-
-***** Boxplot (better suited for the small number of repetitions)
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data, aes(x = technique, y = speedup)) +
-    geom_boxplot() +
-    #coord_flip() +
-    #facet_grid(technique ~ .) +
-    ggtitle("") +
-    theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-isKHns/figure0aFgfd.png]]
-
-***** Histogram of Explored Search Spaces
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-library(ggplot2)
-
-target_dir <-"dlmt_spapt_experiments/data/atax/3_steps/"
-csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
-csv_files <- paste0(target_dir, csv_files)
-
-info <- file.info(csv_files)
-non_empty <- rownames(info[info$size != 0, ])
-csv_files <- csv_files[csv_files %in% non_empty]
-
-data <- lapply(csv_files, read.csv)
-data <- bind_rows(data)
-
-data <- data[data$correct_result == "True", ]
-
-O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
-                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
-                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
-                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
-                    data$RT_K == 1 & data$SCR == "False" & data$VEC1 == "False" &
-                    data$VEC2 == "False", ]
-
-
-O3_baseline <- O3_baseline[c(1,1), ]
-O3_baseline[1, "technique"] <- "DLMT"
-O3_baseline[2, "technique"] <- "RS"
-
-data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
-                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, SCR,
-                 VEC1, VEC2, .keep_all = TRUE)
-#+END_SRC
-
-#+RESULTS:
-: There were 21 warnings (use warnings() to see them)
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data) +
-    facet_grid(technique ~ .) +
-    geom_histogram(aes(cost_mean), binwidth = 0.01) +
-    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
-    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 220)) +
-    geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
-    theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-p93KzI/figurekUbdfR.png]]
+[[file:/tmp/babel-efDreH/figureTd8uqU.png]]
 **** Application: dgemv3 (Linear Model, Xeon E5 2630 v3)
 ***** Clonning/Pulling the Repository
 #+HEADER: :results output
@@ -6457,10 +6356,19 @@ data_median <- ddply(data, .(technique), summarize, median = median(speedup))
 data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
                    err = 2 * sd(speedup) / sqrt(length(speedup)))
 data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+
+dim(data[data$technique == "RS", ])
+dim(data[data$technique == "DLMT", ])
+mean(data[data$technique == "RS", "points"])
+mean(data[data$technique == "DLMT", "points"])
 #+END_SRC
 
 #+RESULTS:
 : There were 50 or more warnings (use warnings() to see the first 50)
+: [1] 10 54
+: [1] 10 54
+: [1] 360
+: [1] 333.9
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6481,7 +6389,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-t9IXxh/figure3MtWcW.png]]
+[[file:/tmp/babel-efDreH/figure87avL8.png]]
 
 ***** Boxplot (better suited for the small number of repetitions)
 #+HEADER: :results graphics output :session *R*
@@ -6497,7 +6405,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-t9IXxh/figureOKYF1h.png]]
+[[file:/tmp/babel-daFKax/figure8P1fGd.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
@@ -6564,22 +6472,21 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-t9IXxh/figureERilDl.png]]
+[[file:/tmp/babel-efDreH/figureVBQEIr.png]]
 **** Experimental Settings on the Xeon E5 2630 v2
 The tables in this section are for keeping track of what would be interesting to
 measure and what was already measured.
-
 ***** Tracking Table Grid5000 Xeon E5 2630 v3
 |----+--------------------+-------+-----+------+------+-----+-------|
 |    | Application        | RS    | RSL | SIMA | SIMP | MLS | DLMT  |
 |----+--------------------+-------+-----+------+------+-----+-------|
 |  1 | stencil3d          | DONE  |     |      |      |     | DONE  |
-|  2 | dgemv3             | DOING |     |      |      |     | DOING |
-|  3 | atax               | DOING |     |      |      |     | DOING |
+|  2 | dgemv3             | DONE  |     |      |      |     | DONE  |
+|  3 | atax               | DOING |     |      |      |     | DONE  |
 |  4 | gemver             |       |     |      |      |     |       |
 |  5 | bicgkernel         |       |     |      |      |     |       |
 |  6 | trmm               |       |     |      |      |     |       |
-|  7 | adi                |       |     |      |      |     |       |
+|  7 | adi                |       |     |      |      |     | DOING |
 |  8 | gesummv            |       |     |      |      |     |       |
 |  9 | mvt                |       |     |      |      |     |       |
 | 10 | fdtd               |       |     |      |      |     |       |
@@ -6615,3 +6522,362 @@ Prediction:
 - Size of initial sampled space (multipliers)
 - Sampling again for prediction?
 - Extra experiments due to runtime failures
+*** [2018-09-05 Wed]
+**** Application: atax (Latest, Linear Model, Xeon E5 2630 v3)
+***** Clonning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+***** Histogram of Autotuning Results
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+target_dir <-"dlmt_spapt_experiments/data/atax/latest/"
+csv_files <- list.files(path = target_dir, pattern = "results.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+
+dim(data[data$technique == "RS", ])
+dim(data[data$technique == "DLMT", ])
+dim(data[data$technique == "SIMA", ])
+mean(data[data$technique == "RS", "points"])
+mean(data[data$technique == "DLMT", "points"])
+mean(data[data$technique == "SIMA", "points"])
+data_mean
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 0 0
+Warning message:
+Unknown or uninitialised column: 'technique'.
+[1] 0 0
+Warning message:
+Unknown or uninitialised column: 'technique'.
+[1] 0 0
+Warning message:
+Unknown or uninitialised column: 'technique'.
+Error: Column `points` not found
+Error: Column `points` not found
+Error: Column `points` not found
+# A tibble: 0 x 0
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
+    geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-daFKax/figuredKoeQd.png]]
+
+***** Boxplot (better suited for the small number of repetitions)
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip() +
+    #facet_grid(technique ~ .) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-daFKax/figure8pDX68.png]]
+
+***** Histogram of Explored Search Spaces
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+
+target_dir <-"dlmt_spapt_experiments/data/atax/latest/"
+csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1, ]
+
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[1, "technique"] <- "DLMT"
+O3_baseline[2, "technique"] <- "RS"
+
+data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
+                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, .keep_all = TRUE)
+#+END_SRC
+
+#+RESULTS:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 500)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-daFKax/figurev1dId1.png]]
+*** [2018-09-06 Thu]
+**** Plotting Applications (Linear Model, Xeon E5 2630 v3)
+***** Clonning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+***** Histogram of Autotuning Results
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/"
+target_dirs <- c("atax", "dgemv3", "stencil3d")
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "results.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
+    target_data$application <- rep(target_dir, nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+#data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
+#data_median <- ddply(data, .(technique), summarize, median = median(speedup))
+#data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
+#                   err = 2 * sd(speedup) / sqrt(length(speedup)))
+#data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+#+END_SRC
+
+#+RESULTS:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ application) +
+    geom_histogram(aes(speedup), #, y = 0.01 * ..density..),
+    binwidth = 0.01) +
+    labs(y = "Frequency", x = "Speedup vs O3") +
+    coord_cartesian(xlim = c(0.5, 2.5), ylim = c(0, 1)) +
+    #geom_rect(data = data_error, aes(xmin = mean-err, xmax = mean + err, ymin = 0, ymax = 100, fill = "red"), alpha = 0.3) +
+    #geom_vline(aes(xintercept = median), data_median, color = "darkgreen", linetype = 3) +
+    #geom_vline(aes(xintercept = mean), data_mean, color = "red", linetype = 2) +
+    scale_fill_discrete(name = "",breaks = c("red"), labels = c("Mean error")) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-efDreH/figure4gnJVA.png]]
+
+***** Boxplot (better suited for the small number of repetitions)
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip() +
+    geom_jitter() +
+    facet_grid(. ~ application) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SrcUCi/figureRirPQE.png]]
+
+***** Histogram of Explored Search Spaces
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+
+target_dir <-"dlmt_spapt_experiments/data/atax/latest/"
+csv_files <- list.files(path = target_dir, pattern = "search_space.csv", recursive = TRUE)
+csv_files <- paste0(target_dir, csv_files)
+
+info <- file.info(csv_files)
+non_empty <- rownames(info[info$size != 0, ])
+csv_files <- csv_files[csv_files %in% non_empty]
+
+data <- lapply(csv_files, read.csv)
+data <- bind_rows(data)
+
+data <- data[data$correct_result == "True", ]
+
+O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
+                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
+                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
+                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
+                    data$RT_K == 1, ]
+
+
+O3_baseline <- O3_baseline[c(1,1), ]
+O3_baseline[1, "technique"] <- "DLMT"
+O3_baseline[2, "technique"] <- "RS"
+
+data <- distinct(data, T1_I, T1_J, T1_K, T2_I, T2_J, T2_K,
+                 U1_I, U_I, U_J, U_K, RT_I, RT_J, RT_K, .keep_all = TRUE)
+#+END_SRC
+
+#+RESULTS:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_grid(technique ~ .) +
+    geom_histogram(aes(cost_mean), binwidth = 0.01) +
+    geom_vline(aes(xintercept = cost_mean), O3_baseline, color = "black", linetype = 2) +
+    coord_cartesian(xlim = c(0, max(data$cost_mean)), ylim = c(0, 500)) +
+    geom_text(aes(x = cost_mean - 0.02, y = 123, label = "-O3"), data = O3_baseline) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-daFKax/figurev1dId1.png]]
+**** Plotting Sampling Strategies
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(ggplot2)
+library(DoE.wrapper)
+library(AlgDesign)
+library(dplyr)
+
+sample_size = 50
+
+rs_data <- data.frame(x1 = sample(0:20, sample_size, replace = T),
+                      x2 = sample(0:20, sample_size, replace = T))
+rs_data$name <- rep("RS", nrow(rs_data))
+data <- rs_data
+
+lhs_data <- lhs.design(nruns = sample_size ,nfactors = 2, digits = 0, type = "maximin",
+                       factor.names = list(x1 = c(0, 20), x2 = c(0, 20)))
+lhs_data$name <- rep("LHS", nrow(lhs_data))
+data <- bind_rows(data, lhs_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
+output <- optFederov(~., full_factorial, nTrials = sample_size)
+dopt_data <- output$design
+dopt_data$name <- rep("DOPT", nrow(dopt_data))
+data <- bind_rows(data, dopt_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
+output <- optFederov(~ . + .^2, full_factorial, nTrials = sample_size)
+dopti_data <- output$design
+dopti_data$name <- rep("DOPTI", nrow(dopti_data))
+data <- bind_rows(data, dopti_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
+#output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = sample_size)
+output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
+doptq_data <- output$design
+doptq_data$name <- rep("DOPTQ", nrow(doptq_data))
+data <- bind_rows(data, doptq_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
+output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
+doptc_data <- output$design
+doptc_data$name <- rep("DOPTC", nrow(doptc_data))
+data <- bind_rows(data, doptc_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
+output <- optFederov(~., full_factorial, criterion = "I", nTrials = sample_size)
+iopt_data <- output$design
+iopt_data$name <- rep("IOPT", nrow(iopt_data))
+data <- bind_rows(data, iopt_data)
+
+ggplot(data, aes(x = x1, y = x2)) +
+    facet_wrap(name ~ ., ncol = 3) +
+    geom_point(shape = 19, alpha = 0.6) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SrcUCi/figurejWoFDl.png]]
