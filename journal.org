@@ -6745,7 +6745,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-efDreH/figure4gnJVA.png]]
+[[file:/tmp/babel-SrcUCi/figureDGutjZ.png]]
 
 ***** Boxplot (better suited for the small number of repetitions)
 #+HEADER: :results graphics output :session *R*
@@ -6762,7 +6762,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SrcUCi/figureRirPQE.png]]
+[[file:/tmp/babel-SrcUCi/figure6KOazQ.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
