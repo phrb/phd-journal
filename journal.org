@@ -6482,7 +6482,7 @@ measure and what was already measured.
 |----+--------------------+-------+-----+------+------+-----+-------|
 |  1 | stencil3d          | DONE  |     |      |      |     | DONE  |
 |  2 | dgemv3             | DONE  |     |      |      |     | DONE  |
-|  3 | atax               | DOING |     |      |      |     | DONE  |
+|  3 | atax               | DOING |     | DONE |      |     | DONE  |
 |  4 | gemver             |       |     |      |      |     |       |
 |  5 | bicgkernel         |       |     |      |      |     |       |
 |  6 | trmm               |       |     |      |      |     |       |
@@ -6682,7 +6682,7 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 #+RESULTS:
 : Already up to date.
 
-***** Histogram of Autotuning Results
+***** Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -6690,7 +6690,7 @@ library(plyr)
 library(dplyr)
 
 data_dir <- "dlmt_spapt_experiments/data/"
-target_dirs <- c("atax", "dgemv3", "stencil3d")
+target_dirs <- c("atax", "atax_all_cubic_quad", "atax_linear", "dgemv3", "stencil3d_all_cubic_quad", "stencil3d_linear")
 data <- NULL
 
 for (target_dir in target_dirs) {
@@ -6716,15 +6716,37 @@ for (target_dir in target_dirs) {
     }
 }
 
-#data_mean <- ddply(data, .(technique), summarize, mean = mean(speedup))
-#data_median <- ddply(data, .(technique), summarize, median = median(speedup))
-#data_error <- ddply(data, .(technique), summarize, mean = mean(speedup),
-#                   err = 2 * sd(speedup) / sqrt(length(speedup)))
-#data_max <- ddply(data, .(technique), summarize, max = max(speedup))
+summarise(points_mean = mean(points), points_min = min(points),
+          points_max = max(points), experiments = n(),
+          group_by(data, application, technique))
+
 #+END_SRC
 
 #+RESULTS:
-: There were 50 or more warnings (use warnings() to see the first 50)
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 15 x 6
+# Groups:   application [?]
+   application          technique points_mean points_min points_max experiments
+   <chr>                <chr>           <dbl>      <dbl>      <dbl>       <int>
+ 1 atax                 DLMT             128.         49        168          30
+ 2 atax                 RS               170.        170        171          30
+ 3 atax                 SIMA             158.        131        171          31
+ 4 atax_all_cubic_quad  DLMT             200.        115        297          18
+ 5 atax_all_cubic_quad  RS               301         301        301          10
+ 6 atax_all_cubic_quad  SIMA             301         301        301          10
+ 7 atax_linear          DLMT             116.         94        131          10
+ 8 atax_linear          RS               131         131        131          10
+ 9 atax_linear          SIMA             131         131        131          10
+10 dgemv3               DLMT             334.        287        371          10
+11 dgemv3               RS               360         360        360          10
+12 stencil3d_all_cubic… DLMT             439.        339        517           9
+13 stencil3d_all_cubic… RS               300         300        300          10
+14 stencil3d_linear     DLMT             235.        198        265          10
+15 stencil3d_linear     RS               300         300        300          10
+#+end_example
+
+***** Histogram of Results
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -6745,24 +6767,24 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SrcUCi/figureDGutjZ.png]]
+[[file:/tmp/babel-BBm4b5/figureoFFXyg.png]]
 
 ***** Boxplot (better suited for the small number of repetitions)
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1500 :height 720
 #+BEGIN_SRC R
 ggplot(data, aes(x = technique, y = speedup)) +
     geom_boxplot() +
     coord_flip() +
     geom_jitter() +
-    facet_grid(. ~ application) +
+    facet_wrap(. ~ application, ncol = 3) +
     ggtitle("") +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SrcUCi/figure6KOazQ.png]]
+[[file:/tmp/babel-gcUDq1/figure6jZVmD.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
@@ -6781,12 +6803,7 @@ data <- lapply(csv_files, read.csv)
 data <- bind_rows(data)
 
 data <- data[data$correct_result == "True", ]
-
-O3_baseline <- data[data$T1_I == 1 & data$T1_J == 1 & data$T1_K == 1 &
-                    data$T2_I == 1 & data$T2_J == 1 & data$T2_K == 1 &
-                    data$U1_I == 1 & data$U_I == 1 & data$U_J == 1 &
-                    data$U_K == 1 & data$RT_I == 1 & data$RT_J == 1 &
-                    data$RT_K == 1, ]
+O3_baseline <- data[data$baseline == "True", ]
 
 
 O3_baseline <- O3_baseline[c(1,1), ]
@@ -6846,6 +6863,13 @@ data <- bind_rows(data, dopt_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
+output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), full_factorial, nTrials = sample_size)
+dopt_data <- output$design
+dopt_data$name <- rep("DOPTInv", nrow(dopt_data))
+data <- bind_rows(data, dopt_data)
+
+full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + .^2, full_factorial, nTrials = sample_size)
 dopti_data <- output$design
 dopti_data$name <- rep("DOPTI", nrow(dopti_data))
@@ -6880,4 +6904,4 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SrcUCi/figurejWoFDl.png]]
+[[file:/tmp/babel-BBm4b5/figureAA7jmm.png]]
