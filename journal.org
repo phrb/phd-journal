@@ -6477,28 +6477,28 @@ ggplot(data) +
 The tables in this section are for keeping track of what would be interesting to
 measure and what was already measured.
 ***** Tracking Table Grid5000 Xeon E5 2630 v3
-|----+--------------------+-------+-----+------+------+-----+-------|
-|    | Application        | RS    | RSL | SIMA | SIMP | MLS | DLMT  |
-|----+--------------------+-------+-----+------+------+-----+-------|
-|  1 | stencil3d          | DONE  |     |      |      |     | DONE  |
-|  2 | dgemv3             | DONE  |     |      |      |     | DONE  |
-|  3 | atax               | DOING |     | DONE |      |     | DONE  |
-|  4 | gemver             |       |     |      |      |     |       |
-|  5 | bicgkernel         |       |     |      |      |     |       |
-|  6 | trmm               |       |     |      |      |     |       |
-|  7 | adi                |       |     |      |      |     | DOING |
-|  8 | gesummv            |       |     |      |      |     |       |
-|  9 | mvt                |       |     |      |      |     |       |
-| 10 | fdtd               |       |     |      |      |     |       |
-| 11 | correlation        |       |     |      |      |     |       |
-| 12 | lu                 |       |     |      |      |     |       |
-| 13 | tensor-contraction |       |     |      |      |     |       |
-| 14 | mm                 |       |     |      |      |     |       |
-| 15 | jacobi             |       |     |      |      |     |       |
-| 16 | covariance         |       |     |      |      |     |       |
-| 17 | hessian            |       |     |      |      |     |       |
-| 18 | seidel             |       |     |      |      |     |       |
-|----+--------------------+-------+-----+------+------+-----+-------|
+|----+--------------------+------+------+------+------+-------|
+|    | Application        | RS   | RSL  | SIMA | SIMP | DLMT  |
+|----+--------------------+------+------+------+------+-------|
+|  1 | stencil3d          | DONE |      |      |      | DONE  |
+|  2 | dgemv3             | DONE |      |      |      | DONE  |
+|  3 | atax               | DONE | DONE | DONE | DONE | DONE  |
+|  4 | gemver             |      |      |      |      |       |
+|  5 | bicgkernel         |      |      |      |      |       |
+|  6 | trmm               |      |      |      |      |       |
+|  7 | adi                |      |      |      |      | DOING |
+|  8 | gesummv            |      |      |      |      |       |
+|  9 | mvt                |      |      |      |      |       |
+| 10 | fdtd               |      |      |      |      |       |
+| 11 | correlation        |      |      |      |      |       |
+| 12 | lu                 |      |      |      |      |       |
+| 13 | tensor-contraction |      |      |      |      |       |
+| 14 | mm                 |      |      |      |      |       |
+| 15 | jacobi             |      |      |      |      |       |
+| 16 | covariance         |      |      |      |      |       |
+| 17 | hessian            |      |      |      |      |       |
+| 18 | seidel             |      |      |      |      |       |
+|----+--------------------+------+------+------+------+-------|
 
 ****** DLMT:
 - "Large" (8) number of ANOVA steps
@@ -6690,7 +6690,7 @@ library(plyr)
 library(dplyr)
 
 data_dir <- "dlmt_spapt_experiments/data/"
-target_dirs <- c("atax", "atax_all_cubic_quad", "atax_linear", "dgemv3", "stencil3d_all_cubic_quad", "stencil3d_linear")
+target_dirs <- c("atax1_2_steps", "dgemv3", "stencil3d_all_cubic_quad", "stencil3d_linear")
 data <- NULL
 
 for (target_dir in target_dirs) {
@@ -6708,6 +6708,7 @@ for (target_dir in target_dirs) {
 
     target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
     target_data$application <- rep(target_dir, nrow(target_data))
+    target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
 
     if (is.null(data)) {
         data <- target_data
@@ -6716,34 +6717,30 @@ for (target_dir in target_dirs) {
     }
 }
 
-summarise(points_mean = mean(points), points_min = min(points),
+print(summarise(points_mean = mean(points), points_min = min(points),
           points_max = max(points), experiments = n(),
-          group_by(data, application, technique))
+          group_by(data, application, technique)), n = 40)
 
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 15 x 6
+# A tibble: 11 x 6
 # Groups:   application [?]
    application          technique points_mean points_min points_max experiments
    <chr>                <chr>           <dbl>      <dbl>      <dbl>       <int>
- 1 atax                 DLMT             128.         49        168          30
- 2 atax                 RS               170.        170        171          30
- 3 atax                 SIMA             158.        131        171          31
- 4 atax_all_cubic_quad  DLMT             200.        115        297          18
- 5 atax_all_cubic_quad  RS               301         301        301          10
- 6 atax_all_cubic_quad  SIMA             301         301        301          10
- 7 atax_linear          DLMT             116.         94        131          10
- 8 atax_linear          RS               131         131        131          10
- 9 atax_linear          SIMA             131         131        131          10
-10 dgemv3               DLMT             334.        287        371          10
-11 dgemv3               RS               360         360        360          10
-12 stencil3d_all_cubic… DLMT             439.        339        517           9
-13 stencil3d_all_cubic… RS               300         300        300          10
-14 stencil3d_linear     DLMT             235.        198        265          10
-15 stencil3d_linear     RS               300         300        300          10
+ 1 atax1_2_steps        DLMT             83.6         66         95          10
+ 2 atax1_2_steps        RS              101          101        101          10
+ 3 atax1_2_steps        RSL             100          100        100          10
+ 4 atax1_2_steps        SIMA            101          101        101          10
+ 5 atax1_2_steps        SIMP            100.         100        101          10
+ 6 dgemv3               DLMT            334.         287        371          10
+ 7 dgemv3               RS              360          360        360          10
+ 8 stencil3d_all_cubic… DLMT            439.         339        517           9
+ 9 stencil3d_all_cubic… RS              300          300        300          10
+10 stencil3d_linear     DLMT            235.         198        265          10
+11 stencil3d_linear     RS              300          300        300          10
 #+end_example
 
 ***** Histogram of Results
@@ -6777,14 +6774,15 @@ ggplot(data) +
 ggplot(data, aes(x = technique, y = speedup)) +
     geom_boxplot() +
     coord_flip() +
-    geom_jitter() +
+    #geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
     facet_wrap(. ~ application, ncol = 3) +
     ggtitle("") +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gcUDq1/figure6jZVmD.png]]
+[[file:/tmp/babel-G1kGWE/figureMy3iYc.png]]
 
 ***** Histogram of Explored Search Spaces
 #+HEADER: :results output :session *R*
@@ -6877,15 +6875,16 @@ data <- bind_rows(data, dopti_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
-#output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = sample_size)
-output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
+output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = sample_size)
+#output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
 doptq_data <- output$design
 doptq_data$name <- rep("DOPTQ", nrow(doptq_data))
 data <- bind_rows(data, doptq_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
-output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
+output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = sample_size)
+#output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
 doptc_data <- output$design
 doptc_data$name <- rep("DOPTC", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
@@ -6904,4 +6903,4 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-BBm4b5/figureAA7jmm.png]]
+[[file:/tmp/babel-G1kGWE/figure3V96eY.png]]
