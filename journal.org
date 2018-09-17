@@ -6477,28 +6477,28 @@ ggplot(data) +
 The tables in this section are for keeping track of what would be interesting to
 measure and what was already measured.
 ***** Tracking Table Grid5000 Xeon E5 2630 v3
-|----+--------------------+------+------+------+------+-------|
-|    | Application        | RS   | RSL  | SIMA | SIMP | DLMT  |
-|----+--------------------+------+------+------+------+-------|
-|  1 | stencil3d          | DONE |      |      |      | DONE  |
-|  2 | dgemv3             | DONE |      |      |      | DONE  |
-|  3 | atax               | DONE | DONE | DONE | DONE | DONE  |
-|  4 | gemver             |      |      |      |      |       |
-|  5 | bicgkernel         |      |      |      |      |       |
-|  6 | trmm               |      |      |      |      |       |
-|  7 | adi                |      |      |      |      | DOING |
-|  8 | gesummv            |      |      |      |      |       |
-|  9 | mvt                |      |      |      |      |       |
-| 10 | fdtd               |      |      |      |      |       |
-| 11 | correlation        |      |      |      |      |       |
-| 12 | lu                 |      |      |      |      |       |
-| 13 | tensor-contraction |      |      |      |      |       |
-| 14 | mm                 |      |      |      |      |       |
-| 15 | jacobi             |      |      |      |      |       |
-| 16 | covariance         |      |      |      |      |       |
-| 17 | hessian            |      |      |      |      |       |
-| 18 | seidel             |      |      |      |      |       |
-|----+--------------------+------+------+------+------+-------|
+|----+--------------------+-------+-------+-------+-------+-------|
+|    | Application        | RS    | RSL   | SIMA  | SIMP  | DLMT  |
+|----+--------------------+-------+-------+-------+-------+-------|
+|  1 | stencil3d          | DONE  |       |       |       | DONE  |
+|  2 | dgemv3             | DONE  |       |       |       | DONE  |
+|  3 | atax               | DONE  | DONE  | DONE  | DONE  | DONE  |
+|  4 | gemver             |       |       |       |       |       |
+|  5 | bicgkernel         |       |       |       |       |       |
+|  6 | trmm               |       |       |       |       |       |
+|  7 | adi                | DOING | DOING | DOING | DOING | DOING |
+|  8 | gesummv            |       |       |       |       |       |
+|  9 | mvt                |       |       |       |       |       |
+| 10 | fdtd               |       |       |       |       |       |
+| 11 | correlation        |       |       |       |       |       |
+| 12 | lu                 |       |       |       |       |       |
+| 13 | tensor-contraction |       |       |       |       |       |
+| 14 | mm                 |       |       |       |       |       |
+| 15 | jacobi             |       |       |       |       |       |
+| 16 | covariance         |       |       |       |       |       |
+| 17 | hessian            |       |       |       |       |       |
+| 18 | seidel             |       |       |       |       |       |
+|----+--------------------+-------+-------+-------+-------+-------|
 
 ****** DLMT:
 - "Large" (8) number of ANOVA steps
@@ -6806,7 +6806,8 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 #+RESULTS:
 : Already up to date.
 ***** Atax Tests
-****** Loading Data
+****** Boxplot of Results
+******* Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -6845,7 +6846,7 @@ for (target_dir in target_dirs) {
 options(dplyr.width = Inf)
 print(summarise(points_mean = mean(points), points_min = min(points),
           points_max = max(points), max_speedup = max(speedup), experiments = n(),
-          group_by(data, application, technique)), n = 40)
+          group_by(data, application, technique)), n = 80)
 
 #+END_SRC
 
@@ -6854,88 +6855,89 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 There were 50 or more warnings (use warnings() to see the first 50)
 # A tibble: 38 x 7
 # Groups:   application [?]
-   application                          technique points_mean points_min
-   <chr>                                <chr>           <dbl>      <dbl>
- 1 atax                                 DLMT            129.          49
- 2 atax                                 RS              170.         170
- 3 atax                                 RSL             170          170
- 4 atax                                 SIMA            158.         131
- 5 atax                                 SIMP            170.         170
- 6 atax_all_cubic_quad                  DLMT            200.         115
- 7 atax_all_cubic_quad                  RS              301          301
- 8 atax_all_cubic_quad                  SIMA            301          301
- 9 atax_expanded                        DLMT            414.         303
-10 atax_expanded                        RS              151          151
-11 atax_expanded                        RSL             150          150
-12 atax_expanded                        SIMA            151          151
-13 atax_expanded                        SIMP            150          150
-14 atax_linear                          DLMT            116.          94
-15 atax_linear                          RS              131          131
-16 atax_linear                          SIMA            131          131
-17 atax_old                             DLMT             83.8         65
-18 atax_old                             RS              101.         100
-19 atax_old                             RSL             100          100
-20 atax_old                             SIMA            101.         100
-21 atax_old                             SIMP            100.         100
-22 atax_quad_cubic                      DLMT            176           89
-23 atax_quad_cubic                      RS              151          151
-24 atax_quad_cubic                      RSL             150          150
-25 atax_quad_cubic                      SIMA            151          151
-26 atax_quad_cubic                      SIMP            150          150
-27 atax0_no_dlmt                        RS              171          171
-28 atax0_no_dlmt                        RSL             170          170
-29 atax0_no_dlmt                        SIMA            171          171
-30 atax0_no_dlmt                        SIMP            170.         170
-31 atax1                                DLMT            176          135
-32 atax1                                RS              301          301
-33 atax1_12_steps_small_model           DLMT            340.         170
-34 atax1_12_steps_small_model_large_prf DLMT            153.         114
-35 atax1_12_steps_small_model_min_prf   DLMT            480.         418
-36 atax1_8_steps                        DLMT            174.         118
-37 atax1_small_quad                     DLMT            109.          71
-38 atax1_tests                          DLMT            130.         106
+   application                         technique points_mean points_min
+   <chr>                               <chr>           <dbl>      <dbl>
+ 1 atax_12_steps_small_model           DLMT            340.         170
+ 2 atax_12_steps_small_model_large_prf DLMT            153.         114
+ 3 atax_12_steps_small_model_min_prf   DLMT            480.         418
+ 4 atax_4x_lin                         DLMT             97.8         90
+ 5 atax_4x_lin                         RS              101          101
+ 6 atax_4x_lin_cub_quad                DLMT            143.         126
+ 7 atax_4x_lin_cub_quad                RS              201          201
+ 8 atax_expanded_lin                   DLMT            414.         303
+ 9 atax_expanded_lin                   RS              151          151
+10 atax_expanded_lin                   RSL             150          150
+11 atax_expanded_lin                   SIMA            151          151
+12 atax_expanded_lin                   SIMP            150          150
+13 atax_expanded_lin_quad_cub          DLMT            176           89
+14 atax_expanded_lin_quad_cub          RS              151          151
+15 atax_expanded_lin_quad_cub          RSL             150          150
+16 atax_expanded_lin_quad_cub          SIMA            151          151
+17 atax_expanded_lin_quad_cub          SIMP            150          150
+18 atax_lin_quad                       DLMT            176          135
+19 atax_lin_quad                       RS              301          301
+20 atax_lin_quad_8_steps               DLMT            174.         118
+21 atax_lin_quad_cub                   DLMT             83.8         65
+22 atax_lin_quad_cub                   RS              101.         100
+23 atax_lin_quad_cub                   RSL             100          100
+24 atax_lin_quad_cub                   SIMA            101.         100
+25 atax_lin_quad_cub                   SIMP            100.         100
+26 atax_no_binary_cubic_quad           DLMT            200.         115
+27 atax_no_binary_cubic_quad           RS              301          301
+28 atax_no_binary_cubic_quad           SIMA            301          301
+29 atax_no_binary_lin                  DLMT            126.          49
+30 atax_no_binary_lin                  RS              160.         131
+31 atax_no_binary_lin                  RSL             170          170
+32 atax_no_binary_lin                  SIMA            151.         131
+33 atax_no_binary_lin                  SIMP            170.         170
+34 atax_no_binary_no_dlmt              RS              171          171
+35 atax_no_binary_no_dlmt              RSL             170          170
+36 atax_no_binary_no_dlmt              SIMA            171          171
+37 atax_no_binary_no_dlmt              SIMP            170.         170
+38 atax_small_model_quad               DLMT            109.          71
    points_max max_speedup experiments
         <dbl>       <dbl>       <int>
- 1        168        2.05          40
- 2        171        1.89          30
- 3        170        1.87          30
- 4        171        1.66          31
- 5        171        1.88          30
- 6        297        1.91          18
- 7        301        1.89          10
- 8        301        1.71          10
- 9        480        2.05           8
-10        151        2.03          10
-11        150        2.17          10
-12        151        2.13          10
-13        150        2.02          10
-14        131        1.65          10
-15        131        1.62          10
-16        131        1.60          10
-17         96        2.10          30
-18        101        2.05          30
-19        100        2.09          30
-20        101        2.11          30
-21        101        2.05          30
-22        213        2.14           9
-23        151        2.03          10
-24        150        2.17          10
-25        151        2.13          10
-26        150        2.02          10
-27        171        1.74          10
-28        170        1.86          10
-29        171        1.64          10
-30        171        1.89          10
-31        231        2.07           4
-32        301        2.04           6
-33        539        2.04           8
-34        254        2.04           9
-35        565        2.05          10
-36        233        2.05          10
-37        120        2.08          27
-38        160        2.05          10
+ 1        539        2.04           8
+ 2        254        2.04           9
+ 3        565        2.05          10
+ 4        101        2.20          10
+ 5        101        2.20          10
+ 6        164        2.22          10
+ 7        201        2.22          10
+ 8        480        2.05           8
+ 9        151        2.03          10
+10        150        2.17          10
+11        151        2.13          10
+12        150        2.02          10
+13        213        2.14           9
+14        151        2.03          10
+15        150        2.17          10
+16        151        2.13          10
+17        150        2.02          10
+18        231        2.07           4
+19        301        2.04           6
+20        233        2.05          10
+21         96        2.10          30
+22        101        2.05          30
+23        100        2.09          30
+24        101        2.11          30
+25        101        2.05          30
+26        297        1.91          18
+27        301        1.89          10
+28        301        1.71          10
+29        168        2.05          50
+30        171        1.89          40
+31        170        1.87          30
+32        171        1.66          41
+33        171        1.88          30
+34        171        1.74          10
+35        170        1.86          10
+36        171        1.64          10
+37        171        1.89          10
+38        120        2.08          27
 #+end_example
-****** Boxplot (better suited for the small number of repetitions)
+
+******* Plotting
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -6943,17 +6945,19 @@ There were 50 or more warnings (use warnings() to see the first 50)
 ggplot(data, aes(x = technique, y = speedup)) +
     geom_boxplot() +
     coord_flip(ylim = c(1.0, 3.0)) +
+    #coord_flip() +
     #geom_jitter() +
     geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
-    facet_wrap(. ~ application, scales = "free", ncol = 4) +
+    facet_wrap(. ~ application, scales = "free", ncol = 5) +
     ggtitle("") +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figuredNJDJ6.png]]
+[[file:/tmp/babel-G1kGWE/figureI0aKza.png]]
 
 ****** Histogram of Explored Search Spaces
+******* Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -7002,87 +7006,89 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 There were 50 or more warnings (use warnings() to see the first 50)
 # A tibble: 38 x 6
 # Groups:   application [?]
-   application                          technique baseline max_cost_mean
-   <chr>                                <chr>        <dbl>         <dbl>
- 1 atax                                 DLMT        NA             0.556
- 2 atax                                 RS          NA             0.491
- 3 atax                                 RSL         NA             0.491
- 4 atax                                 SIMA        NA             0.471
- 5 atax                                 SIMP        NA             0.488
- 6 atax_all_cubic_quad                  DLMT         0.178         0.461
- 7 atax_all_cubic_quad                  RS           0.178         0.472
- 8 atax_all_cubic_quad                  SIMA         0.178         0.442
- 9 atax_expanded                        DLMT         0.179         0.710
-10 atax_expanded                        RS           0.179         0.727
-11 atax_expanded                        RSL          0.179         0.783
-12 atax_expanded                        SIMA         0.179         0.682
-13 atax_expanded                        SIMP         0.179         0.889
-14 atax_linear                          DLMT        NA             0.480
-15 atax_linear                          RS          NA             0.446
-16 atax_linear                          SIMA        NA             0.429
-17 atax_old                             DLMT         0.178         0.454
-18 atax_old                             RS           0.178         0.454
-19 atax_old                             RSL          0.178         0.483
-20 atax_old                             SIMA         0.178         0.500
-21 atax_old                             SIMP         0.178         0.519
-22 atax_quad_cubic                      DLMT         0.178         0.675
-23 atax_quad_cubic                      RS           0.178         0.727
-24 atax_quad_cubic                      RSL          0.178         0.783
-25 atax_quad_cubic                      SIMA         0.178         0.682
-26 atax_quad_cubic                      SIMP         0.178         0.889
-27 atax0_no_dlmt                        RS           0.177         0.451
-28 atax0_no_dlmt                        RSL          0.177         0.473
-29 atax0_no_dlmt                        SIMA         0.177         0.465
-30 atax0_no_dlmt                        SIMP         0.177         0.457
-31 atax1                                DLMT         0.178         0.434
-32 atax1                                RS           0.178         0.566
-33 atax1_12_steps_small_model           DLMT         0.177         0.505
-34 atax1_12_steps_small_model_large_prf DLMT         0.177         0.510
-35 atax1_12_steps_small_model_min_prf   DLMT         0.177         0.483
-36 atax1_8_steps                        DLMT         0.178         0.422
-37 atax1_small_quad                     DLMT         0.179         0.546
-38 atax1_tests                          DLMT         0.179         0.556
+   application                         technique baseline max_cost_mean
+   <chr>                               <chr>        <dbl>         <dbl>
+ 1 atax_12_steps_small_model           DLMT         0.177         0.505
+ 2 atax_12_steps_small_model_large_prf DLMT         0.177         0.510
+ 3 atax_12_steps_small_model_min_prf   DLMT         0.177         0.483
+ 4 atax_4x_lin                         DLMT         3.08         13.2
+ 5 atax_4x_lin                         RS           3.08         13.5
+ 6 atax_4x_lin_cub_quad                DLMT         3.08         12.9
+ 7 atax_4x_lin_cub_quad                RS           3.08         11.8
+ 8 atax_expanded_lin                   DLMT         0.179         0.710
+ 9 atax_expanded_lin                   RS           0.179         0.727
+10 atax_expanded_lin                   RSL          0.179         0.783
+11 atax_expanded_lin                   SIMA         0.179         0.682
+12 atax_expanded_lin                   SIMP         0.179         0.889
+13 atax_expanded_lin_quad_cub          DLMT         0.178         0.675
+14 atax_expanded_lin_quad_cub          RS           0.178         0.727
+15 atax_expanded_lin_quad_cub          RSL          0.178         0.783
+16 atax_expanded_lin_quad_cub          SIMA         0.178         0.682
+17 atax_expanded_lin_quad_cub          SIMP         0.178         0.889
+18 atax_lin_quad                       DLMT         0.178         0.434
+19 atax_lin_quad                       RS           0.178         0.566
+20 atax_lin_quad_8_steps               DLMT         0.178         0.422
+21 atax_lin_quad_cub                   DLMT         0.178         0.454
+22 atax_lin_quad_cub                   RS           0.178         0.454
+23 atax_lin_quad_cub                   RSL          0.178         0.483
+24 atax_lin_quad_cub                   SIMA         0.178         0.500
+25 atax_lin_quad_cub                   SIMP         0.178         0.519
+26 atax_no_binary_cubic_quad           DLMT         0.178         0.461
+27 atax_no_binary_cubic_quad           RS           0.178         0.472
+28 atax_no_binary_cubic_quad           SIMA         0.178         0.442
+29 atax_no_binary_lin                  DLMT        NA             0.556
+30 atax_no_binary_lin                  RS          NA             0.491
+31 atax_no_binary_lin                  RSL         NA             0.491
+32 atax_no_binary_lin                  SIMA        NA             0.471
+33 atax_no_binary_lin                  SIMP        NA             0.488
+34 atax_no_binary_no_dlmt              RS           0.177         0.451
+35 atax_no_binary_no_dlmt              RSL          0.177         0.473
+36 atax_no_binary_no_dlmt              SIMA         0.177         0.465
+37 atax_no_binary_no_dlmt              SIMP         0.177         0.457
+38 atax_small_model_quad               DLMT         0.179         0.546
    min_cost_mean experiments
            <dbl>       <int>
- 1        0.0872        4996
- 2        0.0940        5094
- 3        0.0945        5075
- 4        0.108         4037
- 5        0.0940        5069
- 6        0.0930        3962
- 7        0.0942        2996
- 8        0.104         3009
- 9        0.0866        2867
-10        0.0871        1245
-11        0.0819        1269
-12        0.0835        1433
-13        0.0874        1371
-14        0.108         1216
-15        0.109         1318
-16        0.109          464
-17        0.0848        2296
-18        0.0863        2685
-19        0.0852        2676
-20        0.0846        2853
-21        0.0868        2846
-22        0.0832        1519
-23        0.0871        1245
-24        0.0819        1269
-25        0.0835        1433
-26        0.0874        1371
-27        0.103         1704
-28        0.0957        1691
-29        0.0946        1710
-30        0.0938        1678
-31        0.0861         760
-32        0.0865        1599
-33        0.0875        2560
-34        0.0866        1513
-35        0.0866        4314
-36        0.0874        1665
-37        0.0851        2252
-38        0.0872        1224
+ 1        0.0875        2560
+ 2        0.0866        1513
+ 3        0.0866        4314
+ 4        1.40           865
+ 5        1.41           868
+ 6        1.39          1322
+ 7        1.39          1767
+ 8        0.0866        2867
+ 9        0.0871        1245
+10        0.0819        1269
+11        0.0835        1433
+12        0.0874        1371
+13        0.0832        1519
+14        0.0871        1245
+15        0.0819        1269
+16        0.0835        1433
+17        0.0874        1371
+18        0.0861         760
+19        0.0865        1599
+20        0.0874        1665
+21        0.0848        2296
+22        0.0863        2685
+23        0.0852        2676
+24        0.0846        2853
+25        0.0868        2846
+26        0.0930        3962
+27        0.0942        2996
+28        0.104         3009
+29        0.0872        6212
+30        0.0940        6412
+31        0.0945        5075
+32        0.108         4501
+33        0.0940        5069
+34        0.103         1704
+35        0.0957        1691
+36        0.0946        1710
+37        0.0938        1678
+38        0.0851        2252
 #+end_example
+
+******* Plotting
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -7090,16 +7096,17 @@ There were 50 or more warnings (use warnings() to see the first 50)
 #+BEGIN_SRC R
 ggplot(data) +
     facet_wrap(application ~ ., scales = "free", ncol = 3) +
-    geom_histogram(aes(cost_mean, fill = technique), binwidth = 0.01) +
+    geom_histogram(aes(cost_mean, fill = technique), binwidth = 0.05) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureMH4hNa.png]]
+[[file:/tmp/babel-G1kGWE/figurexbljB5.png]]
 
 ***** Stencil3d Tests
-****** Loading Data
+****** Boxplot of Results
+******* Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -7145,32 +7152,37 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 9 x 7
+# A tibble: 11 x 7
 # Groups:   application [?]
-  application                    technique points_mean points_min points_max
-  <chr>                          <chr>           <dbl>      <dbl>      <dbl>
-1 stencil3d_8_steps_large_sample DLMT             332         304        383
-2 stencil3d_8_steps_small_sample DLMT             293.        176        344
-3 stencil3d_all_cubic_quad       DLMT             439.        339        517
-4 stencil3d_all_cubic_quad       RS               300         300        300
-5 stencil3d_lin_quad             DLMT             218.        194        266
-6 stencil3d_lin_quad_8_steps     DLMT             349.        276        408
-7 stencil3d_linear               DLMT             235.        198        265
-8 stencil3d_linear               RS               300         300        300
-9 stencil3d_small_model_min_prf  DLMT             546         544        548
-  max_speedup experiments
-        <dbl>       <int>
-1        1.18           6
-2        1.71          11
-3        2.62           9
-4        1.37          10
-5        1.35           5
-6        3.25          11
-7        2.85          10
-8        1.37          10
-9        1.12           2
+   application                    technique points_mean points_min points_max
+   <chr>                          <chr>           <dbl>      <dbl>      <dbl>
+ 1 stencil3d_3x_lin_quad_cub      DLMT             276         236        316
+ 2 stencil3d_3x_lin_quad_cub      RS               201         101        301
+ 3 stencil3d_8_steps_large_sample DLMT             332         304        383
+ 4 stencil3d_8_steps_small_sample DLMT             293.        176        344
+ 5 stencil3d_all_cubic_quad       DLMT             439.        339        517
+ 6 stencil3d_all_cubic_quad       RS               300         300        300
+ 7 stencil3d_lin_quad             DLMT             218.        194        266
+ 8 stencil3d_lin_quad_8_steps     DLMT             349.        276        408
+ 9 stencil3d_linear               DLMT             235.        198        265
+10 stencil3d_linear               RS               300         300        300
+11 stencil3d_small_model_min_prf  DLMT             546         544        548
+   max_speedup experiments
+         <dbl>       <int>
+ 1        2.41           5
+ 2        2.43          10
+ 3        1.18           6
+ 4        1.71          11
+ 5        2.62           9
+ 6        1.37          10
+ 7        1.35           5
+ 8        3.25          11
+ 9        2.85          10
+10        1.37          10
+11        1.12           2
 #+end_example
-****** Boxplot (better suited for the small number of repetitions)
+
+******* Plotting
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -7186,9 +7198,10 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureCALmgY.png]]
+[[file:/tmp/babel-G1kGWE/figure2ZrCaJ.png]]
 
 ****** Histogram of Explored Search Spaces
+******* Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -7234,33 +7247,196 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 
 #+RESULTS:
 #+begin_example
-There were 38 warnings (use warnings() to see them)
-# A tibble: 9 x 6
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 11 x 6
 # Groups:   application [?]
-  application                    technique baseline max_cost_mean min_cost_mean
-  <chr>                          <chr>        <dbl>         <dbl>         <dbl>
-1 stencil3d_8_steps_large_sample DLMT        0.0525         0.381        0.0444
-2 stencil3d_8_steps_small_sample DLMT        0.0521         0.392        0.0301
-3 stencil3d_all_cubic_quad       DLMT       NA              0.412        0.0198
-4 stencil3d_all_cubic_quad       RS         NA              0.437        0.0384
-5 stencil3d_lin_quad             DLMT        0.0526         0.412        0.0385
-6 stencil3d_lin_quad_8_steps     DLMT        0.0522         0.458        0.0161
-7 stencil3d_linear               DLMT       NA              0.376        0.0183
-8 stencil3d_linear               RS         NA              0.437        0.0384
-9 stencil3d_small_model_min_prf  DLMT        0.0531         0.384        0.0473
-  experiments
-        <int>
-1        1966
-2        3196
-3        3910
-4        2965
-5        1080
-6        3792
-7        2436
-8        2965
-9        1083
+   application                    technique baseline max_cost_mean min_cost_mean
+   <chr>                          <chr>        <dbl>         <dbl>         <dbl>
+ 1 stencil3d_3x_lin_quad_cub      DLMT        3.35          28.1          1.39
+ 2 stencil3d_3x_lin_quad_cub      RS          3.35          33.2          1.38
+ 3 stencil3d_8_steps_large_sample DLMT        0.0525         0.381        0.0444
+ 4 stencil3d_8_steps_small_sample DLMT        0.0521         0.392        0.0301
+ 5 stencil3d_all_cubic_quad       DLMT       NA              0.412        0.0198
+ 6 stencil3d_all_cubic_quad       RS         NA              0.437        0.0384
+ 7 stencil3d_lin_quad             DLMT        0.0526         0.412        0.0385
+ 8 stencil3d_lin_quad_8_steps     DLMT        0.0522         0.458        0.0161
+ 9 stencil3d_linear               DLMT       NA              0.376        0.0183
+10 stencil3d_linear               RS         NA              0.437        0.0384
+11 stencil3d_small_model_min_prf  DLMT        0.0531         0.384        0.0473
+   experiments
+         <int>
+ 1        1374
+ 2        1999
+ 3        1966
+ 4        3196
+ 5        3910
+ 6        2965
+ 7        1080
+ 8        3792
+ 9        2436
+10        2965
+11        1083
 #+end_example
 
+******* Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_wrap(application ~ ., scales = "free", ncol = 3) +
+    geom_histogram(aes(cost_mean, fill = technique)) +#, binwidth = 0.05) +
+    geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figurespDu0r.png]]
+
+***** Adi Tests
+****** Boxplot of Results
+******* Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/adi"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "results.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
+    target_data$application <- rep(target_dir, nrow(target_data))
+    target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+options(dplyr.width = Inf)
+print(summarise(points_mean = mean(points), points_min = min(points),
+          points_max = max(points), max_speedup = max(speedup), experiments = n(),
+          group_by(data, application, technique)), n = 40)
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 3 x 7
+# Groups:   application [?]
+  application               technique points_mean points_min points_max
+  <chr>                     <chr>           <dbl>      <dbl>      <dbl>
+1 adi1_cubic_quad_big_model DLMT             320.        197        393
+2 adi1_cubic_quad_big_model RS               201         201        201
+3 adi1_cubic_quad_big_model SIMA             201         201        201
+  max_speedup experiments
+        <dbl>       <int>
+1        1.01           5
+2        1.00          10
+3        1.01           5
+#+end_example
+
+******* Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip(ylim = c(1.0, 3.0)) +
+    coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free", ncol = 4) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figureFYqOAg.png]]
+
+****** Histogram of Explored Search Spaces
+******* Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/adi"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[target_data$correct_result == "True", ]
+    target_data$baseline <- rep(target_data[target_data$baseline == "True", "cost_mean"][1], nrow(target_data))
+
+    target_data <- target_data[, c("cost_mean", "technique", "baseline")]
+
+    target_data$application <- rep(target_dir, nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
+                min_cost_mean = min(cost_mean), experiments = n(),
+                group_by(data, application, technique)), n = 40)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 3 x 6
+# Groups:   application [?]
+  application               technique baseline max_cost_mean min_cost_mean
+  <chr>                     <chr>        <dbl>         <dbl>         <dbl>
+1 adi1_cubic_quad_big_model DLMT         0.273         0.825         0.271
+2 adi1_cubic_quad_big_model RS           0.273         1.31          0.271
+3 adi1_cubic_quad_big_model SIMA         0.273         1.23          0.271
+  experiments
+        <int>
+1         660
+2         879
+3         464
+#+end_example
+
+******* Plotting
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -7273,10 +7449,11 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurewbUKe8.png]]
+[[file:/tmp/babel-G1kGWE/figureCLOojf.png]]
 
 ***** All Applications
-****** Loading Data
+****** Boxplot of Results
+******* Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -7344,7 +7521,8 @@ There were 50 or more warnings (use warnings() to see the first 50)
 7          10
 8          10
 #+end_example
-****** Boxplot (better suited for the small number of repetitions)
+
+******* Plotting
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -7360,9 +7538,10 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureGmAw6N.png]]
+[[file:/tmp/babel-G1kGWE/figureHrvTfV.png]]
 
 ****** Histogram of Explored Search Spaces
+******* Load Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -7422,6 +7601,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 8 dgemv3      RS          NA             0.344        0.0752        3610
 #+end_example
 
+******* Plotting
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
