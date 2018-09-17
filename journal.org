@@ -6673,16 +6673,15 @@ ggplot(data) +
 [[file:/tmp/babel-daFKax/figurev1dId1.png]]
 *** [2018-09-06 Thu]
 **** Plotting Sampling Strategies
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 600
+***** Generate Data
+#+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
 library(DoE.wrapper)
 library(AlgDesign)
 library(dplyr)
 
-sample_size = 50
+sample_size = 10
 
 rs_data <- data.frame(x1 = sample(0:20, sample_size, replace = T),
                       x2 = sample(0:20, sample_size, replace = T))
@@ -6712,7 +6711,7 @@ full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + .^2, full_factorial, nTrials = sample_size)
 dopti_data <- output$design
-dopti_data$name <- rep("DOPTI", nrow(dopti_data))
+dopti_data$name <- rep("DOPTInt", nrow(dopti_data))
 data <- bind_rows(data, dopti_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
@@ -6731,21 +6730,61 @@ doptc_data <- output$design
 doptc_data$name <- rep("DOPTC", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
-names(full_factorial) <- c("x1", "x2")
-output <- optFederov(~., full_factorial, criterion = "I", nTrials = sample_size)
-iopt_data <- output$design
-iopt_data$name <- rep("IOPT", nrow(iopt_data))
-data <- bind_rows(data, iopt_data)
+pre_sample_size = 30 * sample_size
 
+drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
+                       x2 = sample(0:20, pre_sample_size, replace = T))
+output <- optFederov(~., drs_data, nTrials = sample_size)
+dopt_data <- output$design
+dopt_data$name <- rep("RS + DOPT", nrow(dopt_data))
+data <- bind_rows(data, dopt_data)
+
+drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
+                       x2 = sample(0:20, pre_sample_size, replace = T))
+output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), drs_data, nTrials = sample_size)
+dopt_data <- output$design
+dopt_data$name <- rep("RS + DOPTInv", nrow(dopt_data))
+data <- bind_rows(data, dopt_data)
+
+drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
+                       x2 = sample(0:20, pre_sample_size, replace = T))
+output <- optFederov(~ . + .^2, drs_data, nTrials = sample_size)
+dopti_data <- output$design
+dopti_data$name <- rep("RS + DOPTInt", nrow(dopti_data))
+data <- bind_rows(data, dopti_data)
+
+drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
+                       x2 = sample(0:20, pre_sample_size, replace = T))
+output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), drs_data, nTrials = sample_size)
+#output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
+doptq_data <- output$design
+doptq_data$name <- rep("RS + DOPTQ", nrow(doptq_data))
+data <- bind_rows(data, doptq_data)
+
+drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
+                       x2 = sample(0:20, pre_sample_size, replace = T))
+output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), drs_data, nTrials = sample_size)
+#output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
+doptc_data <- output$design
+doptc_data$name <- rep("RS + DOPTC", nrow(doptc_data))
+data <- bind_rows(data, doptc_data)
+#+END_SRC
+
+#+RESULTS:
+
+***** Plot
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
 ggplot(data, aes(x = x1, y = x2)) +
-    facet_wrap(name ~ ., ncol = 3) +
+    facet_wrap(name ~ ., ncol = 4) +
     geom_point(shape = 19, alpha = 0.6) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figure3V96eY.png]]
+[[file:/tmp/babel-G1kGWE/figure52cnb3.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
@@ -6753,15 +6792,21 @@ ggplot(data, aes(x = x1, y = x2)) +
 library(AlgDesign)
 
 full_factorial <- gen.factorial(c(2,2,3,2,3), center = FALSE)
-full_factorial$Y <- (2.3 * full_factorial$X1 ^ 2)
+full_factorial$Y <- (2.3 * full_factorial$X1 ^ 2) + (1.4 * full_factorial$X2) +
+                    (3.4 * full_factorial$X3 * full_factorial$X4) +
+                    (2.1 * full_factorial$X5)
 
 str(full_factorial)
-
 
 output <- optFederov(~ I(X1 ^ 2) + X2 + X3 + X4 + X5, full_factorial, nTrials = 10)
 output$design
 
-regression <- aov(Y ~ I(X1 ^ 2) + X2 + X3 + X4 + X5, data = output$design)
+design <- output$design
+design[sample(seq(1, nrow(design)), 3), "Y"] <- NA
+design <- design[complete.cases(design), ]
+design
+
+regression <- lm(Y ~ I(X1 ^ 2) + X2 + X3 + X4 + X5, data = design)
 summary.aov(regression)
 #+END_SRC
 
@@ -6773,31 +6818,39 @@ summary.aov(regression)
  $ X3: num  1 1 1 1 2 2 2 2 3 3 ...
  $ X4: num  1 1 1 1 1 1 1 1 1 1 ...
  $ X5: num  1 1 1 1 1 1 1 1 1 1 ...
- $ Y : num  2.3 9.2 2.3 9.2 2.3 9.2 2.3 9.2 2.3 9.2 ...
-   X1 X2 X3 X4 X5   Y
-1   1  1  1  1  1 2.3
-10  2  1  3  1  1 9.2
-11  1  2  3  1  1 2.3
-13  1  1  1  2  1 2.3
-24  2  2  3  2  1 9.2
-52  2  2  1  1  3 9.2
-58  2  1  3  1  3 9.2
-59  1  2  3  1  3 2.3
-64  2  2  1  2  3 9.2
-69  1  1  3  2  3 2.3
-            Df Sum Sq Mean Sq   F value Pr(>F)
-I(X1^2)      1    119     119 9.422e+32 <2e-16 ***
-X2           1      0       0 1.240e-01  0.743
-X3           1      0       0 1.567e+00  0.279
-X4           1      0       0 4.650e-01  0.533
-X5           1      0       0 8.900e-02  0.781
-Residuals    4      0       0
+ $ Y : num  9.2 16.1 10.6 17.5 12.6 19.5 14 20.9 16 22.9 ...
+   X1 X2 X3 X4 X5    Y
+4   2  2  1  1  1 17.5
+9   1  1  3  1  1 16.0
+13  1  1  1  2  1 12.6
+14  2  1  1  2  1 19.5
+23  1  2  3  2  1 27.6
+24  2  2  3  2  1 34.5
+51  1  2  1  1  3 14.8
+58  2  1  3  1  3 27.1
+63  1  2  1  2  3 18.2
+70  2  1  3  2  3 37.3
+   X1 X2 X3 X4 X5    Y
+9   1  1  3  1  1 16.0
+13  1  1  1  2  1 12.6
+23  1  2  3  2  1 27.6
+24  2  2  3  2  1 34.5
+51  1  2  1  1  3 14.8
+58  2  1  3  1  3 27.1
+70  2  1  3  2  3 37.3
+            Df Sum Sq Mean Sq F value Pr(>F)
+I(X1^2)      1  396.9   396.9  206.02 0.0443 *
+X2           1   42.7    42.7   22.15 0.1333
+X3           1   65.6    65.6   34.05 0.1080
+X4           1   49.3    49.3   25.58 0.1243
+X5           1   31.4    31.4   16.28 0.1547
+Residuals    1    1.9     1.9
 ---
 codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 *** [2018-09-12 Wed]
 **** Plotting Applications (Xeon E5 2630 v3)
-***** Clonning/Pulling the Repository
+***** Cloning/Pulling the Repository
 #+HEADER: :results output
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
@@ -6954,7 +7007,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureI0aKza.png]]
+[[file:/tmp/babel-G1kGWE/figureXyBFSw.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
