@@ -5056,6 +5056,7 @@ Setting up the SSH Agent and Agent Forwarding:
 GitHub repository with configuration files for the Grid5000 deploy:
 
 - https://github.com/phrb/orio_experiments_g5kjob
+** September
 *** [2018-09-03 Mon]
 **** DOE + Autotuning Summaries (Collected from previous entries)
 I aggregated all past entries that contain summaries and explanations on DoE and
@@ -6672,7 +6673,7 @@ ggplot(data) +
 #+RESULTS:
 [[file:/tmp/babel-daFKax/figurev1dId1.png]]
 *** [2018-09-06 Thu]
-**** Plotting Sampling Strategies
+**** Plotting DOPT Sampling Strategies
 ***** Generate Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -6681,7 +6682,8 @@ library(DoE.wrapper)
 library(AlgDesign)
 library(dplyr)
 
-sample_size = 10
+sample_size <- 10
+pre_sample_size <- 300 * sample_size
 
 rs_data <- data.frame(x1 = sample(0:20, sample_size, replace = T),
                       x2 = sample(0:20, sample_size, replace = T))
@@ -6729,8 +6731,6 @@ output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = samp
 doptc_data <- output$design
 doptc_data$name <- rep("DOPT Linear & Cubic", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
-
-pre_sample_size = 30 * sample_size
 
 drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
                        x2 = sample(0:20, pre_sample_size, replace = T))
@@ -6791,7 +6791,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figuredEgH7D.png]]
+[[file:/tmp/babel-G1kGWE/figureUH2NAk.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
@@ -6864,7 +6864,7 @@ X3           1   6.00    6.00
 X4           1   0.32    0.32
 #+end_example
 *** [2018-09-12 Wed]
-**** Plotting Applications (Xeon E5 2630 v3)
+**** Plotting Applications (Xeon E5 2630 v3, Grid5000)
 ***** Cloning/Pulling the Repository
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -7810,3 +7810,10 @@ ggplot(data) +
 
 #+RESULTS:
 [[file:/tmp/babel-G1kGWE/figureQtIAzw.png]]
+*** [2018-09-19 Wed]
+**** Meeting with Arnaud and Brice
+***** Topics on this Journal
+-[[ DOE + Autotuning Summaries (Collected from previous entries)]]
+- [[Plotting DOPT Sampling Strategies]]
+- [[Interesting Papers on Autotuner Performance Comparison]]
+- [[Plotting Applications (Xeon E5 2630 v3, Grid5000)]]
