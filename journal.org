@@ -6697,21 +6697,21 @@ full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~., full_factorial, nTrials = sample_size)
 dopt_data <- output$design
-dopt_data$name <- rep("DOPT", nrow(dopt_data))
+dopt_data$name <- rep("DOPT Linear", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), full_factorial, nTrials = sample_size)
 dopt_data <- output$design
-dopt_data$name <- rep("DOPTInv", nrow(dopt_data))
+dopt_data$name <- rep("DOPT Inverse", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
-output <- optFederov(~ . + .^2, full_factorial, nTrials = sample_size)
+output <- optFederov(~ .^2, full_factorial, nTrials = sample_size)
 dopti_data <- output$design
-dopti_data$name <- rep("DOPTInt", nrow(dopti_data))
+dopti_data$name <- rep("DOPT Interactions", nrow(dopti_data))
 data <- bind_rows(data, dopti_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
@@ -6719,7 +6719,7 @@ names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = sample_size)
 #output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
 doptq_data <- output$design
-doptq_data$name <- rep("DOPTQ", nrow(doptq_data))
+doptq_data$name <- rep("DOPT Linear & Quadratic", nrow(doptq_data))
 data <- bind_rows(data, doptq_data)
 
 full_factorial <- gen.factorial(c(20, 20), center = FALSE)
@@ -6727,7 +6727,7 @@ names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = sample_size)
 #output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
 doptc_data <- output$design
-doptc_data$name <- rep("DOPTC", nrow(doptc_data))
+doptc_data$name <- rep("DOPT Linear & Cubic", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
 
 pre_sample_size = 30 * sample_size
@@ -6736,21 +6736,21 @@ drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
                        x2 = sample(0:20, pre_sample_size, replace = T))
 output <- optFederov(~., drs_data, nTrials = sample_size)
 dopt_data <- output$design
-dopt_data$name <- rep("RS + DOPT", nrow(dopt_data))
+dopt_data$name <- rep("Large RS + DOPT Linear", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
 drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
                        x2 = sample(0:20, pre_sample_size, replace = T))
 output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), drs_data, nTrials = sample_size)
 dopt_data <- output$design
-dopt_data$name <- rep("RS + DOPTInv", nrow(dopt_data))
+dopt_data$name <- rep("Large RS + DOPT Inverse", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
 drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
                        x2 = sample(0:20, pre_sample_size, replace = T))
 output <- optFederov(~ . + .^2, drs_data, nTrials = sample_size)
 dopti_data <- output$design
-dopti_data$name <- rep("RS + DOPTInt", nrow(dopti_data))
+dopti_data$name <- rep("Large RS + DOPT Interactions", nrow(dopti_data))
 data <- bind_rows(data, dopti_data)
 
 drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
@@ -6758,7 +6758,7 @@ drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
 output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), drs_data, nTrials = sample_size)
 #output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
 doptq_data <- output$design
-doptq_data$name <- rep("RS + DOPTQ", nrow(doptq_data))
+doptq_data$name <- rep("Large RS + DOPT Linear & Quadratic", nrow(doptq_data))
 data <- bind_rows(data, doptq_data)
 
 drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
@@ -6766,8 +6766,15 @@ drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
 output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), drs_data, nTrials = sample_size)
 #output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
 doptc_data <- output$design
-doptc_data$name <- rep("RS + DOPTC", nrow(doptc_data))
+doptc_data$name <- rep("Large RS + DOPT Linear & Cubic", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
+
+data$facet <- factor(data$name, levels = c("RS", "LHS", "DOPT Linear", "DOPT Interactions",
+                                           "DOPT Inverse", "DOPT Linear & Quadratic",
+                                           "DOPT Linear & Cubic", "Large RS + DOPT Linear",
+                                           "Large RS + DOPT Interactions", "Large RS + DOPT Inverse",
+                                           "Large RS + DOPT Linear & Quadratic",
+                                           "Large RS + DOPT Linear & Cubic"))
 #+END_SRC
 
 #+RESULTS:
@@ -6778,13 +6785,13 @@ data <- bind_rows(data, doptc_data)
 #+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data, aes(x = x1, y = x2)) +
-    facet_wrap(name ~ ., ncol = 4) +
+    facet_wrap(facet ~ ., ncol = 4) +
     geom_point(shape = 19, alpha = 0.6) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureILFKHC.png]]
+[[file:/tmp/babel-G1kGWE/figuredEgH7D.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
@@ -6905,8 +6912,7 @@ for (target_dir in target_dirs) {
 }
 
 options(dplyr.width = Inf)
-print(summarise(points_mean = mean(points), points_min = min(points),
-          points_max = max(points), max_speedup = max(speedup), experiments = n(),
+print(summarise(points_max = max(points), max_speedup = max(speedup), experiments = n(),
           group_by(data, application, technique)), n = 80)
 
 #+END_SRC
@@ -6914,99 +6920,215 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 42 x 7
+# A tibble: 48 x 5
 # Groups:   application [?]
-   application                         technique points_mean points_min
-   <chr>                               <chr>           <dbl>      <dbl>
- 1 atax_1_step_4x_lin_cub_quad         DLMT             59           59
- 2 atax_1_step_4x_lin_quad             DLMT             42           42
- 3 atax_1_step_4x_lin_quad             RS               43           43
- 4 atax_1_step_4x_lin_quad_small       DLMT             35.3         35
- 5 atax_12_steps_small_model           DLMT            340.         170
- 6 atax_12_steps_small_model_large_prf DLMT            153.         114
- 7 atax_12_steps_small_model_min_prf   DLMT            480.         418
- 8 atax_4x_lin                         DLMT             97.8         90
- 9 atax_4x_lin                         RS              101          101
-10 atax_4x_lin_cub_quad                DLMT            143.         126
-11 atax_4x_lin_cub_quad                RS              201          201
-12 atax_expanded_lin                   DLMT            414.         303
-13 atax_expanded_lin                   RS              151          151
-14 atax_expanded_lin                   RSL             150          150
-15 atax_expanded_lin                   SIMA            151          151
-16 atax_expanded_lin                   SIMP            150          150
-17 atax_expanded_lin_quad_cub          DLMT            176           89
-18 atax_expanded_lin_quad_cub          RS              151          151
-19 atax_expanded_lin_quad_cub          RSL             150          150
-20 atax_expanded_lin_quad_cub          SIMA            151          151
-21 atax_expanded_lin_quad_cub          SIMP            150          150
-22 atax_lin_quad                       DLMT            176          135
-23 atax_lin_quad                       RS              301          301
-24 atax_lin_quad_8_steps               DLMT            174.         118
-25 atax_lin_quad_cub                   DLMT             83.8         65
-26 atax_lin_quad_cub                   RS              101.         100
-27 atax_lin_quad_cub                   RSL             100          100
-28 atax_lin_quad_cub                   SIMA            101.         100
-29 atax_lin_quad_cub                   SIMP            100.         100
-30 atax_no_binary_cubic_quad           DLMT            200.         115
-31 atax_no_binary_cubic_quad           RS              301          301
-32 atax_no_binary_cubic_quad           SIMA            301          301
-33 atax_no_binary_lin                  DLMT            126.          49
-34 atax_no_binary_lin                  RS              160.         131
-35 atax_no_binary_lin                  RSL             170          170
-36 atax_no_binary_lin                  SIMA            151.         131
-37 atax_no_binary_lin                  SIMP            170.         170
-38 atax_no_binary_no_dlmt              RS              171          171
-39 atax_no_binary_no_dlmt              RSL             170          170
-40 atax_no_binary_no_dlmt              SIMA            171          171
-41 atax_no_binary_no_dlmt              SIMP            170.         170
-42 atax_small_model_quad               DLMT            109.          71
-   points_max max_speedup experiments
-        <dbl>       <dbl>       <int>
- 1         59        2.09           5
- 2         42        2.18          10
- 3         43        2.17          10
- 4         36        2.19          10
- 5        539        2.04           8
- 6        254        2.04           9
- 7        565        2.05          10
- 8        101        2.20          10
- 9        101        2.20          10
-10        164        2.22          10
-11        201        2.22          10
-12        480        2.05           8
-13        151        2.03          10
-14        150        2.17          10
-15        151        2.13          10
-16        150        2.02          10
-17        213        2.14           9
-18        151        2.03          10
-19        150        2.17          10
-20        151        2.13          10
-21        150        2.02          10
-22        231        2.07           4
-23        301        2.04           6
-24        233        2.05          10
-25         96        2.10          30
-26        101        2.05          30
-27        100        2.09          30
-28        101        2.11          30
-29        101        2.05          30
-30        297        1.91          18
-31        301        1.89          10
-32        301        1.71          10
-33        168        2.05          50
-34        171        1.89          40
-35        170        1.87          30
-36        171        1.66          41
-37        171        1.88          30
-38        171        1.74          10
-39        170        1.86          10
-40        171        1.64          10
-41        171        1.89          10
-42        120        2.08          27
+   application                                     technique points_max
+   <chr>                                           <chr>          <dbl>
+ 1 atax_1_step_4x_lin_bin_quad_others              DLMT              21
+ 2 atax_1_step_4x_lin_bin_quad_others              RS                22
+ 3 atax_1_step_4x_lin_cub_quad                     DLMT              59
+ 4 atax_1_step_4x_lin_quad                         DLMT              42
+ 5 atax_1_step_4x_lin_quad                         RS                43
+ 6 atax_1_step_4x_lin_quad_no_extra                DLMT              33
+ 7 atax_1_step_4x_lin_quad_no_extra                RS                33
+ 8 atax_1_step_4x_lin_quad_no_extra_no_constraints DLMT              33
+ 9 atax_1_step_4x_lin_quad_no_extra_no_constraints RS                33
+10 atax_1_step_4x_lin_quad_small                   DLMT              36
+11 atax_12_steps_small_model                       DLMT             539
+12 atax_12_steps_small_model_large_prf             DLMT             254
+13 atax_12_steps_small_model_min_prf               DLMT             565
+14 atax_4x_lin                                     DLMT             101
+15 atax_4x_lin                                     RS               101
+16 atax_4x_lin_cub_quad                            DLMT             164
+17 atax_4x_lin_cub_quad                            RS               201
+18 atax_expanded_lin                               DLMT             480
+19 atax_expanded_lin                               RS               151
+20 atax_expanded_lin                               RSL              150
+21 atax_expanded_lin                               SIMA             151
+22 atax_expanded_lin                               SIMP             150
+23 atax_expanded_lin_quad_cub                      DLMT             213
+24 atax_expanded_lin_quad_cub                      RS               151
+25 atax_expanded_lin_quad_cub                      RSL              150
+26 atax_expanded_lin_quad_cub                      SIMA             151
+27 atax_expanded_lin_quad_cub                      SIMP             150
+28 atax_lin_quad                                   DLMT             231
+29 atax_lin_quad                                   RS               301
+30 atax_lin_quad_8_steps                           DLMT             233
+31 atax_lin_quad_cub                               DLMT              96
+32 atax_lin_quad_cub                               RS               101
+33 atax_lin_quad_cub                               RSL              100
+34 atax_lin_quad_cub                               SIMA             101
+35 atax_lin_quad_cub                               SIMP             101
+36 atax_no_binary_cubic_quad                       DLMT             297
+37 atax_no_binary_cubic_quad                       RS               301
+38 atax_no_binary_cubic_quad                       SIMA             301
+39 atax_no_binary_lin                              DLMT             168
+40 atax_no_binary_lin                              RS               171
+41 atax_no_binary_lin                              RSL              170
+42 atax_no_binary_lin                              SIMA             171
+43 atax_no_binary_lin                              SIMP             171
+44 atax_no_binary_no_dlmt                          RS               171
+45 atax_no_binary_no_dlmt                          RSL              170
+46 atax_no_binary_no_dlmt                          SIMA             171
+47 atax_no_binary_no_dlmt                          SIMP             171
+48 atax_small_model_quad                           DLMT             120
+   max_speedup experiments
+         <dbl>       <int>
+ 1        2.06          10
+ 2        1.97          10
+ 3        2.09           5
+ 4        2.18          10
+ 5        2.17          10
+ 6        2.24          20
+ 7        2.20          20
+ 8        2.06          12
+ 9        2.18          10
+10        2.19          10
+11        2.04           8
+12        2.04           9
+13        2.05          10
+14        2.20          10
+15        2.20          10
+16        2.22          10
+17        2.22          10
+18        2.05           8
+19        2.03          10
+20        2.17          10
+21        2.13          10
+22        2.02          10
+23        2.14           9
+24        2.03          10
+25        2.17          10
+26        2.13          10
+27        2.02          10
+28        2.07           4
+29        2.04           6
+30        2.05          10
+31        2.10          30
+32        2.05          30
+33        2.09          30
+34        2.11          30
+35        2.05          30
+36        1.91          18
+37        1.89          10
+38        1.71          10
+39        2.05          50
+40        1.89          40
+41        1.87          30
+42        1.66          41
+43        1.88          30
+44        1.74          10
+45        1.86          10
+46        1.64          10
+47        1.89          10
+48        2.08          27
 #+end_example
 
 ******* Plotting
+******** Using all variables for prediction
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+plot_data <- data[data$application %in% c("atax_no_binary_no_dlmt",
+                                          "atax_no_binary_lin",
+                                          "atax_no_binary_cubic_quad",
+                                          "atax_lin_quad",
+                                          "atax_lin_quad_8_steps",
+                                          "atax_lin_quad_cub"), ]
+
+ggplot(plot_data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip(ylim = c(1.0, 3.0)) +
+    #coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free_x", ncol = 3) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figuretGMd5E.png]]
+
+******** Using only relevant variables for prediction
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+plot_data <- data[data$application %in% c("atax_small_model_quad",
+                                          "atax_12_steps_small_model",
+                                          "atax_12_steps_small_model_large_prf",
+                                          "atax_12_steps_small_model_min_prf",
+                                          "atax_lin_quad_cub"), ]
+
+ggplot(plot_data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip(ylim = c(1.0, 3.0)) +
+    #coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free_x", ncol = 3) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figureGwRB1B.png]]
+
+******** Expanding the search space and problem sjize
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+plot_data <- data[data$application %in% c("atax_expanded_lin",
+                                          "atax_expanded_lin_quad_cub",
+                                          "atax_4x_lin",
+                                          "atax_4x_lin_cub_quad",
+                                          "atax_lin_quad_cub"), ]
+
+ggplot(plot_data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip(ylim = c(1.0, 3.0)) +
+    #coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free_x", ncol = 3) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figurezoMtY4.png]]
+
+******** Making a single sampling step
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+plot_data <- data[data$application %in% c("atax_1_step_4x_lin_bin_quad_others",
+                                          "atax_1_step_4x_lin_cub_quad",
+                                          "atax_1_step_4x_lin_quad",
+                                          "atax_1_step_4x_lin_quad_small",
+                                          "atax_1_step_4x_lin_quad_no_extra",
+                                          "atax_1_step_4x_lin_quad_no_extra_no_constraints",
+                                          "atax_lin_quad_cub"), ]
+
+ggplot(plot_data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip(ylim = c(1.0, 3.0)) +
+    #coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free_x", ncol = 4) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-G1kGWE/figureEtKMJ0.png]]
+
+******** All Experiments
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -7023,7 +7145,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureIurXEF.png]]
+[[file:/tmp/babel-G1kGWE/figurevloe9p.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7073,93 +7195,93 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 41 x 6
+# A tibble: 48 x 6
 # Groups:   application [?]
-   application                         technique baseline max_cost_mean
-   <chr>                               <chr>        <dbl>         <dbl>
- 1 atax_1_step_4x_lin_cub_quad         DLMT         3.08          8.59
- 2 atax_1_step_4x_lin_quad             DLMT         3.07         11.5
- 3 atax_1_step_4x_lin_quad             RS           3.07          9.12
- 4 atax_12_steps_small_model           DLMT         0.177         0.505
- 5 atax_12_steps_small_model_large_prf DLMT         0.177         0.510
- 6 atax_12_steps_small_model_min_prf   DLMT         0.177         0.483
- 7 atax_4x_lin                         DLMT         3.08         13.2
- 8 atax_4x_lin                         RS           3.08         13.5
- 9 atax_4x_lin_cub_quad                DLMT         3.08         12.9
-10 atax_4x_lin_cub_quad                RS           3.08         11.8
-11 atax_expanded_lin                   DLMT         0.179         0.710
-12 atax_expanded_lin                   RS           0.179         0.727
-13 atax_expanded_lin                   RSL          0.179         0.783
-14 atax_expanded_lin                   SIMA         0.179         0.682
-15 atax_expanded_lin                   SIMP         0.179         0.889
-16 atax_expanded_lin_quad_cub          DLMT         0.178         0.675
-17 atax_expanded_lin_quad_cub          RS           0.178         0.727
-18 atax_expanded_lin_quad_cub          RSL          0.178         0.783
-19 atax_expanded_lin_quad_cub          SIMA         0.178         0.682
-20 atax_expanded_lin_quad_cub          SIMP         0.178         0.889
-21 atax_lin_quad                       DLMT         0.178         0.434
-22 atax_lin_quad                       RS           0.178         0.566
-23 atax_lin_quad_8_steps               DLMT         0.178         0.422
-24 atax_lin_quad_cub                   DLMT         0.178         0.454
-25 atax_lin_quad_cub                   RS           0.178         0.454
-26 atax_lin_quad_cub                   RSL          0.178         0.483
-27 atax_lin_quad_cub                   SIMA         0.178         0.500
-28 atax_lin_quad_cub                   SIMP         0.178         0.519
-29 atax_no_binary_cubic_quad           DLMT         0.178         0.461
-30 atax_no_binary_cubic_quad           RS           0.178         0.472
-31 atax_no_binary_cubic_quad           SIMA         0.178         0.442
-32 atax_no_binary_lin                  DLMT        NA             0.556
-33 atax_no_binary_lin                  RS          NA             0.491
-34 atax_no_binary_lin                  RSL         NA             0.491
-35 atax_no_binary_lin                  SIMA        NA             0.471
-36 atax_no_binary_lin                  SIMP        NA             0.488
-37 atax_no_binary_no_dlmt              RS           0.177         0.451
-38 atax_no_binary_no_dlmt              RSL          0.177         0.473
-39 atax_no_binary_no_dlmt              SIMA         0.177         0.465
-40 atax_no_binary_no_dlmt              SIMP         0.177         0.457
-   min_cost_mean experiments
-           <dbl>       <int>
- 1        1.47           259
- 2        1.42           378
- 3        1.42           366
- 4        0.0875        2560
- 5        0.0866        1513
- 6        0.0866        4314
- 7        1.40           865
- 8        1.41           868
- 9        1.39          1322
-10        1.39          1767
-11        0.0866        2867
-12        0.0871        1245
-13        0.0819        1269
-14        0.0835        1433
-15        0.0874        1371
-16        0.0832        1519
-17        0.0871        1245
-18        0.0819        1269
-19        0.0835        1433
-20        0.0874        1371
-21        0.0861         760
-22        0.0865        1599
-23        0.0874        1665
-24        0.0848        2296
-25        0.0863        2685
-26        0.0852        2676
-27        0.0846        2853
-28        0.0868        2846
-29        0.0930        3962
-30        0.0942        2996
-31        0.104         3009
-32        0.0872        6212
-33        0.0940        6412
-34        0.0945        5075
-35        0.108         4501
-36        0.0940        5069
-37        0.103         1704
-38        0.0957        1691
-39        0.0946        1710
-40        0.0938        1678
-# ... with 1 more row
+   application                                     technique baseline
+   <chr>                                           <chr>        <dbl>
+ 1 atax_1_step_4x_lin_bin_quad_others              DLMT         3.08
+ 2 atax_1_step_4x_lin_bin_quad_others              RS           3.08
+ 3 atax_1_step_4x_lin_cub_quad                     DLMT         3.08
+ 4 atax_1_step_4x_lin_quad                         DLMT         3.07
+ 5 atax_1_step_4x_lin_quad                         RS           3.07
+ 6 atax_1_step_4x_lin_quad_no_extra                DLMT         3.09
+ 7 atax_1_step_4x_lin_quad_no_extra                RS           3.09
+ 8 atax_1_step_4x_lin_quad_no_extra_no_constraints DLMT         3.08
+ 9 atax_1_step_4x_lin_quad_no_extra_no_constraints RS           3.08
+10 atax_1_step_4x_lin_quad_small                   DLMT         3.08
+11 atax_12_steps_small_model                       DLMT         0.177
+12 atax_12_steps_small_model_large_prf             DLMT         0.177
+13 atax_12_steps_small_model_min_prf               DLMT         0.177
+14 atax_4x_lin                                     DLMT         3.08
+15 atax_4x_lin                                     RS           3.08
+16 atax_4x_lin_cub_quad                            DLMT         3.08
+17 atax_4x_lin_cub_quad                            RS           3.08
+18 atax_expanded_lin                               DLMT         0.179
+19 atax_expanded_lin                               RS           0.179
+20 atax_expanded_lin                               RSL          0.179
+21 atax_expanded_lin                               SIMA         0.179
+22 atax_expanded_lin                               SIMP         0.179
+23 atax_expanded_lin_quad_cub                      DLMT         0.178
+24 atax_expanded_lin_quad_cub                      RS           0.178
+25 atax_expanded_lin_quad_cub                      RSL          0.178
+26 atax_expanded_lin_quad_cub                      SIMA         0.178
+27 atax_expanded_lin_quad_cub                      SIMP         0.178
+28 atax_lin_quad                                   DLMT         0.178
+29 atax_lin_quad                                   RS           0.178
+30 atax_lin_quad_8_steps                           DLMT         0.178
+31 atax_lin_quad_cub                               DLMT         0.178
+32 atax_lin_quad_cub                               RS           0.178
+33 atax_lin_quad_cub                               RSL          0.178
+34 atax_lin_quad_cub                               SIMA         0.178
+35 atax_lin_quad_cub                               SIMP         0.178
+36 atax_no_binary_cubic_quad                       DLMT         0.178
+37 atax_no_binary_cubic_quad                       RS           0.178
+38 atax_no_binary_cubic_quad                       SIMA         0.178
+39 atax_no_binary_lin                              DLMT        NA
+40 atax_no_binary_lin                              RS          NA
+   max_cost_mean min_cost_mean experiments
+           <dbl>         <dbl>       <int>
+ 1         8.73         1.50           176
+ 2        11.4          1.56           197
+ 3         8.59         1.47           259
+ 4        11.5          1.42           378
+ 5         9.12         1.42           366
+ 6        12.5          1.38           584
+ 7        11.0          1.40           567
+ 8        10.0          1.50           327
+ 9         9.88         1.41           285
+10         9.04         1.41           322
+11         0.505        0.0875        2560
+12         0.510        0.0866        1513
+13         0.483        0.0866        4314
+14        13.2          1.40           865
+15        13.5          1.41           868
+16        12.9          1.39          1322
+17        11.8          1.39          1767
+18         0.710        0.0866        2867
+19         0.727        0.0871        1245
+20         0.783        0.0819        1269
+21         0.682        0.0835        1433
+22         0.889        0.0874        1371
+23         0.675        0.0832        1519
+24         0.727        0.0871        1245
+25         0.783        0.0819        1269
+26         0.682        0.0835        1433
+27         0.889        0.0874        1371
+28         0.434        0.0861         760
+29         0.566        0.0865        1599
+30         0.422        0.0874        1665
+31         0.454        0.0848        2296
+32         0.454        0.0863        2685
+33         0.483        0.0852        2676
+34         0.500        0.0846        2853
+35         0.519        0.0868        2846
+36         0.461        0.0930        3962
+37         0.472        0.0942        2996
+38         0.442        0.104         3009
+39         0.556        0.0872        6212
+40         0.491        0.0940        6412
+# ... with 8 more rows
 #+end_example
 
 ******* Plotting
@@ -7168,14 +7290,14 @@ There were 50 or more warnings (use warnings() to see the first 50)
 #+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    facet_wrap(application ~ ., scales = "free", ncol = 3) +
+    facet_wrap(application ~ ., scales = "free", ncol = 5) +
     geom_histogram(aes(cost_mean, fill = technique), binwidth = 0.05) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figure21EFfe.png]]
+[[file:/tmp/babel-G1kGWE/figurer4NHKI.png]]
 
 ***** Stencil3d Tests
 ****** Boxplot of Results
@@ -7271,7 +7393,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figure1rlWBt.png]]
+[[file:/tmp/babel-G1kGWE/figureFSGqe8.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7325,7 +7447,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 # Groups:   application [?]
    application                    technique baseline max_cost_mean min_cost_mean
    <chr>                          <chr>        <dbl>         <dbl>         <dbl>
- 1 stencil3d_3x_lin_quad_cub      DLMT        3.35          28.1          1.39
+ 1 stencil3d_3x_lin_quad_cub      DLMT        3.35          33.5          1.38
  2 stencil3d_3x_lin_quad_cub      RS          3.35          33.2          1.38
  3 stencil3d_8_steps_large_sample DLMT        0.0525         0.381        0.0444
  4 stencil3d_8_steps_small_sample DLMT        0.0521         0.392        0.0301
@@ -7338,7 +7460,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 11 stencil3d_small_model_min_prf  DLMT        0.0531         0.384        0.0473
    experiments
          <int>
- 1        1374
+ 1        2433
  2        1999
  3        1966
  4        3196
@@ -7364,7 +7486,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurespDu0r.png]]
+[[file:/tmp/babel-G1kGWE/figureGhgXtA.png]]
 
 ***** Adi Tests
 ****** Boxplot of Results
