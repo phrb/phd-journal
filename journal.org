@@ -7393,7 +7393,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureFSGqe8.png]]
+[[file:/tmp/babel-G1kGWE/figureNg4bRi.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7486,7 +7486,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureGhgXtA.png]]
+[[file:/tmp/babel-G1kGWE/figureKLJHdB.png]]
 
 ***** Adi Tests
 ****** Boxplot of Results
@@ -7536,18 +7536,20 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 3 x 7
+# A tibble: 4 x 7
 # Groups:   application [?]
-  application               technique points_mean points_min points_max
-  <chr>                     <chr>           <dbl>      <dbl>      <dbl>
-1 adi1_cubic_quad_big_model DLMT             320.        197        393
-2 adi1_cubic_quad_big_model RS               201         201        201
-3 adi1_cubic_quad_big_model SIMA             201         201        201
+  application                 technique points_mean points_min points_max
+  <chr>                       <chr>           <dbl>      <dbl>      <dbl>
+1 adi_3x_cubic_quad_big_model DLMT             420         420        420
+2 adi1_cubic_quad_big_model   DLMT             320.        197        393
+3 adi1_cubic_quad_big_model   RS               201         201        201
+4 adi1_cubic_quad_big_model   SIMA             201         201        201
   max_speedup experiments
         <dbl>       <int>
-1        1.01           5
-2        1.00          10
-3        1.01           5
+1        1.01           1
+2        1.01           5
+3        1.00          10
+4        1.01           5
 #+end_example
 
 ******* Plotting
@@ -7567,7 +7569,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureFYqOAg.png]]
+[[file:/tmp/babel-G1kGWE/figureqHk1u2.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7617,18 +7619,20 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 3 x 6
+# A tibble: 4 x 6
 # Groups:   application [?]
-  application               technique baseline max_cost_mean min_cost_mean
-  <chr>                     <chr>        <dbl>         <dbl>         <dbl>
-1 adi1_cubic_quad_big_model DLMT         0.273         0.825         0.271
-2 adi1_cubic_quad_big_model RS           0.273         1.31          0.271
-3 adi1_cubic_quad_big_model SIMA         0.273         1.23          0.271
+  application                 technique baseline max_cost_mean min_cost_mean
+  <chr>                       <chr>        <dbl>         <dbl>         <dbl>
+1 adi_3x_cubic_quad_big_model DLMT         4.41         15.8           4.36
+2 adi1_cubic_quad_big_model   DLMT         0.273         0.825         0.271
+3 adi1_cubic_quad_big_model   RS           0.273         1.31          0.271
+4 adi1_cubic_quad_big_model   SIMA         0.273         1.23          0.271
   experiments
         <int>
-1         660
-2         879
-3         464
+1         281
+2         660
+3         879
+4         464
 #+end_example
 
 ******* Plotting
@@ -7638,13 +7642,13 @@ There were 50 or more warnings (use warnings() to see the first 50)
 #+BEGIN_SRC R
 ggplot(data) +
     facet_wrap(application ~ ., scales = "free", ncol = 3) +
-    geom_histogram(aes(cost_mean, fill = technique), binwidth = 0.01) +
+    geom_histogram(aes(cost_mean, fill = technique)) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figuremRGjxK.png]]
+[[file:/tmp/babel-G1kGWE/figurePa68p0.png]]
 
 ***** All Applications
 ****** Boxplot of Results
