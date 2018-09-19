@@ -7049,7 +7049,7 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figuretGMd5E.png]]
+[[file:/tmp/babel-G1kGWE/figurehwZWQ9.png]]
 
 ******** Using only relevant variables for prediction
 #+HEADER: :results graphics output :session *R*
@@ -7074,9 +7074,9 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureGwRB1B.png]]
+[[file:/tmp/babel-G1kGWE/figureKcGzbd.png]]
 
-******** Expanding the search space and problem sjize
+******** Expanding the search space and problem size
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -7099,7 +7099,7 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurezoMtY4.png]]
+[[file:/tmp/babel-G1kGWE/figureicD4sn.png]]
 
 ******** Making a single sampling step
 #+HEADER: :results graphics output :session *R*
@@ -7111,7 +7111,7 @@ plot_data <- data[data$application %in% c("atax_1_step_4x_lin_bin_quad_others",
                                           "atax_1_step_4x_lin_quad",
                                           "atax_1_step_4x_lin_quad_small",
                                           "atax_1_step_4x_lin_quad_no_extra",
-                                          "atax_1_step_4x_lin_quad_no_extra_no_constraints",
+                                          #"atax_1_step_4x_lin_quad_no_extra_no_constraints",
                                           "atax_lin_quad_cub"), ]
 
 ggplot(plot_data, aes(x = technique, y = speedup)) +
@@ -7126,7 +7126,7 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureEtKMJ0.png]]
+[[file:/tmp/babel-G1kGWE/figuremynIbF.png]]
 
 ******** All Experiments
 #+HEADER: :results graphics output :session *R*
