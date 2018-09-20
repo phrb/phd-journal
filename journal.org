@@ -8023,6 +8023,15 @@ algorithms.
 - Cost of a configuration is the mean of 10 runs
 - Keep provided constraints
 
+***** Budget
+The DLMT budget is variable within the 4 ANOVA steps. This happens because
+each regression is done on new data samples, and different samples could
+be used to fix different numbers of variables at different times.
+
+The RS budget was initially fixed to 300 points. Additional experiments
+might have to be done depending on how many points DLMT uses for each
+application.
+
 ***** Tracking Table Grid5000 Xeon E5 2630 v3
 |----+--------------------+-------+-----+------+------+-------|
 |    | Application        | RS    | RSL | SIMA | SIMP | DLMT  |
@@ -8031,9 +8040,9 @@ algorithms.
 |  2 | dgemv3             | DOING |     |      |      | DOING |
 |  3 | atax               | DOING |     |      |      | DOING |
 |  4 | gemver             | DOING |     |      |      | DOING |
-|  5 | bicgkernel         | DOING |     |      |      | DONE  |
+|  5 | bicgkernel         | DONE  |     |      |      | DONE  |
 |  6 | trmm               | DOING |     |      |      | DOING |
-|  7 | adi                | PREP  |     |      |      | PREP  |
+|  7 | adi                | DOING |     |      |      | DOING |
 |  8 | gesummv            |       |     |      |      |       |
 |  9 | mvt                |       |     |      |      |       |
 | 10 | fdtd               |       |     |      |      |       |
@@ -8065,23 +8074,25 @@ for (target_dir in target_dirs) {
     target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
 
     csv_files <- list.files(path = target_path, pattern = "results.csv", recursive = TRUE)
-    csv_files <- paste0(target_path, csv_files)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
 
-    info <- file.info(csv_files)
-    non_empty <- rownames(info[info$size != 0, ])
-    csv_files <- csv_files[csv_files %in% non_empty]
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
 
-    target_data <- lapply(csv_files, read.csv)
-    target_data <- bind_rows(target_data)
+        target_data <- lapply(csv_files, read.csv)
+        target_data <- bind_rows(target_data)
 
-    target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
-    target_data$application <- rep(target_dir, nrow(target_data))
-    target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
+        target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+        target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
 
-    if (is.null(data)) {
-        data <- target_data
-    } else {
-        data <- bind_rows(data, target_data)
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
     }
 }
 
@@ -8094,18 +8105,26 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 3 x 7
+# A tibble: 7 x 7
 # Groups:   application [?]
   application technique points_mean points_min points_max max_speedup
-  <chr>       <fct>           <dbl>      <dbl>      <dbl>       <dbl>
-1 atax        DLMT             179.        115        219        2.18
-2 bicgkernel  DLMT             120.        102        139       13.5
-3 gemver      DLMT             101.         76        160        3.83
+  <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
+1 atax        DLMT             182.        115        221        2.18
+2 atax        RS               301         301        301        2.22
+3 bicgkernel  DLMT             120.        102        139       13.5
+4 bicgkernel  RS               301         301        301       12.7
+5 gemver      DLMT             150          76        225        3.83
+6 stencil3d   DLMT             216         214        218        2.40
+7 trmm        DLMT             134          81        187       12.8
   experiments
         <int>
-1           7
-2          10
-3           4
+1           9
+2           1
+3          10
+4          10
+5           9
+6           2
+7           2
 #+end_example
 
 ****** Plotting
@@ -8119,13 +8138,13 @@ ggplot(data, aes(x = technique, y = speedup)) +
     coord_flip() +
     geom_jitter() +
     geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
-    facet_wrap(. ~ application, scales = "free", ncol = 2) +
+    facet_wrap(. ~ application, scales = "free", ncol = 3) +
     ggtitle("") +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-s376G4/figurebJ9mGW.png]]
+[[file:/tmp/babel-s376G4/figureb4rhS1.png]]
 
 ***** Histogram of Explored Search Spaces
 ****** Load Data
@@ -8143,26 +8162,28 @@ for (target_dir in target_dirs) {
     target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
 
     csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
-    csv_files <- paste0(target_path, csv_files)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
 
-    info <- file.info(csv_files)
-    non_empty <- rownames(info[info$size != 0, ])
-    csv_files <- csv_files[csv_files %in% non_empty]
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
 
-    target_data <- lapply(csv_files, read.csv)
-    target_data <- bind_rows(target_data)
+        target_data <- lapply(csv_files, read.csv)
+        target_data <- bind_rows(target_data)
 
-    target_data <- target_data[target_data$correct_result == "True", ]
-    target_data$baseline <- rep(target_data[target_data$baseline == "True", "cost_mean"][1], nrow(target_data))
+        target_data <- target_data[target_data$correct_result == "True", ]
+        target_data$baseline <- rep(target_data[target_data$baseline == "True", "cost_mean"][1], nrow(target_data))
 
-    target_data <- target_data[, c("cost_mean", "technique", "baseline")]
+        target_data <- target_data[, c("cost_mean", "technique", "baseline")]
 
-    target_data$application <- rep(target_dir, nrow(target_data))
+        target_data$application <- rep(target_dir, nrow(target_data))
 
-    if (is.null(data)) {
-        data <- target_data
-    } else {
-        data <- bind_rows(data, target_data)
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
     }
 }
 
@@ -8172,14 +8193,20 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+END_SRC
 
 #+RESULTS:
-: There were 11 warnings (use warnings() to see them)
-: # A tibble: 3 x 6
-: # Groups:   application [?]
-:   application technique baseline max_cost_mean min_cost_mean experiments
-:   <chr>       <fct>        <dbl>         <dbl>         <dbl>       <int>
-: 1 atax        DLMT          3.08          11.5         1.41         1128
-: 2 bicgkernel  DLMT          5.91          11.0         0.437        1173
-: 3 gemver      DLMT          6.43          29.3         1.68          401
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 7 x 6
+# Groups:   application [?]
+  application technique baseline max_cost_mean min_cost_mean experiments
+  <chr>       <chr>        <dbl>         <dbl>         <dbl>       <int>
+1 atax        DLMT          3.08         11.5          1.41         1484
+2 atax        RS            3.08         12.5          1.39          260
+3 bicgkernel  DLMT          5.91         11.0          0.437        1173
+4 bicgkernel  RS            5.91         12.3          0.465        2993
+5 gemver      DLMT          6.43         29.3          1.68         1274
+6 stencil3d   DLMT          3.37         25.6          1.40          432
+7 trmm        DLMT          1.42          5.91         0.111         249
+#+end_example
 
 ****** Plotting
 #+HEADER: :results graphics output :session *R*
@@ -8187,11 +8214,11 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    facet_wrap(application ~ ., scales = "free", ncol = 2) +
+    facet_wrap(application ~ ., scales = "free", ncol = 3) +
     geom_histogram(aes(cost_mean, fill = technique)) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-s376G4/figureYP4jqv.png]]
+[[file:/tmp/babel-s376G4/figureIICSqj.png]]
