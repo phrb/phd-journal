@@ -3345,7 +3345,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dwa8la/figuresXTXrP.png]]
+[[file:/tmp/babel-s376G4/figureHIEfVL.png]]
 **** Plotting atax1 O3 Random Uniform Sample (Xeon E3 1505M v6)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -4005,7 +4005,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-YBOcEp/figure6ysM8I.png]]
+[[file:/tmp/babel-s376G4/figureIcyjLa.png]]
 **** Plotting stencil3d O3 Random Uniform Sample (Xeon E5 1230 v2)
 #+HEADER: :results output
 #+BEGIN_SRC shell
@@ -6683,7 +6683,7 @@ library(AlgDesign)
 library(dplyr)
 
 sample_size <- 10
-pre_sample_size <- 300 * sample_size
+pre_sample_size <- 30 * sample_size
 
 rs_data <- data.frame(x1 = sample(0:20, sample_size, replace = T),
                       x2 = sample(0:20, sample_size, replace = T))
@@ -6791,7 +6791,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureUH2NAk.png]]
+[[file:/tmp/babel-G1kGWE/figurem6zZEk.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
@@ -7049,7 +7049,7 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurehwZWQ9.png]]
+[[file:/tmp/babel-G1kGWE/figurel5NCgm.png]]
 
 ******** Using only relevant variables for prediction
 #+HEADER: :results graphics output :session *R*
@@ -7126,7 +7126,7 @@ ggplot(plot_data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figuremynIbF.png]]
+[[file:/tmp/babel-G1kGWE/figureNma9V0.png]]
 
 ******** All Experiments
 #+HEADER: :results graphics output :session *R*
@@ -7297,7 +7297,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurer4NHKI.png]]
+[[file:/tmp/babel-G1kGWE/figureJ8S6TN.png]]
 
 ***** Stencil3d Tests
 ****** Boxplot of Results
@@ -7347,34 +7347,42 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 11 x 7
+# A tibble: 15 x 7
 # Groups:   application [?]
    application                    technique points_mean points_min points_max
    <chr>                          <chr>           <dbl>      <dbl>      <dbl>
- 1 stencil3d_3x_lin_quad_cub      DLMT             276.        218        316
- 2 stencil3d_3x_lin_quad_cub      RS               201         101        301
- 3 stencil3d_8_steps_large_sample DLMT             332         304        383
- 4 stencil3d_8_steps_small_sample DLMT             293.        176        344
- 5 stencil3d_all_cubic_quad       DLMT             439.        339        517
- 6 stencil3d_all_cubic_quad       RS               300         300        300
- 7 stencil3d_lin_quad             DLMT             218.        194        266
- 8 stencil3d_lin_quad_8_steps     DLMT             349.        276        408
- 9 stencil3d_linear               DLMT             235.        198        265
-10 stencil3d_linear               RS               300         300        300
-11 stencil3d_small_model_min_prf  DLMT             546         544        548
+ 1 stencil3d_3x_1_step_lin_quad   DLMT              55          55         55
+ 2 stencil3d_3x_1_step_lin_quad   RS                56          56         56
+ 3 stencil3d_3x_4_steps_lin       DLMT             133.        119        144
+ 4 stencil3d_3x_4_steps_lin       RS               201         201        201
+ 5 stencil3d_3x_lin_quad_cub      DLMT             276.        218        316
+ 6 stencil3d_3x_lin_quad_cub      RS               201         101        301
+ 7 stencil3d_8_steps_large_sample DLMT             332         304        383
+ 8 stencil3d_8_steps_small_sample DLMT             293.        176        344
+ 9 stencil3d_all_cubic_quad       DLMT             439.        339        517
+10 stencil3d_all_cubic_quad       RS               300         300        300
+11 stencil3d_lin_quad             DLMT             218.        194        266
+12 stencil3d_lin_quad_8_steps     DLMT             349.        276        408
+13 stencil3d_linear               DLMT             235.        198        265
+14 stencil3d_linear               RS               300         300        300
+15 stencil3d_small_model_min_prf  DLMT             546         544        548
    max_speedup experiments
          <dbl>       <int>
- 1        2.43           9
- 2        2.43          10
- 3        1.18           6
- 4        1.71          11
- 5        2.62           9
- 6        1.37          10
- 7        1.35           5
- 8        3.25          11
- 9        2.85          10
+ 1        2.31          10
+ 2        2.10          10
+ 3        2.45           7
+ 4        2.37          10
+ 5        2.43           9
+ 6        2.43          10
+ 7        1.18           6
+ 8        1.71          11
+ 9        2.62           9
 10        1.37          10
-11        1.12           2
+11        1.35           5
+12        3.25          11
+13        2.85          10
+14        1.37          10
+15        1.12           2
 #+end_example
 
 ******* Plotting
@@ -7393,7 +7401,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureNg4bRi.png]]
+[[file:/tmp/babel-kRkPId/figurel5jVrt.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7443,34 +7451,42 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 11 x 6
+# A tibble: 15 x 6
 # Groups:   application [?]
    application                    technique baseline max_cost_mean min_cost_mean
    <chr>                          <chr>        <dbl>         <dbl>         <dbl>
- 1 stencil3d_3x_lin_quad_cub      DLMT        3.35          33.5          1.38
- 2 stencil3d_3x_lin_quad_cub      RS          3.35          33.2          1.38
- 3 stencil3d_8_steps_large_sample DLMT        0.0525         0.381        0.0444
- 4 stencil3d_8_steps_small_sample DLMT        0.0521         0.392        0.0301
- 5 stencil3d_all_cubic_quad       DLMT       NA              0.412        0.0198
- 6 stencil3d_all_cubic_quad       RS         NA              0.437        0.0384
- 7 stencil3d_lin_quad             DLMT        0.0526         0.412        0.0385
- 8 stencil3d_lin_quad_8_steps     DLMT        0.0522         0.458        0.0161
- 9 stencil3d_linear               DLMT       NA              0.376        0.0183
-10 stencil3d_linear               RS         NA              0.437        0.0384
-11 stencil3d_small_model_min_prf  DLMT        0.0531         0.384        0.0473
+ 1 stencil3d_3x_1_step_lin_quad   DLMT        3.36          28.1          1.45
+ 2 stencil3d_3x_1_step_lin_quad   RS          3.36          33.1          1.60
+ 3 stencil3d_3x_4_steps_lin       DLMT        3.37          32.7          1.37
+ 4 stencil3d_3x_4_steps_lin       RS          3.37          32.7          1.42
+ 5 stencil3d_3x_lin_quad_cub      DLMT        3.35          33.5          1.38
+ 6 stencil3d_3x_lin_quad_cub      RS          3.35          33.2          1.38
+ 7 stencil3d_8_steps_large_sample DLMT        0.0525         0.381        0.0444
+ 8 stencil3d_8_steps_small_sample DLMT        0.0521         0.392        0.0301
+ 9 stencil3d_all_cubic_quad       DLMT       NA              0.412        0.0198
+10 stencil3d_all_cubic_quad       RS         NA              0.437        0.0384
+11 stencil3d_lin_quad             DLMT        0.0526         0.412        0.0385
+12 stencil3d_lin_quad_8_steps     DLMT        0.0522         0.458        0.0161
+13 stencil3d_linear               DLMT       NA              0.376        0.0183
+14 stencil3d_linear               RS         NA              0.437        0.0384
+15 stencil3d_small_model_min_prf  DLMT        0.0531         0.384        0.0473
    experiments
          <int>
- 1        2433
- 2        1999
- 3        1966
- 4        3196
- 5        3910
- 6        2965
- 7        1080
- 8        3792
- 9        2436
+ 1         549
+ 2         555
+ 3         917
+ 4        2003
+ 5        2433
+ 6        1999
+ 7        1966
+ 8        3196
+ 9        3910
 10        2965
-11        1083
+11        1080
+12        3792
+13        2436
+14        2965
+15        1083
 #+end_example
 
 ******* Plotting
@@ -7486,7 +7502,168 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureKLJHdB.png]]
+[[file:/tmp/babel-kRkPId/figure4vPMxv.png]]
+
+***** Dgemv3 Tests
+****** Boxplot of Results
+******* Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/dgemv3"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "results.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
+    target_data$application <- rep(target_dir, nrow(target_data))
+    target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+options(dplyr.width = Inf)
+print(summarise(points_mean = mean(points), points_min = min(points),
+          points_max = max(points), max_speedup = max(speedup), experiments = n(),
+          group_by(data, application, technique)), n = 40)
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+5: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+6: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+7: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+8: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+9: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+# A tibble: 1 x 7
+# Groups:   application [?]
+  application                  technique points_mean points_min points_max
+  <chr>                        <fct>           <dbl>      <dbl>      <dbl>
+1 dgemv3_4_steps_lin_quad_true DLMT             228.        210        245
+  max_speedup experiments
+        <dbl>       <int>
+1        1.72           2
+#+end_example
+
+******* Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    coord_flip(ylim = c(0.5, 3.0)) +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free", ncol = 4) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-kRkPId/figuretaoVFm.png]]
+
+****** Histogram of Explored Search Spaces
+******* Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/dgemv3"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[target_data$correct_result == "True", ]
+    target_data$baseline <- rep(target_data[target_data$baseline == "True", "cost_mean"][1], nrow(target_data))
+
+    target_data <- target_data[, c("cost_mean", "technique", "baseline")]
+
+    target_data$application <- rep(target_dir, nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
+                min_cost_mean = min(cost_mean), experiments = n(),
+                group_by(data, application, technique)), n = 40)
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 6
+: # Groups:   application [?]
+:   application                  technique baseline max_cost_mean min_cost_mean
+:   <chr>                        <fct>        <dbl>         <dbl>         <dbl>
+: 1 dgemv3_4_steps_lin_quad_true DLMT          2.59          6.55          1.51
+:   experiments
+:         <int>
+: 1         455
+
+******* Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_wrap(application ~ ., scales = "free", ncol = 3) +
+    geom_histogram(aes(cost_mean, fill = technique)) +#, binwidth = 0.05) +
+    geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-kRkPId/figure0Uy7o3.png]]
 
 ***** Adi Tests
 ****** Boxplot of Results
@@ -7569,7 +7746,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureqHk1u2.png]]
+[[file:/tmp/babel-G1kGWE/figureVrhR51.png]]
 
 ****** Histogram of Explored Search Spaces
 ******* Loading Data
@@ -7813,7 +7990,7 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figureQtIAzw.png]]
+[[file:/tmp/babel-G1kGWE/figure5bja46.png]]
 *** [2018-09-19 Wed]
 **** Meeting with Arnaud and Brice
 ***** Topics on this Journal
@@ -7821,3 +7998,200 @@ ggplot(data) +
 - [[Plotting DOPT Sampling Strategies]]
 - [[Interesting Papers on Autotuner Performance Comparison]]
 - [[Plotting Applications (Xeon E5 2630 v3, Grid5000)]]
+*** [2018-09-20 Thu]
+**** Final Experimental Settings on the Xeon E5 2630 v2
+After preliminary studies with some of the applications, I decided to fix some
+of the parameters to explore and run all experiments at least once with fixed
+settings. The settings for all experiments are the following:
+
+***** Repetitions
+I'll start with 10 repetitions for RS and DLMT, then complete for other search
+algorithms.
+
+***** DLMT Configuration
+- 4 ANOVA steps
+- ANOVA Prf threshold set to 0.05
+- Use a new random sample for prediction
+- Use only the variables identified in ANOVA in model for prediction
+- Pick best point from failed regressions and skip model fitting
+- Model for all applications: =Y ~ . + I(. ^ 2) + I(. ^ 3)=
+- Quadratic and cubic terms exclude binary variables
+
+***** SPAPT Configuration
+- Add missing powers of two in all parameters
+- Maximum available problem size
+- Cost of a configuration is the mean of 10 runs
+- Keep provided constraints
+
+***** Tracking Table Grid5000 Xeon E5 2630 v3
+|----+--------------------+-------+-----+------+------+-------|
+|    | Application        | RS    | RSL | SIMA | SIMP | DLMT  |
+|----+--------------------+-------+-----+------+------+-------|
+|  1 | stencil3d          | DOING |     |      |      | DOING |
+|  2 | dgemv3             | DOING |     |      |      | DOING |
+|  3 | atax               | DOING |     |      |      | DOING |
+|  4 | gemver             | DOING |     |      |      | DOING |
+|  5 | bicgkernel         | DOING |     |      |      | DONE  |
+|  6 | trmm               | DOING |     |      |      | DOING |
+|  7 | adi                | PREP  |     |      |      | PREP  |
+|  8 | gesummv            |       |     |      |      |       |
+|  9 | mvt                |       |     |      |      |       |
+| 10 | fdtd               |       |     |      |      |       |
+| 11 | correlation        |       |     |      |      |       |
+| 12 | lu                 |       |     |      |      |       |
+| 13 | tensor-contraction |       |     |      |      |       |
+| 14 | mm                 |       |     |      |      |       |
+| 15 | jacobi             |       |     |      |      |       |
+| 16 | covariance         |       |     |      |      |       |
+| 17 | hessian            |       |     |      |      |       |
+| 18 | seidel             |       |     |      |      |       |
+|----+--------------------+-------+-----+------+------+-------|
+
+**** Plotting Applications (Xeon E5 2630 v3, Grid5000)
+***** Boxplot of Results
+****** Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/results"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "results.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
+    target_data$application <- rep(target_dir, nrow(target_data))
+    target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+options(dplyr.width = Inf)
+print(summarise(points_mean = mean(points), points_min = min(points),
+          points_max = max(points), max_speedup = max(speedup), experiments = n(),
+          group_by(data, application, technique)), n = 40)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+There were 50 or more warnings (use warnings() to see the first 50)
+# A tibble: 3 x 7
+# Groups:   application [?]
+  application technique points_mean points_min points_max max_speedup
+  <chr>       <fct>           <dbl>      <dbl>      <dbl>       <dbl>
+1 atax        DLMT             179.        115        219        2.18
+2 bicgkernel  DLMT             120.        102        139       13.5
+3 gemver      DLMT             101.         76        160        3.83
+  experiments
+        <int>
+1           7
+2          10
+3           4
+#+end_example
+
+****** Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1500 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = technique, y = speedup)) +
+    geom_boxplot() +
+    #coord_flip(ylim = c(1.0, 3.0)) +
+    coord_flip() +
+    geom_jitter() +
+    geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
+    facet_wrap(. ~ application, scales = "free", ncol = 2) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-s376G4/figurebJ9mGW.png]]
+
+***** Histogram of Explored Search Spaces
+****** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+
+data_dir <- "dlmt_spapt_experiments/data/results"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    csv_files <- paste0(target_path, csv_files)
+
+    info <- file.info(csv_files)
+    non_empty <- rownames(info[info$size != 0, ])
+    csv_files <- csv_files[csv_files %in% non_empty]
+
+    target_data <- lapply(csv_files, read.csv)
+    target_data <- bind_rows(target_data)
+
+    target_data <- target_data[target_data$correct_result == "True", ]
+    target_data$baseline <- rep(target_data[target_data$baseline == "True", "cost_mean"][1], nrow(target_data))
+
+    target_data <- target_data[, c("cost_mean", "technique", "baseline")]
+
+    target_data$application <- rep(target_dir, nrow(target_data))
+
+    if (is.null(data)) {
+        data <- target_data
+    } else {
+        data <- bind_rows(data, target_data)
+    }
+}
+
+print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
+                min_cost_mean = min(cost_mean), experiments = n(),
+                group_by(data, application, technique)), n = 40)
+#+END_SRC
+
+#+RESULTS:
+: There were 11 warnings (use warnings() to see them)
+: # A tibble: 3 x 6
+: # Groups:   application [?]
+:   application technique baseline max_cost_mean min_cost_mean experiments
+:   <chr>       <fct>        <dbl>         <dbl>         <dbl>       <int>
+: 1 atax        DLMT          3.08          11.5         1.41         1128
+: 2 bicgkernel  DLMT          5.91          11.0         0.437        1173
+: 3 gemver      DLMT          6.43          29.3         1.68          401
+
+****** Plotting
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+ggplot(data) +
+    facet_wrap(application ~ ., scales = "free", ncol = 2) +
+    geom_histogram(aes(cost_mean, fill = technique)) +
+    geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-s376G4/figureYP4jqv.png]]
