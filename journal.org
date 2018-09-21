@@ -8038,16 +8038,16 @@ application.
 |----+--------------------+--------------+-----+------+------+--------------|
 |  1 | stencil3d          | DOING (5/10) |     |      |      | DOING (8/10) |
 |  2 | dgemv3             | DOING (0/10) |     |      |      | DOING (5/10) |
-|  3 | atax               | DOING (9/10) |     |      |      | DOING (9/10) |
-|  4 | gemver             | DOING (9/10) |     |      |      | DOING (9/10) |
+|  3 | atax               | DOING (9/10) |     |      |      | DONE         |
+|  4 | gemver             | DOING (9/10) |     |      |      | DONE         |
 |  5 | bicgkernel         | DONE         |     |      |      | DONE         |
 |  6 | trmm               | DOING (2/10) |     |      |      | DOING (9/10) |
 |  7 | adi                | PREP  (0/10) |     |      |      | DOING (3/10) |
 |  8 | gesummv            | PREP         |     |      |      | PREP         |
-|  9 | mvt                | PREP         |     |      |      | PREP         |
+|  9 | mvt                | DONE         |     |      |      | DONE         |
 | 10 | fdtd               | PREP         |     |      |      | PREP         |
-| 11 | correlation        | PREP         |     |      |      | PREP         |
-| 12 | lu                 |              |     |      |      |              |
+| 11 | correlation        | DOING        |     |      |      | DOING        |
+| 12 | lu                 | DOING        |     |      |      | DOING        |
 | 13 | tensor-contraction |              |     |      |      |              |
 | 14 | mm                 |              |     |      |      |              |
 | 15 | jacobi             |              |     |      |      |              |
@@ -8057,8 +8057,13 @@ application.
 |----+--------------------+--------------+-----+------+------+--------------|
 
 **** Plotting Applications (Xeon E5 2630 v3, Grid5000)
-***** Boxplot of Results
+***** Speedup
+This entry contains plots of the speedups achieved by DLMT
+and other algorithms.
+
 ****** Loading Data
+Run this before plotting:
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -8087,6 +8092,7 @@ for (target_dir in target_dirs) {
         target_data <- target_data[, c("speedup", "cost_mean", "technique", "points")]
         target_data$application <- rep(target_dir, nrow(target_data))
         target_data$max_speedup <- rep(max(target_data$speedup), nrow(target_data))
+        target_data$mean_points <- rep(mean(target_data$points), nrow(target_data))
 
         if (is.null(data)) {
             data <- target_data
@@ -8105,39 +8111,47 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 12 x 7
+# A tibble: 14 x 7
 # Groups:   application [?]
    application technique points_mean points_min points_max max_speedup
    <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
- 1 adi         DLMT             385         372        402        1.41
- 2 atax        DLMT             182.        115        221        2.18
- 3 atax        RS               301         301        301        2.22
- 4 bicgkernel  DLMT             120.        102        139       13.5
- 5 bicgkernel  RS               301         301        301       12.7
- 6 dgemv3      DLMT             287.        219        349        1.94
- 7 gemver      DLMT             150          76        225        3.83
- 8 gemver      RS               301         301        301        3.85
- 9 stencil3d   DLMT             237.        153        292        2.40
-10 stencil3d   RS               251         251        251        2.41
-11 trmm        DLMT             210.         81        285       15.1
-12 trmm        RS               301         301        301       11.9
+ 1 adi         DLMT            385          372        402        1.41
+ 2 atax        DLMT            186.         115        221        2.18
+ 3 atax        RS              301          301        301        2.22
+ 4 bicgkernel  DLMT            120.         102        139       13.5
+ 5 bicgkernel  RS              301          301        301       12.7
+ 6 dgemv3      DLMT            287.         219        349        1.94
+ 7 gemver      DLMT            150.          76        225        3.83
+ 8 gemver      RS              301          301        301        3.85
+ 9 mvt         DLMT             83.1         51        105       11.2
+10 mvt         RS              301          301        301       10.0
+11 stencil3d   DLMT            237.         153        292        2.40
+12 stencil3d   RS              251          251        251        2.41
+13 trmm        DLMT            210.          81        285       15.1
+14 trmm        RS              301          301        301       11.9
    experiments
          <int>
  1           3
- 2           9
+ 2          10
  3           9
  4          10
  5          10
  6           5
- 7           9
+ 7          10
  8           9
- 9           8
-10           5
-11           9
-12           2
+ 9          10
+10          10
+11           8
+12           5
+13           9
+14           2
 #+end_example
 
-****** Plotting
+****** Boxplots
+I chose to represent the speedups of each of the 10 runs for DLMT and the other
+algorithms using boxplots. The vertical dotted lines mark the best speedups
+achieved overall for each application.
+
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1500 :height 720
@@ -8154,10 +8168,84 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-s376G4/figureFB2azS.png]]
+[[file:/tmp/babel-2pFr7b/figurecQTfFo.png]]
 
-***** Histogram of Explored Search Spaces
+****** Speedup & Budget
+******* Setup
+Run this block before plotting:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(reshape2)
+
+plot_data <- data[data$technique == "DLMT", c("points", "speedup", "application")]
+plot_data <- plot_data %>%
+             group_by(application) %>%
+             summarize(mean_points = max(points),
+                       max_speedup = max(speedup))
+
+random_data <- data[data$technique == "RS", c("points", "speedup", "application")]
+random_data <- random_data %>%
+               group_by(application) %>%
+               summarize(mean_points = max(points),
+                         max_speedup = max(speedup))
+
+plot_data <- plot_data[plot_data$application %in% random_data$application, ]
+
+plot_data$max_speedup <- plot_data$max_speedup / random_data$max_speedup
+plot_data$mean_points <- plot_data$mean_points / random_data$mean_points
+
+plot_data
+random_data
+
+plot_data <- melt(plot_data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 6 x 3
+  application mean_points max_speedup
+  <chr>             <dbl>       <dbl>
+1 atax              0.734       0.981
+2 bicgkernel        0.462       1.06
+3 gemver            0.748       0.994
+4 mvt               0.349       1.12
+5 stencil3d         1.16        0.998
+6 trmm              0.947       1.27
+# A tibble: 6 x 3
+  application mean_points max_speedup
+  <chr>             <dbl>       <dbl>
+1 atax                301        2.22
+2 bicgkernel          301       12.7
+3 gemver              301        3.85
+4 mvt                 301       10.0
+5 stencil3d           251        2.41
+6 trmm                301       11.9
+Using application as id variables
+#+end_example
+******* Plot
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(plot_data, aes(application, value, fill = variable)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_hline(aes(yintercept = 1.0), color = "black", linetype = 8) +
+    scale_y_continuous(breaks = seq(0, 2, by = 0.2)) +
+    ggtitle("") +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-2pFr7b/figureIQ6Yub.png]]
+
+***** Search Spaces
+This entry contains histograms of the search spaces explored by each
+search algorithm.
+
 ****** Load Data
+Run this block before plotting:
+
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(ggplot2)
@@ -8205,25 +8293,32 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 12 x 6
+# A tibble: 14 x 6
 # Groups:   application [?]
    application technique baseline max_cost_mean min_cost_mean experiments
    <chr>       <chr>        <dbl>         <dbl>         <dbl>       <int>
- 1 adi         DLMT          4.42         21.8         3.13          1154
- 2 atax        DLMT          3.08         11.5         1.41          1484
- 3 atax        RS            3.08         12.5         1.39          2337
- 4 bicgkernel  DLMT          5.91         11.0         0.437         1173
- 5 bicgkernel  RS            5.91         12.3         0.465         2993
- 6 dgemv3      DLMT          2.59          6.42        1.33          1436
- 7 gemver      DLMT          6.43         29.3         1.68          1274
- 8 gemver      RS            6.43         30.0         1.67          2699
- 9 stencil3d   DLMT          3.37         31.8         1.40          1875
-10 stencil3d   RS            3.37         32.6         1.40          1249
-11 trmm        DLMT          1.42         13.9         0.0942        1694
-12 trmm        RS            1.42          8.50        0.120          552
+ 1 adi         DLMT         4.42         21.8          3.13          1154
+ 2 atax        DLMT         3.08         11.5          1.41          1674
+ 3 atax        RS           3.08         12.5          1.39          2337
+ 4 bicgkernel  DLMT         5.91         11.0          0.437         1173
+ 5 bicgkernel  RS           5.91         12.3          0.465         2993
+ 6 dgemv3      DLMT         2.59          6.42         1.33          1436
+ 7 gemver      DLMT         6.43         29.3          1.68          1426
+ 8 gemver      RS           6.43         30.0          1.67          2699
+ 9 mvt         DLMT         0.134         0.428        0.0138         831
+10 mvt         RS           0.134         0.505        0.0134        3010
+11 stencil3d   DLMT         3.37         31.8          1.40          1875
+12 stencil3d   RS           3.37         32.6          1.40          1249
+13 trmm        DLMT         1.42         13.9          0.0942        1694
+14 trmm        RS           1.42          8.50         0.120          552
 #+end_example
 
-****** Plotting
+****** Histograms
+The plots in this section show the mean over 10 executions of the cost of all
+configurations evaluated during search. The vertical dotted line marks the mean
+cost over 10 executions of the -O3 baseline. Search algorithms are coded by
+color.
+
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -8236,4 +8331,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-s376G4/figure931sWg.png]]
+[[file:/tmp/babel-2pFr7b/figurebLOW1u.png]]
