@@ -8246,7 +8246,7 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figure4KC49y.png]]
+[[file:/tmp/babel-2pFr7b/figureMxD06X.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8334,7 +8334,7 @@ color.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 2280 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
     facet_grid(technique ~ application , scales = "free") +
@@ -8344,8 +8344,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-<<<<<<< HEAD
-[[file:/tmp/babel-2pFr7b/figurew8yJ2I.png]]
-=======
-[[file:/tmp/babel-11199ZsV/figure11199h0E.png]]
->>>>>>> 316b2685dc480422e19ec5450616b0b8dff97aca
+[[file:/tmp/babel-2pFr7b/figureyHi8qM.png]]
