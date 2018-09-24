@@ -8041,7 +8041,7 @@ application.
 |  3 | atax               | DONE         |     |      |      | DONE         |
 |  4 | gemver             | DONE         |     |      |      | DONE         |
 |  5 | bicgkernel         | DONE         |     |      |      | DONE         |
-|  6 | trmm               | DOING (3/10) |     |      |      | DONE         |
+|  6 | trmm               | DOING (5/10) |     |      |      | DONE         |
 |  7 | adi                | DOING (0/10) |     |      |      | DOING (3/10) |
 |  8 | gesummv            | PREP         |     |      |      | PREP         |
 |  9 | mvt                | DONE         |     |      |      | DONE         |
@@ -8049,8 +8049,8 @@ application.
 | 11 | correlation        | DONE         |     |      |      | DONE         |
 | 12 | lu                 | DOING (0/10) |     |      |      | DONE         |
 | 13 | tensor-contraction | PREP         |     |      |      | PREP         |
-| 14 | mm                 |              |     |      |      |              |
-| 15 | jacobi             |              |     |      |      |              |
+| 14 | mm                 | PREP         |     |      |      | PREP         |
+| 15 | jacobi             | PREP         |     |      |      | PREP         |
 | 16 | covariance         |              |     |      |      |              |
 | 17 | hessian            |              |     |      |      |              |
 | 18 | seidel             |              |     |      |      |              |
@@ -8152,7 +8152,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 15          10
 16           9
 17          10
-18           3
+18           5
 #+end_example
 
 ****** Boxplots
@@ -8176,7 +8176,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureYP9UQt.png]]
+[[file:/tmp/babel-2pFr7b/figureb54RxF.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8246,7 +8246,7 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureMxD06X.png]]
+[[file:/tmp/babel-2pFr7b/figureH1ln5D.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8323,7 +8323,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 15 stencil3d   DLMT         3.37         31.8          1.40          2307
 16 stencil3d   RS           3.37         32.8          1.40          2249
 17 trmm        DLMT         1.42         13.9          0.0942        1932
-18 trmm        RS           1.42         13.5          0.0985         821
+18 trmm        RS           1.42         13.5          0.0985        1359
 #+end_example
 
 ****** Histograms
@@ -8344,4 +8344,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureMVKzxM.png]]
+[[file:/tmp/babel-2pFr7b/figurezGdx1P.png]]
