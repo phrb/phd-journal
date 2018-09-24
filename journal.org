@@ -8334,14 +8334,18 @@ color.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
+#+HEADER: :width 2280 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
-    facet_wrap(application ~ ., scales = "free", ncol = 4) +
+    facet_grid(technique ~ application , scales = "free") +
     geom_histogram(aes(cost_mean, fill = technique)) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD
 [[file:/tmp/babel-2pFr7b/figurew8yJ2I.png]]
+=======
+[[file:/tmp/babel-11199ZsV/figure11199h0E.png]]
+>>>>>>> 316b2685dc480422e19ec5450616b0b8dff97aca
