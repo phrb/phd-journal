@@ -8334,7 +8334,7 @@ color.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
+#+HEADER: :width 1920 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
     facet_grid(technique ~ application , scales = "free") +
@@ -8344,4 +8344,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureyHi8qM.png]]
+[[file:/tmp/babel-2pFr7b/figureMVKzxM.png]]
