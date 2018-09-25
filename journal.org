@@ -8184,7 +8184,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureIjSK3c.png]]
+[[file:/tmp/babel-7lYTEt/figureOJYZ6v.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8197,21 +8197,21 @@ library(reshape2)
 plot_data <- data[data$technique == "DLMT", c("points", "speedup", "application")]
 plot_data <- plot_data %>%
              group_by(application) %>%
-             summarize(max_points = max(points),
-                       max_speedup = max(speedup))
+             summarize(mean_points = mean(points),
+                       mean_speedup = mean(speedup))
 
 random_data <- data[data$technique == "RS", c("points", "speedup", "application")]
 random_data <- random_data %>%
                group_by(application) %>%
-               summarize(max_points = max(points),
-                         max_speedup = max(speedup))
+               summarize(mean_points = mean(points),
+                         mean_speedup = mean(speedup))
 
 plot_data <- plot_data[plot_data$application %in% random_data$application, ]
 
-plot_data$speedup_ratio_RS <- plot_data$max_speedup / random_data$max_speedup
-plot_data$budget_ratio_RS <- plot_data$max_points / random_data$max_points
+plot_data$mean_speedup_ratio_RS <- plot_data$mean_speedup / random_data$mean_speedup
+plot_data$mean_budget_ratio_RS <- plot_data$mean_points / random_data$mean_points
 
-plot_data <- plot_data[, c("application", "speedup_ratio_RS", "budget_ratio_RS")]
+plot_data <- plot_data[, c("application", "mean_speedup_ratio_RS", "mean_budget_ratio_RS")]
 plot_data <- melt(plot_data)
 plot_data
 #+END_SRC
@@ -8219,27 +8219,27 @@ plot_data
 #+RESULTS:
 #+begin_example
 Using application as id variables
-   application         variable     value
-1         atax speedup_ratio_RS 0.9814925
-2   bicgkernel speedup_ratio_RS 1.0630357
-3  correlation speedup_ratio_RS 0.9939794
-4       dgemv3 speedup_ratio_RS 0.9704706
-5       gemver speedup_ratio_RS 0.9939866
-6      gesummv speedup_ratio_RS 0.9213099
-7           mm speedup_ratio_RS 1.0530292
-8          mvt speedup_ratio_RS 1.1236756
-9    stencil3d speedup_ratio_RS 0.9983706
-10        trmm speedup_ratio_RS 1.0489198
-11        atax  budget_ratio_RS 0.7342193
-12  bicgkernel  budget_ratio_RS 0.4617940
-13 correlation  budget_ratio_RS 0.7807309
-14      dgemv3  budget_ratio_RS 1.0324190
-15      gemver  budget_ratio_RS 0.7475083
-16     gesummv  budget_ratio_RS 0.4418605
-17          mm  budget_ratio_RS 0.4186047
-18         mvt  budget_ratio_RS 0.3488372
-19   stencil3d  budget_ratio_RS 1.1633466
-20        trmm  budget_ratio_RS 0.9468439
+   application              variable     value
+1         atax mean_speedup_ratio_RS 0.9612893
+2   bicgkernel mean_speedup_ratio_RS 1.0988750
+3  correlation mean_speedup_ratio_RS 0.9997396
+4       dgemv3 mean_speedup_ratio_RS 1.0106460
+5       gemver mean_speedup_ratio_RS 1.0205835
+6      gesummv mean_speedup_ratio_RS 0.9778234
+7           mm mean_speedup_ratio_RS 1.0030311
+8          mvt mean_speedup_ratio_RS 0.9787649
+9    stencil3d mean_speedup_ratio_RS 1.0335627
+10        trmm mean_speedup_ratio_RS 1.1638063
+11        atax  mean_budget_ratio_RS 0.6186047
+12  bicgkernel  mean_budget_ratio_RS 0.3980066
+13 correlation  mean_budget_ratio_RS 0.6822712
+14      dgemv3  mean_budget_ratio_RS 0.7709835
+15      gemver  mean_budget_ratio_RS 0.4990033
+16     gesummv  mean_budget_ratio_RS 0.4418605
+17          mm  mean_budget_ratio_RS 0.3444634
+18         mvt  mean_budget_ratio_RS 0.2760797
+19   stencil3d  mean_budget_ratio_RS 0.9294821
+20        trmm  mean_budget_ratio_RS 0.7139535
 #+end_example
 ******* Plot
 This plot shows the ratio between the maximum number of points
@@ -8259,11 +8259,10 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
     ggtitle("") +
     theme_bw(base_size = 18) +
     theme(legend.position = "top", legend.direction = "horizontal")
-
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureiKSCUG.png]]
+[[file:/tmp/babel-7lYTEt/figureOw5PVR.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8355,14 +8354,15 @@ color.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1920 :height 720
+#+HEADER: :width 1700 :height 600
 #+BEGIN_SRC R
 ggplot(data) +
-    facet_grid(technique ~ application , scales = "free") +
+    facet_grid(technique ~ application, scales = "free") +
     geom_histogram(aes(cost_mean, fill = technique)) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
-    theme_bw(base_size = 18)
+    theme_bw(base_size = 18) +
+    theme(legend.position = "none")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figurer5p5LY.png]]
+[[file:/tmp/babel-7lYTEt/figure7Az67J.png]]
