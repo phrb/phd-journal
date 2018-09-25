@@ -8041,19 +8041,19 @@ application.
 |  3 | atax               | DONE         |     |      |      | DONE         |
 |  4 | gemver             | DONE         |     |      |      | DONE         |
 |  5 | bicgkernel         | DONE         |     |      |      | DONE         |
-|  6 | trmm               | DOING (5/10) |     |      |      | DONE         |
-|  7 | adi                | DOING (0/10) |     |      |      | DOING (3/10) |
-|  8 | gesummv            | PREP         |     |      |      | PREP         |
+|  6 | trmm               | DOING (7/10) |     |      |      | DONE         |
+|  7 | adi                | DOING (0/10) |     |      |      | DOING (8/10) |
+|  8 | gesummv            | DONE         |     |      |      | DONE         |
 |  9 | mvt                | DONE         |     |      |      | DONE         |
 | 10 | fdtd               | PREP         |     |      |      | PREP         |
 | 11 | correlation        | DONE         |     |      |      | DONE         |
 | 12 | lu                 | DOING (0/10) |     |      |      | DONE         |
 | 13 | tensor-contraction | PREP         |     |      |      | PREP         |
-| 14 | mm                 | PREP         |     |      |      | PREP         |
+| 14 | mm                 | DONE         |     |      |      | DONE         |
 | 15 | jacobi             | PREP         |     |      |      | PREP         |
-| 16 | covariance         |              |     |      |      |              |
-| 17 | hessian            |              |     |      |      |              |
-| 18 | seidel             |              |     |      |      |              |
+| 16 | covariance         | FAIL         |     |      |      | FAIL         |
+| 17 | hessian            | PREP         |     |      |      | PREP         |
+| 18 | seidel             | PREP         |     |      |      | PREP         |
 |----+--------------------+--------------+-----+------+------+--------------|
 
 **** Plotting Applications (Xeon E5 2630 v3, Grid5000)
@@ -8111,11 +8111,11 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 18 x 7
+# A tibble: 22 x 7
 # Groups:   application [?]
    application technique points_mean points_min points_max max_speedup
    <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
- 1 adi         DLMT            385          372        402        1.41
+ 1 adi         DLMT            370.         340        402        1.42
  2 atax        DLMT            186.         115        221        2.18
  3 atax        RS              301          301        301        2.22
  4 bicgkernel  DLMT            120.         102        139       13.5
@@ -8126,16 +8126,20 @@ There were 50 or more warnings (use warnings() to see the first 50)
  9 dgemv3      RS              391          301        401        2.21
 10 gemver      DLMT            150.          76        225        3.83
 11 gemver      RS              301          301        301        3.85
-12 lu          DLMT             43           43         43       12.7
-13 mvt         DLMT             83.1         51        105       11.2
-14 mvt         RS              301          301        301       10.0
-15 stencil3d   DLMT            233.         153        292        2.40
-16 stencil3d   RS              251          251        251        2.41
-17 trmm        DLMT            215.          81        285       15.1
-18 trmm        RS              301          301        301       14.4
+12 gesummv     DLMT            133          133        133        2.83
+13 gesummv     RS              301          301        301        3.07
+14 lu          DLMT             43           43         43       12.7
+15 mm          DLMT            101.          73        126       20.4
+16 mm          RS              294.         226        301       19.4
+17 mvt         DLMT             83.1         51        105       11.2
+18 mvt         RS              301          301        301       10.0
+19 stencil3d   DLMT            233.         153        292        2.40
+20 stencil3d   RS              251          251        251        2.41
+21 trmm        DLMT            215.          81        285       15.1
+22 trmm        RS              301          301        301       14.4
    experiments
          <int>
- 1           3
+ 1           8
  2          10
  3          10
  4          10
@@ -8150,9 +8154,13 @@ There were 50 or more warnings (use warnings() to see the first 50)
 13          10
 14          10
 15          10
-16           9
+16          10
 17          10
-18           5
+18          10
+19          10
+20           9
+21          10
+22           7
 #+end_example
 
 ****** Boxplots
@@ -8176,7 +8184,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureb54RxF.png]]
+[[file:/tmp/babel-2pFr7b/figureIjSK3c.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8200,9 +8208,10 @@ random_data <- random_data %>%
 
 plot_data <- plot_data[plot_data$application %in% random_data$application, ]
 
-plot_data$max_speedup <- plot_data$max_speedup / random_data$max_speedup
-plot_data$max_points <- plot_data$max_points / random_data$max_points
+plot_data$speedup_ratio_RS <- plot_data$max_speedup / random_data$max_speedup
+plot_data$budget_ratio_RS <- plot_data$max_points / random_data$max_points
 
+plot_data <- plot_data[, c("application", "speedup_ratio_RS", "budget_ratio_RS")]
 plot_data <- melt(plot_data)
 plot_data
 #+END_SRC
@@ -8210,23 +8219,27 @@ plot_data
 #+RESULTS:
 #+begin_example
 Using application as id variables
-   application    variable     value
-1         atax  max_points 0.7342193
-2   bicgkernel  max_points 0.4617940
-3  correlation  max_points 0.7807309
-4       dgemv3  max_points 1.0324190
-5       gemver  max_points 0.7475083
-6          mvt  max_points 0.3488372
-7    stencil3d  max_points 1.1633466
-8         trmm  max_points 0.9468439
-9         atax max_speedup 0.9814925
-10  bicgkernel max_speedup 1.0630357
-11 correlation max_speedup 0.9939794
-12      dgemv3 max_speedup 0.9704706
-13      gemver max_speedup 0.9939866
-14         mvt max_speedup 1.1236756
-15   stencil3d max_speedup 0.9983706
-16        trmm max_speedup 1.0489198
+   application         variable     value
+1         atax speedup_ratio_RS 0.9814925
+2   bicgkernel speedup_ratio_RS 1.0630357
+3  correlation speedup_ratio_RS 0.9939794
+4       dgemv3 speedup_ratio_RS 0.9704706
+5       gemver speedup_ratio_RS 0.9939866
+6      gesummv speedup_ratio_RS 0.9213099
+7           mm speedup_ratio_RS 1.0530292
+8          mvt speedup_ratio_RS 1.1236756
+9    stencil3d speedup_ratio_RS 0.9983706
+10        trmm speedup_ratio_RS 1.0489198
+11        atax  budget_ratio_RS 0.7342193
+12  bicgkernel  budget_ratio_RS 0.4617940
+13 correlation  budget_ratio_RS 0.7807309
+14      dgemv3  budget_ratio_RS 1.0324190
+15      gemver  budget_ratio_RS 0.7475083
+16     gesummv  budget_ratio_RS 0.4418605
+17          mm  budget_ratio_RS 0.4186047
+18         mvt  budget_ratio_RS 0.3488372
+19   stencil3d  budget_ratio_RS 1.1633466
+20        trmm  budget_ratio_RS 0.9468439
 #+end_example
 ******* Plot
 This plot shows the ratio between the maximum number of points
@@ -8238,15 +8251,19 @@ achieved by DLMT and RS, for all applications.
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 ggplot(plot_data, aes(application, value, fill = variable)) +
+    #facet_grid(variable ~ .) +
     geom_bar(stat = "identity", position = "dodge") +
     geom_hline(aes(yintercept = 1.0), color = "black", linetype = 8) +
     scale_y_continuous(breaks = seq(0, 2, by = 0.2)) +
+    coord_flip() +
     ggtitle("") +
-    theme_bw(base_size = 18)
+    theme_bw(base_size = 18) +
+    theme(legend.position = "top", legend.direction = "horizontal")
+
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figureH1ln5D.png]]
+[[file:/tmp/babel-2pFr7b/figureiKSCUG.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8302,11 +8319,11 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 18 x 6
+# A tibble: 22 x 6
 # Groups:   application [?]
    application technique baseline max_cost_mean min_cost_mean experiments
    <chr>       <chr>        <dbl>         <dbl>         <dbl>       <int>
- 1 adi         DLMT         4.42         21.8          3.13          1154
+ 1 adi         DLMT         4.41         22.7          3.11          2954
  2 atax        DLMT         3.08         11.5          1.41          1674
  3 atax        RS           3.08         12.5          1.39          2603
  4 bicgkernel  DLMT         5.91         11.0          0.437         1173
@@ -8317,13 +8334,17 @@ There were 50 or more warnings (use warnings() to see the first 50)
  9 dgemv3      RS           2.59         11.1          1.39          3875
 10 gemver      DLMT         6.43         29.3          1.68          1426
 11 gemver      RS           6.43         31.9          1.67          3000
-12 lu          DLMT         1.93         76.1          0.152          237
-13 mvt         DLMT         0.134         0.428        0.0138         831
-14 mvt         RS           0.134         0.505        0.0134        3010
-15 stencil3d   DLMT         3.37         31.8          1.40          2307
-16 stencil3d   RS           3.37         32.8          1.40          2249
-17 trmm        DLMT         1.42         13.9          0.0942        1932
-18 trmm        RS           1.42         13.5          0.0985        1359
+12 gesummv     DLMT         2.52          8.90         0.892          524
+13 gesummv     RS           2.52          9.00         0.818         1162
+14 lu          DLMT         1.93         76.1          0.152          237
+15 mm          DLMT         1.47          6.94         0.0720        1011
+16 mm          RS           1.47          7.20         0.0759        2935
+17 mvt         DLMT         0.134         0.428        0.0138         831
+18 mvt         RS           0.134         0.505        0.0134        3010
+19 stencil3d   DLMT         3.37         31.8          1.40          2307
+20 stencil3d   RS           3.37         32.8          1.40          2249
+21 trmm        DLMT         1.42         13.9          0.0942        1932
+22 trmm        RS           1.42         13.5          0.0985        1903
 #+end_example
 
 ****** Histograms
@@ -8344,4 +8365,4 @@ ggplot(data) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-2pFr7b/figurezGdx1P.png]]
+[[file:/tmp/babel-2pFr7b/figurer5p5LY.png]]
