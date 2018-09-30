@@ -8042,12 +8042,12 @@ application.
 |  4 | gemver             | DONE         |     |      |      | DONE         |
 |  5 | bicgkernel         | DONE         |     |      |      | DONE         |
 |  6 | trmm               | DONE         |     |      |      | DONE         |
-|  7 | adi                | DOING (0/10) |     |      |      | DONE         |
+|  7 | adi                | DONE         |     |      |      | DONE         |
 |  8 | gesummv            | DONE         |     |      |      | DONE         |
 |  9 | mvt                | DONE         |     |      |      | DONE         |
 | 10 | fdtd               | PREP         |     |      |      | PREP         |
 | 11 | correlation        | DONE         |     |      |      | DONE         |
-| 12 | lu                 | DOING (0/10) |     |      |      | DONE         |
+| 12 | lu                 | DOING (6/10) |     |      |      | DONE         |
 | 13 | tensor-contraction | DONE         |     |      |      | DOING (0/10) |
 | 14 | mm                 | DONE         |     |      |      | DONE         |
 | 15 | jacobi             | DONE         |     |      |      | DONE         |
@@ -8057,6 +8057,14 @@ application.
 |----+--------------------+--------------+-----+------+------+--------------|
 
 **** Plotting Applications (Xeon E5 2630 v3, Grid5000)
+***** Cloning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
 ***** Speedup
 This entry contains plots of the speedups achieved by DLMT
 and other algorithms.
@@ -8110,54 +8118,41 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 
 #+RESULTS:
 #+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:plyr’:
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 28 x 7
+# A tibble: 30 x 7
 # Groups:   application [?]
    application technique points_mean points_min points_max max_speedup
    <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
  1 adi         DLMT            377.         340        417        1.42
- 2 atax        DLMT            186.         115        221        2.18
- 3 atax        RS              301          301        301        2.22
- 4 bicgkernel  DLMT            120.         102        139       13.5
- 5 bicgkernel  RS              301          301        301       12.7
- 6 correlation DLMT            205.         168        235        1.01
- 7 correlation RS              301          301        301        1.02
- 8 dgemv3      DLMT            301.         219        414        2.15
- 9 dgemv3      RS              391          301        401        2.21
-10 gemver      DLMT            150.          76        225        3.83
-11 gemver      RS              301          301        301        3.85
-12 gesummv     DLMT            133          133        133        2.83
-13 gesummv     RS              301          301        301        3.07
-14 hessian     DLMT            105          105        105        1.07
-15 hessian     RS              301          301        301        1.07
-16 jacobi      DLMT            102           74        135        2.35
-17 jacobi      RS              301          301        301        1.87
-18 lu          DLMT             43           43         43       12.7
-19 mm          DLMT            101.          73        126       20.4
-20 mm          RS              294.         226        301       19.4
-21 mvt         DLMT             83.1         51        105       11.2
-22 mvt         RS              301          301        301       10.0
-23 seidel      DLMT            149.          68        188       50.9
-24 stencil3d   DLMT            233.         153        292        2.40
-25 stencil3d   RS              251          251        251        2.45
-26 tensor      RS              301          301        301       25.9
-27 trmm        DLMT            215.          81        285       15.1
-28 trmm        RS              301          301        301       14.4
+ 2 adi         RS              301          301        301        1.42
+ 3 atax        DLMT            186.         115        221        2.18
+ 4 atax        RS              301          301        301        2.22
+ 5 bicgkernel  DLMT            120.         102        139       13.5
+ 6 bicgkernel  RS              301          301        301       12.7
+ 7 correlation DLMT            205.         168        235        1.01
+ 8 correlation RS              301          301        301        1.02
+ 9 dgemv3      DLMT            301.         219        414        2.15
+10 dgemv3      RS              391          301        401        2.21
+11 gemver      DLMT            150.          76        225        3.83
+12 gemver      RS              301          301        301        3.85
+13 gesummv     DLMT            133          133        133        2.83
+14 gesummv     RS              301          301        301        3.07
+15 hessian     DLMT            105          105        105        1.07
+16 hessian     RS              301          301        301        1.07
+17 jacobi      DLMT            102           74        135        2.35
+18 jacobi      RS              301          301        301        1.87
+19 lu          DLMT             43           43         43       12.7
+20 lu          RS              301          301        301       13.5
+21 mm          DLMT            101.          73        126       20.4
+22 mm          RS              294.         226        301       19.4
+23 mvt         DLMT             83.1         51        105       11.2
+24 mvt         RS              301          301        301       10.0
+25 seidel      DLMT            149.          68        188       50.9
+26 stencil3d   DLMT            233.         153        292        2.40
+27 stencil3d   RS              251          251        251        2.45
+28 tensor      RS              301          301        301       25.9
+29 trmm        DLMT            215.          81        285       15.1
+30 trmm        RS              301          301        301       14.4
    experiments
          <int>
  1          10
@@ -8165,29 +8160,31 @@ There were 50 or more warnings (use warnings() to see the first 50)
  3          10
  4          10
  5          10
- 6          11
- 7          10
- 8          11
- 9          10
+ 6          10
+ 7          11
+ 8          10
+ 9          11
 10          10
 11          10
 12          10
 13          10
 14          10
 15          10
-16          18
+16          10
 17          18
-18          10
+18          18
 19          10
-20          10
+20           6
 21          10
 22          10
-23           6
+23          10
 24          10
-25          10
+25           6
 26          10
 27          10
 28          10
+29          10
+30          10
 #+end_example
 
 ****** Boxplots
@@ -8197,7 +8194,7 @@ achieved overall for each application.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1920 :height 1080
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data, aes(x = technique, y = speedup)) +
     geom_boxplot() +
@@ -8207,11 +8204,11 @@ ggplot(data, aes(x = technique, y = speedup)) +
     geom_hline(aes(yintercept = max_speedup), color = "black", linetype = 8) +
     facet_wrap(. ~ application, scales = "free", ncol = 4) +
     ggtitle("") +
-    theme_bw(base_size = 35)
+    theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WbWcC3/figureMdBZJL.png]]
+[[file:/tmp/babel-9X5xNM/figureKDdznl.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8248,30 +8245,34 @@ plot_data
 #+begin_example
 Using application as id variables
    application              variable     value
-1         atax mean_speedup_ratio_RS 0.9612893
-2   bicgkernel mean_speedup_ratio_RS 1.0988750
-3  correlation mean_speedup_ratio_RS 0.9997396
-4       dgemv3 mean_speedup_ratio_RS 1.0106460
-5       gemver mean_speedup_ratio_RS 1.0205835
-6      gesummv mean_speedup_ratio_RS 0.9778234
-7      hessian mean_speedup_ratio_RS 0.9981345
-8       jacobi mean_speedup_ratio_RS 1.0215033
-9           mm mean_speedup_ratio_RS 1.0030311
-10         mvt mean_speedup_ratio_RS 0.9787649
-11   stencil3d mean_speedup_ratio_RS 1.0115290
-12        trmm mean_speedup_ratio_RS 1.1383463
-13        atax  mean_budget_ratio_RS 0.6186047
-14  bicgkernel  mean_budget_ratio_RS 0.3980066
-15 correlation  mean_budget_ratio_RS 0.6822712
-16      dgemv3  mean_budget_ratio_RS 0.7709835
-17      gemver  mean_budget_ratio_RS 0.4990033
-18     gesummv  mean_budget_ratio_RS 0.4418605
-19     hessian  mean_budget_ratio_RS 0.3488372
-20      jacobi  mean_budget_ratio_RS 0.3388704
-21          mm  mean_budget_ratio_RS 0.3444634
-22         mvt  mean_budget_ratio_RS 0.2760797
-23   stencil3d  mean_budget_ratio_RS 0.9294821
-24        trmm  mean_budget_ratio_RS 0.7139535
+1          adi mean_speedup_ratio_RS 0.9031920
+2         atax mean_speedup_ratio_RS 0.9612893
+3   bicgkernel mean_speedup_ratio_RS 1.0988750
+4  correlation mean_speedup_ratio_RS 0.9997396
+5       dgemv3 mean_speedup_ratio_RS 1.0106460
+6       gemver mean_speedup_ratio_RS 1.0205835
+7      gesummv mean_speedup_ratio_RS 0.9778234
+8      hessian mean_speedup_ratio_RS 0.9981345
+9       jacobi mean_speedup_ratio_RS 1.0215033
+10          lu mean_speedup_ratio_RS 0.7628409
+11          mm mean_speedup_ratio_RS 1.0030311
+12         mvt mean_speedup_ratio_RS 0.9787649
+13   stencil3d mean_speedup_ratio_RS 1.0115290
+14        trmm mean_speedup_ratio_RS 1.1383463
+15         adi  mean_budget_ratio_RS 1.2538206
+16        atax  mean_budget_ratio_RS 0.6186047
+17  bicgkernel  mean_budget_ratio_RS 0.3980066
+18 correlation  mean_budget_ratio_RS 0.6822712
+19      dgemv3  mean_budget_ratio_RS 0.7709835
+20      gemver  mean_budget_ratio_RS 0.4990033
+21     gesummv  mean_budget_ratio_RS 0.4418605
+22     hessian  mean_budget_ratio_RS 0.3488372
+23      jacobi  mean_budget_ratio_RS 0.3388704
+24          lu  mean_budget_ratio_RS 0.1428571
+25          mm  mean_budget_ratio_RS 0.3444634
+26         mvt  mean_budget_ratio_RS 0.2760797
+27   stencil3d  mean_budget_ratio_RS 0.9294821
+28        trmm  mean_budget_ratio_RS 0.7139535
 #+end_example
 ******* Plot
 This plot shows the ratio between the maximum number of points
@@ -8280,7 +8281,7 @@ achieved by DLMT and RS, for all applications.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1920 :height 1080
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(plot_data, aes(application, value, fill = variable)) +
     #facet_grid(variable ~ .) +
@@ -8289,12 +8290,13 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
     scale_y_continuous(breaks = seq(0, 2, by = 0.2)) +
     #coord_flip() +
     ggtitle("") +
-    theme_bw(base_size = 38) +
+    theme_bw(base_size = 18) +
+    scale_fill_grey(start = 0.5, end = 0.8) +
     theme(legend.position = "top", legend.direction = "horizontal")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WbWcC3/figuredy8F5n.png]]
+[[file:/tmp/babel-9X5xNM/figurePXDiTz.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8350,38 +8352,39 @@ print(summarise(baseline = max(baseline), max_cost_mean = max(cost_mean),
 #+RESULTS:
 #+begin_example
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 28 x 6
+# A tibble: 29 x 6
 # Groups:   application [?]
    application technique baseline max_cost_mean min_cost_mean experiments
    <chr>       <chr>        <dbl>         <dbl>         <dbl>       <int>
  1 adi         DLMT         4.41         22.7          3.11          3758
- 2 atax        DLMT         3.08         11.5          1.41          1674
- 3 atax        RS           3.08         12.5          1.39          2603
- 4 bicgkernel  DLMT         5.91         11.0          0.437         1173
- 5 bicgkernel  RS           5.91         12.3          0.465         2993
- 6 correlation DLMT         7.02          7.18         6.94          2259
- 7 correlation RS           7.02          7.20         6.94          3010
- 8 dgemv3      DLMT         2.59          8.20         1.33          3286
- 9 dgemv3      RS           2.59         11.1          1.39          3875
-10 gemver      DLMT         6.43         29.3          1.68          1426
-11 gemver      RS           6.43         31.9          1.67          3000
-12 gesummv     DLMT         2.52          8.90         0.892          524
-13 gesummv     RS           2.52          9.00         0.818         1162
-14 hessian     DLMT         0.204         1.38         0.190          532
-15 hessian     RS           0.204         3.31         0.192         1479
-16 jacobi      DLMT         0.204         1.51         0.0409        1355
-17 jacobi      RS           0.204         3.31         0.0515        4035
-18 lu          DLMT         1.93         76.1          0.152          237
-19 mm          DLMT         1.47          6.94         0.0720        1011
-20 mm          RS           1.47          7.20         0.0759        2935
-21 mvt         DLMT         0.134         0.428        0.0138         831
-22 mvt         RS           0.134         0.505        0.0134        3010
-23 seidel      DLMT         2.90         20.4          0.0569         822
-24 stencil3d   DLMT         3.37         31.8          1.40          2307
-25 stencil3d   RS           3.37         32.8          1.37          2500
-26 tensor      RS           4.76         19.9          0.184         3010
-27 trmm        DLMT         1.42         13.9          0.0942        1932
-28 trmm        RS           1.42         14.7          0.0985        2722
+ 2 adi         RS           4.41         19.8          3.12          3009
+ 3 atax        DLMT         3.08         11.5          1.41          1674
+ 4 atax        RS           3.08         12.5          1.39          2603
+ 5 bicgkernel  DLMT         5.91         11.0          0.437         1173
+ 6 bicgkernel  RS           5.91         12.3          0.465         2993
+ 7 correlation DLMT         7.02          7.18         6.94          2259
+ 8 correlation RS           7.02          7.20         6.94          3010
+ 9 dgemv3      DLMT         2.59          8.20         1.33          3286
+10 dgemv3      RS           2.59         11.1          1.39          3875
+11 gemver      DLMT         6.43         29.3          1.68          1426
+12 gemver      RS           6.43         31.9          1.67          3000
+13 gesummv     DLMT         2.52          8.90         0.892          524
+14 gesummv     RS           2.52          9.00         0.818         1162
+15 hessian     DLMT         0.204         1.38         0.190          532
+16 hessian     RS           0.204         3.31         0.192         1479
+17 jacobi      DLMT         0.204         1.51         0.0409        1355
+18 jacobi      RS           0.204         3.31         0.0515        4035
+19 lu          DLMT         1.93         76.1          0.152          237
+20 mm          DLMT         1.47          6.94         0.0720        1011
+21 mm          RS           1.47          7.20         0.0759        2935
+22 mvt         DLMT         0.134         0.428        0.0138         831
+23 mvt         RS           0.134         0.505        0.0134        3010
+24 seidel      DLMT         2.90         20.4          0.0569         822
+25 stencil3d   DLMT         3.37         31.8          1.40          2307
+26 stencil3d   RS           3.37         32.8          1.37          2500
+27 tensor      RS           4.76         19.9          0.184         3010
+28 trmm        DLMT         1.42         13.9          0.0942        1932
+29 trmm        RS           1.42         14.7          0.0985        2722
 #+end_example
 
 ****** Histograms
@@ -8392,19 +8395,20 @@ color.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1920 :height 1080
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 ggplot(data) +
     facet_grid(technique ~ application, scales = "free") +
     #geom_histogram(aes(y = ..density.., x = cost_mean, fill = technique)) +
     geom_histogram(aes(cost_mean, fill = technique)) +
     geom_vline(aes(xintercept = baseline), color = "black", linetype = 8) +
-    theme_bw(base_size = 25) +
+    theme_bw(base_size = 18) +
+    scale_fill_grey(start = 0.3, end = 0.7) +
     theme(legend.position = "none")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WbWcC3/figuremZIT9y.png]]
+[[file:/tmp/babel-YhD6Qv/figureQZ45NW.png]]
 ***** Speedup for Half of the Random Samples
 This entry contains plots of the speedups achieved by DLMT
 and other algorithms.
@@ -8432,7 +8436,7 @@ read.csv.parse <- function(csv_file) {
     data$max_run_speedup <- rep(max(data$speedup), nrow(data))
 
     if (data[1, "technique"] == "RS") {
-        data <- data[seq(1, nrow(data) / 1.5), ]
+        data <- data[seq(1, nrow(data) / 2), ]
     }
 
     data <- data[data$baseline == "False", ]
@@ -8502,30 +8506,32 @@ plot_data
 There were 50 or more warnings (use warnings() to see the first 50)
 Using application as id variables
    application              variable     value
-1         atax mean_speedup_ratio_RS 0.9635847
-2   bicgkernel mean_speedup_ratio_RS 1.0994281
-3  correlation mean_speedup_ratio_RS 0.9996541
-4       dgemv3 mean_speedup_ratio_RS 1.0125722
-5       gemver mean_speedup_ratio_RS 1.0279472
-6      gesummv mean_speedup_ratio_RS 0.9736536
-7      hessian mean_speedup_ratio_RS 0.9974503
-8       jacobi mean_speedup_ratio_RS 1.0170016
-9           mm mean_speedup_ratio_RS 1.0105306
-10         mvt mean_speedup_ratio_RS 0.9750377
-11   stencil3d mean_speedup_ratio_RS 1.0094657
-12        trmm mean_speedup_ratio_RS 1.1493333
-13        atax  mean_budget_ratio_RS 0.9622656
-14  bicgkernel  mean_budget_ratio_RS 0.5987919
-15 correlation  mean_budget_ratio_RS 1.0360854
-16      dgemv3  mean_budget_ratio_RS 1.1973344
-17      gemver  mean_budget_ratio_RS 0.8153001
-18     gesummv  mean_budget_ratio_RS 0.6600000
-19     hessian  mean_budget_ratio_RS 0.5200000
-20      jacobi  mean_budget_ratio_RS 0.5126776
-21          mm  mean_budget_ratio_RS 0.5259027
-22         mvt  mean_budget_ratio_RS 0.4298234
-23   stencil3d  mean_budget_ratio_RS 1.4431581
-24        trmm  mean_budget_ratio_RS 1.1431556
+1          adi mean_speedup_ratio_RS 0.9065329
+2         atax mean_speedup_ratio_RS 0.9636718
+3   bicgkernel mean_speedup_ratio_RS 1.0994348
+4  correlation mean_speedup_ratio_RS 0.9996541
+5       dgemv3 mean_speedup_ratio_RS 1.0127743
+6       gemver mean_speedup_ratio_RS 1.0279365
+7      gesummv mean_speedup_ratio_RS 0.9752087
+8      hessian mean_speedup_ratio_RS 0.9974783
+9       jacobi mean_speedup_ratio_RS 1.0176566
+10          mm mean_speedup_ratio_RS 1.0105284
+11         mvt mean_speedup_ratio_RS 0.9750377
+12   stencil3d mean_speedup_ratio_RS 1.0097359
+13        trmm mean_speedup_ratio_RS 1.1476087
+14         adi  mean_budget_ratio_RS 2.5195020
+15        atax  mean_budget_ratio_RS 1.2830208
+16  bicgkernel  mean_budget_ratio_RS 0.7983892
+17 correlation  mean_budget_ratio_RS 1.3814472
+18      dgemv3  mean_budget_ratio_RS 1.5980264
+19      gemver  mean_budget_ratio_RS 1.0870669
+20     gesummv  mean_budget_ratio_RS 0.8800000
+21     hessian  mean_budget_ratio_RS 0.6933333
+22      jacobi  mean_budget_ratio_RS 0.6835702
+23          mm  mean_budget_ratio_RS 0.7010760
+24         mvt  mean_budget_ratio_RS 0.5730978
+25   stencil3d  mean_budget_ratio_RS 1.9280592
+26        trmm  mean_budget_ratio_RS 1.5242074
 #+end_example
 
 ****** Speedup & Budget
@@ -8546,8 +8552,182 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
     #coord_flip() +
     ggtitle("") +
     theme_bw(base_size = 18) +
+    scale_fill_grey(start = 0.3, end = 0.7) +
     theme(legend.position = "top", legend.direction = "horizontal")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-WbWcC3/figurelKGbCc.png]]
+[[file:/tmp/babel-YhD6Qv/figurexlSVJM.png]]
+***** Iteration where Best Points were Found
+This entry contains plots of the speedups achieved by DLMT
+and other algorithms.
+
+****** Load Data
+Run this block before plotting:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+
+data_dir <- "dlmt_spapt_experiments/data/results"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE)
+
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <-  data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "technique", "cost_baseline", "speedup", "max_run_speedup", "points", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+****** Process Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+subset_data <- data[, c("points", "max_run_speedup", "application", "best_iteration", "technique")]
+plot_data <- subset_data %>%
+             group_by(application, technique) %>%
+             summarize(#mean_points = mean(points),
+                       #sd_points = sd(points),
+                       #max_points = max(points),
+                       #min_points = min(points),
+                       #min_iteration = min(best_iteration),
+                       #max_iteration = max(best_iteration),
+                       mean_best_iteration = mean(best_iteration),
+                       sem_best_iteration = 2 * (sd(best_iteration) / sqrt(length(best_iteration))),
+                       sd_best_iteration = sd(best_iteration))
+#plot_data <- melt(plot_data)
+as.data.frame(plot_data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   application technique mean_best_iteration sem_best_iteration
+1          adi      DLMT           141.12700           2.720830
+2          adi        RS           131.04502           3.306886
+3         atax      DLMT            80.52885           2.827222
+4         atax        RS           133.45854           3.619822
+5   bicgkernel      DLMT            85.32932           1.616365
+6   bicgkernel        RS           155.33155           3.604279
+7  correlation      DLMT           119.52980           2.494953
+8  correlation        RS           150.80000           2.528018
+9       dgemv3      DLMT           184.36427           2.701841
+10      dgemv3        RS           160.43338           3.438742
+11      gemver      DLMT           113.56215           2.788298
+12      gemver        RS           151.81572           2.269083
+13     gesummv      DLMT            73.29961           3.435621
+14     gesummv        RS           151.04948           4.957122
+15     hessian      DLMT            59.73946           2.798694
+16     hessian        RS           144.43022           4.950010
+17      jacobi      DLMT            51.36275           1.724136
+18      jacobi        RS           157.90092           2.663673
+19          lu      DLMT            22.11013           1.636640
+20          lu        RS           188.18191           3.521436
+21          mm      DLMT            69.31568           1.202784
+22          mm        RS           182.66667           3.110298
+23         mvt      DLMT            44.86602           1.574765
+24         mvt        RS           146.70000           3.350108
+25      seidel      DLMT            89.62868           2.222086
+26   stencil3d      DLMT           111.86678           2.866450
+27   stencil3d        RS           134.72048           3.215613
+28      tensor        RS           143.20000           2.738426
+29        trmm      DLMT           189.41363           2.728443
+30        trmm        RS           127.89196           2.913587
+   sd_best_iteration
+1           83.28584
+2           90.54772
+3           57.66425
+4           92.16341
+5           27.56127
+6           98.42719
+7           59.14669
+8           69.23263
+9           77.30996
+10         106.89179
+11          52.46152
+12          62.03774
+13          38.94545
+14          84.12515
+15          31.97133
+16          94.86084
+17          31.52153
+18          84.41153
+19          12.32923
+20          55.53943
+21          19.02720
+22          84.10753
+23          22.56095
+24          91.74648
+25          31.73774
+26          68.69022
+27          80.22940
+28          74.99490
+29          59.80831
+30          75.86523
+#+end_example
+
+****** Speedup & Budget
+******* Plot
+This plot shows the ratio between the maximum number of points
+used by the DLMT and RS, and the ration between the maximum speedups
+achieved by DLMT and RS, for all applications.
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+ggplot(plot_data, aes(application, mean_best_iteration, fill = technique)) +
+    #facet_grid(technique ~ .) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_errorbar(aes(ymin = mean_best_iteration - sem_best_iteration,
+                      ymax = mean_best_iteration + sem_best_iteration),
+                  width = 0.0, position = position_dodge(0.9)) +
+    #coord_flip() +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    theme_bw(base_size = 18) +
+    scale_fill_grey(start = 0.5, end = 0.8) +
+    theme(legend.position = "top", legend.direction = "horizontal", legend.title = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-9X5xNM/figurefygb4P.png]]
