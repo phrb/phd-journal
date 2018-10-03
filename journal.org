@@ -6682,41 +6682,42 @@ library(DoE.wrapper)
 library(AlgDesign)
 library(dplyr)
 
-sample_size <- 10
-pre_sample_size <- 30 * sample_size
+sample_size <- 50
+pre_sample_size <- 5 * sample_size
+Size <- 100
 
-rs_data <- data.frame(x1 = sample(0:20, sample_size, replace = T),
-                      x2 = sample(0:20, sample_size, replace = T))
+rs_data <- data.frame(x1 = sample(0:Size, sample_size, replace = T),
+                      x2 = sample(0:Size, sample_size, replace = T))
 rs_data$name <- rep("RS", nrow(rs_data))
 data <- rs_data
 
 lhs_data <- lhs.design(nruns = sample_size ,nfactors = 2, digits = 0, type = "maximin",
-                       factor.names = list(x1 = c(0, 20), x2 = c(0, 20)))
+                       factor.names = list(x1 = c(0, Size), x2 = c(0, Size)))
 lhs_data$name <- rep("LHS", nrow(lhs_data))
 data <- bind_rows(data, lhs_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+full_factorial <- gen.factorial(c(Size, Size), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~., full_factorial, nTrials = sample_size)
 dopt_data <- output$design
 dopt_data$name <- rep("DOPT Linear", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+full_factorial <- gen.factorial(c(Size, Size), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), full_factorial, nTrials = sample_size)
 dopt_data <- output$design
 dopt_data$name <- rep("DOPT Inverse", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+full_factorial <- gen.factorial(c(Size, Size), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ .^2, full_factorial, nTrials = sample_size)
 dopti_data <- output$design
 dopti_data$name <- rep("DOPT Interactions", nrow(dopti_data))
 data <- bind_rows(data, dopti_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+full_factorial <- gen.factorial(c(Size, Size), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = sample_size)
 #output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
@@ -6724,7 +6725,7 @@ doptq_data <- output$design
 doptq_data$name <- rep("DOPT Linear & Quadratic", nrow(doptq_data))
 data <- bind_rows(data, doptq_data)
 
-full_factorial <- gen.factorial(c(20, 20), center = FALSE)
+full_factorial <- gen.factorial(c(Size, Size), center = FALSE)
 names(full_factorial) <- c("x1", "x2")
 output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = sample_size)
 #output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
@@ -6732,37 +6733,37 @@ doptc_data <- output$design
 doptc_data$name <- rep("DOPT Linear & Cubic", nrow(doptc_data))
 data <- bind_rows(data, doptc_data)
 
-drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
-                       x2 = sample(0:20, pre_sample_size, replace = T))
+drs_data <- data.frame(x1 = sample(0:Size, pre_sample_size, replace = T),
+                       x2 = sample(0:Size, pre_sample_size, replace = T))
 output <- optFederov(~., drs_data, nTrials = sample_size)
 dopt_data <- output$design
 dopt_data$name <- rep("Large RS + DOPT Linear", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
-drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
-                       x2 = sample(0:20, pre_sample_size, replace = T))
+drs_data <- data.frame(x1 = sample(0:Size, pre_sample_size, replace = T),
+                       x2 = sample(0:Size, pre_sample_size, replace = T))
 output <- optFederov(~ I(1 / (10e-6 + x1)) + I(1 / (10e-6 + x2)), drs_data, nTrials = sample_size)
 dopt_data <- output$design
 dopt_data$name <- rep("Large RS + DOPT Inverse", nrow(dopt_data))
 data <- bind_rows(data, dopt_data)
 
-drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
-                       x2 = sample(0:20, pre_sample_size, replace = T))
+drs_data <- data.frame(x1 = sample(0:Size, pre_sample_size, replace = T),
+                       x2 = sample(0:Size, pre_sample_size, replace = T))
 output <- optFederov(~ . + .^2, drs_data, nTrials = sample_size)
 dopti_data <- output$design
 dopti_data$name <- rep("Large RS + DOPT Interactions", nrow(dopti_data))
 data <- bind_rows(data, dopti_data)
 
-drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
-                       x2 = sample(0:20, pre_sample_size, replace = T))
+drs_data <- data.frame(x1 = sample(0:Size, pre_sample_size, replace = T),
+                       x2 = sample(0:Size, pre_sample_size, replace = T))
 output <- optFederov(~ . + I(x1 ^ 2) + I(x2 ^ 2), drs_data, nTrials = sample_size)
 #output <- optFederov(~ . + quad(.), full_factorial, nTrials = sample_size)
 doptq_data <- output$design
 doptq_data$name <- rep("Large RS + DOPT Linear & Quadratic", nrow(doptq_data))
 data <- bind_rows(data, doptq_data)
 
-drs_data <- data.frame(x1 = sample(0:20, pre_sample_size, replace = T),
-                       x2 = sample(0:20, pre_sample_size, replace = T))
+drs_data <- data.frame(x1 = sample(0:Size, pre_sample_size, replace = T),
+                       x2 = sample(0:Size, pre_sample_size, replace = T))
 output <- optFederov(~ . + I(x1 ^ 3) + I(x2 ^ 3), drs_data, nTrials = sample_size)
 #output <- optFederov(~ . + cubic(.), full_factorial, nTrials = sample_size)
 doptc_data <- output$design
@@ -6791,7 +6792,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-G1kGWE/figurem6zZEk.png]]
+[[file:/tmp/babel-FjF14L/figure8KOs0B.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
