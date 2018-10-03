@@ -8047,8 +8047,8 @@ application.
 |  9 | mvt                | DONE         |     |      |      | DONE         |
 | 10 | fdtd               | PREP         |     |      |      | PREP         |
 | 11 | correlation        | DONE         |     |      |      | DONE         |
-| 12 | lu                 | DOING (6/10) |     |      |      | DONE         |
-| 13 | tensor-contraction | DONE         |     |      |      | DOING (0/10) |
+| 12 | lu                 | DONE         |     |      |      | DONE         |
+| 13 | tensor-contraction | DONE         |     |      |      | DOING (8/10) |
 | 14 | mm                 | DONE         |     |      |      | DONE         |
 | 15 | jacobi             | DONE         |     |      |      | DONE         |
 | 16 | covariance         | FAIL         |     |      |      | FAIL         |
@@ -8118,8 +8118,23 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 
 #+RESULTS:
 #+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 31 x 7
+# A tibble: 32 x 7
 # Groups:   application [?]
    application technique points_mean points_min points_max max_speedup
    <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
@@ -8142,7 +8157,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 17 jacobi      DLMT            102           74        135        2.35
 18 jacobi      RS              301          301        301        1.87
 19 lu          DLMT             43           43         43       12.7
-20 lu          RS              301          301        301       13.5
+20 lu          RS              301          301        301       18.7
 21 mm          DLMT            101.          73        126       20.4
 22 mm          RS              294.         226        301       19.4
 23 mvt         DLMT             83.1         51        105       11.2
@@ -8151,9 +8166,10 @@ There were 50 or more warnings (use warnings() to see the first 50)
 26 seidel      RS              301          301        301       33.8
 27 stencil3d   DLMT            233.         153        292        2.40
 28 stencil3d   RS              251          251        251        2.45
-29 tensor      RS              301          301        301       25.9
-30 trmm        DLMT            215.          81        285       15.1
-31 trmm        RS              301          301        301       14.4
+29 tensor      DLMT            133.         101        164       27.7
+30 tensor      RS              301          301        301       25.9
+31 trmm        DLMT            215.          81        285       15.1
+32 trmm        RS              301          301        301       14.4
    experiments
          <int>
  1          10
@@ -8175,7 +8191,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 17          18
 18          18
 19          10
-20           6
+20          10
 21          10
 22          10
 23          10
@@ -8184,9 +8200,10 @@ There were 50 or more warnings (use warnings() to see the first 50)
 26           1
 27          10
 28          10
-29          10
+29           9
 30          10
 31          10
+32          10
 #+end_example
 
 ****** Boxplots
@@ -8210,7 +8227,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-FAd6Wc/figureAiHD0D.png]]
+[[file:/tmp/babel-7n0CWB/figureuryq7Q.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8256,25 +8273,29 @@ Using application as id variables
 7      gesummv mean_speedup_ratio_RS 0.9778234
 8      hessian mean_speedup_ratio_RS 0.9981345
 9       jacobi mean_speedup_ratio_RS 1.0215033
-10          lu mean_speedup_ratio_RS 0.7628409
+10          lu mean_speedup_ratio_RS 0.7079224
 11          mm mean_speedup_ratio_RS 1.0030311
 12         mvt mean_speedup_ratio_RS 0.9787649
-13   stencil3d mean_speedup_ratio_RS 1.0115290
-14        trmm mean_speedup_ratio_RS 1.1383463
-15         adi  mean_budget_ratio_RS 1.2538206
-16        atax  mean_budget_ratio_RS 0.6186047
-17  bicgkernel  mean_budget_ratio_RS 0.3980066
-18 correlation  mean_budget_ratio_RS 0.6822712
-19      dgemv3  mean_budget_ratio_RS 0.7709835
-20      gemver  mean_budget_ratio_RS 0.4990033
-21     gesummv  mean_budget_ratio_RS 0.4418605
-22     hessian  mean_budget_ratio_RS 0.3488372
-23      jacobi  mean_budget_ratio_RS 0.3388704
-24          lu  mean_budget_ratio_RS 0.1428571
-25          mm  mean_budget_ratio_RS 0.3444634
-26         mvt  mean_budget_ratio_RS 0.2760797
-27   stencil3d  mean_budget_ratio_RS 0.9294821
-28        trmm  mean_budget_ratio_RS 0.7139535
+13      seidel mean_speedup_ratio_RS 1.1608172
+14   stencil3d mean_speedup_ratio_RS 1.0115290
+15      tensor mean_speedup_ratio_RS 1.0289025
+16        trmm mean_speedup_ratio_RS 1.1383463
+17         adi  mean_budget_ratio_RS 1.2538206
+18        atax  mean_budget_ratio_RS 0.6186047
+19  bicgkernel  mean_budget_ratio_RS 0.3980066
+20 correlation  mean_budget_ratio_RS 0.6822712
+21      dgemv3  mean_budget_ratio_RS 0.7709835
+22      gemver  mean_budget_ratio_RS 0.4990033
+23     gesummv  mean_budget_ratio_RS 0.4418605
+24     hessian  mean_budget_ratio_RS 0.3488372
+25      jacobi  mean_budget_ratio_RS 0.3388704
+26          lu  mean_budget_ratio_RS 0.1428571
+27          mm  mean_budget_ratio_RS 0.3444634
+28         mvt  mean_budget_ratio_RS 0.2760797
+29      seidel  mean_budget_ratio_RS 0.4944629
+30   stencil3d  mean_budget_ratio_RS 0.9294821
+31      tensor  mean_budget_ratio_RS 0.4403839
+32        trmm  mean_budget_ratio_RS 0.7139535
 #+end_example
 ******* Plot
 This plot shows the ratio between the maximum number of points
@@ -8298,7 +8319,7 @@ ggplot(plot_data, aes(application, value, fill = variable)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-9X5xNM/figurePXDiTz.png]]
+[[file:/tmp/babel-7n0CWB/figure0GgYZz.png]]
 
 ***** Search Spaces
 This entry contains histograms of the search spaces explored by each
@@ -8664,17 +8685,19 @@ as.data.frame(plot_data)
 17      jacobi      DLMT            51.36275           1.724136
 18      jacobi        RS           157.90092           2.663673
 19          lu      DLMT            22.11013           1.636640
-20          lu        RS           188.18191           3.521436
+20          lu        RS           202.57646           2.888862
 21          mm      DLMT            69.31568           1.202784
 22          mm        RS           182.66667           3.110298
 23         mvt      DLMT            44.86602           1.574765
 24         mvt        RS           146.70000           3.350108
 25      seidel      DLMT            89.62868           2.222086
-26   stencil3d      DLMT           111.86678           2.866450
-27   stencil3d        RS           134.72048           3.215613
-28      tensor        RS           143.20000           2.738426
-29        trmm      DLMT           189.41363           2.728443
-30        trmm        RS           127.89196           2.913587
+26      seidel        RS           214.00000           0.000000
+27   stencil3d      DLMT           111.86678           2.866450
+28   stencil3d        RS           134.72048           3.215613
+29      tensor      DLMT            82.04223           1.870946
+30      tensor        RS           143.20000           2.738426
+31        trmm      DLMT           189.41363           2.728443
+32        trmm        RS           127.89196           2.913587
    sd_best_iteration
 1           83.28584
 2           90.54772
@@ -8695,17 +8718,19 @@ as.data.frame(plot_data)
 17          31.52153
 18          84.41153
 19          12.32923
-20          55.53943
+20          58.63750
 21          19.02720
 22          84.10753
 23          22.56095
 24          91.74648
 25          31.73774
-26          68.69022
-27          80.22940
-28          74.99490
-29          59.80831
-30          75.86523
+26           0.00000
+27          68.69022
+28          80.22940
+29          32.18897
+30          74.99490
+31          59.80831
+32          75.86523
 #+end_example
 
 ****** Speedup & Budget
@@ -8733,7 +8758,7 @@ ggplot(plot_data, aes(application, mean_best_iteration, fill = technique)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-FAd6Wc/figurep9r6PC.png]]
+[[file:/tmp/babel-7n0CWB/figuren2YKvl.png]]
 ***** Iteration where Best Points were Found vs. Execution Cost
 This entry contains plots of the speedups achieved by DLMT
 and other algorithms.
@@ -8798,7 +8823,24 @@ for (target_dir in target_dirs) {
 #+END_SRC
 
 #+RESULTS:
-: There were 50 or more warnings (use warnings() to see the first 50)
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+There were 50 or more warnings (use warnings() to see the first 50)
+#+end_example
 
 ****** Process Data
 #+HEADER: :results output :session *R*
@@ -8828,8 +8870,10 @@ achieved by DLMT and RS, for all applications.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1080 :height 1920
+#+HEADER: :width 1080 :height 1520
 #+BEGIN_SRC R
+library(extrafont)
+
 ggplot(plot_data, aes(min_run_cost, best_iteration, color = technique)) +
     facet_wrap(application ~ ., ncol = 2) +
     geom_jitter(data = rs_sample, aes(x = cost_mean, y = 300), pch = 19, alpha = 0.1, height = 85, width = 0) +
@@ -8843,9 +8887,310 @@ ggplot(plot_data, aes(min_run_cost, best_iteration, color = technique)) +
     ylab("Iteration where Best was Found") +
     xlab("Best Cost") +
     theme_bw(base_size = 23) +
-    theme(legend.position = "top", legend.direction = "horizontal", legend.title = element_blank()) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family="Noto Serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(-1, 0.2, 0.2, 0.2), "cm"))  +
     scale_color_brewer(palette = "Set1")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-FAd6Wc/figure2UZHVV.png]]
+[[file:/tmp/babel-FjF14L/figurexIZ6qZ.png]]
+** October
+*** [2018-10-02 Tue]
+**** Conceptual Example: Rosenbrock and D-Optimal Designs
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+rosenbrock <- function(x, y) {
+    return(((1.0 - x) ^ 2) + (100.0 * ((y - (x ^ 2)) ^ 2)))
+}
+
+rosenbrock_data <- expand.grid(seq(-4, 4, 0.05), seq(-4, 4, 0.05))
+rosenbrock_data$Y <- mapply(rosenbrock, rosenbrock_data$Var1, rosenbrock_data$Var2)
+
+dim(rosenbrock_data)
+rosenbrock(1, 1)
+#+END_SRC
+
+#+RESULTS:
+: [1] 25921     3
+: [1] 0
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+random_sample <- rosenbrock_data[sample(1:nrow(rosenbrock_data), 8, replace = TRUE), ]
+dim(random_sample)
+random_sample[random_sample$Y == min(random_sample$Y), ]
+#+END_SRC
+
+#+RESULTS:
+: [1] 8 3
+:        Var1 Var2        Y
+: 19215 -1.25 1.95 20.07813
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+sampled_mins <- replicate(30, {
+  random_sample <- rosenbrock_data[sample(1:nrow(rosenbrock_data), 10, replace = TRUE), ]
+  sample_min <- random_sample[random_sample$Y == min(random_sample$Y), "Y"]
+  sample_min
+  })
+
+sampled_mins <- as.numeric(unlist(sampled_mins))
+random_summary <- summary(sampled_mins)
+random_summary
+#+END_SRC
+
+#+RESULTS:
+:     Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+:   0.7031  32.3633  66.4350 121.1034 154.7594 459.4000
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+output <- optFederov(~ ., data = rosenbrock_data, nTrials = 10)
+output
+regression <- lm(Y ~ ., data = output$design)
+summary.aov(regression)
+prediction <- predict(regression, rosenbrock_data)
+best_predicted <- rosenbrock_data[prediction == min(prediction), ]
+best_predicted
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+$D
+[1] 441.7721
+
+$A
+[1] 0.8475946
+
+$Ge
+[1] 0.797
+
+$Dea
+[1] 0.775
+
+$design
+       Var1  Var2         Y
+1     -4.00 -4.00 40025.000
+80    -0.05 -4.00  1603.103
+89     0.40 -4.00  1730.920
+161    4.00 -4.00 40009.000
+162   -4.00 -3.95 39825.250
+322    4.00 -3.95 39809.250
+25760  4.00  3.95 14529.250
+25761 -4.00  4.00 14425.000
+25762 -3.95  4.00 13486.303
+25921  4.00  4.00 14409.000
+
+$rows
+ [1]     1    80    89   161   162   322 25760 25761 25762 25921
+            Df    Sum Sq   Mean Sq F value Pr(>F)
+Var1         1 9.742e+04     97419   0.000  0.986
+Var2         1 3.988e+08 398834888   1.428  0.271
+Residuals    7 1.955e+09 279338170
+      Var1 Var2     Y
+25921    4    4 14409
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+i <- 0
+linear_mins <- replicate(30, {
+  output <- optFederov(~ ., data = rosenbrock_data, nTrials = 10)
+  regression <- lm(Y ~ ., data = output$design)
+  summary.aov(regression)
+  prediction <- predict(regression, rosenbrock_data)
+  best_predicted <- rosenbrock_data[prediction == min(prediction), ]
+  i <<- i + 1
+  print(i)
+  best_predicted$Y
+})
+
+linear_mins <- as.numeric(unlist(linear_mins))
+linear_summary <- summary(linear_mins)
+linear_summary
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+[1] 16
+[1] 17
+[1] 18
+[1] 19
+[1] 20
+[1] 21
+[1] 22
+[1] 23
+[1] 24
+[1] 25
+[1] 26
+[1] 27
+[1] 28
+[1] 29
+[1] 30
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  14409   14409   14409   14414   14425   14425
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+output <- optFederov(~ Var1 + Var2 + I(Var1 ^ 4) + I(Var1 ^ 2) + I(Var2 ^ 2) + I(Var1 ^ 2):Var2, data = rosenbrock_data, nTrials = 8)
+output
+regression <- lm(Y ~ Var1 + Var2 + I(Var1 ^ 4) + I(Var1 ^ 2) + I(Var2 ^ 2) + I(Var1 ^ 2):Var2, data = output$design)
+summary.aov(regression)
+prediction <- predict(regression, rosenbrock_data)
+best_predicted <- rosenbrock_data[prediction == min(prediction), ]
+best_predicted
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+$D
+[1] 36.02169
+
+$A
+[1] 1.629654
+
+$Ge
+[1] 0.66
+
+$Dea
+[1] 0.598
+
+$design
+       Var1  Var2         Y
+1     -4.00 -4.00 40025.000
+79    -0.10 -4.00  1609.220
+161    4.00 -4.00 40009.000
+11890  2.80 -0.35  6710.850
+14330 -4.00  0.45 24205.250
+25781 -3.00  4.00  2516.000
+25842  0.05  4.00  1598.903
+25921  4.00  4.00 14409.000
+
+$rows
+[1]     1    79   161 11890 14330 25781 25842 25921
+               Df    Sum Sq   Mean Sq   F value   Pr(>F)
+Var1            1 7.120e+06 7.120e+06 2.845e+29 1.19e-15 ***
+Var2            1 6.236e+08 6.236e+08 2.492e+31  < 2e-16 ***
+I(Var1^4)       1 1.076e+09 1.076e+09 4.300e+31  < 2e-16 ***
+I(Var1^2)       1 1.219e+06 1.219e+06 4.873e+28 2.88e-15 ***
+I(Var2^2)       1 1.364e+07 1.364e+07 5.450e+29 8.62e-16 ***
+Var2:I(Var1^2)  1 1.835e+08 1.835e+08 7.332e+30 2.35e-16 ***
+Residuals       1 0.000e+00 0.000e+00
+---
+codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+      Var1 Var2 Y
+16201    1    1 0
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+i <- 0
+modelled_mins <- replicate(30, {
+  output <- optFederov(~ Var1 + Var2 + I(Var1 ^ 4) + I(Var1 ^ 2) + I(Var2 ^ 2) + I(Var1 ^ 2):Var2, data = rosenbrock_data, nTrials = 8)
+  regression <- lm(Y ~ Var1 + Var2 + I(Var1 ^ 4) + I(Var1 ^ 2) + I(Var2 ^ 2) + I(Var1 ^ 2):Var2, data = output$design)
+  summary.aov(regression)
+  prediction <- predict(regression, rosenbrock_data)
+  best_predicted <- rosenbrock_data[prediction == min(prediction), ]
+  i <<- i + 1
+  print(i)
+  best_predicted$Y
+})
+
+modelled_mins <- as.numeric(unlist(modelled_mins))
+modelled_summary <- summary(modelled_mins)
+modelled_summary
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+[1] 16
+[1] 17
+[1] 18
+[1] 19
+[1] 20
+[1] 21
+[1] 22
+[1] 23
+[1] 24
+[1] 25
+[1] 26
+[1] 27
+[1] 28
+[1] 29
+[1] 30
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+      0       0       0       0       0       0
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+
+summaries <- rbind(random_summary, linear_summary, modelled_summary)
+summaries <- summaries[, c("Min.", "Mean", "Max.")]
+summaries
+#+END_SRC
+
+#+RESULTS:
+:                         Min.       Mean    Max.
+: random_summary   7.03125e-01   121.1034   459.4
+: linear_summary   1.44090e+04 14414.3333 14425.0
+: modelled_summary 0.00000e+00     0.0000     0.0
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1000 :height 1000
+#+BEGIN_SRC R
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(rosenbrock_data, aes(Var1, Var2, z = Y)) +
+      #geom_raster(aes(fill = Y), show.legend = FALSE) +
+      scale_x_continuous(limits = c(-3, 3), expand = c(0, 0)) +
+      scale_y_continuous(limits = c(-3, 3), expand = c(0, 0)) +
+      geom_contour(colour = "black", binwidth = 100, show.legend = FALSE) +
+      geom_point(size = 4, colour = "black", pch = 21, data = rosenbrock_data[rosenbrock_data$Y == min(rosenbrock_data$Y), ]) +
+      geom_label(size = 6, colour = "black", data = rosenbrock_data[rosenbrock_data$Y == min(rosenbrock_data$Y), ], aes(x = Var1, y = Var2 + 0.15, label = "rosenbrock(1,1) = 0")) +
+      theme_bw(base_size = 20) +
+      theme(panel.grid = element_blank(), panel.border = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-7n0CWB/figurebJWM0J.png]]
