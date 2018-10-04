@@ -6792,7 +6792,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-FjF14L/figure8KOs0B.png]]
+[[file:/tmp/babel-FjF14L/figurecxUGKe.png]]
 *** [2018-09-10 Mon]
 **** Tests with Expanding Designs
 #+HEADER: :results output :session *R*
