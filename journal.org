@@ -8046,15 +8046,15 @@ application.
 |  7 | adi                | DONE         |     |      |      | DONE         |
 |  8 | gesummv            | DONE         |     |      |      | DONE         |
 |  9 | mvt                | DONE         |     |      |      | DONE         |
-| 10 | fdtd               | PREP         |     |      |      | PREP         |
+| 10 | fdtd               | DOING (7/10) |     |      |      | DOING (7/10) |
 | 11 | correlation        | DONE         |     |      |      | DONE         |
 | 12 | lu                 | DONE         |     |      |      | DONE         |
-| 13 | tensor-contraction | DONE         |     |      |      | DOING (8/10) |
+| 13 | tensor-contraction | DONE         |     |      |      | DONE         |
 | 14 | mm                 | DONE         |     |      |      | DONE         |
 | 15 | jacobi             | DONE         |     |      |      | DONE         |
 | 16 | covariance         | FAIL         |     |      |      | FAIL         |
 | 17 | hessian            | DONE         |     |      |      | DONE         |
-| 18 | seidel             | DOING (1/10) |     |      |      | DOING (6/10) |
+| 18 | seidel             | DOING (8/10) |     |      |      | DONE         |
 |----+--------------------+--------------+-----+------+------+--------------|
 
 **** Plotting Applications (Xeon E5 2630 v3, Grid5000)
@@ -8119,23 +8119,8 @@ print(summarise(points_mean = mean(points), points_min = min(points),
 
 #+RESULTS:
 #+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:plyr’:
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
 There were 50 or more warnings (use warnings() to see the first 50)
-# A tibble: 32 x 7
+# A tibble: 34 x 7
 # Groups:   application [?]
    application technique points_mean points_min points_max max_speedup
    <chr>       <chr>           <dbl>      <dbl>      <dbl>       <dbl>
@@ -8149,28 +8134,30 @@ There were 50 or more warnings (use warnings() to see the first 50)
  8 correlation RS              301          301        301        1.02
  9 dgemv3      DLMT            301.         219        414        2.15
 10 dgemv3      RS              391          301        401        2.21
-11 gemver      DLMT            150.          76        225        3.83
-12 gemver      RS              301          301        301        3.85
-13 gesummv     DLMT            133          133        133        2.83
-14 gesummv     RS              301          301        301        3.07
-15 hessian     DLMT            105          105        105        1.07
-16 hessian     RS              301          301        301        1.07
-17 jacobi      DLMT            102           74        135        2.35
-18 jacobi      RS              301          301        301        1.87
-19 lu          DLMT             43           43         43       12.7
-20 lu          RS              301          301        301       18.7
-21 mm          DLMT            101.          73        126       20.4
-22 mm          RS              294.         226        301       19.4
-23 mvt         DLMT             83.1         51        105       11.2
-24 mvt         RS              301          301        301       10.0
-25 seidel      DLMT            149.          68        188       50.9
-26 seidel      RS              301          301        301       33.8
-27 stencil3d   DLMT            233.         153        292        2.40
-28 stencil3d   RS              251          251        251        2.45
-29 tensor      DLMT            133.         101        164       27.7
-30 tensor      RS              301          301        301       25.9
-31 trmm        DLMT            215.          81        285       15.1
-32 trmm        RS              301          301        301       14.4
+11 fdtd        DLMT            329          329        329        1.06
+12 fdtd        RS              301          301        301        1.05
+13 gemver      DLMT            150.          76        225        3.83
+14 gemver      RS              301          301        301        3.85
+15 gesummv     DLMT            133          133        133        2.83
+16 gesummv     RS              301          301        301        3.07
+17 hessian     DLMT            105          105        105        1.07
+18 hessian     RS              301          301        301        1.07
+19 jacobi      DLMT            102           74        135        2.35
+20 jacobi      RS              301          301        301        1.87
+21 lu          DLMT             43           43         43       12.7
+22 lu          RS              301          301        301       18.7
+23 mm          DLMT            101.          73        126       20.4
+24 mm          RS              294.         226        301       19.4
+25 mvt         DLMT             83.1         51        105       11.2
+26 mvt         RS              301          301        301       10.0
+27 seidel      DLMT            146.          51        196       52.5
+28 seidel      RS              301          301        301       54.3
+29 stencil3d   DLMT            233.         153        292        2.40
+30 stencil3d   RS              251          251        251        2.45
+31 tensor      DLMT            136.         101        179       27.7
+32 tensor      RS              301          301        301       26.0
+33 trmm        DLMT            215.          81        285       15.1
+34 trmm        RS              301          301        301       14.4
    experiments
          <int>
  1          10
@@ -8183,28 +8170,30 @@ There were 50 or more warnings (use warnings() to see the first 50)
  8          10
  9          11
 10          10
-11          10
-12          10
+11           7
+12           7
 13          10
 14          10
 15          10
 16          10
-17          18
-18          18
-19          10
-20          10
+17          10
+18          10
+19          18
+20          18
 21          10
 22          10
 23          10
 24          10
-25           6
-26           1
-27          10
-28          10
-29           9
+25          10
+26          10
+27          15
+28          11
+29          10
 30          10
-31          10
-32          10
+31          19
+32          20
+33          10
+34          10
 #+end_example
 
 ****** Boxplots
@@ -8228,7 +8217,7 @@ ggplot(data, aes(x = technique, y = speedup)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-7n0CWB/figureuryq7Q.png]]
+[[file:/tmp/babel-S4IlLB/figuredWEg4k.png]]
 
 ****** Speedup & Budget
 ******* Setup
@@ -8677,28 +8666,30 @@ as.data.frame(plot_data)
 8  correlation        RS           150.80000           2.528018
 9       dgemv3      DLMT           184.36427           2.701841
 10      dgemv3        RS           160.43338           3.438742
-11      gemver      DLMT           113.56215           2.788298
-12      gemver        RS           151.81572           2.269083
-13     gesummv      DLMT            73.29961           3.435621
-14     gesummv        RS           151.04948           4.957122
-15     hessian      DLMT            59.73946           2.798694
-16     hessian        RS           144.43022           4.950010
-17      jacobi      DLMT            51.36275           1.724136
-18      jacobi        RS           157.90092           2.663673
-19          lu      DLMT            22.11013           1.636640
-20          lu        RS           202.57646           2.888862
-21          mm      DLMT            69.31568           1.202784
-22          mm        RS           182.66667           3.110298
-23         mvt      DLMT            44.86602           1.574765
-24         mvt        RS           146.70000           3.350108
-25      seidel      DLMT            89.62868           2.222086
-26      seidel        RS           214.00000           0.000000
-27   stencil3d      DLMT           111.86678           2.866450
-28   stencil3d        RS           134.72048           3.215613
-29      tensor      DLMT            82.04223           1.870946
-30      tensor        RS           143.20000           2.738426
-31        trmm      DLMT           189.41363           2.728443
-32        trmm        RS           127.89196           2.913587
+11        fdtd      DLMT           134.90748           4.400738
+12        fdtd        RS           148.18798           3.732289
+13      gemver      DLMT           113.56215           2.788298
+14      gemver        RS           151.81572           2.269083
+15     gesummv      DLMT            73.29961           3.435621
+16     gesummv        RS           151.04948           4.957122
+17     hessian      DLMT            59.73946           2.798694
+18     hessian        RS           144.43022           4.950010
+19      jacobi      DLMT            51.36275           1.724136
+20      jacobi        RS           157.90092           2.663673
+21          lu      DLMT            22.11013           1.636640
+22          lu        RS           202.57646           2.888862
+23          mm      DLMT            69.31568           1.202784
+24          mm        RS           182.66667           3.110298
+25         mvt      DLMT            44.86602           1.574765
+26         mvt        RS           146.70000           3.350108
+27      seidel      DLMT           108.41667           2.013917
+28      seidel        RS           202.33656           2.782804
+29   stencil3d      DLMT           111.86678           2.866450
+30   stencil3d        RS           134.72048           3.215613
+31      tensor      DLMT            78.60919           1.589180
+32      tensor        RS           102.57895           2.035097
+33        trmm      DLMT           189.41363           2.728443
+34        trmm        RS           127.89196           2.913587
    sd_best_iteration
 1           83.28584
 2           90.54772
@@ -8710,28 +8701,30 @@ as.data.frame(plot_data)
 8           69.23263
 9           77.30996
 10         106.89179
-11          52.46152
-12          62.03774
-13          38.94545
-14          84.12515
-15          31.97133
-16          94.86084
-17          31.52153
-18          84.41153
-19          12.32923
-20          58.63750
-21          19.02720
-22          84.10753
-23          22.56095
-24          91.74648
-25          31.73774
-26           0.00000
-27          68.69022
-28          80.22940
-29          32.18897
-30          74.99490
-31          59.80831
-32          75.86523
+11          96.23941
+12          79.48112
+13          52.46152
+14          62.03774
+15          38.94545
+16          84.12515
+17          31.97133
+18          94.86084
+19          31.52153
+20          84.41153
+21          12.32923
+22          58.63750
+23          19.02720
+24          84.10753
+25          22.56095
+26          91.74648
+27          45.88019
+28          64.80109
+29          68.69022
+30          80.22940
+31          39.40238
+32          76.82321
+33          59.80831
+34          75.86523
 #+end_example
 
 ****** Speedup & Budget
@@ -8759,7 +8752,7 @@ ggplot(plot_data, aes(application, mean_best_iteration, fill = technique)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-7n0CWB/figuren2YKvl.png]]
+[[file:/tmp/babel-S4IlLB/figuregmD5vf.png]]
 ***** Iteration where Best Points were Found vs. Execution Cost
 This entry contains plots of the speedups achieved by DLMT
 and other algorithms.
@@ -8876,12 +8869,14 @@ achieved by DLMT and RS, for all applications.
 library(extrafont)
 
 ggplot(plot_data, aes(min_run_cost, best_iteration, color = technique)) +
-    facet_wrap(application ~ ., ncol = 2) +
-    geom_jitter(data = rs_sample, aes(x = cost_mean, y = 300), pch = 19, alpha = 0.1, height = 85, width = 0) +
-    geom_jitter(data = dlmt_sample, aes(x = cost_mean, y = 100), pch = 19, alpha = 0.1, height = 85, width = 0) +
+    facet_wrap(application ~ ., ncol = 3) +
+    #geom_jitter(data = rs_sample, aes(x = cost_mean, y = 300), pch = 19, alpha = 0.1, height = 85, width = 0) +
+    #geom_jitter(data = dlmt_sample, aes(x = cost_mean, y = 100), pch = 19, alpha = 0.1, height = 85, width = 0) +
     geom_point(size = 2, pch = 19) +
-    stat_ellipse(type = "t", linetype = 13) +
+    #stat_ellipse(type = "t", linetype = 13) +
+    stat_ellipse(type = "norm", linetype = 13) +
     geom_vline(aes(xintercept = mean_cost_baseline), linetype = 8, color = "black") +
+    ylim(c(-10, 400)) +
     scale_x_continuous(trans = "log10") +
     #coord_flip() +
     ggtitle("") +
@@ -8898,7 +8893,7 @@ ggplot(plot_data, aes(min_run_cost, best_iteration, color = technique)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-FjF14L/figurexIZ6qZ.png]]
+[[file:/tmp/babel-S4IlLB/figureDO26Fe.png]]
 ** October
 *** [2018-10-02 Tue]
 **** Conceptual Example: Rosenbrock and D-Optimal Designs
@@ -9195,3 +9190,57 @@ ggplot(rosenbrock_data, aes(Var1, Var2, z = Y)) +
 
 #+RESULTS:
 [[file:/tmp/babel-7n0CWB/figurebJWM0J.png]]
+*** [2018-10-16 Tue]
+**** Comparing Algorithms for D-Optimal Designs :ATTACH:
+:PROPERTIES:
+:Attachments: cook1980comparison.pdf
+:ID:       a9ddd9cc-e0b3-4ee4-aca5-049902c417ba
+:END:
+**** Pan's Course on Online Learning & Optimization
+- Multi-Armed Bandit (semi-bandit)
+***** Online Convex Optimization
+- Continuous space of possible actions
+****** Oracles
+- Gradient Feedback: 1st order (derivative of function at point)
+- Bandit Feedback: 0th order (just value of function)
+***** Online Linear Optimization
+- Mixed strategies
+***** Solution Concepts
+- There is always a fixed target that works best
+- Minimize aggregate loss -> perhaps best general solution
+- Rigid structure
+- Deterministic Offline Optimization Problem
+  - f does not change over time
+  - target minimum
+- Stationary Stochastic Optimization Problem
+  - f_t changes over time, fixed distribution
+  - target some mean of minimuns over time
+- Adversarial Framework
+  - f(x,y) -> minimizing over x, maximizing over y
+  - target nash equilibrium
+  - Zero-sum game, saddle point problem
+***** (External) Regret
+- Online Opt. Problem: Minimize aggregate loss
+- No-regret criterion: Reg(T) = o(T) as T -> Inf
+- Local regret
+- Dynamic regret (adversarial, hopeless to minimize in general)
+  - Needs controls on the loss function
+- Swapping/Shifiting/Adaptive regret: M_t function swaps over t stages
+- Finite sets: internal regret, many others...
+*** [2018-10-17 Wed]
+**** Uniform Sampling with Constraints
+- Bayesian Designs?
+***** Constrained Sampling? (in SAT solving and IA)              :ATTACH:
+:PROPERTIES:
+:Attachments: meel2016constrained.pdf
+:ID:       3860f414-d611-4b31-bff5-feae4720b3bf
+:END:
+- https://www.youtube.com/watch?v=KVgxx13eCjY
+- slides: https://www.cs.rice.edu/~vardi/papers/cav16tk.pdf
+***** Gibbs Sampling
+- [[http://www.mit.edu/~ilkery/papers/GibbsSampling.pdf]]
+- https://www4.stat.ncsu.edu/~reich/st740/Computing2.pdf
+- https://stats.stackexchange.com/questions/266665/gibbs-sampler-examples-in-r
+***** Linear constraints and inequalities
+- =xsample()= from the [[https://cran.r-project.org/web/packages/limSolve/index.html%0A][limSolve]] package
+- [[https://cran.r-project.org/web/packages/ic.infer/index.html][ic.infer]] package
