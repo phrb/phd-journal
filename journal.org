@@ -9244,3 +9244,95 @@ ggplot(rosenbrock_data, aes(Var1, Var2, z = Y)) +
 ***** Linear constraints and inequalities
 - =xsample()= from the [[https://cran.r-project.org/web/packages/limSolve/index.html%0A][limSolve]] package
 - [[https://cran.r-project.org/web/packages/ic.infer/index.html][ic.infer]] package
+*** [2018-10-22 Mon]
+**** Looking at Results for the Seidel Kernel
+***** Cloning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+***** Looking at each Iteration
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+data <- read.csv("./dlmt_spapt_experiments/data/results/dlmt_run_summary.csv", header = TRUE)
+data <- subset(data, kernel == "seidel")
+
+str(data)
+
+d_eff_data <- gather(data, "step", "d_efficiency", 3:6)
+d_eff_data$step <- as.numeric(as.factor(d_eff_data$step))
+
+best_data <- gather(data, "step", "runtime", 11:14)
+best_data$step <- as.numeric(as.factor(best_data$step))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	16 obs. of  18 variables:
+ $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 12 12 12 12 12 12 12 12 12 12 ...
+ $ run_id               : int  1538763579 1538763575 1538763576 1537910970 1537910954 1538763571 1537910963 1537910958 1537910950 1538763577 ...
+ $ de_step_1            : num  0.112 0.111 0.124 0.12 0.108 0.102 0.096 0.165 0.127 0.126 ...
+ $ de_step_2            : num  0.268 0.112 0.217 0.379 0.129 0.092 0.133 0.155 0.283 0.107 ...
+ $ de_step_3            : num  0.25 0.198 0.237 NA 0.138 0.128 0.136 0.136 0.186 1 ...
+ $ de_step_4            : num  0.177 0.14 0.201 NA 0.145 0.145 0.152 0.215 0.235 NA ...
+ $ removed_step_1       : Factor w/ 113 levels "","'I(RT_I^2)': 'RT_I'",..: 7 101 93 106 92 1 1 103 8 1 ...
+ $ removed_step_2       : Factor w/ 100 levels "","'ACOPY_A'",..: 1 74 63 92 72 1 1 1 79 78 ...
+ $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 1 1 1 1 1 63 51 21 1 1 ...
+ $ removed_step_4       : Factor w/ 47 levels "","'I(RT_J^2)'",..: 1 1 14 1 1 1 1 1 1 1 ...
+ $ design_best_step_1   : num  0.0399 0.0433 0.0373 0.0394 0.0321 ...
+ $ design_best_step_2   : num  0.0244 0.0319 0.0249 0.0265 0.0329 ...
+ $ design_best_step_3   : num  0.0206 0.031 0.0312 NA 0.0196 ...
+ $ design_best_step_4   : num  0.019 0.0273 0.0203 NA 0.0495 ...
+ $ predicted_best_step_1: num  0.0281 0.1035 0.0501 0.2992 0.3662 ...
+ $ predicted_best_step_2: num  0.0545 0.0764 0.174 0.0243 0.4022 ...
+ $ predicted_best_step_3: num  0.0289 0.0622 0.1783 NA 0.3347 ...
+ $ predicted_best_step_4: num  0.0309 NA 0.0433 NA 0.0391 ...
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+ggplot(d_eff_data, aes(y = d_efficiency, x = step)) +
+       geom_point(alpha = 0.4) +
+       geom_smooth(method = "lm") +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-ZqGCFb/figurehrPJPJ.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+ggplot(best_data, aes(y = runtime, x = step)) +
+       geom_point(alpha = 0.4) +
+       geom_smooth(method = "lm") +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-ZqGCFb/figureihT7Sy.png]]
+
+*** [2018-10-23 Tue]
+**** Pan's Course on Online Learning & Optimization II
+***** Policies
+- Follow The Leader (FTL)
+- Follow The Regularized Leader
+  - Requires a new zero-epoch, where an "easy function" is given,
+    for example, a quadratic function (Euclidean Regularization)
+  - The regularizing function is a choice of the optimizer
+  - FTRL is Online Gradient Descent when:
+    - Linear function
+    - Euclidean Regularization
+    - No constraints
+  - [[https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/37013.pdf][Google paper on FTRL]]
+  - \eta must be proportional \radic{}T
