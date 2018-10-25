@@ -9259,6 +9259,7 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 #+BEGIN_SRC R
 library(dplyr)
 library(tidyr)
+library(stringr)
 data <- read.csv("./dlmt_spapt_experiments/data/results/dlmt_run_summary.csv", header = TRUE)
 data <- subset(data, kernel == "seidel")
 data[duplicated(data$run_id), "run_id"] <- sample(1:400, 1)
@@ -9325,19 +9326,10 @@ complete_eliminated_data <- data %>%
                             mutate(step = as.factor(step),
                                    run_id = as.factor(run_id))
 
-complete_eliminated_data <- complete_eliminated_data %>% separate_rows(factors,
-                                                                       sep = ":") %>%
-                            mutate(factors = sapply(test$factors,
-                                                    function (x) str_trim(str_replace_all(x, "'", ""))))
+complete_eliminated_data <- complete_eliminated_data %>% separate_rows(factors, sep = ":") %>%
+                            mutate(factors = sapply(factors, function (x) str_trim(str_replace_all(x, "'", ""))))
 
-#eliminated_histogram <- complete_eliminated_data$factors %>% strsplit(":") %>%
-#                        unlist() %>% str_replace_all("'", "") %>% str_trim() %>%
-#                        table() %>% as.data.frame()
-#
-#eliminated_histogram <- eliminated_histogram[with(eliminated_histogram,
-#                                                  order(-Freq)), ]
-#
-#eliminated_histogram$. <- factor(eliminated_histogram$., levels = eliminated_histogram$.)
+complete_eliminated_data$factors <- factor(complete_eliminated_data$factors, levels = names(sort(table(complete_eliminated_data$factors), decreasing = TRUE)))
 
 str(d_eff_data)
 #+END_SRC
@@ -9352,7 +9344,7 @@ attributes are not identical across measure variables;
 they will be dropped
 'data.frame':	64 obs. of  16 variables:
  $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 12 12 12 12 12 12 12 12 12 12 ...
- $ run_id               : Factor w/ 16 levels "180","1537910950",..: 16 13 14 7 4 10 6 5 2 15 ...
+ $ run_id               : Factor w/ 16 levels "106","1537910950",..: 16 13 14 7 4 10 6 5 2 15 ...
  $ removed_step_1       : Factor w/ 113 levels "","'I(RT_I^2)': 'RT_I'",..: 7 101 93 106 92 1 1 103 8 1 ...
  $ removed_step_2       : Factor w/ 100 levels "","'ACOPY_A'",..: 1 74 63 92 72 1 1 1 79 78 ...
  $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 1 1 1 1 1 63 51 21 1 1 ...
@@ -9376,6 +9368,7 @@ they will be dropped
 library(gridExtra)
 library(ggplot2)
 library(RColorBrewer)
+library(ggrepel)
 
 my_palette = c(brewer.pal(name = "Set1", n = 9),
                brewer.pal(name = "Set2", n = 7),
@@ -9414,8 +9407,8 @@ eliminated_number_plot <- ggplot(eliminated_data, aes(y = factors, x = step)) +
                                  scale_color_manual(values = my_palette)
 
 eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
-                             geom_histogram(stat = "count", show.legend = TRUE) +
-                             ylab("frequency of eliminated factors") +
+                             geom_bar(stat = "count", show.legend = TRUE) +
+                             ylab("count of eliminated factors") +
                              xlab("") +
                              scale_y_continuous(breaks = 0:12) +
                              theme_bw(base_size = 16) +
@@ -9437,7 +9430,7 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZqGCFb/figured2bGbY.png]]
+[[file:/tmp/babel-ZqGCFb/figureDzWOor.png]]
 
 *** [2018-10-23 Tue]
 **** Pan's Course on Online Learning & Optimization II
