@@ -9426,7 +9426,7 @@ eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != 
                                    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
                              guides(fill = guide_legend(nrow = 1)) +
                              #scale_color_manual(values = my_palette)
-                             scale_fill_brewer(palette = "Set3")
+                             scale_fill_brewer(palette = "Set2")
 
 grid.arrange(d_eff_plot, predicted_plot, design_plot,
              eliminated_number_plot, eliminated_histogram_plot,
@@ -9437,7 +9437,7 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZqGCFb/figurenOGjaQ.png]]
+[[file:/tmp/babel-ZqGCFb/figured2bGbY.png]]
 
 *** [2018-10-23 Tue]
 **** Pan's Course on Online Learning & Optimization II
