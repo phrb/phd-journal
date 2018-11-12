@@ -9906,3 +9906,37 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 :END:
 - The [[https://research.fb.com/efficient-tuning-of-online-systems-using-bayesian-optimization/][blog post]]
 - The paper is attached to this entry
+*** [2018-11-12 Mon]
+**** Overall Evaluation of the Thesis Progress
+I arrived at LIG and UGA in a CAPES scientific exchange program, but I already
+had the objective of starting a thesis in cotutelle with Prof. Arnaud Legrand,
+between USP and UGA. The initial objective of my stay here was to learn and
+study the Design of Experiments approach, in the context of program autotuning,
+and its available implementations. We also wanted to evaluate the applicability
+and effectiveness of this approach to program autotuning.
+
+The initial autotuning problem we intended to apply the Design of Experiments
+approach to was the autotuning of High-Level Synthesis for FPGAs, a domain in
+which we had recently published a paper. Our analyses of existing experimental
+data made it clear that we needed more experiments to be able to better
+understand the properties of the search spaces in question. We had problems
+gaining access to the proprietary software needed to repeat our initial
+experiments.
+
+During this period we also reviewed the bibliography for different strategies
+for constructing designs for mixed level factors, and determined that D-Optimal
+designs would the most general and applicable approach. Since we had issues
+accessing proprietary software to repeat our experiments with FPGAs, we decided
+to move towards an implementation of a Design of Experiments approach based on
+D-Optimal designs, and evaluated this approach on a Laplacian Kernel for GPUs
+and on HPC kernels from the SPAPT benchmark suite. We submitted a paper presenting
+our approach and using these experimental evaluations to IPDPS 2019.
+
+We will continue the experimental evaluation of our approach by analysing the
+data we collected to construct less general performance models for each
+application. We expect to see differences between our previous results and
+optimizations done with tailored models. We are also studying sampling
+strategies that would allow uniform sampling for the constrained spaces from
+SPAPT. Finally, it would be ideal to apply our approach to the initially
+intended domain of High-Level Synthesis for FPGAs, but we are still not able
+to access the proprietary software.
