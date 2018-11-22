@@ -11067,21 +11067,33 @@ library(dplyr)
 full_factorial <- gen.factorial(c(100, 100))
 
 names(full_factorial) <- c("x1", "x2")
+runs <- 10
 
-output <- optFederov(~., full_factorial, nTrials = 100)
+output <- optFederov(~., full_factorial, nTrials = 20)
 design <- output$design
 design$id <- "linear"
 data <- design
 
-output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = 100)
-design <- output$design
-design$id <- "quadratic"
-data <- bind_rows(data, design)
+for (i in 1:(runs - 1)) {
+    output <- optFederov(~., full_factorial, nTrials = 20)
+    design <- output$design
+    design$id <- "linear"
+    data <- bind_rows(data, design)
+}
 
-output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2) + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = 100)
-design <- output$design
-design$id <- "cubic"
-data <- bind_rows(data, design)
+for (i in 1:runs) {
+    output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = 20)
+    design <- output$design
+    design$id <- "quadratic"
+    data <- bind_rows(data, design)
+}
+
+for (i in 1:runs) {
+    output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2) + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = 20)
+    design <- output$design
+    design$id <- "cubic"
+    data <- bind_rows(data, design)
+}
 #+END_SRC
 
 #+RESULTS:
@@ -11093,9 +11105,9 @@ data <- bind_rows(data, design)
 library(ggplot2)
 ggplot(data, aes(x = x1, y = ..count..)) +
     facet_wrap(id ~ ., ncol = 1) +
-    geom_histogram() +
+    geom_histogram(bins = 200) +
     theme_bw(base_size = 20)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figurevU1RmF.png]]
+[[file:/tmp/babel-b6VOaH/figuref2B2Ej.png]]
