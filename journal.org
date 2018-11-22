@@ -2532,7 +2532,7 @@ ggplot(data, aes(x = x1, y = x2)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XeXoRm/figuretQupRL.png]]
+[[file:/tmp/babel-b6VOaH/figureCgGwUG.png]]
 
 ***** D-Optimal Sampling with Interactions
 #+HEADER: :results graphics output :session *R*
@@ -11039,3 +11039,63 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 
 #+RESULTS:
 [[file:/tmp/babel-b6VOaH/figurehe8tZz.png]]
+*** [2018-11-20 Tue]
+**** More on the Gibbs Sampler :ATTACH:
+:PROPERTIES:
+:Attachments: casella1992explaining.pdf
+:ID:       6bac6733-5d58-47b3-90f0-b01501ed28ad
+:END:
+This [[https://stats.stackexchange.com/questions/266665/gibbs-sampler-examples-in-r][stack exchange thread]] suggested a paper that explains the Gibbs sampler,
+attached to this section.
+*** [2018-11-22 Thu]
+**** Looking at Federov's Selected Values
+Being able to generate good samples for Federov's algorithm would be
+interesting. This could be possible if, given a model, we know how to produce
+the distribution of factor levels that would give the best D-Efficiency. With
+this distribution, we could use something akin to Gibbs sampling to generate
+only interesting levels.
+
+I want to look at the distribution of factor levels selected in a D-Optimal
+design produced by Federov's algorithm, to see if it gives any insight into
+what factor level distributions could look like.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+
+full_factorial <- gen.factorial(c(100, 100))
+
+names(full_factorial) <- c("x1", "x2")
+
+output <- optFederov(~., full_factorial, nTrials = 100)
+design <- output$design
+design$id <- "linear"
+data <- design
+
+output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = 100)
+design <- output$design
+design$id <- "quadratic"
+data <- bind_rows(data, design)
+
+output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2) + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = 100)
+design <- output$design
+design$id <- "cubic"
+data <- bind_rows(data, design)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+ggplot(data, aes(x = x1, y = ..count..)) +
+    facet_wrap(id ~ ., ncol = 1) +
+    geom_histogram() +
+    theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-b6VOaH/figurevU1RmF.png]]
