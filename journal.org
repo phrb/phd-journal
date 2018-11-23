@@ -1020,7 +1020,7 @@ This value represents the accuracy of the static selection in comparison with
 the values that would be selected if each individual =aov= summary was analysed.
 *** [2018-05-15 Tue]
 **** Writing an LM Experiment Using a Big Model
-This experiment is a modification of the ``DOPTaov'' experiment that adapts the
+This experiment is a modification of the fo``DOPTaov'' experiment that adapts the
 ``LM'' strategy for fitting linear models to pruned search spaces. Instead of
 using small models at each step the experiments starts with large models that
 are pruned as meaningful variables are identified in the =aov= summary. The
@@ -11058,56 +11058,132 @@ only interesting levels.
 I want to look at the distribution of factor levels selected in a D-Optimal
 design produced by Federov's algorithm, to see if it gives any insight into
 what factor level distributions could look like.
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
 
+#+RESULTS:
+***** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/federov_results.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+
+***** Generate Data
+****** Uniform Sample
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
 library(dplyr)
 
-full_factorial <- gen.factorial(c(100, 100))
+uniform_sample <- data.frame(replicate(30, runif(1000)))
 
-names(full_factorial) <- c("x1", "x2")
-runs <- 10
+runs <- 100
 
-output <- optFederov(~., full_factorial, nTrials = 20)
+model_formula <- formula(paste("~ ", paste(names(uniform_sample), collapse = "+")))
+
+output <- optFederov(model_formula, uniform_sample, nTrials = 40)
 design <- output$design
-design$id <- "linear"
+design$model <- "linear"
+design$id <- 1
+design$deff <- output$Dea
 data <- design
 
-for (i in 1:(runs - 1)) {
-    output <- optFederov(~., full_factorial, nTrials = 20)
+for (i in 2:runs) {
+    output <- optFederov(model_formula, uniform_sample, nTrials = 40)
     design <- output$design
-    design$id <- "linear"
+    design$model <- "linear"
+    design$id <- i
+    design$deff <- output$Dea
     data <- bind_rows(data, design)
 }
 
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
 for (i in 1:runs) {
-    output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2), full_factorial, nTrials = 20)
+    output <- optFederov(model_formula, uniform_sample, nTrials = 70)
     design <- output$design
-    design$id <- "quadratic"
+    design$model <- "quadratic"
+    design$id <- i
+    design$deff <- output$Dea
     data <- bind_rows(data, design)
 }
 
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
 for (i in 1:runs) {
-    output <- optFederov(~ x1 + x2 + I(x1 ^ 2) + I(x2 ^ 2) + I(x1 ^ 3) + I(x2 ^ 3), full_factorial, nTrials = 20)
+    output <- optFederov(model_formula, uniform_sample, nTrials = 100)
     design <- output$design
-    design$id <- "cubic"
+    design$model <- "cubic"
+    design$id <- i
+    design$deff <- output$Dea
     data <- bind_rows(data, design)
 }
 #+END_SRC
 
 #+RESULTS:
-
+:
+: There were 50 or more warnings (use warnings() to see the first 50)
+****** Biased Sample
+***** Plots
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 library(ggplot2)
-ggplot(data, aes(x = x1, y = ..count..)) +
-    facet_wrap(id ~ ., ncol = 1) +
-    geom_histogram(bins = 200) +
-    theme_bw(base_size = 20)
+ggplot(data, aes(x = X1, y = ..count..)) +
+    facet_wrap(model ~ ., ncol = 1) +
+    geom_histogram(bins = 120) +
+    theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figuref2B2Ej.png]]
+[[file:/tmp/babel-b6VOaH/figureMW0A26.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+plot_data <- data[!duplicated(data[, c("id", "model")]), ]
+ggplot(plot_data, aes(x = model, y = deff)) +
+       geom_jitter(alpha = 0.5) +
+       #geom_point(alpha = 0.5) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-b6VOaH/figureYUjk59.png]]
+
+***** Save Latest Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(uniform_sample, "dopt_sampling_tests/30_numerical_factors_1000_samples.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/federov_results.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
