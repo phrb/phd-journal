@@ -9,12 +9,14 @@
 #+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A) Arnaud(r)
 #+TAGS: DataVis(v) PaperReview(W)
 #+EXPORT_SELECT_TAGS: Blog
-#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{graphicx}
 
 * Setup
 ** Julia
@@ -11499,20 +11501,23 @@ the frequency, as a count, for the 100 repetitions.
 data <- read.csv("dopt_sampling_tests/federov_results_biased_150_samples.csv", header = TRUE, sep = ",")
 #+END_SRC
 
+#+RESULTS:
+
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = X5, y = ..count..)) +
+ggplot(data, aes(color = id, x = X5, y = ..count..)) +
     facet_wrap(model ~ ., ncol = 2, scale = "free_y") +
+    #facet_wrap(model ~ ., ncol = 2) +
     geom_histogram(bins = 120) +
     theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figurex8qraG.png]]
+[[file:/tmp/babel-b6VOaH/figurezHuDi2.png]]
 
 Now, we'll look at the D-Efficiency of the design obtained at each of the 100
 repetitions, for the biased and uniform cases, for each of the models (linear,
@@ -11534,7 +11539,7 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figureg274pl.png]]
+[[file:/tmp/babel-b6VOaH/figure52dUWc.png]]
 
 ****** Biased Samples with Same Regions
 The next figure shows the frequencies of values for one of the numerical factors
@@ -11564,7 +11569,7 @@ ggplot(data, aes(x = X15, y = ..count..)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figureEuZfEx.png]]
+[[file:/tmp/babel-b6VOaH/figureXPuRvC.png]]
 
 The next plot shows the 100 D-Efficiency values, jittered in the x-axis for
 better visualization. As in the previous case, we see a difference in the spread
@@ -11583,7 +11588,7 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-b6VOaH/figureGFOQJq.png]]
+[[file:/tmp/babel-b6VOaH/figureBejIh7.png]]
 
 ***** Save Latest Data
 #+HEADER: :results output :session *R*
@@ -12158,6 +12163,165 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 write.csv(data, "dopt_sampling_tests/federov_results_biased_150_samples_same_regions.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+**** Looking at Federov's Selected Values (1 Factor)
+Being able to generate good samples for Federov's algorithm would be
+interesting. This could be possible if, given a model, we know how to produce
+the distribution of factor levels that would give the best D-Efficiency. With
+this distribution, we could use something akin to Gibbs sampling to generate
+only interesting levels.
+
+I want to look at the distribution of factor levels selected in a D-Optimal
+design produced by Federov's algorithm, to see if it gives any insight into
+what factor level distributions could look like.
+
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+
+***** Generate Data
+****** Uniform Sample
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+
+samples <- 1000
+factors <- 2
+
+uniform_sample <- data.frame(replicate(factors, runif(samples)))
+names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+runs <- 100
+
+model_formula <- formula(paste("~ ", paste(names(uniform_sample), collapse = "+")))
+
+output <- optFederov(model_formula, uniform_sample, nTrials = 20)
+design <- output$design
+design$model <- "linear_unif"
+design$id <- 1
+design$deff <- output$Dea
+if (is.null(data)) {
+    data <- design
+} else {
+    data <- bind_rows(data, design)
+}
+
+for (i in 2:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+    output <- optFederov(model_formula, uniform_sample, nTrials = 20)
+    design <- output$design
+    design$model <- "linear_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    data <- bind_rows(data, design)
+}
+
+for (i in 1:runs) {
+    biased_sample_0 <- data.frame(replicate(factors, runif(samples / 2, min = 0.0, max = 0.05)))
+    names(biased_sample_0) <- paste("X", 1:factors, sep = "")
+    biased_sample_1 <- data.frame(replicate(factors, runif(samples / 2, min = 0.95, max = 1.0)))
+    names(biased_sample_1) <- paste("X", 1:factors, sep = "")
+    biased_sample <- bind_rows(biased_sample_0, biased_sample_1)
+
+    biased_sample <- biased_sample[sample(nrow(biased_sample)), ]
+
+    output <- optFederov(model_formula, biased_sample, nTrials = 20)
+    design <- output$design
+    design$model <- "linear_biased_region"
+    design$id <- i
+    design$deff <- output$Dea
+    data <- bind_rows(data, design)
+}
+
+for (i in 1:runs) {
+    biased_sample_0 <- data.frame(replicate(factors, replicate(samples / 2, 0.0)))
+    names(biased_sample_0) <- paste("X", 1:factors, sep = "")
+    biased_sample_1 <- data.frame(replicate(factors, replicate(samples / 2, 1.0)))
+    names(biased_sample_1) <- paste("X", 1:factors, sep = "")
+    biased_sample <- bind_rows(biased_sample_0, biased_sample_1)
+
+    biased_sample <- biased_sample[sample(nrow(biased_sample)), ]
+
+    output <- optFederov(model_formula, biased_sample, nTrials = 20)
+    design <- output$design
+    design$model <- "linear_extremes"
+    design$id <- i
+    design$deff <- output$Dea
+    data <- bind_rows(data, design)
+}
+#+END_SRC
+
+#+RESULTS:
+***** Plots
+****** "Sanity Check" for the Linear Model with 1 Factor
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+
+The Figure below shows the distribution of parameter values selected by 100
+repetitions of =optFederov= for a model with a single linear term, corresponding
+to a single numerical factor, using 3 different starting samples of size 1000.
+The =linear_biased_region= sample was taken uniformly in a region around the
+"extremes" of factor levels, the =linear_extremes= sample contains only the
+"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
+interval.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = X1, y = ..count..)) +
+    facet_wrap(model ~ ., ncol = 1, scale = "free_y") +
+    #facet_wrap(model ~ ., ncol = 2) +
+    geom_histogram(bins = 120) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-b6VOaH/figurei8aAG2.png]]
+
+The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
+samples, over the 100 repetitions.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+plot_data <- data[!duplicated(data[, c("id", "model")]), ]
+ggplot(plot_data, aes(x = model, y = deff)) +
+       geom_jitter(alpha = 0.5, height = 0.0) +
+       #geom_point(alpha = 0.5) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-b6VOaH/figurelQz9k6.png]]
+
+***** Save Latest Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
