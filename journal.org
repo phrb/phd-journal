@@ -12570,6 +12570,363 @@ write.csv(data, "dopt_sampling_tests/federov_results_1200_samples_8_factors_rnor
 
 #+RESULTS:
 *** [2018-11-30 Fri]
+**** Looking at Federov's Selected Values (runif, FIXED)
+Being able to generate good samples for Federov's algorithm would be
+interesting. This could be possible if, given a model, we know how to produce
+the distribution of factor levels that would give the best D-Efficiency. With
+this distribution, we could use something akin to Gibbs sampling to generate
+only interesting levels.
+
+I want to look at the distribution of factor levels selected in a D-Optimal
+design produced by Federov's algorithm, to see if it gives any insight into
+what factor level distributions could look like.
+
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+
+***** Generate Data
+****** Uniform Sample
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+
+abs_rnorm <- function(n, mean, sd) {
+    sample <- c()
+    while(length(sample) < n) {
+        full_sample <- rnorm(n, mean = mean, sd = sd)
+        sample <- c(sample, full_sample[full_sample >= 0.0 & full_sample <= 1.0])
+    }
+    return(sample[1:n])
+}
+
+data <- NULL
+samples <- 200
+factors <- 8
+extra_experiments <- 1
+
+uniform_sample <- data.frame(replicate(factors, runif(samples)))
+names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+runs <- 30
+
+model_formula <- formula(paste("~ ", paste(names(uniform_sample), collapse = "+")))
+
+for (i in 1:runs) {
+    sample <- data.frame(replicate(factors, runif(samples)))
+    names(sample) <- paste("X", 1:factors, sep = "")
+
+    output <- optFederov(model_formula, sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    sample <- NULL
+    current_size <- 0
+
+    while (current_size < samples) {
+        new_sample <- data.frame(replicate(factors, runif(samples)))
+        names(new_sample) <- paste("X", 1:factors, sep = "")
+
+        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9))
+
+        if (is.null(sample)) {
+            sample <- new_sample
+        } else {
+            sample <- bind_rows(sample, new_sample)
+        }
+
+        current_size <- nrow(sample)
+    }
+
+    sample <- sample[1:samples, ]
+
+    output <- optFederov(model_formula, sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 2) + extra_experiments)
+    design <- output$design
+    design$model <- "quadratic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 3) + extra_experiments)
+    design <- output$design
+    design$model <- "cubic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+for (i in 1:runs) {
+    sample <- NULL
+    current_size <- 0
+
+    while (current_size < samples) {
+        new_sample <- data.frame(replicate(factors, runif(samples)))
+        names(new_sample) <- paste("X", 1:factors, sep = "")
+
+        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.45 & . <= 0.55)))
+
+        if (is.null(sample)) {
+            sample <- new_sample
+        } else {
+            sample <- bind_rows(sample, new_sample)
+        }
+
+        current_size <- nrow(sample)
+    }
+
+    sample <- sample[1:samples, ]
+
+    output <- optFederov(model_formula, sample, nTrials = (2 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "quadratic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+for (i in 1:runs) {
+    sample <- NULL
+    current_size <- 0
+
+    while (current_size < samples) {
+        new_sample <- data.frame(replicate(factors, runif(samples)))
+        names(new_sample) <- paste("X", 1:factors, sep = "")
+
+        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.25 & . <= 0.35) | (. >= 0.65 & . <= 0.75) | (. >= 0.45 & . <= 0.55)))
+
+        if (is.null(sample)) {
+            sample <- new_sample
+        } else {
+            sample <- bind_rows(sample, new_sample)
+        }
+
+        current_size <- nrow(sample)
+    }
+
+    sample <- sample[1:samples, ]
+
+    output <- optFederov(model_formula, sample, nTrials = (3 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "cubic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+
+******* Sample Sanity Test
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+
+#for (i in 1:1) {
+#    sample <- NULL
+#    current_size <- 0
+#
+#    while (current_size < samples) {
+#        new_sample <- data.frame(replicate(factors, runif(samples)))
+#        names(new_sample) <- paste("X", 1:factors, sep = "")
+#
+#        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.25 & . <= 0.35) | (. >= 0.65 & . <= 0.75)))
+#
+#        if (is.null(sample)) {
+#            sample <- new_sample
+#        } else {
+#            sample <- bind_rows(sample, new_sample)
+#        }
+#
+#        current_size <- nrow(sample)
+#    }
+#
+#    sample <- sample[1:samples, ]
+#}
+
+ggplot(sample) + geom_point(aes(x = X1, y = X4))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figurePjiodU.png]]
+***** Plots
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+: Error in file(file, "rt") : cannot open the connection
+: In addition: Warning message:
+: In file(file, "rt") :
+:   cannot open file 'dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv': No such file or directory
+
+The Figure below shows the distribution of parameter values selected by 100
+repetitions of =optFederov= for a model with a single linear term, corresponding
+to a single numerical factor, using 3 different starting samples of size 1000.
+The =linear_biased_region= sample was taken uniformly in a region around the
+"extremes" of factor levels, the =linear_extremes= sample contains only the
+"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
+interval.
+
+
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = X1, y = ..count..)) +
+    facet_wrap(model ~ ., ncol = 2, scale = "free_y") +
+    #facet_wrap(model ~ ., ncol = 2) +
+    geom_histogram(bins = 120) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figurercJSu4.png]]
+
+The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
+samples, over the 100 repetitions.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+plot_data <- data[!duplicated(data[, c("id", "model")]), ]
+ggplot(plot_data, aes(x = model, y = deff)) +
+       geom_jitter(alpha = 0.5, height = 0.0) +
+       coord_flip() +
+       #geom_point(alpha = 0.5) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figure4W9wpu.png]]
+
+***** Save Latest Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/federov_results_1200_samples_4_factors_runif_fixed.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
 **** Experiments with Sampling and =AlgDesign='s =optFederov=
 ***** Clone Repository                                         :noexport:
 Make sure you have the latest data:
@@ -12637,14 +12994,6 @@ data <- read.csv("dopt_sampling_tests/federov_results_1200_samples_1_factor_rnor
 
 #+RESULTS:
 
-The Figure below shows the distribution of parameter values selected by 100
-repetitions of =optFederov= for a model with a single linear term, corresponding
-to a single numerical factor, using 3 different starting samples of size 1000.
-The =linear_biased_region= sample was taken uniformly in a region around the
-"extremes" of factor levels, the =linear_extremes= sample contains only the
-"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
-interval.
-
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -12660,9 +13009,6 @@ ggplot(data, aes(x = X1, y = ..count..)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figureyTcj9h.png]]
-
-The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
-samples, over the 100 repetitions.
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -12686,14 +13032,6 @@ data <- read.csv("dopt_sampling_tests/federov_results_1200_samples_1_factor_rnor
 
 #+RESULTS:
 
-The Figure below shows the distribution of parameter values selected by 100
-repetitions of =optFederov= for a model with a single linear term, corresponding
-to a single numerical factor, using 3 different starting samples of size 1000.
-The =linear_biased_region= sample was taken uniformly in a region around the
-"extremes" of factor levels, the =linear_extremes= sample contains only the
-"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
-interval.
-
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -12709,9 +13047,6 @@ ggplot(data, aes(x = X1, y = ..count..)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figure8fsKC9.png]]
-
-The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
-samples, over the 100 repetitions.
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -12736,13 +13071,43 @@ data <- read.csv("dopt_sampling_tests/federov_results_1200_samples_2_factors.csv
 
 #+RESULTS:
 
-The Figure below shows the distribution of parameter values selected by 100
-repetitions of =optFederov= for a model with a single linear term, corresponding
-to a single numerical factor, using 3 different starting samples of size 1000.
-The =linear_biased_region= sample was taken uniformly in a region around the
-"extremes" of factor levels, the =linear_extremes= sample contains only the
-"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
-interval.
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(dplyr)
+
+factors <- 2
+samples <- 1200
+runs <- 1
+
+for (i in 1:runs) {
+    sample <- NULL
+    current_size <- 0
+
+    while (current_size < samples) {
+        new_sample <- data.frame(replicate(factors, runif(samples)))
+        names(new_sample) <- paste("X", 1:factors, sep = "")
+
+        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.45 & . <= 0.55)))
+
+        if (is.null(sample)) {
+            sample <- new_sample
+        } else {
+            sample <- bind_rows(sample, new_sample)
+        }
+
+        current_size <- nrow(sample)
+    }
+
+    data <- sample[1:samples, ]
+}
+
+ggplot(data) + geom_point(aes(x = X1, y = X2))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jIntM5/figuregBd88R.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -12760,9 +13125,6 @@ ggplot(data, aes(x = X1, y = ..count..)) +
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figure8KIIux.png]]
 
-The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
-samples, over the 100 repetitions.
-
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -12771,12 +13133,13 @@ plot_data <- data[!duplicated(data[, c("id", "model")]), ]
 ggplot(plot_data, aes(x = model, y = deff)) +
        geom_jitter(alpha = 0.5, height = 0.0) +
        coord_flip() +
+       ylim(c(0, 1.0)) +
        #geom_point(alpha = 0.5) +
        theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jIntM5/figurerLYlCd.png]]
+[[file:/tmp/babel-jIntM5/figurejrDIRM.png]]
 ******* Normal Sampling (=rnorm=)
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -12862,14 +13225,6 @@ data <- read.csv("dopt_sampling_tests/federov_results_1200_samples_4_factors.csv
 
 #+RESULTS:
 
-The Figure below shows the distribution of parameter values selected by 100
-repetitions of =optFederov= for a model with a single linear term, corresponding
-to a single numerical factor, using 3 different starting samples of size 1000.
-The =linear_biased_region= sample was taken uniformly in a region around the
-"extremes" of factor levels, the =linear_extremes= sample contains only the
-"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
-interval.
-
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -12885,9 +13240,6 @@ ggplot(data, aes(x = X1, y = ..count..)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figuretBIXEt.png]]
-
-The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
-samples, over the 100 repetitions.
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -12988,14 +13340,6 @@ data <- read.csv("dopt_sampling_tests/federov_results_1200_samples_8_factors.csv
 
 #+RESULTS:
 
-The Figure below shows the distribution of parameter values selected by 100
-repetitions of =optFederov= for a model with a single linear term, corresponding
-to a single numerical factor, using 3 different starting samples of size 1000.
-The =linear_biased_region= sample was taken uniformly in a region around the
-"extremes" of factor levels, the =linear_extremes= sample contains only the
-"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
-interval.
-
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1280 :height 720
@@ -13011,9 +13355,6 @@ ggplot(data, aes(x = X1, y = ..count..)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figureU080N0.png]]
-
-The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
-samples, over the 100 repetitions.
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -13105,3 +13446,149 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figurevpu9En.png]]
+*** [2018-12-03 Mon]
+**** Sampling Experiments in R
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+x <- seq(0.0, 1.0, 0.0001)
+y_quad <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10), x)
+y_cube <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) +
+                             (dnorm(x, 0.65, 0.04) / 10), x)
+
+data <- data.frame(x = x, y_quad = y_quad, y_cube = y_cube)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = x, y = y_cube)) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figureVjhzsx.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = x, y = y_quad)) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figureBBidQc.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data$y_cube_pdf <- y_cube / sum(y_cube)
+data$y_quad_pdf <- y_quad / sum(y_quad)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = x, y = y_cube_pdf)) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figure5K6OJK.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(x = x, y = y_quad_pdf)) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figurecZNxkj.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+y_cube_cdf <- c()
+
+for (i in 1:length(data$y_cube_pdf)) {
+    y_cube_cdf <- c(y_cube_cdf, sum(data$y_cube_pdf[1:i]))
+}
+
+data$y_cube_cdf <- y_cube_cdf
+
+y_quad_cdf <- c()
+
+for (i in 1:length(data$y_quad_pdf)) {
+    y_quad_cdf <- c(y_quad_cdf, sum(data$y_quad_pdf[1:i]))
+}
+
+data$y_quad_cdf <- y_quad_cdf
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(y = y_cube_cdf, x = 1:length(y_cube_cdf))) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figure7IHJ5y.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(data, aes(y = y_quad_cdf, x = 1:length(y_quad_cdf))) +
+       geom_line()
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figureXTcOw3.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+samples <- 2000
+x_sampled <- c()
+
+for (i in 1:samples) {
+    new_sample <- data$x[length(data$y_cube_cdf[data$y_cube_cdf <= runif(1)])]
+    x_sampled <- c(x_sampled, new_sample)
+}
+
+cube_sampled_data <- data.frame(x_sampled = x_sampled)
+
+samples <- 2000
+x_sampled <- c()
+
+for (i in 1:samples) {
+    new_sample <- data$x[length(data$y_quad_cdf[data$y_quad_cdf <= runif(1)])]
+    x_sampled <- c(x_sampled, new_sample)
+}
+
+quad_sampled_data <- data.frame(x_sampled = x_sampled)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(sampled_data, aes(x = x_sampled, y = ..count..)) +
+       geom_histogram(bins = 120)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figurecGQkXt.png]]
