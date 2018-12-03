@@ -13447,7 +13447,7 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 #+RESULTS:
 [[file:/tmp/babel-jIntM5/figurevpu9En.png]]
 *** [2018-12-03 Mon]
-**** Sampling Experiments in R
+**** Sampling from an Arbitrary Distribution in R
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 x <- seq(0.0, 1.0, 0.0001)
@@ -13586,9 +13586,20 @@ quad_sampled_data <- data.frame(x_sampled = x_sampled)
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
-ggplot(sampled_data, aes(x = x_sampled, y = ..count..)) +
+ggplot(cube_sampled_data, aes(x = x_sampled, y = ..count..)) +
        geom_histogram(bins = 120)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figurecGQkXt.png]]
+[[file:/tmp/babel-UVb49j/figureoMeLuk.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+ggplot(quad_sampled_data, aes(x = x_sampled, y = ..count..)) +
+       geom_histogram(bins = 120)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-UVb49j/figurei75E0V.png]]
