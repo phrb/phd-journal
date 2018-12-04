@@ -15,8 +15,54 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
-#+LATEX_HEADER: \usepackage{hyperref}
+
+#+LATEX_HEADER: \usepackage{sourcecodepro}
+#+LATEX_HEADER: \usepackage{booktabs}
+#+LATEX_HEADER: \usepackage{array}
+#+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage[english]{babel}
+#+LATEX_HEADER: \usepackage[scale=2]{ccicons}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{relsize}
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{bm}
+#+LATEX_HEADER: \usepackage{wasysym}
+#+LATEX_HEADER: \usepackage{ragged2e}
+#+LATEX_HEADER: \usepackage{textcomp}
+#+LATEX_HEADER: \usepackage{pgfplots}
+#+LATEX_HEADER: \usepgfplotslibrary{dateplot}
+#+LATEX_HEADER: \lstdefinelanguage{Julia}%
+#+LATEX_HEADER:   {morekeywords={abstract,struct,break,case,catch,const,continue,do,else,elseif,%
+#+LATEX_HEADER:       end,export,false,for,function,immutable,mutable,using,import,importall,if,in,%
+#+LATEX_HEADER:       macro,module,quote,return,switch,true,try,catch,type,typealias,%
+#+LATEX_HEADER:       while,<:,+,-,::,/},%
+#+LATEX_HEADER:    sensitive=true,%
+#+LATEX_HEADER:    alsoother={$},%
+#+LATEX_HEADER:    morecomment=[l]\#,%
+#+LATEX_HEADER:    morecomment=[n]{\#=}{=\#},%
+#+LATEX_HEADER:    morestring=[s]{"}{"},%
+#+LATEX_HEADER:    morestring=[m]{'}{'},%
+#+LATEX_HEADER: }[keywords,comments,strings]%
+#+LATEX_HEADER: \lstset{ %
+#+LATEX_HEADER:   backgroundcolor={},
+#+LATEX_HEADER:   basicstyle=\ttfamily\scriptsize,
+#+LATEX_HEADER:   breakatwhitespace=true,
+#+LATEX_HEADER:   breaklines=true,
+#+LATEX_HEADER:   captionpos=n,
+# #+LATEX_HEADER:   escapeinside={\%*}{*)},
+#+LATEX_HEADER:   extendedchars=true,
+#+LATEX_HEADER:   frame=n,
+#+LATEX_HEADER:   language=R,
+#+LATEX_HEADER:   rulecolor=\color{black},
+#+LATEX_HEADER:   showspaces=false,
+#+LATEX_HEADER:   showstringspaces=false,
+#+LATEX_HEADER:   showtabs=false,
+#+LATEX_HEADER:   stepnumber=2,
+#+LATEX_HEADER:   stringstyle=\color{gray},
+#+LATEX_HEADER:   tabsize=2,
+#+LATEX_HEADER: }
+#+LATEX_HEADER: \renewcommand*{\UrlFont}{\ttfamily\smaller\relax}
 
 * Setup
 ** Julia
@@ -13448,158 +13494,440 @@ ggplot(plot_data, aes(x = model, y = deff)) +
 [[file:/tmp/babel-jIntM5/figurevpu9En.png]]
 *** [2018-12-03 Mon]
 **** Sampling from an Arbitrary Distribution in R
-#+HEADER: :results output :session *R*
+We are constructing D-Optimal designs for mixed types of factors using Federov's
+algorithm, which needs a starting experiment sample to select the best experiment
+combination. Sampling a valid initial candidate set becomes a larger problem as
+the number of factors increases, and we are most interested in cases with large
+numbers of factors.
+
+Since the volume of the shell of a hypercube becomes proportionally larger than
+its core as dimension increases, most samples in higher dimensions will end up
+in the shell. This makes it harder to provide good initial sets to Federov's
+algorithm. It is also not trivial to determine the best solution for sampling in
+high dimensions.
+
+I run experiments with rejection sampling, where a uniform sample for each
+parameter was restricted to a set of interesting intervals. This works in
+certain cases, but as dimension increases it becomes harder and harder to obtain
+samples in valid regions, which is compounded by the lack of samples in the core
+of the hypercube.
+
+Another simple solution for this problem is sampling from arbitrary
+distributions, adapted to each model term. These distributions could also
+encapsulate other unfeasible regions of parameters, but it is not clear how we
+would construct them.
+
+I wrote =R= snippets that enable sampling from arbitrary distributions defined
+by a generic function. The sampling is exact for discrete distributions and
+approximate for continuous distributions. First, I /arbitrarily/ defined two
+functions that represent the regions we want to sample for /quadratic/ and
+/cubic/ factors:
+
+#+HEADER: :results output :session *R* :exports code :eval no-export
 #+BEGIN_SRC R
+library(dplyr)
+
 x <- seq(0.0, 1.0, 0.0001)
 y_quad <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10), x)
 y_cube <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) +
                              (dnorm(x, 0.65, 0.04) / 10), x)
 
-data <- data.frame(x = x, y_quad = y_quad, y_cube = y_cube)
+quad_data <- data.frame(x = x, y = y_quad, name = "Quadratic Factors")
+cube_data <- data.frame(x = x, y = y_cube, name = "Cubic Factors")
+
+data <- bind_rows(quad_data, cube_data)
 #+END_SRC
 
 #+RESULTS:
+:
+: Warning messages:
+: 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 3: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
 
-#+HEADER: :results graphics output :session *R*
+The resulting data looks like this:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = x, y = y_cube)) +
-       geom_line()
+ggplot(subset(data, name == "Quadratic Factors" | name == "Cubic Factors"), aes(x = x, y = y)) +
+       facet_wrap(. ~ name, ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 33)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figureVjhzsx.png]]
+[[file:/tmp/babel-gjs27r/figureDSelKs.png]]
 
-#+HEADER: :results graphics output :session *R*
+
+Then I constructed the probability density functions based on the
+initial functions in a very naive way:
+
+#+HEADER: :results output :session *R* :exports code :eval no-export
+#+BEGIN_SRC R
+cube_pdf <- data.frame(x = x, y = subset(data, name == "Cubic Factors")$y, name = "Cubic Factors PDF")
+quad_pdf <- data.frame(x = x, y = subset(data, name == "Quadratic Factors")$y, name = "Quadratic Factors PDF")
+
+cube_pdf$y <- cube_pdf$y / sum(cube_pdf$y)
+quad_pdf$y <- quad_pdf$y / sum(quad_pdf$y)
+
+data <- bind_rows(data, cube_pdf, quad_pdf)
+#+END_SRC
+
+#+RESULTS:
+:
+: Warning messages:
+: 1: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+
+And the resulting probability density functions look like this:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
-ggplot(data, aes(x = x, y = y_quad)) +
-       geom_line()
+ggplot(subset(data, name == "Cubic Factors PDF" | name == "Quadratic Factors PDF"),
+       aes(x = x, y = y)) +
+       facet_wrap(. ~ name, ncol = 2, scale = "free_y") +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 33)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figureBBidQc.png]]
+[[file:/tmp/babel-gjs27r/figureodAhYJ.png]]
 
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-data$y_cube_pdf <- y_cube / sum(y_cube)
-data$y_quad_pdf <- y_quad / sum(y_quad)
-#+END_SRC
+With the PDFs we can obtain the cumulative distribution functions with something like this:
 
-#+RESULTS:
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data, aes(x = x, y = y_cube_pdf)) +
-       geom_line()
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-UVb49j/figure5K6OJK.png]]
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data, aes(x = x, y = y_quad_pdf)) +
-       geom_line()
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-UVb49j/figurecZNxkj.png]]
-
-#+HEADER: :results output :session *R*
+#+HEADER: :results output :session *R* :exports code :eval no-export
 #+BEGIN_SRC R
 y_cube_cdf <- c()
 
-for (i in 1:length(data$y_cube_pdf)) {
-    y_cube_cdf <- c(y_cube_cdf, sum(data$y_cube_pdf[1:i]))
-}
+pdf_data <- subset(data, name == "Cubic Factors PDF")$y
 
-data$y_cube_cdf <- y_cube_cdf
+for (i in 1:length(pdf_data)) {
+    y_cube_cdf <- c(y_cube_cdf, sum(pdf_data[1:i]))
+}
 
 y_quad_cdf <- c()
 
-for (i in 1:length(data$y_quad_pdf)) {
-    y_quad_cdf <- c(y_quad_cdf, sum(data$y_quad_pdf[1:i]))
+pdf_data <- subset(data, name == "Quadratic Factors PDF")$y
+
+for (i in 1:length(pdf_data)) {
+    y_quad_cdf <- c(y_quad_cdf, sum(pdf_data[1:i]))
 }
 
-data$y_quad_cdf <- y_quad_cdf
+data <- bind_rows(data,
+                  data.frame(x = x, y = y_cube_cdf, name = "Cubic Factors CDF"),
+                  data.frame(x = x, y = y_quad_cdf, name = "Quadratic Factors CDF"))
 #+END_SRC
 
 #+RESULTS:
+:
+: Warning messages:
+: 1: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
 
-#+HEADER: :results graphics output :session *R*
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
-ggplot(data, aes(y = y_cube_cdf, x = 1:length(y_cube_cdf))) +
-       geom_line()
+ggplot(subset(data, name == "Cubic Factors CDF" | name == "Quadratic Factors CDF"),
+       aes(x = x, y = y)) +
+       facet_wrap(. ~ name, ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 33)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figure7IHJ5y.png]]
+[[file:/tmp/babel-gjs27r/figurebTslrl.png]]
 
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-ggplot(data, aes(y = y_quad_cdf, x = 1:length(y_quad_cdf))) +
-       geom_line()
-#+END_SRC
+Using the CDFs we can now sample from the arbitrarily defined functions using
+=runif= and the following snippet. It works by drawing a sample from =runif= and
+finding the correspondent CDF value. The =x= value with such a value is the
+sample from the arbitrary distribution.
 
-#+RESULTS:
-[[file:/tmp/babel-UVb49j/figureXTcOw3.png]]
-
-#+HEADER: :results output :session *R*
+#+HEADER: :results output :session *R* :exports code :eval no-export
 #+BEGIN_SRC R
 samples <- 2000
 x_sampled <- c()
 
+cdf_data <- subset(data, name == "Cubic Factors CDF")
+
 for (i in 1:samples) {
-    new_sample <- data$x[length(data$y_cube_cdf[data$y_cube_cdf <= runif(1)])]
+    new_sample <- cdf_data$x[length(cdf_data$y[cdf_data$y <= runif(1)])]
     x_sampled <- c(x_sampled, new_sample)
 }
 
-cube_sampled_data <- data.frame(x_sampled = x_sampled)
+sampled_data <- data.frame(x = x_sampled, name = "Cubic Factors Sample")
 
 samples <- 2000
 x_sampled <- c()
 
+cdf_data <- subset(data, name == "Quadratic Factors CDF")
+
 for (i in 1:samples) {
-    new_sample <- data$x[length(data$y_quad_cdf[data$y_quad_cdf <= runif(1)])]
+    new_sample <- cdf_data$x[length(cdf_data$y[cdf_data$y <= runif(1)])]
     x_sampled <- c(x_sampled, new_sample)
 }
 
-quad_sampled_data <- data.frame(x_sampled = x_sampled)
+sampled_data <- bind_rows(sampled_data,
+                          data.frame(x = x_sampled, name = "Quadratic Factors Sample"))
 #+END_SRC
 
 #+RESULTS:
+:
+: Warning messages:
+: 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 3: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
 
-#+HEADER: :results graphics output :session *R*
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
-ggplot(cube_sampled_data, aes(x = x_sampled, y = ..count..)) +
-       geom_histogram(bins = 120)
+ggplot(sampled_data,
+       aes(x = x, y = ..count..)) +
+       facet_wrap(. ~ name, ncol = 2, scale = "free_y") +
+       geom_histogram(bins = 200) +
+       theme_bw(base_size = 33)
+#+END_SRC
+
+Looking at the samples we can see they match the initial arbitrary functions.
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureuomEvv.png]]
+
+At this moment, we are simply picking the value of =x= that matches a given sum
+of CDF. Since we are using a discrete =x=, not all values of =x= are possible to
+sample, only those in the discrete scale we chose. To get back the entire
+interval, we could sample uniformly in a given CDF interval, because we are not
+interested in the exact shape of the PDF, but we want to guarantee samples in
+certain regions.
+
+Now we can group the cubic and quadratic CDF construction processes in functions:
+
+#+HEADER: :results output :session *R* :exports code :eval no-export
+#+BEGIN_SRC R
+library(dplyr)
+
+cubic_factor_cdf <- function(interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y_cube <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) +
+                                 (dnorm(x, 0.65, 0.04) / 10), x)
+
+    data <- data.frame(x = x, y = y_cube, name = "Cubic Factors")
+    cube_pdf <- data.frame(x = x, y = data$y, name = "Cubic Factors PDF")
+
+    cube_pdf$y <- cube_pdf$y / sum(cube_pdf$y)
+    data <- bind_rows(data, cube_pdf)
+
+    y_cube_cdf <- c()
+
+    pdf_data <- subset(data, name == "Cubic Factors PDF")$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cube_cdf <- c(y_cube_cdf, sum(pdf_data[1:i]))
+    }
+
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cube_cdf, name = "Cubic Factors CDF"))
+    return(data)
+}
+
+quadratic_factor_cdf <- function(interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y_quad <- mapply(function(x) (64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10), x)
+
+    data <- data.frame(x = x, y = y_quad, name = "Quadratic Factors")
+    quad_pdf <- data.frame(x = x, y = data$y, name = "Quadratic Factors PDF")
+
+    quad_pdf$y <- quad_pdf$y / sum(quad_pdf$y)
+    data <- bind_rows(data, quad_pdf)
+
+    y_quad_cdf <- c()
+    pdf_data <- subset(data, name == "Quadratic Factors PDF")$y
+
+    for (i in 1:length(pdf_data)) {
+        y_quad_cdf <- c(y_quad_cdf, sum(pdf_data[1:i]))
+    }
+
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_quad_cdf, name = "Quadratic Factors CDF"))
+    return(data)
+}
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figureoMeLuk.png]]
 
-#+HEADER: :results graphics output :session *R*
+We can also write a sampling function based on a pre-computed CDF:
+
+#+HEADER: :results output :session *R* :export code :eval no-export
+#+BEGIN_SRC R
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+#+END_SRC
+
+#+RESULTS:
+
+Now, let's use these functions to generate a sample for 2 numerical factors
+using regions corresponding to quadratic and cubic factors. To be certain our
+functions produce the desired result, let's look at the CDFs and PDFs we get.
+
+#+HEADER: :results output :session *R* :export code :eval no-export
+#+BEGIN_SRC R
+cube_data <- cubic_factor_cdf()
+quad_data <- quadratic_factor_cdf()
+
+cube_cdf <- subset(cube_cdf, name == "Cubic Factors CDF")
+quad_cdf <- subset(quad_cdf, name == "Quadratic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
-ggplot(quad_sampled_data, aes(x = x_sampled, y = ..count..)) +
-       geom_histogram(bins = 120)
+data <- bind_rows(cube_data, quad_data)
+ggplot(subset(data, name == "Cubic Factors CDF" | name == "Quadratic Factors CDF"),
+       aes(x = x, y = y)) +
+       facet_wrap(. ~ name, ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 33)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-UVb49j/figurei75E0V.png]]
+[[file:/tmp/babel-gjs27r/figureFANVyj.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+data <- bind_rows(cube_data, quad_data)
+ggplot(subset(data, name == "Cubic Factors PDF" | name == "Quadratic Factors PDF"),
+       aes(x = x, y = y)) +
+       facet_wrap(. ~ name, ncol = 2, scale = "free_y") +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 33)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureLpwbtl.png]]
+
+Now, let's obtain $1000$ samples for quadratic, cubic and mixed
+combinations of 2 numerical factors:
+
+#+HEADER: :results output :session *R* :export code :eval no-export
+#+BEGIN_SRC R
+biased_sample <- data.frame(x1 = sample_factor(quad_cdf, 1000),
+                            x2 = sample_factor(quad_cdf, 1000),
+                            name = "Quadratic Factors Sample")
+
+biased_sample <- bind_rows(biased_sample,
+                           data.frame(x1 = sample_factor(cube_cdf, 1000),
+                                      x2 = sample_factor(cube_cdf, 1000),
+                                      name = "Cubic Factors Sample"))
+
+biased_sample <- bind_rows(biased_sample,
+                           data.frame(x1 = sample_factor(cube_cdf, 1000),
+                                      x2 = sample_factor(quad_cdf, 1000),
+                                      name = "Mixed Factors Sample"))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning message:
+In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+We can also check the sampled distributions, verifying our results are still the
+same:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+ggplot(subset(biased_sample, name != "Mixed Factors Sample"),
+       aes(x = x1, y = ..count..)) +
+       facet_wrap(. ~ name, ncol = 2, scale = "free_y") +
+       geom_histogram(bins = 200) +
+       theme_bw(base_size = 33)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureTJlJPE.png]]
+
+Now, we check the experiment samples we've got, that is, the combined values of
+=x1= and =x2= in our 3 scenarios:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 1280
+#+BEGIN_SRC R
+ggplot(biased_sample,
+       aes(x = x1, y = x2)) +
+       facet_wrap(. ~ name, ncol = 2) +
+       geom_point(alpha = 0.5) +
+       theme_bw(base_size = 33)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figurenlfKvq.png]]
+
+We see that sampling in this way seems to produce interesting results in an
+acceptable time. Since we are sampling from pre-defined distributions, we do not
+spend too much time rejecting invalid samples, and we can expect samples to be
+in the regions we desire. Provided we can generate PDFs and CDFs, this method
+enables sampling around invalid and undefined regions for single parameters. At
+the moment I do not know whether this would work with constraints. Perhaps the
+CDFs would have to be computed dinamically as we restrict the search space.
+
+The next step I intend to take is to remake the tests with Federov's algorithm
+I've done before.
