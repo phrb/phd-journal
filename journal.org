@@ -13931,3 +13931,407 @@ CDFs would have to be computed dinamically as we restrict the search space.
 
 The next step I intend to take is to remake the tests with Federov's algorithm
 I've done before.
+**** Experiments with Sampling and =optFederov=
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+***** Generate Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+
+samples <- 5000
+factors <- 5
+
+extra_experiments <- 1
+
+uniform_sample <- data.frame(replicate(factors, runif(samples)))
+names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+runs <- 30
+
+model_formula <- formula(paste("~ ", paste(names(uniform_sample), collapse = "+")))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    output <- optFederov(model_formula, uniform_sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(lin_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    output <- optFederov(model_formula, biased_sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+#model_formula <- formula(paste("~ ",
+#                               paste("I(",
+#                                     names(uniform_sample),
+#                                     collapse = "^2)+ ",
+#                                     sep = ""),
+#                               " ^2)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 2) + extra_experiments)
+    design <- output$design
+    design$model <- "quadratic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+#model_formula <- formula(paste("~ ",
+#                               paste("I(",
+#                                     names(uniform_sample),
+#                                     collapse = "^3)+",
+#                                     sep = ""),
+#                               "^3)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 3) + extra_experiments)
+    design <- output$design
+    design$model <- "cubic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+#model_formula <- formula(paste("~ ",
+#                               paste("I(",
+#                                     names(uniform_sample),
+#                                     collapse = "^2)+ ",
+#                                     sep = ""),
+#                               " ^2)"))
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(quad_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (2 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "quadratic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(names(uniform_sample),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     names(uniform_sample),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+#model_formula <- formula(paste("~ ",
+#                               paste("I(",
+#                                     names(uniform_sample),
+#                                     collapse = "^3)+",
+#                                     sep = ""),
+#                               "^3)"))
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(cube_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (3 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "cubic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+****** Sample Sanity Test
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+
+#for (i in 1:1) {
+#    sample <- NULL
+#    current_size <- 0
+#
+#    while (current_size < samples) {
+#        new_sample <- data.frame(replicate(factors, runif(samples)))
+#        names(new_sample) <- paste("X", 1:factors, sep = "")
+#
+#        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.25 & . <= 0.35) | (. >= 0.65 & . <= 0.75)))
+#
+#        if (is.null(sample)) {
+#            sample <- new_sample
+#        } else {
+#            sample <- bind_rows(sample, new_sample)
+#        }
+#
+#        current_size <- nrow(sample)
+#    }
+#
+#    sample <- sample[1:samples, ]
+#}
+
+ggplot(biased_sample) + geom_point(aes(x = X1, y = X2))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureLrxkZz.png]]
+***** Plots
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+: Error in file(file, "rt") : cannot open the connection
+: In addition: Warning message:
+: In file(file, "rt") :
+:   cannot open file 'dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv': No such file or directory
+
+The Figure below shows the distribution of parameter values selected by 100
+repetitions of =optFederov= for a model with a single linear term, corresponding
+to a single numerical factor, using 3 different starting samples of size 1000.
+The =linear_biased_region= sample was taken uniformly in a region around the
+"extremes" of factor levels, the =linear_extremes= sample contains only the
+"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
+interval.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = X1, y = ..count..)) +
+    facet_wrap(model ~ ., ncol = 2, scale = "free_y") +
+    #facet_wrap(model ~ ., ncol = 2) +
+    geom_histogram(bins = 120) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureCSS2Uc.png]]
+
+The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
+samples, over the 100 repetitions.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+plot_data <- data[!duplicated(data[, c("id", "model")]), ]
+ggplot(plot_data, aes(x = model, y = deff)) +
+       geom_jitter(alpha = 0.5, height = 0.0) +
+       coord_flip() +
+       #geom_point(alpha = 0.5) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureglGWLY.png]]
+
+***** Save Latest Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/federov_results_1200_samples_4_factors_runif_fixed.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
