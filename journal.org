@@ -16362,3 +16362,883 @@ det((t(m) %*% m) / 30)
 :           Make sure to take the alias structure into account for interpretation!
 :
 : [1] 0.3720999
+*** [2018-12-06 Thu]
+**** DoE Example for Adrien
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+
+data <- expand.grid(seq(0, 100, 10), seq(0, 100, 10))
+
+design <- optFederov(~ ., data, nTrials = 4)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+design$design
+#+END_SRC
+
+#+RESULTS:
+:     Var1 Var2
+: 1      0    0
+: 11   100    0
+: 111    0  100
+: 121  100  100
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+
+y <- function(x1, x2) {
+    return(x1 + x2)
+}
+
+
+design$design <- design$design %>% mutate(y_var = y(Var1, Var2))
+design$design
+#+END_SRC
+
+#+RESULTS:
+:
+:   Var1 Var2 y_var
+: 1    0    0     0
+: 2  100    0   100
+: 3    0  100   100
+: 4  100  100   200
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+summary.aov(aov(y_var ~ ., design$design))
+#+END_SRC
+
+#+RESULTS:
+:             Df Sum Sq Mean Sq   F value Pr(>F)
+: Var1         1  10000   10000 1.238e+31 <2e-16 ***
+: Var2         1  10000   10000 1.238e+31 <2e-16 ***
+: Residuals    1      0       0
+: ---
+: codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+**** D-Efficiencies for a Linear Model with Numerical Factors
+First, we look at Plackett-Burman designs to be sure
+our determinant computations are correct:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(FrF2)
+library(dplyr)
+
+convert_pb_dataframe <- function(design) {
+    design <- design %>% as.matrix() %>%
+                         as.data.frame() %>%
+                         mutate_all(as.character) %>%
+                         mutate_all(as.numeric)
+    return(design)
+}
+
+compute_D <- function(formula, data) {
+    model_matrix <- as.matrix(as.data.frame(model.matrix(formula, data)))
+    return(det((t(model_matrix) %*% model_matrix) / nrow(data)) ^ (1 / ncol(model_matrix)))
+}
+
+samples <- 8
+factors <- samples - 1
+
+plackett_burman <- convert_pb_dataframe(pb(samples))
+names(plackett_burman) <- paste("X", 1:factors, sep = "")
+
+formula <- formula(paste("~ ", paste("X", 1:factors, sep = "", collapse = " + ")))
+
+plackett_burman$D <- compute_D(formula, plackett_burman)
+plackett_burman$ad_D <- eval.design(formula, plackett_burman)$determinant
+
+plackett_burman
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning message:
+In pb(samples) :
+  Plackett-Burman designs in 8 runs coincide with regular fractional factorials.
+          For screening more than four factors, you may want to consider increasing the number of runs to 12.
+          Make sure to take the alias structure into account for interpretation!
+
+  X1 X2 X3 X4 X5 X6 X7 D ad_D
+1  1 -1 -1  1  1  1 -1 1    1
+2 -1  1  1  1 -1  1 -1 1    1
+3  1 -1  1 -1 -1  1  1 1    1
+4 -1  1 -1 -1  1  1  1 1    1
+5 -1 -1 -1 -1 -1 -1 -1 1    1
+6  1  1 -1  1 -1 -1  1 1    1
+7 -1 -1  1  1  1 -1  1 1    1
+8  1  1  1 -1  1 -1 -1 1    1
+#+end_example
+
+Now we can see what happens in other circumstances, for example when
+we change one or more lines from a PB design:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+plackett_burman <- convert_pb_dataframe(pb(samples))
+names(plackett_burman) <- paste("X", 1:factors, sep = "")
+
+formula <- formula(paste("~ ", paste("X", 1:factors, sep = "", collapse = " + ")))
+
+str(plackett_burman)
+
+compute_D(formula, plackett_burman)
+eval.design(formula, plackett_burman)$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Warning message:
+In pb(samples) :
+  Plackett-Burman designs in 8 runs coincide with regular fractional factorials.
+          For screening more than four factors, you may want to consider increasing the number of runs to 12.
+          Make sure to take the alias structure into account for interpretation!
+
+'data.frame':	8 obs. of  7 variables:
+ $ X1: num  1 1 -1 -1 -1 1 1 -1
+ $ X2: num  1 -1 1 -1 -1 1 -1 1
+ $ X3: num  1 -1 1 1 -1 -1 1 -1
+ $ X4: num  -1 1 1 1 -1 1 -1 -1
+ $ X5: num  1 1 -1 1 -1 -1 -1 1
+ $ X6: num  -1 1 1 -1 -1 -1 1 1
+ $ X7: num  -1 -1 -1 1 -1 1 1 1
+
+[1] 1
+
+[1] 1
+#+end_example
+
+We see that a single swapped line changes drastically the D value for the
+design, and in most cases causes =eval.design= to crash because the resulting
+information matrix is singular.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+new_line <- sample(c(-1, 1), factors, replace = TRUE)
+new_line
+
+plackett_burman
+plackett_burman[sample(1:nrow(plackett_burman), 1), ] <- new_line
+plackett_burman
+
+compute_D(formula, plackett_burman)
+eval.design(formula, plackett_burman)$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] -1  1  1 -1 -1  1  1
+
+  X1 X2 X3 X4 X5 X6 X7
+1  1  1  1 -1  1 -1 -1
+2  1 -1 -1  1  1  1 -1
+3 -1  1  1  1 -1  1 -1
+4 -1 -1  1  1  1 -1  1
+5 -1 -1 -1 -1 -1 -1 -1
+6  1  1 -1  1 -1 -1  1
+7  1 -1  1 -1 -1  1  1
+8 -1  1 -1 -1  1  1  1
+
+  X1 X2 X3 X4 X5 X6 X7
+1  1  1  1 -1  1 -1 -1
+2  1 -1 -1  1  1  1 -1
+3 -1  1  1  1 -1  1 -1
+4 -1 -1  1  1  1 -1  1
+5 -1  1  1 -1 -1  1  1
+6  1  1 -1  1 -1 -1  1
+7  1 -1  1 -1 -1  1  1
+8 -1  1 -1 -1  1  1  1
+
+[1] 0.01013156
+
+Error in solve.default(M) :
+  system is computationally singular: reciprocal condition number = 2.77556e-17
+#+end_example
+
+If we generate new designs at random, we can also see how the determinant
+is affected:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+samples <- 10
+factors <- 7
+
+design <- data.frame(replicate(factors, sample(c(-1, 1),
+                                               samples,
+                                               replace = TRUE)))
+
+design
+compute_D(formula, design)
+eval.design(formula, design)$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+   X1 X2 X3 X4 X5 X6 X7
+1  -1  1  1  1  1 -1 -1
+2  -1 -1 -1 -1 -1  1  1
+3   1  1  1  1  1 -1 -1
+4  -1  1 -1  1  1  1 -1
+5  -1  1  1  1  1  1  1
+6  -1  1 -1  1  1 -1  1
+7   1 -1  1  1 -1 -1  1
+8   1 -1  1 -1 -1 -1  1
+9   1 -1  1  1 -1 -1  1
+10  1 -1 -1 -1  1  1  1
+
+[1] 0.5187358
+
+[1] 0.5187358
+#+end_example
+
+We now change to smaller number of factors, to explore orthogonality
+and other properties. Let's start with 2 numerical factors. We will
+need to encode those factors using the =rsm= package, so that we
+can move the actual parameter intervals, in this case $[0, 1]$,
+to the intervals accepted by =eval.design= and =model.matrix=,
+which is $[-1, 1]$.
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+samples <- 3
+factors <- 2
+
+design_codings <- list()
+
+for (i in 1:factors) {
+    design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                               paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                               sep = ""))
+}
+
+design_codings
+
+design <- coded.data(data.frame(replicate(factors, runif(samples))),
+                     formulas = design_codings)
+
+formula <- formula(paste("~ ", paste(names(design), sep = "", collapse = " + ")))
+
+design
+compute_D(formula, design)
+eval.design(formula, design)$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+$x1
+x1 ~ (X1 - 0.5)/0.5
+
+$x2
+x2 ~ (X2 - 0.5)/0.5
+
+         X1        X2
+1 0.2374402 0.6536702
+2 0.9714750 0.3974246
+3 0.5504981 0.7434418
+
+Data are stored in coded form using these coding formulas ...
+x1 ~ (X1 - 0.5)/0.5
+x2 ~ (X2 - 0.5)/0.5
+
+[1] 0.2330141
+
+[1] 0.2330141
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(decode.data(design), aes(x = X1, y = X2)) +
+       xlim(c(0, 1)) +
+       ylim(c(0, 1)) +
+       geom_point(size = 3) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureNjwhrC.png]]
+
+We see that determinant values vary by a lot when we use numerical factors. Now
+let's try to choose good experiments by hand:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(rsm)
+
+design <- data.frame(X1 = c(1.0, 0.0, 1.0, 0.0),
+                     X2 = c(1.0, 1.0, 0.0, 0.0))
+
+design
+
+design_codings <- list()
+
+for (i in 1:ncol(design)) {
+    design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                               paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                               sep = ""))
+}
+
+design_codings
+
+design <- coded.data(design, formulas = design_codings)
+
+formula <- formula(paste("~ ", paste(names(design), sep = "", collapse = " + ")))
+
+compute_D(formula, design)
+eval.design(formula, design)$determinant
+
+decoded_formula <- formula(paste("~ ", paste(names(decode.data(design)), sep = "", collapse = " + ")))
+
+compute_D(decoded_formula, decode.data(design))
+eval.design(decoded_formula, decode.data(design))$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+  X1 X2
+1  1  1
+2  0  1
+3  1  0
+4  0  0
+
+$x1
+x1 ~ (X1 - 0.5)/0.5
+
+$x2
+x2 ~ (X2 - 0.5)/0.5
+
+[1] 1
+
+[1] 1
+
+[1] 0.3968503
+
+[1] 0.3968503
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(decode.data(design), aes(x = X1, y = X2)) +
+       xlim(c(0, 1)) +
+       ylim(c(0, 1)) +
+       geom_point(size = 3) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureYujgnN.png]]
+**** Experiments with Sampling and =optFederov=, Using the Right Encoding
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Load Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1000_samples_1_factor.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+***** Generate Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+
+
+design <- data.frame(X1 = c(1.0, 0.0, 1.0, 0.0),
+                     X2 = c(1.0, 1.0, 0.0, 0.0))
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- NULL
+
+samples <- 300
+factors <- 16
+
+extra_experiments <- 1
+
+uniform_sample <- data.frame(replicate(factors, runif(samples)))
+names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+runs <- 10
+
+model_formula <- formula(paste("~ ",
+                               paste("x", 1:factors, sep = "", collapse = " + "),
+                               sep = ""))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, uniform_sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples / 10)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    normal_sample <- data.frame(replicate(factors, rnorm((9 * samples) / 10, mean = 0.5, sd = 0.02)))
+    names(normal_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- bind_rows(uniform_sample, normal_sample)
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, uniform_sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_normal"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(lin_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    biased_sample <- get_runif_coded_design(biased_sample)
+
+    output <- optFederov(model_formula, biased_sample, nTrials = factors + extra_experiments)
+    design <- output$design
+
+    design$model <- "linear_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(paste("x", 1:factors, sep = ""),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 2) + extra_experiments)
+    design <- output$design
+    design$model <- "quadratic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(paste("x", 1:factors, sep = ""),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, uniform_sample, nTrials = (factors * 3) + extra_experiments)
+    design <- output$design
+    design$model <- "cubic_unif"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+    data <- bind_rows(data, design)
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(paste("x", 1:factors, sep = ""),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^2)+ ",
+                                     sep = ""),
+                               " ^2)"))
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(quad_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    biased_sample <- get_runif_coded_design(biased_sample)
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (2 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "quadratic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples / 10)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    normal_sample <- data.frame(replicate(factors, rnorm((9 * samples) / 10, mean = 0.5, sd = 0.02)))
+    names(normal_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- bind_rows(uniform_sample, normal_sample)
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (2 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "quadratic_normal"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+model_formula <- formula(paste("~ ",
+                               paste(paste(paste("x", 1:factors, sep = ""),
+                                           collapse = "+"),
+                                     "+"),
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^2)+",
+                                     sep = ""),
+                               "^2)+",
+                               paste("I(",
+                                     paste("x", 1:factors, sep = ""),
+                                     collapse = "^3)+",
+                                     sep = ""),
+                               "^3)"))
+
+for (i in 1:runs) {
+    biased_sample <- data.frame(replicate(factors, sample_factor(cube_cdf, samples)))
+    names(biased_sample) <- paste("X", 1:factors, sep = "")
+
+    biased_sample <- get_runif_coded_design(biased_sample)
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (3 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "cubic_biased"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+
+for (i in 1:runs) {
+    uniform_sample <- data.frame(replicate(factors, runif(samples / 10)))
+    names(uniform_sample) <- paste("X", 1:factors, sep = "")
+
+    normal_sample <- data.frame(replicate(factors, rnorm((9 * samples) / 10, mean = 0.5, sd = 0.02)))
+    names(normal_sample) <- paste("X", 1:factors, sep = "")
+
+    uniform_sample <- bind_rows(uniform_sample, normal_sample)
+
+    uniform_sample <- get_runif_coded_design(uniform_sample)
+
+    output <- optFederov(model_formula, biased_sample, nTrials = (3 * factors) + extra_experiments)
+    design <- output$design
+
+    design$model <- "cubic_normal"
+    design$id <- i
+    design$deff <- output$Dea
+    design$d<- output$D
+
+    if (is.null(data)) {
+        data <- design
+    } else {
+        data <- bind_rows(data, design)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+****** Sample Sanity Test
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+
+#for (i in 1:1) {
+#    sample <- NULL
+#    current_size <- 0
+#
+#    while (current_size < samples) {
+#        new_sample <- data.frame(replicate(factors, runif(samples)))
+#        names(new_sample) <- paste("X", 1:factors, sep = "")
+#
+#        new_sample <- filter_all(new_sample, all_vars(. <= 0.1 | . >= 0.9 | (. >= 0.25 & . <= 0.35) | (. >= 0.65 & . <= 0.75)))
+#
+#        if (is.null(sample)) {
+#            sample <- new_sample
+#        } else {
+#            sample <- bind_rows(sample, new_sample)
+#        }
+#
+#        current_size <- nrow(sample)
+#    }
+#
+#    sample <- sample[1:samples, ]
+#}
+
+ggplot(decode.data(uniform_sample)) + geom_point(aes(x = X1, y = X2))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figurehkxiBZ.png]]
+***** Plots
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv", header = TRUE, sep = ",")
+#+END_SRC
+
+#+RESULTS:
+: Error in file(file, "rt") : cannot open the connection
+: In addition: Warning message:
+: In file(file, "rt") :
+:   cannot open file 'dopt_sampling_tests/federov_results_biased_1200_samples_15_factors_rnorm.csv': No such file or directory
+
+The Figure below shows the distribution of parameter values selected by 100
+repetitions of =optFederov= for a model with a single linear term, corresponding
+to a single numerical factor, using 3 different starting samples of size 1000.
+The =linear_biased_region= sample was taken uniformly in a region around the
+"extremes" of factor levels, the =linear_extremes= sample contains only the
+"extreme" factor levels, and the =linear_unif= sample was taken uniformly in the
+interval.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = x1, y = ..count.., fill = id)) +
+    facet_wrap(model ~ ., ncol = 3, scale = "free_y") +
+    #facet_wrap(model ~ ., ncol = 2) +
+    geom_histogram(bins = 120) +
+    theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figurejfNvNX.png]]
+
+The next Figure shows the /D-Efficiency/ values obtained for the 3 starting
+samples, over the 100 repetitions.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+plot_data <- data[!duplicated(data[, c("id", "model")]), ]
+ggplot(plot_data, aes(x = 1, y = d)) +
+       facet_wrap(model ~ ., ncol = 3) +
+       ylim(c(0,1)) +
+       scale_x_discrete(name = "Jittered Experiments") +
+       geom_jitter(alpha = 0.5, height = 0.0) +
+       #coord_flip() +
+       #geom_point(alpha = 0.5) +
+       theme_bw(base_size = 18) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureIq1aIw.png]]
+
+***** Save Latest Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/federov_results_1000_samples_16_factors_normal.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
