@@ -16745,6 +16745,167 @@ ggplot(decode.data(design), aes(x = X1, y = X2)) +
 
 #+RESULTS:
 [[file:/tmp/babel-gjs27r/figureYujgnN.png]]
+
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+:
+: Warning messages:
+: 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+: 2: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 3: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+: 4: In bind_rows_(x, .id) :
+:   binding character and factor vector, coercing into character vector
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 2
+samples <- 4
+
+data <- NULL
+
+runs <- 1000
+
+for (i in 1:runs) {
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+    formula <- formula(paste("~ ", paste(names(design), sep = "", collapse = " + ")))
+
+    decoded_formula <- formula(paste("~ ", paste(names(decode.data(design)), sep = "", collapse = " + ")))
+
+    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 sample_factor(lin_cdf,
+                                                                               samples))))
+
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, biased_design)$determinant,
+                                       eval.design(decoded_formula, decode.data(design))$determinant),
+                                       eval.design(decoded_formula, decode.data(biased_design))$determinant),
+                                 names = c("runif", "biased", "runif_decoded", "biased_decoded"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       geom_jitter(height = 0, alpha = 0.5) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureyjrInz.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(decode.data(design), aes(x = X1, y = X2)) +
+       xlim(c(0, 1)) +
+       ylim(c(0, 1)) +
+       geom_polygon(alpha = 0.3) +
+       geom_point(size = 3) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figurevnw3A4.png]]
+
 **** Experiments with Sampling and =optFederov=, Using the Right Encoding
 ***** Clone Repository
 Make sure you have the latest data:
@@ -16804,11 +16965,6 @@ sample_factor <- function(cdf_data, samples) {
 
     return(x_sampled)
 }
-
-
-
-design <- data.frame(X1 = c(1.0, 0.0, 1.0, 0.0),
-                     X2 = c(1.0, 1.0, 0.0, 0.0))
 
 get_runif_design_codings <- function(design) {
     design_codings <- list()
