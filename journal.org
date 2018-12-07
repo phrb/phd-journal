@@ -10,7 +10,7 @@
 #+TAGS: DataVis(v) PaperReview(W)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:nil LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
@@ -16420,7 +16420,7 @@ summary.aov(aov(y_var ~ ., design$design))
 : Residuals    1      0       0
 : ---
 : codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-**** D-Efficiencies for a Linear Model with Numerical Factors
+**** /D Criterion/ for a Linear Model with Numerical Factors
 We want to better understand the designs generated for set of numerical factors,
 and assuming a linear model. I will first establish that Plackett-Burman designs
 and orthogonal designs have a value of $1.0$ for the /D criterion/. I decided to
@@ -16778,6 +16778,11 @@ custom CDF I created, which looks like this:
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
+options(warn = 0)
+#+END_SRC
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
 library(AlgDesign)
 library(dplyr)
 library(rsm)
@@ -16979,7 +16984,7 @@ for (i in 1:runs) {
 
 #+RESULTS:
 
-#+HEADER: :results graphics output :session *R*
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
@@ -17023,7 +17028,7 @@ for (i in 1:runs) {
     best_sampled_D <- -1
     best_biased_design <- NULL
 
-    for (i in 1:250) {
+    for (j in 1:250) {
         biased_design <- get_runif_coded_design(data.frame(replicate(factors,
                                                                     sample_factor(lin_cdf,
                                                                                   samples))))
@@ -17052,19 +17057,131 @@ for (i in 1:runs) {
 #+RESULTS:
 #+begin_example
 
-[1] 1
-[1] 2
-[1] 3
-[1] 4
-[1] 5
-[1] 6
-[1] 7
-[1] 8
-[1] 9
 [1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+[1] 110
+[1] 120
+[1] 130
+[1] 140
+[1] 150
+[1] 160
+[1] 170
+[1] 180
+[1] 190
+[1] 200
+[1] 210
+[1] 220
+[1] 230
+[1] 240
+[1] 250
+[1] 260
+[1] 270
+[1] 280
+[1] 290
+[1] 300
+[1] 310
+[1] 320
+[1] 330
+[1] 340
+[1] 350
+[1] 360
+[1] 370
+[1] 380
+[1] 390
+[1] 400
+[1] 410
+[1] 420
+[1] 430
+[1] 440
+[1] 450
+[1] 460
+[1] 470
+[1] 480
+[1] 490
+[1] 500
+[1] 510
+[1] 520
+[1] 530
+[1] 540
+[1] 550
+[1] 560
+[1] 570
+[1] 580
+[1] 590
+[1] 600
+[1] 610
+[1] 620
+[1] 630
+[1] 640
+[1] 650
+[1] 660
+[1] 670
+[1] 680
+[1] 690
+[1] 700
+[1] 710
+[1] 720
+[1] 730
+[1] 740
+[1] 750
+[1] 760
+[1] 770
+[1] 780
+[1] 790
+[1] 800
+[1] 810
+[1] 820
+[1] 830
+[1] 840
+[1] 850
+[1] 860
+[1] 870
+[1] 880
+[1] 890
+[1] 900
+[1] 910
+[1] 920
+[1] 930
+[1] 940
+[1] 950
+[1] 960
+[1] 970
+[1] 980
+[1] 990
+[1] 1000
 #+end_example
 
-#+HEADER: :results graphics output :session *R*
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+write.csv(comparison_data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_1000_repetitions.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Motivated by that, I ran 1000 repetitions of an experiment where I sampled 250
+designs with 4 experiments, resulting in 1000 samples per iteration, from the
+biased CDF and picked the design with the best D criterion. I compared this with
+the case where I ran =optFederov= for 1000 times on an initial candidate set of
+size 1000.
+
+The Figure below shows the comparison of the two methods, and shows that
+picking the best design sampled from the biased distribution seems close to
+the results of =optFederov= for this size of design and amount of parameters.
+
+What I intend to do next is to look at this behaviour for higher numbers of
+parameters and more experiments. I will also start to apply this encoding method
+to numerical parameters in the case where we use quadratic and cubic models.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
@@ -17081,7 +17198,7 @@ ggplot(comparison_data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gjs27r/figurem0grsA.png]]
+[[file:/tmp/babel-gjs27r/figuregzRgZO.png]]
 
 **** Experiments with Sampling and =optFederov=, Using the Right Encoding
 ***** Clone Repository
