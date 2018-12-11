@@ -17963,9 +17963,29 @@ runs <- 1000
 
 for (i in 1:runs) {
     design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
-    formula <- formula(paste("~ ", paste(names(design), sep = "", collapse = " + ")))
+    formula <- formula(paste("~ ",
+                            paste(names(design),
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  names(design),
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
 
-    decoded_formula <- formula(paste("~ ", paste(names(decode.data(design)), sep = "", collapse = " + ")))
+    decoded_formula <- formula(paste("~ ",
+                                    paste(names(decode.data(design)),
+                                          sep = "",
+                                          collapse = " + "),
+                                    " + ",
+                                    paste("I(",
+                                          names(decode.data(design)),
+                                          "^2)",
+                                          sep = "",
+                                          collapse = " + "),
+                                    sep = ""))
 
     biased_design <- get_runif_coded_design(data.frame(replicate(factors,
                                                                  sample_factor(lin_cdf,
@@ -18011,7 +18031,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gjs27r/figurem3bgc0.png]]
+[[file:/tmp/babel-gjs27r/figuren1AGo0.png]]
 
 We see that the biased CDF avoids a region of intermediary values of D, but
 still samples from a bad region, although it looks like there are more samples
@@ -18037,7 +18057,7 @@ factors <- 2
 samples <- (2 * factors) + 2
 federov_samples <- 1000
 
-runs <- 670
+runs <- 300
 
 for (i in 1:runs) {
     federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
@@ -18081,7 +18101,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-gjs27r/figurey8lCZU.png]]
+[[file:/tmp/babel-gjs27r/figure2lbEiZ.png]]
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -18198,3 +18218,579 @@ ggplot(comparison_data, aes(x = 1, y = D)) +
 
 #+RESULTS:
 [[file:/tmp/babel-gjs27r/figurekupliy.png]]
+*** [2018-12-11 Tue]
+**** /D Criterion/ for a Linear Model with Numerical Factors, using other CDFs
+The past experiments showed that we get designs with similar D if we
+sample from one of the 3 biased Cumulative Distribution Functions. To
+better understand the impact of CDFs on the final result, I wanted to
+compare the results of the other CDFs with =optFederov=.
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+The CDFs I selected look like this:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+plot_data <- bind_rows(lin_cdf, quad_cdf, cube_cdf)
+
+ggplot(plot_data, aes(x = x, y = y)) +
+       facet_wrap(name ~ ., ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figurepL1Y5z.png]]
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- factors + 5
+
+data <- NULL
+
+runs <- 1000
+
+for (i in 1:runs) {
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+    formula <- formula(paste("~ ", paste(names(design), sep = "", collapse = " + ")))
+
+    lin_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                     sample_factor(lin_cdf,
+                                                                                   samples))))
+
+    quad_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                      sample_factor(quad_cdf,
+                                                                                    samples))))
+
+    cube_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                      sample_factor(cube_cdf,
+                                                                                    samples))))
+
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, lin_biased_design)$determinant,
+                                       eval.design(formula, quad_biased_design)$determinant,
+                                       eval.design(formula, cube_biased_design)$determinant),
+                                 names = c("runif", "lin_biased", "quad_biased", "cube_biased"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+
+The next figure shows 4 experiments that generated 1000 samples of designs of
+size 35, for 30 numerical factors. The /biased/ experiments use my CDFs and the
+/runif/ experiment uses =runif=. We see that the ``linear'' CDF performed best
+among the CDFs.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureAUIqsy.png]]
+
+We see that the CDF for the ``linear'' case obtained small values of D,
+close to 0.5. Those values are higher than the ones found by other CDFs
+and by =runif=.
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- factors + 5
+federov_samples <- 1000
+
+runs <- 1000
+
+for (i in 1:runs) {
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant),
+                                 names = c("federov"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.3) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figureX1ddaQ.png]]
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- factors + 5
+
+desired_samples <- 1000
+federov_multiplier <- ceiling(desired_samples / samples)
+federov_samples <- samples * federov_multiplier
+
+comparison_data <- NULL
+
+runs <- 1000
+
+for (i in 1:runs) {
+    if (i %% 5 == 0) {
+        print(i)
+    }
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    formula <- formula(paste("~ ", paste(names(federov_sample),
+                                         sep = "",
+                                         collapse = " + ")))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    best_sampled_D <- -1
+    best_biased_design <- NULL
+
+    for (j in 1:federov_multiplier) {
+        biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                     sample_factor(lin_cdf,
+                                                                                   samples))))
+
+        sampled_D <- eval.design(formula, biased_design)$determinant
+
+        if (sampled_D > best_sampled_D) {
+            best_sampled_D <- sampled_D
+            best_biased_design <- biased_design
+        }
+    }
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
+                                       best_sampled_D),
+                                 names = c("federov", "biased"),
+                                 id = i)
+
+    if (is.null(comparison_data)) {
+        comparison_data <- new_experiment
+    } else {
+        comparison_data <- bind_rows(comparison_data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] 5
+[1] 10
+[1] 15
+[1] 20
+[1] 25
+[1] 30
+[1] 35
+[1] 40
+[1] 45
+[1] 50
+[1] 55
+[1] 60
+[1] 65
+[1] 70
+[1] 75
+[1] 80
+[1] 85
+[1] 90
+[1] 95
+[1] 100
+[1] 105
+[1] 110
+[1] 115
+[1] 120
+[1] 125
+[1] 130
+[1] 135
+[1] 140
+[1] 145
+[1] 150
+[1] 155
+[1] 160
+[1] 165
+[1] 170
+[1] 175
+[1] 180
+[1] 185
+[1] 190
+[1] 195
+[1] 200
+[1] 205
+[1] 210
+[1] 215
+[1] 220
+[1] 225
+[1] 230
+[1] 235
+[1] 240
+[1] 245
+[1] 250
+[1] 255
+[1] 260
+[1] 265
+[1] 270
+[1] 275
+[1] 280
+[1] 285
+[1] 290
+[1] 295
+[1] 300
+[1] 305
+[1] 310
+[1] 315
+[1] 320
+[1] 325
+[1] 330
+[1] 335
+[1] 340
+[1] 345
+[1] 350
+[1] 355
+[1] 360
+[1] 365
+[1] 370
+[1] 375
+[1] 380
+[1] 385
+[1] 390
+[1] 395
+[1] 400
+[1] 405
+[1] 410
+[1] 415
+[1] 420
+[1] 425
+[1] 430
+[1] 435
+[1] 440
+[1] 445
+[1] 450
+[1] 455
+[1] 460
+[1] 465
+[1] 470
+[1] 475
+[1] 480
+[1] 485
+[1] 490
+[1] 495
+[1] 500
+[1] 505
+[1] 510
+[1] 515
+[1] 520
+[1] 525
+[1] 530
+[1] 535
+[1] 540
+[1] 545
+[1] 550
+[1] 555
+[1] 560
+[1] 565
+[1] 570
+[1] 575
+[1] 580
+[1] 585
+[1] 590
+[1] 595
+[1] 600
+[1] 605
+[1] 610
+[1] 615
+[1] 620
+[1] 625
+[1] 630
+[1] 635
+[1] 640
+[1] 645
+[1] 650
+[1] 655
+[1] 660
+[1] 665
+[1] 670
+[1] 675
+[1] 680
+[1] 685
+[1] 690
+[1] 695
+[1] 700
+[1] 705
+[1] 710
+[1] 715
+[1] 720
+[1] 725
+[1] 730
+[1] 735
+[1] 740
+[1] 745
+[1] 750
+[1] 755
+[1] 760
+[1] 765
+[1] 770
+[1] 775
+[1] 780
+[1] 785
+[1] 790
+[1] 795
+[1] 800
+[1] 805
+[1] 810
+[1] 815
+[1] 820
+[1] 825
+[1] 830
+[1] 835
+[1] 840
+[1] 845
+[1] 850
+[1] 855
+[1] 860
+[1] 865
+[1] 870
+[1] 875
+[1] 880
+[1] 885
+[1] 890
+[1] 895
+[1] 900
+[1] 905
+[1] 910
+[1] 915
+[1] 920
+[1] 925
+[1] 930
+[1] 935
+[1] 940
+[1] 945
+[1] 950
+[1] 955
+[1] 960
+[1] 965
+[1] 970
+[1] 975
+[1] 980
+[1] 985
+[1] 990
+[1] 995
+[1] 1000
+#+end_example
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+write.csv(comparison_data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_1000_repetitions_30_factors_35_exp.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Motivated by that, I ran 1000 repetitions of an experiment where I sampled 250
+designs with 4 experiments, resulting in 1000 samples per iteration, from the
+biased CDF and picked the design with the best D criterion. I compared this with
+the case where I ran =optFederov= for 1000 times on an initial candidate set of
+size 1000.
+
+The Figure below shows the comparison of the two methods, and shows that
+picking the best design sampled from the biased distribution seems close to
+the results of =optFederov= for this size of design and amount of parameters.
+
+What I intend to do next is to look at this behaviour for higher numbers of
+parameters and more experiments. I will also start to apply this encoding method
+to numerical parameters in the case where we use quadratic and cubic models.
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+comparison_data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_1000_repetitions_30_factors_35_exp.csv", header = TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(comparison_data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.3) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-gjs27r/figure3a3ccb.png]]
