@@ -12983,6 +12983,7 @@ write.csv(data, "dopt_sampling_tests/federov_results_1200_samples_4_factors_runi
 #+END_SRC
 
 #+RESULTS:
+** December
 *** [2018-12-03 Mon]
 **** Sampling from an Arbitrary Distribution in R
 We are constructing D-Optimal designs for mixed types of factors using Federov's
