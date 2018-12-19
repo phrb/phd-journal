@@ -18819,7 +18819,6 @@ ggplot(decode.data(design), aes(x = X1, y = X2)) +
 #+RESULTS:
 [[file:/tmp/babel-0SJBEn/figureGY0WhM.png]]
 
-***** Generating Designs
 I will now look at the D criterion for designs generated using =runif= and the
 custom CDF I created, which looks like this:
 
@@ -18910,6 +18909,16 @@ quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
 2: In bind_rows_(x, .id) :
@@ -18933,13 +18942,14 @@ Warning messages:
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720 :exports results :eval no-export
 #+BEGIN_SRC R
+library(ggplot2)
 ggplot(quad_cdf, aes(x = x, y = y)) +
        geom_line(size = 1.3) +
        theme_bw(base_size = 20)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5yMLvd/figureiZY2C6.png]]
+[[file:/tmp/babel-EuMp0l/figureP603vu.png]]
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -18973,7 +18983,7 @@ for (i in 1:runs) {
 
     new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
                                        eval.design(formula, biased_design)$determinant),
-                                 names = c("runif", "biased"),
+                                 names = c("Uniform Sample", "Biased Sample"),
                                  id = i)
 
     if (is.null(data)) {
@@ -19009,7 +19019,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5yMLvd/figurepkxwSg.png]]
+[[file:/tmp/babel-EuMp0l/figureuX65Xs.png]]
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -19040,7 +19050,7 @@ for (i in 1:runs) {
 
     new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
                                        eval.design(formula, biased_federov_design)$determinant),
-                                 names = c("runif_federov", "biased_federov"),
+                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
                                  id = i)
 
     if (is.null(data)) {
@@ -19057,7 +19067,7 @@ for (i in 1:runs) {
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_8_factors_21_exp.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -19079,12 +19089,12 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5yMLvd/figurenOCXcI.png]]
+[[file:/tmp/babel-EuMp0l/figurelFUNFD.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_8_factors_21_exp.csv", row.names = FALSE)
-write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_8_factors_21_exp.csv", row.names = FALSE)
+write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
+write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -19096,17 +19106,26 @@ write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_sample
 library(ggplot2)
 library(GGally)
 
-#ggplot(decode.data(biased_federov_design), aes(x = X1, y = X2)) +
-#       xlim(c(0, 1)) +
-#       ylim(c(0, 1)) +
-#       geom_point(size = 3) +
-#       theme_bw(base_size = 18)
-ggpairs(decode.data(federov_design)) +
+ggpairs(decode.data(biased_federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
         theme_bw(base_size = 18)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-5yMLvd/figurejRTdBO.png]]
+[[file:/tmp/babel-EuMp0l/figurepxwz8R.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(GGally)
+
+ggpairs(decode.data(federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
+        theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureiWAZAJ.png]]
 
 **** Tests with the D Criterion for Quadratic Models
 #+HEADER: :results output :session *R*
@@ -19171,3 +19190,523 @@ In coded.data(design) :
 
 [1] 0.08826865
 #+end_example
+*** [2018-12-19 Wed]
+**** /D Criterion/ for a Cubic Model with Numerical Factors
+#+HEADER: :results output :session *R* :exports both :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factors <- 2
+samples <- (factors * 3) + 1
+
+design_codings <- list()
+
+for (i in 1:factors) {
+    design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                               paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                               sep = ""))
+}
+
+design_codings
+
+design <- coded.data(data.frame(replicate(factors, runif(samples))),
+                     formulas = design_codings)
+
+formula <- formula(paste("~ ",
+                         paste(names(design),
+                               sep = "",
+                               collapse = " + "),
+                         " + ",
+                         paste("I(",
+                               names(design),
+                               "^2)",
+                               sep = "",
+                               collapse = " + "),
+                         " + ",
+                         paste("I(",
+                               names(design),
+                               "^3)",
+                               sep = "",
+                               collapse = " + "),
+                         sep = ""))
+
+design
+
+eval.design(formula, design)$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+$x1
+x1 ~ (X1 - 0.5)/0.5
+
+$x2
+x2 ~ (X2 - 0.5)/0.5
+
+         X1         X2
+1 0.7214835 0.71370748
+2 0.8439289 0.51604000
+3 0.3607354 0.22160808
+4 0.6995979 0.89263756
+5 0.2753516 0.50905660
+6 0.5634062 0.26211501
+7 0.5690574 0.02680645
+
+Data are stored in coded form using these coding formulas ...
+x1 ~ (X1 - 0.5)/0.5
+x2 ~ (X2 - 0.5)/0.5
+
+[1] 0.03136392
+#+end_example
+
+We can look at the points in the generated design:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(decode.data(design), aes(x = X1, y = X2)) +
+       xlim(c(0, 1)) +
+       ylim(c(0, 1)) +
+       geom_point(size = 3) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureFcqnER.png]]
+
+Now that I know the D criterion is properly scaled, I will attempt to select the
+experiments that have D closest to $1.0$ by picking orthogonal rows. I will also
+compute the D criterion for the decoded design, that is, a design whose
+numerical factors are not in the interval $[-1, 1]$, but on the original $[0,
+1]$ interval. We see that this ideal design has a much lower D value when
+decoded. The results I've shown before for numerical factors where obtained
+using only the decoded design matrices.
+
+#+HEADER: :results output :session *R* :exports both :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+
+design <- data.frame(X1 = c(0.0, 0.0, 1.0, 1.0, 0.5, 1.0, 0.5, 0.3, 0.3),
+                     X2 = c(0.0, 1.0, 1.0, 0.0, 1.0, 0.5, 0.5, 0.3, 0.4))
+
+design
+
+design_codings <- list()
+
+for (i in 1:ncol(design)) {
+    design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                               paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                               sep = ""))
+}
+
+design_codings
+
+design <- coded.data(design, formulas = design_codings)
+
+formula <- formula(paste("~ ",
+                         paste(names(design),
+                               sep = "",
+                               collapse = " + "),
+                         " + ",
+                         paste("I(",
+                               names(design),
+                               "^2)",
+                               sep = "",
+                               collapse = " + "),
+                         " + ",
+                         paste("I(",
+                               names(design),
+                               "^3)",
+                               sep = "",
+                               collapse = " + "),
+                         sep = ""))
+
+eval.design(formula, design)$determinant
+
+decoded_formula <- formula(paste("~ ",
+                                 paste(names(decode.data(design)),
+                                       sep = "",
+                                       collapse = " + "),
+                                 " + ",
+                                 paste("I(",
+                                       names(decode.data(design)),
+                                       "^2)",
+                                       sep = "",
+                                       collapse = " + "),
+                                 " + ",
+                                 paste("I(",
+                                       names(decode.data(design)),
+                                       "^3)",
+                                       sep = "",
+                                       collapse = " + "),
+                                 sep = ""))
+
+eval.design(decoded_formula, decode.data(design))$determinant
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+   X1  X2
+1 0.0 0.0
+2 0.0 1.0
+3 1.0 1.0
+4 1.0 0.0
+5 0.5 1.0
+6 1.0 0.5
+7 0.5 0.5
+8 0.3 0.3
+9 0.3 0.4
+
+$x1
+x1 ~ (X1 - 0.5)/0.5
+
+$x2
+x2 ~ (X2 - 0.5)/0.5
+
+[1] 0.1023265
+
+[1] 0.009503538
+#+end_example
+
+Looking at the design, we get:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(decode.data(design), aes(x = X1, y = X2)) +
+       xlim(c(0, 1)) +
+       ylim(c(0, 1)) +
+       geom_point(size = 3) +
+       theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureg4jdyx.png]]
+
+I will now look at the D criterion for designs generated using =runif= and the
+custom CDF I created, which looks like this:
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+options(warn = 0)
+#+END_SRC
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+ggplot(cube_cdf, aes(x = x, y = y)) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureWZLIpZ.png]]
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- (3 * factors) + 10
+
+data <- NULL
+
+runs <- 300
+
+for (i in 1:runs) {
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+    formula <- formula(paste("~ ",
+                            paste(names(design),
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  names(design),
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  names(design),
+                                  "^3)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
+
+    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 sample_factor(cube_cdf,
+                                                                               samples))))
+
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, biased_design)$determinant),
+                                 names = c("Uniform Sample", "Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+The next figure shows 4 experiments that generated 1000 samples of designs of
+size 4, for 2 numerical parameters. The /biased/ experiment uses my CDF and the
+/runif/ experiment uses =runif=. The /decoded/ experiments correspond to
+computing the D criterion for parameters in the $[0, 1]$ interval, while the
+other experiments use parameters in the $[-1, 1]$ interval.
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureKyXPBx.png]]
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- (3 * factors) + 10
+federov_samples <- 1000
+
+runs <- 10
+
+for (i in 1:runs) {
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  sample_factor(cube_cdf,
+                                                                                federov_samples))))
+
+    biased_federov_design <- optFederov(formula,
+                                        federov_sample,
+                                        nTrials = samples)$design
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
+                                       eval.design(formula, biased_federov_design)$determinant),
+                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+:
+: There were 50 or more warnings (use warnings() to see the first 50)
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.3) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figurePWGSuD.png]]
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
+write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(GGally)
+
+ggpairs(decode.data(biased_federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
+        theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figuresoJr7S.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(GGally)
+
+ggpairs(decode.data(federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
+        theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-EuMp0l/figureiWAZAJ.png]]
