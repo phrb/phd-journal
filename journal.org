@@ -20772,6 +20772,59 @@ ggplot(lin_cdf, aes(x = x, y = y)) +
 [[file:/tmp/babel-cohRUt/figuregx0X8Q.png]]
 
 ***** Generating Data
+How to compare two sets of coefficients?
+
+[[https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions][This CrossValidated question]] suggests comparing coefficients using their
+standard errors.
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+library(AlgDesign)
+
+compute_linear_response <- function(experiment) {
+    # Randomly generated coefficients
+    coefficients <- c(2.4209378, -9.4596445, 7.6084118, -9.8300033, 4.5989697,
+                      -2.3154346, 5.6950195, -5.3731188, 6.1339409, 6.8258690,
+                      -5.1035342, -6.8181264, 7.7446513, 1.8404607, -8.6015598,
+                      0.9729715, -3.2076502, 0.1364272, -1.9847568, 9.7805181,
+                      -3.4130554, -9.2329343, -3.7792977, 2.3360577, 6.8197215,
+                      7.2124738, 6.3334885, -4.1215094, -6.3838027, 8.1985716)
+
+    # Computing response with a linear model
+    return(unname(drop(as.matrix(experiment) %*% coefficients)))
+}
+
+add_noise <- function(design, sd = 1) {
+    return(design$Y + rnorm(nrow(design), mean = 0, sd = sd))
+}
+
+compare_linear_fit <- function(design, sample_size = 100) {
+    sample <- get_runif_coded_design(data.frame(replicate(ncol(design) - 1,
+                                                          runif(samples))))
+
+    return(sum(predict(lm(Y ~. , design), sample) - compute_response(sample)))
+}
+
+# https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
+compare_linear_coefficients <- function(design) {
+    # Randomly generated coefficients
+    coefficients <- c(0.0, 2.4209378, -9.4596445, 7.6084118, -9.8300033, 4.5989697,
+                      -2.3154346, 5.6950195, -5.3731188, 6.1339409, 6.8258690,
+                      -5.1035342, -6.8181264, 7.7446513, 1.8404607, -8.6015598,
+                      0.9729715, -3.2076502, 0.1364272, -1.9847568, 9.7805181,
+                      -3.4130554, -9.2329343, -3.7792977, 2.3360577, 6.8197215,
+                      7.2124738, 6.3334885, -4.1215094, -6.3838027, 8.1985716)
+
+    #return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
+    return(sum(sqrt((coefficients - unname(coef(lm(Y ~. , design)))) ^ 2)))
+}
+
+#+END_SRC
+
+#+RESULTS:
+
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
 library(rsm)
@@ -20782,10 +20835,13 @@ samples <- (1 * factors) + 10
 
 data <- NULL
 
-runs <- 10
+runs <- 200
 
 for (i in 1:runs) {
     design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+    design$Y <- compute_linear_response(design)
+    design$Y <- add_noise(design, sd = 8)
+
     formula <- formula(paste("~ ",
                             paste(names(design),
                                   sep = "",
@@ -20794,9 +20850,13 @@ for (i in 1:runs) {
     biased_design <- get_runif_coded_design(data.frame(replicate(factors,
                                                                  sample_factor(lin_cdf,
                                                                                samples))))
+    biased_design$Y <- compute_linear_response(biased_design)
+    biased_design$Y <- add_noise(biased_design, sd = 8)
 
     new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
                                        eval.design(formula, biased_design)$determinant),
+                                 coefficient_difference = c(compare_linear_coefficients(design),
+                                                            compare_linear_coefficients(biased_design)),
                                  names = c("Uniform Sample", "Biased Sample"),
                                  id = i)
 
@@ -20822,6 +20882,25 @@ other experiments use parameters in the $[-1, 1]$ interval.
 #+BEGIN_SRC R
 library(ggplot2)
 
+ggplot(data, aes(x = 1, y = coefficient_difference)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-cohRUt/figurerbUjd9.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
 ggplot(data, aes(x = 1, y = D)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, 1)) +
@@ -20833,7 +20912,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureeVGMr1.png]]
+[[file:/tmp/babel-cohRUt/figure29xjq8.png]]
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -20877,7 +20956,7 @@ for (i in 1:runs) {
 
 #+RESULTS:
 :
-: There were 50 or more warnings (use warnings() to see the first 50)
+: There were 12 warnings (use warnings() to see them)
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -20910,7 +20989,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureCiXrVb.png]]
+[[file:/tmp/babel-cohRUt/figurequ67wb.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
