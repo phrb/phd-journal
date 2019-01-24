@@ -21119,7 +21119,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -21127,7 +21127,7 @@ write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_
 ***** Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600.csv", header = TRUE)
+data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
 #+END_SRC
 
 #+RESULTS:
@@ -21169,7 +21169,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figure0vMaGn.png]]
+[[file:/tmp/babel-6yUrit/figureVeWflC.png]]
 
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -21194,7 +21194,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureXVpEiu.png]]
+[[file:/tmp/babel-6yUrit/figureyecAn6.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21218,7 +21218,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureAG68Ye.png]]
+[[file:/tmp/babel-6yUrit/figureUuKQrT.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21237,7 +21237,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figure615lvr.png]]
+[[file:/tmp/babel-6yUrit/figuresp1tFI.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21256,7 +21256,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureawzApE.png]]
+[[file:/tmp/babel-6yUrit/figurecvsiuW.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
