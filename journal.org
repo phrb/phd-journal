@@ -20769,7 +20769,7 @@ ggplot(lin_cdf, aes(x = x, y = y)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureViYLoO.png]]
+[[file:/tmp/babel-gCuM81/figureVUp0bq.png]]
 
 ***** Generating Data
 How to compare two sets of coefficients?
@@ -20785,7 +20785,7 @@ library(AlgDesign)
 
 compute_linear_response <- function(coefficients, experiment) {
     # Computing response with a linear model
-    return(unname(drop(as.matrix(experiment) %*% coefficients)))
+    return((unname(drop(as.matrix(experiment))) %*% coefficients[2:length(coefficients)] + coefficients[1]))
 }
 
 add_noise <- function(design, sd = 1) {
@@ -20793,18 +20793,18 @@ add_noise <- function(design, sd = 1) {
 }
 
 compare_linear_fit <- function(coefficients, sample, design_a, design_b, sample_size = 100, sd = 1) {
-    return(c(sqrt(sum((compute_linear_response(coefficients, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                       predict(lm(Y ~ . , design_a),
-                               sample)) ^ 2),
-             sqrt(sum((compute_linear_response(coefficients, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                       predict(lm(Y ~ . , design_b),
-                               sample)) ^ 2)))
+    return(c(sqrt(sum(((compute_linear_response(coefficients, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(Y ~ . , design_a),
+                               sample)) ^ 2)),
+             sqrt(sum(((compute_linear_response(coefficients, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(Y ~ . , design_b),
+                               sample)) ^ 2))))
 }
 
 # https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
 compare_linear_coefficients <- function(coefficients, design) {
     #return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
-    return(sqrt(sum((coefficients - unname(coef(lm(Y ~. , design)))) ^ 2)))
+    return(sqrt(sum((coefficients - unname(coef(lm(Y ~ . , design)))) ^ 2)))
 }
 #+END_SRC
 
@@ -20819,23 +20819,23 @@ data <- NULL
 
 factors <- 30
 samples <- (1 * factors) + 10
-runs <- 500
+runs <- 300
 
-coefficient_variability = 100
-noise_sd <- 5
-fit_comparison_sample_size <- 1000
+coefficient_variability = 10
+noise_sd <- 2
+fit_comparison_sample_size <- 600
 
 for (i in 1:runs) {
     if (i %% 10 == 0) {
         print(i)
     }
 
-    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                              runif(fit_comparison_sample_size))))
-
-    coefficients <- runif(factors,
+    coefficients <- runif(factors + 1,
                           min = -coefficient_variability,
                           max = coefficient_variability)
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                              runif(fit_comparison_sample_size))))
 
     design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
 
@@ -20907,114 +20907,7 @@ for (i in 1:runs) {
 [1] 280
 [1] 290
 [1] 300
-[1] 310
-[1] 320
-[1] 330
-[1] 340
-[1] 350
-[1] 360
-[1] 370
-[1] 380
-[1] 390
-[1] 400
-[1] 410
-[1] 420
-[1] 430
-[1] 440
-[1] 450
-[1] 460
-[1] 470
-[1] 480
-[1] 490
-[1] 500
-There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-ggplot(data, aes(x = 1, y = coefficient_distance)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, NA)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.4) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureAWmjBj.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_distance -
-                                                          filter(data, names == "Biased Sample")$coefficient_distance),
-                        id = seq(1:(nrow(data) / 2)))
-
-ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
-       #ylim(c(0, NA)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Coeff. Dist. Difference (Uniform - Biased)") +
-       geom_point(alpha = 0.5) +
-       geom_hline(yintercept = 0, linetype = 2) +
-       theme_bw(base_size = 20) # +
-       #theme(axis.ticks.x = element_blank(),
-       #      axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureOaKpqz.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance -
-                                                              filter(data, names == "Biased Sample")$linear_fit_distance),
-                        id = seq(1:(nrow(data) / 2)))
-
-ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
-       #ylim(c(0, NA)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Linear Fit Difference (Uniform - Biased)") +
-       geom_point(alpha = 0.5) +
-       geom_hline(yintercept = 0, linetype = 2) +
-       theme_bw(base_size = 20) # +
-       #theme(axis.ticks.x = element_blank(),
-       #      axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureHx6GvW.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-ggplot(data, aes(x = 1, y = linear_fit_distance)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, NA)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.4) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figurewUAVSj.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21033,7 +20926,94 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figure5WTrjC.png]]
+[[file:/tmp/babel-6yUrit/figurerGj2fc.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_distance /
+                                                               filter(data, names == "Biased Sample")$coefficient_distance),
+                        id = seq(1:(nrow(data) / 2)))
+
+ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Diff. Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figureAoWZJT.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance /
+                                                              filter(data, names == "Biased Sample")$linear_fit_distance),
+                        id = seq(1:(nrow(data) / 2)))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Fit Difference Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figures3nW0F.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = coefficient_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figureDw2Opf.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = linear_fit_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figuren7pu3t.png]]
+
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -21044,19 +21024,20 @@ factors <- 30
 samples <- (1 * factors) + 10
 federov_samples <- 1000
 
-runs <- 100
+runs <- 300
 
 for (i in 1:runs) {
     if (i %% 10 == 0) {
         print(i)
     }
 
-    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                              runif(fit_comparison_sample_size))))
-
-    coefficients <- runif(factors,
+    coefficients <- runif(factors + 1,
                           min = -coefficient_variability,
                           max = coefficient_variability)
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                               runif(fit_comparison_sample_size))))
+
 
     federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
                                                                   runif(federov_samples))))
@@ -21133,22 +21114,12 @@ for (i in 1:runs) {
 [1] 280
 [1] 290
 [1] 300
-[1] 310
-[1] 320
-[1] 330
-[1] 340
-[1] 350
-[1] 360
-[1] 370
-[1] 380
-[1] 390
-[1] 400
 There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_400_repetitions_30_factors_40_exp_coeff_info.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -21156,7 +21127,7 @@ write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_400_
 ***** Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_400_repetitions_30_factors_40_exp_coeff_info.csv", header = TRUE)
+data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600.csv", header = TRUE)
 #+END_SRC
 
 #+RESULTS:
@@ -21187,23 +21158,67 @@ values of the 400 repetitions. These values are computed as follows:
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                          filter(data, names == "Federov with Biased Sample")$coefficient_distance),
-                        id = seq(1:(nrow(data) / 4)))
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.3) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figure0vMaGn.png]]
+
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance /
+                                                               filter(data, names == "Federov with Biased Sample")$coefficient_distance),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
        #ylim(c(0, NA)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Coeff. Dist. Difference (Uniform - Biased)") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Ratios (Federov Uniform / Biased)") +
        geom_point(alpha = 0.5) +
-       geom_hline(yintercept = 0, linetype = 2) +
+       geom_hline(yintercept = 1, linetype = 2) +
        theme_bw(base_size = 20) # +
        #theme(axis.ticks.x = element_blank(),
        #      axis.text.x = element_blank())
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureXqhNvI.png]]
+[[file:/tmp/babel-6yUrit/figureXVpEiu.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_fit_distance /
+                                                              filter(data, names == "Federov with Biased Sample")$linear_fit_distance),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Fit Dist. Ratio (Federov Uniform - Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figureAG68Ye.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21222,7 +21237,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureIwYlqW.png]]
+[[file:/tmp/babel-6yUrit/figure615lvr.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -21241,26 +21256,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureld0urN.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-ggplot(data, aes(x = 1, y = D)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, 1)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.3) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureuSeQnV.png]]
+[[file:/tmp/babel-6yUrit/figureawzApE.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -21291,7 +21287,7 @@ ggpairs(decode.data(biased_federov_design)[, c("x1", "x5", "x10", "x15", "x20", 
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureQju44N.png]]
+[[file:/tmp/babel-6yUrit/figure8dz9oF.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
