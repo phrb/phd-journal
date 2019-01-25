@@ -20196,6 +20196,7 @@ ggpairs(decode.data(federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", 
 #+RESULTS:
 [[file:/tmp/babel-cohRUt/figuretYc4w9.png]]
 **** /D Criterion/ for a Quadratic Model with Numerical Factors III
+***** Setup
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
 library(AlgDesign)
@@ -20309,6 +20310,7 @@ ggplot(quad_cdf, aes(x = x, y = y)) +
 
 #+RESULTS:
 [[file:/tmp/babel-cohRUt/figure8LRkEJ.png]]
+***** Generate Data
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -20506,7 +20508,7 @@ write.csv(data, "dopt_sampling_tests/comparison_federov_biased_normal_30p_1000_s
 #+END_SRC
 
 #+RESULTS:
-
+***** Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 data <- read.csv("dopt_sampling_tests/comparison_federov_biased_normal_30p_1000_samples_300_repetitions_30_factors_70_exp.csv", header = TRUE)
@@ -20531,7 +20533,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figuremgVfxg.png]]
+[[file:/tmp/babel-6yUrit/figureK12eRY.png]]
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -20603,7 +20605,7 @@ ggpairs(decode.data(normal_biased_federov_design)[, c("x1", "x5", "x10", "x15", 
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureqEy4vq.png]]
+[[file:/tmp/babel-6yUrit/figure9fqh7A.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -20617,7 +20619,7 @@ ggpairs(decode.data(biased_federov_design)[, c("x1", "x5", "x10", "x15", "x20", 
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureXRBxPh.png]]
+[[file:/tmp/babel-6yUrit/figureqvBhPb.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -20631,7 +20633,7 @@ ggpairs(decode.data(federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", 
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-cohRUt/figureYpr4OI.png]]
+[[file:/tmp/babel-6yUrit/figureZLhZC6.png]]
 *** [2019-01-21 Mon]
 **** /D Criterion/ & /Practical Efficiency/ for a Linear Model with Numerical Factors
 ***** Setup
@@ -21302,499 +21304,6 @@ ggpairs(decode.data(federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", 
 
 #+RESULTS:
 [[file:/tmp/babel-6yUrit/figure7o8lPz.png]]
-*** [2019-01-23 Wed]
-**** /D Criterion/ & /Practical Efficiency/ for a Quadratic Model with Numerical Factors
-***** Setup
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-library(AlgDesign)
-library(dplyr)
-library(rsm)
-
-factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
-    x <- seq(0.0, 1.0, interval)
-    y <- mapply(f, x)
-
-    data <- data.frame(x = x, y = y, name = name)
-    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
-
-    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
-    data <- bind_rows(data, factor_pdf)
-
-    y_cdf <- c()
-
-    target_name <- paste(name, "PDF")
-
-    pdf_data <- subset(data, name == target_name)$y
-
-    for (i in 1:length(pdf_data)) {
-        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
-    }
-
-    target_name <- paste(name, "CDF")
-    data <- bind_rows(data,
-                      data.frame(x = x, y = y_cdf, name = target_name))
-    return(data)
-}
-
-sample_factor <- function(cdf_data, samples) {
-    x_sampled <- c()
-
-    for (i in 1:samples) {
-        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
-        x_sampled <- c(x_sampled, new_sample)
-    }
-
-    return(x_sampled)
-}
-
-get_runif_design_codings <- function(design) {
-    design_codings <- list()
-
-    for (i in 1:ncol(design)) {
-        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
-                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
-                                                                  sep = ""))
-    }
-
-    return(design_codings)
-}
-
-get_runif_coded_design <- function(design) {
-    design_codings <- get_runif_design_codings(design)
-    return(coded.data(design, formulas = design_codings))
-}
-
-cubic_function <- function(x) {
-    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
-}
-
-quadratic_function <- function(x) {
-    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
-}
-
-linear_function <- function(x) {
-    return((64 * (0.5 - x) ** 6))
-}
-
-lin_data <- factor_cdf(linear_function, name = "Linear Factors")
-lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
-
-quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
-quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-#+end_example
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-ggplot(quad_cdf, aes(x = x, y = y)) +
-       geom_line(size = 1.3) +
-       theme_bw(base_size = 20)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figure8LRkEJ.png]]
-
-***** Generating Data
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-library(rsm)
-library(dplyr)
-library(AlgDesign)
-
-compute_quadratic_response <- function(experiment) {
-    # Randomly generated coefficients
-    coefficients <- c(2.4209378, -9.4596445, 7.6084118, -9.8300033, 4.5989697,
-                      -2.3154346, 5.6950195, -5.3731188, 6.1339409, 6.8258690,
-                      -5.1035342, -6.8181264, 7.7446513, 1.8404607, -8.6015598,
-                      0.9729715, -3.2076502, 0.1364272, -1.9847568, 9.7805181,
-                      -3.4130554, -9.2329343, -3.7792977, 2.3360577, 6.8197215,
-                      7.2124738, 6.3334885, -4.1215094, -6.3838027, 8.1985716)
-
-    # Computing response with a linear model
-    return(unname(drop(as.matrix(experiment) %*% coefficients)))
-}
-
-add_noise <- function(design, sd = 1) {
-    return(design$Y + rnorm(nrow(design), mean = 0, sd = sd))
-}
-
-compare_linear_fit <- function(design_a, design_b, sample_size = 100, sd = 1) {
-    sample <- get_runif_coded_design(data.frame(replicate(ncol(design) - 1,
-                                                          runif(samples))))
-
-    return(c(sqrt(sum((compute_linear_response(sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                      predict(lm(Y ~ . , design_a),
-                              sample)) ^ 2),
-             sqrt(sum((compute_linear_response(sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                      predict(lm(Y ~ . , design_b),
-                              sample)) ^ 2)))
-}
-
-# https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
-compare_linear_coefficients <- function(design) {
-    # Randomly generated coefficients
-    coefficients <- c(0.0, 2.4209378, -9.4596445, 7.6084118, -9.8300033, 4.5989697,
-                      -2.3154346, 5.6950195, -5.3731188, 6.1339409, 6.8258690,
-                      -5.1035342, -6.8181264, 7.7446513, 1.8404607, -8.6015598,
-                      0.9729715, -3.2076502, 0.1364272, -1.9847568, 9.7805181,
-                      -3.4130554, -9.2329343, -3.7792977, 2.3360577, 6.8197215,
-                      7.2124738, 6.3334885, -4.1215094, -6.3838027, 8.1985716)
-
-    #return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
-    return(sqrt(sum((coefficients - unname(coef(lm(Y ~. , design)))) ^ 2)))
-}
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-library(rsm)
-library(dplyr)
-
-factors <- 30
-samples <- (2 * factors) + 10
-
-data <- NULL
-
-runs <- 300
-
-for (i in 1:runs) {
-    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
-    formula <- formula(paste("~ ",
-                            paste(names(design),
-                                  sep = "",
-                                  collapse = " + "),
-                            " + ",
-                            paste("I(",
-                                  names(design),
-                                  "^2)",
-                                  sep = "",
-                                  collapse = " + "),
-                            sep = ""))
-
-    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                 sample_factor(quad_cdf,
-                                                                               samples))))
-
-    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
-                                       eval.design(formula, biased_design)$determinant),
-                                 names = c("Uniform Sample", "Biased Sample"),
-                                 id = i)
-
-    if (is.null(data)) {
-        data <- new_experiment
-    } else {
-        data <- bind_rows(data, new_experiment)
-    }
-}
-#+END_SRC
-
-#+RESULTS:
-
-The next figure shows 4 experiments that generated 1000 samples of designs of
-size 4, for 2 numerical parameters. The /biased/ experiment uses my CDF and the
-/runif/ experiment uses =runif=. The /decoded/ experiments correspond to
-computing the D criterion for parameters in the $[0, 1]$ interval, while the
-other experiments use parameters in the $[-1, 1]$ interval.
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-ggplot(data, aes(x = 1, y = D)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, 1)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.4) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureA5dw4L.png]]
-
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-library(rsm)
-library(dplyr)
-
-factors <- 30
-samples <- (2 * factors) + 10
-federov_samples <- 1000
-
-runs <- 300
-
-for (i in 1:runs) {
-    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                  runif(federov_samples))))
-
-    federov_design <- optFederov(formula,
-                                 federov_sample,
-                                 nTrials = samples)$design
-
-    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                  sample_factor(quad_cdf,
-                                                                                federov_samples))))
-
-    biased_federov_design <- optFederov(formula,
-                                        federov_sample,
-                                        nTrials = samples)$design
-
-    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
-                                       eval.design(formula, biased_federov_design)$determinant),
-                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
-                                 id = i)
-
-    if (is.null(data)) {
-        data <- new_experiment
-    } else {
-        data <- bind_rows(data, new_experiment)
-    }
-}
-#+END_SRC
-
-#+RESULTS:
-:
-: There were 50 or more warnings (use warnings() to see the first 50)
-
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-library(rsm)
-library(dplyr)
-
-factors <- 30
-samples <- (2 * factors) + 10
-federov_samples <- 1000
-
-runs <- 300
-
-for (i in 1:runs) {
-    if (i %% 10 == 0) {
-        print(i)
-    }
-
-    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                  sample_factor(quad_cdf,
-                                                                                7 * (federov_samples / 10)))))
-
-    federov_sample <- bind_rows(federov_sample, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                            rnorm(3 * (federov_samples / 10),
-                                                                                                  mean = 0.5, sd = 0.04)))))
-
-    normal_biased_federov_design <- optFederov(formula,
-                                               federov_sample,
-                                               nTrials = samples)$design
-
-    new_experiment <- data.frame(D = c(eval.design(formula, normal_biased_federov_design)$determinant),
-                                 names = c("Federov with Normal + Uniform Sample"),
-                                 id = i)
-
-    if (is.null(data)) {
-        data <- new_experiment
-    } else {
-        data <- bind_rows(data, new_experiment)
-    }
-}
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-
-[1] 10
-[1] 20
-[1] 30
-[1] 40
-[1] 50
-[1] 60
-[1] 70
-[1] 80
-[1] 90
-[1] 100
-[1] 110
-[1] 120
-[1] 130
-[1] 140
-[1] 150
-[1] 160
-[1] 170
-[1] 180
-[1] 190
-[1] 200
-[1] 210
-[1] 220
-[1] 230
-[1] 240
-[1] 250
-[1] 260
-[1] 270
-[1] 280
-[1] 290
-[1] 300
-There were 50 or more warnings (use warnings() to see the first 50)
-#+end_example
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/comparison_federov_biased_normal_30p_1000_samples_300_repetitions_30_factors_70_exp.csv", row.names = FALSE)
-#+END_SRC
-
-#+RESULTS:
-
-***** Results
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/comparison_federov_biased_normal_30p_1000_samples_300_repetitions_30_factors_70_exp.csv", header = TRUE)
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-ggplot(data, aes(x = 1, y = D)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, 1)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.3) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figuremgVfxg.png]]
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
-write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
-write.csv(normal_biased_federov_design, "dopt_sampling_tests/federov_normal_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", row.names = FALSE)
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-federov_design <- read.csv("dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_65_exp.csv", header = TRUE)
-biased_federov_design <- read.csv("dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", header = TRUE)
-normal_biased_federov_design <- read.csv("dopt_sampling_tests/federov_normal_biased_1000_samples_300_repetitions_30_factors_65_exp.csv", header = TRUE)
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-str(filter_all(federov_sample, all_vars(. > -0.15 & . < 0.15)))
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-'data.frame':	60 obs. of  30 variables:
- $ x1 : num  -0.08608 0.02675 -0.00236 -0.04267 0.0535 ...
- $ x2 : num  0.0514 0.1378 0.0264 -0.0618 -0.1003 ...
- $ x3 : num  0.045 -0.0923 0.0501 -0.0253 -0.0922 ...
- $ x4 : num  0.0253 0.0339 -0.0822 -0.0707 0.0365 ...
- $ x5 : num  -0.1248 -0.0441 -0.1015 0.0114 -0.1171 ...
- $ x6 : num  0.1325 -0.0418 0.0157 -0.1108 -0.0294 ...
- $ x7 : num  0.0315 -0.064 0.023 -0.1463 0.0736 ...
- $ x8 : num  0.0229 -0.0829 0.0402 0.1271 -0.0116 ...
- $ x9 : num  0.0826 0.0276 -0.1217 -0.0968 -0.0781 ...
- $ x10: num  0.02926 0.00573 -0.05965 -0.04871 0.11438 ...
- $ x11: num  -0.04048 -0.06759 0.00846 -0.08865 0.00447 ...
- $ x12: num  -0.0675 -0.0374 -0.048 -0.1097 -0.012 ...
- $ x13: num  0.01585 -0.06534 0.08267 0.00883 0.14171 ...
- $ x14: num  0.0669 0.0825 -0.0431 0.0324 -0.0511 ...
- $ x15: num  0.04077 0.05535 0.05811 -0.00504 0.02461 ...
- $ x16: num  -0.0723 0.054 0.1176 0.0588 0.074 ...
- $ x17: num  0.087073 -0.000871 0.011199 -0.046693 -0.021858 ...
- $ x18: num  0.0406 -0.0051 0.0877 0.0424 -0.0133 ...
- $ x19: num  0.02284 0.03481 -0.00605 0.04454 0.00756 ...
- $ x20: num  0.00147 -0.09211 -0.03126 0.03029 -0.02169 ...
- $ x21: num  0.0116 -0.00123 -0.00714 -0.04002 0.06908 ...
- $ x22: num  0.0256 0.0565 -0.0189 -0.0382 0.014 ...
- $ x23: num  0.11389 0.10539 0.00651 -0.06157 -0.14051 ...
- $ x24: num  -0.0856 -0.1243 -0.0142 -0.1042 0.0426 ...
- $ x25: num  0.01796 -0.01925 0.00419 0.0124 -0.08893 ...
- $ x26: num  -0.0428 0.0631 -0.0249 -0.137 0.0564 ...
- $ x27: num  0.1163 -0.0224 -0.1297 -0.0719 -0.0127 ...
- $ x28: num  0.0303 -0.0733 0.0745 -0.0204 -0.0667 ...
- $ x29: num  -0.06021 0.0367 -0.05284 -0.00511 -0.07654 ...
- $ x30: num  -0.01683 -0.0159 0.04491 0.00642 0.04917 ...
-#+end_example
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-library(GGally)
-
-ggpairs(decode.data(normal_biased_federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", "x30")]) +
-        theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureqEy4vq.png]]
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-library(GGally)
-
-ggpairs(decode.data(biased_federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", "x30")]) +
-        theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureXRBxPh.png]]
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-library(GGally)
-
-ggpairs(decode.data(federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", "x30")]) +
-        theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-cohRUt/figureYpr4OI.png]]
 *** [2019-01-25 Fri]
 **** /D Criterion/ & /Practical Efficiency/ for a Linear Model with Numerical Factors
 ***** Clone Repository
@@ -22313,10 +21822,11 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
 #+RESULTS:
 
 The following results show 300 repetitions of the experiments described below.
-The first step of each iteration is selecting model coefficients from a uniform
-distribution, and a set of experiments for comparing the model fits. Then, each
-iteration generates designs of size 40 for 30 numerical factors in the interval
-$[-1, 1]$, using the strategies listed below:
+The first step of each iteration is selecting model coefficients in the interval
+$[-10.0, 10.0]$ from a uniform distribution, and a set of experiments for
+comparing the model fits. Then, each iteration generates designs of size 40 for
+30 numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
+below:
 
 | Strategy                  | Description                                                  |
 |---------------------------+--------------------------------------------------------------|
@@ -22325,11 +21835,11 @@ $[-1, 1]$, using the strategies listed below:
 | Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 40 w.r.t. D |
 | Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 40 w.r.t. D  |
 
-The designs are evaluated using the generated model, with noise, and the results
-are used to fit linear models, which are compared with the actual model
-generated for that iteration using 2 model metrics and 1 design metric. The
-figures below compare the =coefficient_distance=, the =linear_fit_distance= and
-the =D= values of the 300 repetitions. These values are computed as follows:
+The designs are evaluated using the generated model, with noise ($sd = 2$), and
+the results are used to fit linear models, which are compared with the actual
+model generated for that iteration using 2 model metrics and 1 design metric.
+The figures below compare the =coefficient_distance=, the =linear_fit_distance=
+and the =D= values of the 300 repetitions. These values are computed as follows:
 
 | Value                  | Computation                                                 |
 |------------------------+-------------------------------------------------------------|
