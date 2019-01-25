@@ -22312,8 +22312,8 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
 
 #+RESULTS:
 
-The results below show 300 repetitions of the experiments described below. The
-first step of each iteration is selecting model coefficients from a uniform
+The following results show 300 repetitions of the experiments described below.
+The first step of each iteration is selecting model coefficients from a uniform
 distribution, and a set of experiments for comparing the model fits. Then, each
 iteration generates designs of size 40 for 30 numerical factors in the interval
 $[-1, 1]$, using the strategies listed below:
