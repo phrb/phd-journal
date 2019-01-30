@@ -23377,8 +23377,8 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 library(dplyr)
 library(ggplot2)
 
-plot_data <- data.frame(real_coefficient_prf_sum_difference = (sort(log(filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum) /
-                                                                    log(filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum))),
+plot_data <- data.frame(real_coefficient_prf_sum_difference = (sort(filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum /
+                                                                    filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum)),
                         id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
@@ -23391,7 +23391,7 @@ ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figurej93okD.png]]
+[[file:/tmp/babel-hIxYUy/figure0hqilv.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
