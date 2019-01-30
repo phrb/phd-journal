@@ -23288,7 +23288,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_100_repetitions_30_factors_40_exp_random_coeff_few_sig.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -23296,7 +23296,7 @@ write.csv(data, "dopt_sampling_tests/comparison_federov_biased_1000_samples_100_
 ***** Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_100_repetitions_30_factors_40_exp_random_coeff_few_sig.csv", header = TRUE)
+data <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig.csv", header = TRUE)
 #+END_SRC
 
 #+RESULTS:
@@ -23351,7 +23351,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureb3TVAx.png]]
+[[file:/tmp/babel-hIxYUy/figureTeZf9R.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23368,7 +23368,30 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurecccxYu.png]]
+[[file:/tmp/babel-hIxYUy/figureilKZgf.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(dplyr)
+library(ggplot2)
+
+plot_data <- data.frame(real_coefficient_prf_sum_difference = (sort(log(filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum) /
+                                                                    log(filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum))),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Log. Sorted Real Coeff. Prf Sum Ratio (Federov Uniform / Biased)") +
+       #ylim(c(0, 100)) +
+       geom_point() +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figurej93okD.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23378,14 +23401,14 @@ library(ggplot2)
 
 ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
-       #ylim(c(0, 0.001)) +
+       ylim(c(0, 0.001)) +
        scale_x_continuous(name = "Experiment") +
        geom_point() +
        theme_bw(base_size = 20)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurenRGs8g.png]]
+[[file:/tmp/babel-hIxYUy/figurelZWBAT.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23403,49 +23426,51 @@ ggplot(data, aes(x = id, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figure1yOrdX.png]]
+[[file:/tmp/babel-hIxYUy/figureQapCv8.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
+library(dplyr)
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = (filter(data, names == "Federov with Uniform Sample")$coefficient_distance /
-                                                           filter(data, names == "Federov with Biased Sample")$coefficient_distance),
+plot_data <- data.frame(coefficient_distance_difference = (sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance /
+                                                                filter(data, names == "Federov with Biased Sample")$coefficient_distance)),
                         id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Coeff. Dist. Ratio (Federov Uniform / Biased)") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Ratio (Federov Uniform / Biased)") +
        geom_point() +
        geom_hline(yintercept = 1, linetype = 2) +
        theme_bw(base_size = 20) # +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurebItBK2.png]]
+[[file:/tmp/babel-hIxYUy/figurechYUy0.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
+library(dplyr)
 library(ggplot2)
 
-plot_data <- data.frame(linear_fit_distance_difference = (filter(data, names == "Federov with Uniform Sample")$linear_fit_distance /
-                                                          filter(data, names == "Federov with Biased Sample")$linear_fit_distance),
+plot_data <- data.frame(linear_fit_distance_difference = (sort(filter(data, names == "Federov with Uniform Sample")$linear_fit_distance /
+                                                               filter(data, names == "Federov with Biased Sample")$linear_fit_distance)),
                         id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Fit Distance Ratio (Federov Uniform / Biased)") +
+       scale_y_continuous(name = "Sorted Fit Distance Ratio (Federov Uniform / Biased)") +
        geom_point() +
        geom_hline(yintercept = 1, linetype = 2) +
        theme_bw(base_size = 20) # +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurejN9AgN.png]]
+[[file:/tmp/babel-hIxYUy/figurejZGyh6.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23464,7 +23489,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureI2FkhF.png]]
+[[file:/tmp/babel-hIxYUy/figuregu3U4N.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23483,7 +23508,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureChQX0o.png]]
+[[file:/tmp/babel-hIxYUy/figureZ0hDTi.png]]
 
 ****** Looking at Sample Designs
 
