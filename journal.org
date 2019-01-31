@@ -22532,7 +22532,13 @@ the =D= values of the 100 repetitions. These values are computed as follows:
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = D)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = 1, y = D)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, 1)) +
        scale_x_continuous(name = "Jittered Experiments") +
@@ -22543,7 +22549,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureb3TVAx.png]]
+[[file:/tmp/babel-hIxYUy/figurefLPBuf.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22568,7 +22574,13 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
        #ylim(c(0, 0.001)) +
        scale_x_continuous(name = "Experiment") +
@@ -22577,7 +22589,7 @@ ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurenRGs8g.png]]
+[[file:/tmp/babel-hIxYUy/figureCRqmcx.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22585,7 +22597,13 @@ ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = id, y = noise_coefficients_prf_sum)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
        #ylim(c(0, 1)) +
        scale_x_continuous(name = "Experiment") +
@@ -22595,7 +22613,7 @@ ggplot(data, aes(x = id, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figure1yOrdX.png]]
+[[file:/tmp/babel-hIxYUy/figureoEtTvV.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22616,7 +22634,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurebItBK2.png]]
+[[file:/tmp/babel-hIxYUy/figureVxYgSo.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22637,7 +22655,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurejN9AgN.png]]
+[[file:/tmp/babel-hIxYUy/figurepaGj2j.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22645,7 +22663,13 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = coefficient_distance)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = 1, y = coefficient_distance)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, NA)) +
        scale_x_continuous(name = "Jittered Experiments") +
@@ -22656,7 +22680,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureI2FkhF.png]]
+[[file:/tmp/babel-hIxYUy/figurewsdrq2.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22664,7 +22688,13 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = linear_fit_distance)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = 1, y = linear_fit_distance)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, NA)) +
        scale_x_continuous(name = "Jittered Experiments") +
@@ -22675,7 +22705,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureChQX0o.png]]
+[[file:/tmp/babel-hIxYUy/figurembQtSV.png]]
 
 ****** Looking at Sample Designs
 
@@ -22819,6 +22849,16 @@ cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
 2: In bind_rows_(x, .id) :
@@ -22934,30 +22974,6 @@ coefficient_noise = 0.2
 noise_sd <- 1
 fit_comparison_sample_size <- 600
 
-formula <- formula(paste("~ ",
-                        paste(names(design),
-                              sep = "",
-                              collapse = " + "),
-                        " + ",
-                        paste("I(",
-                              names(design),
-                              "^2)",
-                              sep = "",
-                              collapse = " + "),
-                        sep = ""))
-
-response_formula <- formula(paste("Y ~ ",
-                            paste(names(design),
-                                  sep = "",
-                                  collapse = " + "),
-                            " + ",
-                            paste("I(",
-                                  names(design),
-                                  "^2)",
-                                  sep = "",
-                                  collapse = " + "),
-                            sep = ""))
-
 for (i in 1:runs) {
     if (i %% 10 == 0) {
         print(i)
@@ -22979,12 +22995,37 @@ for (i in 1:runs) {
 
     design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
 
+    formula <- formula(paste("~ ",
+                            paste(names(design),
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  names(design),
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
+
+    response_formula <- formula(paste("Y ~ ",
+                                paste(names(design),
+                                      sep = "",
+                                      collapse = " + "),
+                                " + ",
+                                paste("I(",
+                                      names(design),
+                                      "^2)",
+                                      sep = "",
+                                      collapse = " + "),
+                                sep = ""))
+
     design$Y <- compute_response(coefficients, formula, design)
     design$Y <- add_noise(design, sd = noise_sd)
 
     biased_design <- get_runif_coded_design(data.frame(replicate(factors,
                                                                  sample_factor(quad_cdf,
                                                                                samples))))
+
     biased_design$Y <- compute_response(coefficients, formula, biased_design)
     biased_design$Y <- add_noise(biased_design, sd = noise_sd)
 
@@ -23045,7 +23086,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurejLmcmH.png]]
+[[file:/tmp/babel-hIxYUy/figureIrw7w5.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23053,18 +23094,19 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = real_coefficients_prf_sum)) +
+ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
-       #ylim(c(0, 1)) +
+       #ylim(c(0, 0.2)) +
        scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.4) +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
        theme_bw(base_size = 20) +
        theme(axis.ticks.x = element_blank(),
              axis.text.x = element_blank())
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureK3Rene.png]]
+[[file:/tmp/babel-hIxYUy/figureqjiyBp.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23083,7 +23125,7 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurejkoqMQ.png]]
+[[file:/tmp/babel-hIxYUy/figure5DY3LP.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23102,7 +23144,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figuregPdJxU.png]]
+[[file:/tmp/babel-hIxYUy/figureCkYRAC.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23126,7 +23168,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureL4HWLg.png]]
+[[file:/tmp/babel-hIxYUy/figureN9eoDp.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23150,7 +23192,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figureebSF8d.png]]
+[[file:/tmp/babel-hIxYUy/figurePa6xQE.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23169,7 +23211,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurexasWiV.png]]
+[[file:/tmp/babel-hIxYUy/figureFrHkNH.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23188,7 +23230,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figure8YVIDt.png]]
+[[file:/tmp/babel-hIxYUy/figureJQLayX.png]]
 
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
@@ -23200,7 +23242,7 @@ factors <- 30
 samples <- (2 * factors) + 10
 federov_samples <- 1000
 
-runs <- 100
+runs <- 40
 
 for (i in 1:runs) {
     if (i %% 10 == 0) {
@@ -23271,20 +23313,12 @@ for (i in 1:runs) {
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-
-[1] 10
-[1] 20
-[1] 30
-[1] 40
-[1] 50
-[1] 60
-[1] 70
-[1] 80
-[1] 90
-[1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
-#+end_example
+:
+: [1] 10
+: [1] 20
+: [1] 30
+: [1] 40
+: There were 42 warnings (use warnings() to see them)
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -23340,7 +23374,12 @@ the =D= values of the 100 repetitions. These values are computed as follows:
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = D)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+ggplot(plot_data, aes(x = 1, y = D)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, 1)) +
        scale_x_continuous(name = "Jittered Experiments") +
@@ -23351,7 +23390,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureTeZf9R.png]]
+[[file:/tmp/babel-hIxYUy/figureBYGqgV.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23368,7 +23407,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureilKZgf.png]]
+[[file:/tmp/babel-hIxYUy/figuremOaMj5.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23377,13 +23416,13 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 library(dplyr)
 library(ggplot2)
 
-plot_data <- data.frame(real_coefficient_prf_sum_difference = (sort(filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum /
-                                                                    filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum)),
+plot_data <- data.frame(real_coefficient_prf_sum_difference = (filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum /
+                                                               filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum),
                         id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Log. Sorted Real Coeff. Prf Sum Ratio (Federov Uniform / Biased)") +
+       scale_y_continuous(name = "Real Coeff. Prf Sum Ratio (Federov Uniform / Biased)") +
        #ylim(c(0, 100)) +
        geom_point() +
        geom_hline(yintercept = 1, linetype = 2) +
@@ -23391,7 +23430,7 @@ ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figure0hqilv.png]]
+[[file:/tmp/babel-hIxYUy/figurehaov6x.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23399,16 +23438,22 @@ ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, 0.001)) +
+       #ylim(c(0, 0.001)) +
        scale_x_continuous(name = "Experiment") +
        geom_point() +
        theme_bw(base_size = 20)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figurelZWBAT.png]]
+[[file:/tmp/babel-hIxYUy/figureuAYdxI.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23416,7 +23461,13 @@ ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = id, y = noise_coefficients_prf_sum)) +
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
        #ylim(c(0, 1)) +
        scale_x_continuous(name = "Experiment") +
@@ -23426,7 +23477,7 @@ ggplot(data, aes(x = id, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureQapCv8.png]]
+[[file:/tmp/babel-hIxYUy/figurexlmzTy.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23448,7 +23499,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figurechYUy0.png]]
+[[file:/tmp/babel-hIxYUy/figureIUrKAH.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23470,7 +23521,549 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figurejZGyh6.png]]
+[[file:/tmp/babel-hIxYUy/figurebn7M5i.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = coefficient_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiments") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureYpCAYt.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiments") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureXBRzBe.png]]
+
+****** Looking at Sample Designs
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", row.names = FALSE)
+write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+federov_design <- read.csv("dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
+biased_federov_design <- read.csv("dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(GGally)
+library(rsm)
+
+ggpairs(decode.data(biased_federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", "x30")]) +
+        theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figurecZsbSP.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(GGally)
+
+ggpairs(decode.data(federov_design)[, c("x1", "x5", "x10", "x15", "x20", "x25", "x30")]) +
+        theme_bw(base_size = 18)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figure7o8lPz.png]]
+*** [2019-01-31 Thu]
+**** /Practical Efficiency/ for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Setup
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+plot_data <- bind_rows(lin_cdf, quad_cdf, cube_cdf)
+
+ggplot(plot_data, aes(x = x, y = y)) +
+       facet_wrap(name ~ ., ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6yUrit/figureeWJKFb.png]]
+
+***** Generating Data
+You can load one of the datasets from the repository:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
+#+END_SRC
+
+How to compare two sets of coefficients?
+
+[[https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions][This CrossValidated question]] suggests comparing coefficients using their
+standard errors.
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+library(AlgDesign)
+
+compute_response <- function(coefficients, formula, experiment) {
+    return(model.matrix(formula, experiment) %*% coefficients)
+}
+
+add_noise <- function(design, sd = 1) {
+    return(design$Y + rnorm(nrow(design), mean = 0, sd = sd))
+}
+
+compare_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
+    return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_a),
+                               sample)) ^ 2)),
+             sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_b),
+                               sample)) ^ 2))))
+}
+
+# https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
+#return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
+compare_coefficients <- function(coefficients, formula, design) {
+    return(sqrt(sum((coefficients - unname(coef(lm(formula, design)))) ^ 2)))
+}
+
+compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(c(sum(prf_values[abs(coefficients) > coefficient_limits$min])))
+}
+
+compare_noise_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(sum(prf_values[abs(coefficients) <= coefficient_limits$min]))
+}
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+data <- NULL
+
+factors <- 30
+samples <- (2 * factors) + 10
+runs <- 100
+
+coefficient_variability = list(max = 5, min = 3)
+coefficient_noise = 0.2
+noise_sd <- 1
+fit_comparison_sample_size <- 600
+
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
+
+    coefficients <- replicate((2 * factors) + 1,
+                              ifelse(runif(1) > 0.8,
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                              runif(fit_comparison_sample_size))))
+
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+
+    formula <- formula(paste("~ ",
+                            paste(names(design),
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  names(design),
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
+
+    response_formula <- formula(paste("Y ~ ",
+                                paste(names(design),
+                                      sep = "",
+                                      collapse = " + "),
+                                " + ",
+                                paste("I(",
+                                      names(design),
+                                      "^2)",
+                                      sep = "",
+                                      collapse = " + "),
+                                sep = ""))
+
+    design$Y <- compute_response(coefficients, formula, design)
+    design$Y <- add_noise(design, sd = noise_sd)
+
+    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 sample_factor(quad_cdf,
+                                                                               8 * (samples / 10)))))
+
+    biased_design <- bind_rows(biased_design, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                          rnorm(2 * (samples / 10),
+                                                                                                mean = 0.5, sd = 0.04)))))
+
+    biased_design$Y <- compute_response(coefficients, formula, biased_design)
+    biased_design$Y <- add_noise(biased_design, sd = noise_sd)
+
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, biased_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients, coefficient_variability, response_formula, design),
+                                                               compare_real_coefficients(coefficients, coefficient_variability, response_formula, biased_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients, coefficient_variability, response_formula, design),
+                                                                compare_noise_coefficients(coefficients, coefficient_variability, response_formula, biased_design)),
+                                 coefficient_distance = c(compare_coefficients(coefficients, response_formula, design),
+                                                          compare_coefficients(coefficients, response_formula, biased_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   design,
+                                                                   biased_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 names = c("Uniform Sample", "Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(coefficients = abs(coefficients))
+
+ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
+       geom_point() +
+       theme_bw(base_size = 20)
+
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureIrw7w5.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       #ylim(c(0, 0.2)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureqjiyBp.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       #ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figure5DY3LP.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+ggplot(data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.4) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureCkYRAC.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_distance /
+                                                               filter(data, names == "Biased Sample")$coefficient_distance),
+                        id = seq(1:(nrow(data) / 2)))
+
+ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Diff. Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureN9eoDp.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance /
+                                                              filter(data, names == "Biased Sample")$linear_fit_distance),
+                        id = seq(1:(nrow(data) / 2)))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Fit Difference Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figurePa6xQE.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23489,7 +24082,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figuregu3U4N.png]]
+[[file:/tmp/babel-hIxYUy/figureFrHkNH.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23508,7 +24101,354 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureZ0hDTi.png]]
+[[file:/tmp/babel-hIxYUy/figureJQLayX.png]]
+
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 30
+samples <- (2 * factors) + 10
+federov_samples <- 1000
+
+runs <- 40
+
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
+
+    coefficients <- replicate((2 * factors) + 1,
+                              ifelse(runif(1) > 0.8,
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                               runif(fit_comparison_sample_size))))
+
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    federov_design$Y <- compute_response(coefficients, formula, federov_design)
+    federov_design$Y <- add_noise(federov_design, sd = noise_sd)
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  sample_factor(quad_cdf,
+                                                                                7 * (federov_samples / 10)))))
+
+    federov_sample <- bind_rows(federov_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                            rnorm(3 * (federov_samples / 10),
+                                                                                                  mean = 0.5, sd = 0.04)))))
+
+    biased_federov_design <- optFederov(formula,
+                                        federov_sample,
+                                        nTrials = samples)$design
+
+    biased_federov_design$Y <- compute_response(coefficients, formula, biased_federov_design)
+    biased_federov_design$Y <- add_noise(biased_federov_design, sd = noise_sd)
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
+                                       eval.design(formula, biased_federov_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients, coefficient_variability, response_formula, federov_design),
+                                                               compare_real_coefficients(coefficients, coefficient_variability, response_formula, biased_federov_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients, coefficient_variability, response_formula, federov_design),
+                                                                compare_noise_coefficients(coefficients, coefficient_variability, response_formula, biased_federov_design)),
+                                 coefficient_distance = c(compare_coefficients(coefficients, response_formula, federov_design),
+                                                          compare_coefficients(coefficients, response_formula, biased_federov_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   federov_design,
+                                                                   biased_federov_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- bind_rows(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+:
+: [1] 10
+: [1] 20
+: [1] 30
+: [1] 40
+: There were 42 warnings (use warnings() to see them)
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig.csv", row.names = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+***** Results
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig.csv", header = TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+The following results show 100 repetitions of the experiments described below.
+The first step of each iteration is generating model coefficients. Since it
+better mirrors our targeted use case, we decided to generate coefficient sets
+where only a small amount of coefficients is allowed to be significant, 20% in
+this case. Significant coefficients are picked from an uniform distribution in
+the interval $[-5, -3] \cup [3, 5]$, and unsignificant coefficients are picked
+from a normal distribution in the interval $[-0.2, 0.2]$.
+
+After generating the coefficients, we generate a set of experiments for
+comparing model fits. Then, each iteration generates designs of size 40 for 30
+numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
+below:
+
+| Strategy                  | Description                                                  |
+|---------------------------+--------------------------------------------------------------|
+| Uniform Sample            | Pick 40 experiments from a uniform distribution              |
+| Biased Sample             | Pick 40 experiments from a biased distribution               |
+| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 40 w.r.t. D |
+| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 40 w.r.t. D  |
+
+Responses are computed using the generated coefficient set, with added noise
+from a normal distribution with standard deviation $sd = 2$ and mean zero. The
+results are used to fit linear models, which are compared with the actual model
+generated for that iteration using 2 model metrics and 1 design metric. The
+figures below compare the =coefficient_distance=, the =linear_fit_distance= and
+the =D= values of the 100 repetitions. These values are computed as follows:
+
+| Value                  | Computation                                                 |
+|------------------------+-------------------------------------------------------------|
+| =coefficient_distance= | Euclidean distance between fitted & real model coefficients |
+| =linear_fit_distance=  | Euclidean distance between predicted & real response        |
+| =D=                    | Computed as usual by =AlgDesign::eval.design()=             |
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+ggplot(plot_data, aes(x = 1, y = D)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, 1)) +
+       scale_x_continuous(name = "Jittered Experiments") +
+       geom_jitter(height = 0, alpha = 0.3) +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureBYGqgV.png]]
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(coefficients = abs(coefficients))
+
+ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
+       geom_point() +
+       theme_bw(base_size = 20)
+
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figuremOaMj5.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(dplyr)
+library(ggplot2)
+
+plot_data <- data.frame(real_coefficient_prf_sum_difference = (filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum /
+                                                               filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Real Coeff. Prf Sum Ratio (Federov Uniform / Biased)") +
+       #ylim(c(0, 100)) +
+       geom_point() +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figurehaov6x.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       #ylim(c(0, 0.001)) +
+       scale_x_continuous(name = "Experiment") +
+       geom_point() +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureuAYdxI.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       #ylim(c(0, 1)) +
+       scale_x_continuous(name = "Experiment") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figurexlmzTy.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(dplyr)
+library(ggplot2)
+
+plot_data <- data.frame(coefficient_distance_difference = (sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance /
+                                                                filter(data, names == "Federov with Biased Sample")$coefficient_distance)),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Ratio (Federov Uniform / Biased)") +
+       geom_point() +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureIUrKAH.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(dplyr)
+library(ggplot2)
+
+plot_data <- data.frame(linear_fit_distance_difference = (sort(filter(data, names == "Federov with Uniform Sample")$linear_fit_distance /
+                                                               filter(data, names == "Federov with Biased Sample")$linear_fit_distance)),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Fit Distance Ratio (Federov Uniform / Biased)") +
+       geom_point() +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figurebn7M5i.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = coefficient_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiments") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureYpCAYt.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
+                                                      "Federov with Biased Sample",
+                                                      "Uniform Sample",
+                                                      "Biased Sample"))
+
+ggplot(plot_data, aes(x = id, y = linear_fit_distance)) +
+       facet_wrap(names ~ ., ncol = 2) +
+       ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiments") +
+       #geom_jitter(height = 0, alpha = 0.4) +
+       geom_point() +
+       theme_bw(base_size = 20) +
+       theme(axis.ticks.x = element_blank(),
+             axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-hIxYUy/figureXBRzBe.png]]
 
 ****** Looking at Sample Designs
 
