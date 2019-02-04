@@ -22501,6 +22501,13 @@ this case. Significant coefficients are picked from an uniform distribution in
 the interval $[-5, -3] \cup [3, 5]$, and unsignificant coefficients are picked
 from a normal distribution in the interval $[-0.2, 0.2]$.
 
+| Parameter                       | Interval                          |
+|---------------------------------+-----------------------------------|
+| Coefficients                    | 30 + Intercept                    |
+| Significant Coefficients        | 20%                               |
+| Significant Coefficient Range   | Uniform in $[-5, -3] \cup [3, 5]$ |
+| Unsignificant Coefficient Range | Normal in $[-0.2, 0.2]$           |
+
 After generating the coefficients, we generate a set of experiments for
 comparing model fits. Then, each iteration generates designs of size 40 for 30
 numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
@@ -22525,6 +22532,15 @@ the =D= values of the 100 repetitions. These values are computed as follows:
 | =coefficient_distance= | Euclidean distance between fitted & real model coefficients |
 | =linear_fit_distance=  | Euclidean distance between predicted & real response        |
 | =D=                    | Computed as usual by =AlgDesign::eval.design()=             |
+
+I've also computed the distance between the following two metrics, in an attempt
+to detect the model's hability to identify significant coefficients in a set
+were most coefficients do not impact the response.
+
+| Value                        | Computation                                                |
+|------------------------------+------------------------------------------------------------|
+| =real_coefficients_prf_sum=  | Sum of the fitted model's Pr(>F) values for actual coeffs. |
+| =noise_coefficients_prf_sum= | Sum of the fitted model's Pr(>F) values for noise coeffs.  |
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22557,7 +22573,22 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficients = abs(coefficients))
+factors <- 30
+coefficient_variability = list(max = 5, min = 3)
+coefficient_noise = 0.2
+
+coefficients <- replicate(factors + 1,
+                          ifelse(runif(1) > 0.8,
+                                  ifelse(runif(1) >= 0.5,
+                                        runif(1,
+                                              min = -coefficient_variability$max,
+                                              max = -coefficient_variability$min),
+                                        runif(1,
+                                              min = coefficient_variability$min,
+                                              max = coefficient_variability$max)),
+                                  rnorm(1, mean = 0, sd = coefficient_noise)))
+
+plot_data <- data.frame(coefficients = coefficients)
 
 ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
        geom_point() +
@@ -22566,7 +22597,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6yUrit/figurecccxYu.png]]
+[[file:/tmp/babel-hIxYUy/figurerYFiCo.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22582,14 +22613,14 @@ plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Samp
 
 ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
        facet_wrap(names ~ ., ncol = 2) +
-       #ylim(c(0, 0.001)) +
+       ylim(c(0, 0.001)) +
        scale_x_continuous(name = "Experiment") +
        geom_point() +
        theme_bw(base_size = 20)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureCRqmcx.png]]
+[[file:/tmp/babel-hIxYUy/figureL11b5s.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -22627,14 +22658,14 @@ plot_data <- data.frame(coefficient_distance_difference = (sort(filter(data, nam
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Coeff. Dist. Ratio (Federov Uniform / Biased)") +
+       scale_y_continuous(name = "Sorted Coeff. Dist. Ratio (Federov Uniform / Biased)") +
        geom_point() +
        geom_hline(yintercept = 1, linetype = 2) +
        theme_bw(base_size = 20) # +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figure28Lxp4.png]]
+[[file:/tmp/babel-hIxYUy/figurexbKYPd.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -23336,16 +23367,16 @@ the interval $[-5, -3] \cup [3, 5]$, and unsignificant coefficients are picked
 from a normal distribution in the interval $[-0.2, 0.2]$.
 
 After generating the coefficients, we generate a set of experiments for
-comparing model fits. Then, each iteration generates designs of size 40 for 30
+comparing model fits. Then, each iteration generates designs of size 70 for 30
 numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
 below:
 
 | Strategy                  | Description                                                  |
 |---------------------------+--------------------------------------------------------------|
-| Uniform Sample            | Pick 40 experiments from a uniform distribution              |
-| Biased Sample             | Pick 40 experiments from a biased distribution               |
-| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 40 w.r.t. D |
-| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 40 w.r.t. D  |
+| Uniform Sample            | Pick 70 experiments from a uniform distribution              |
+| Biased Sample             | Pick 70 experiments from a biased distribution               |
+| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 70 w.r.t. D |
+| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 70 w.r.t. D  |
 
 Responses are computed using the generated coefficient set, with added noise
 from a normal distribution with standard deviation $sd = 2$ and mean zero. The
@@ -23359,6 +23390,15 @@ the =D= values of the 100 repetitions. These values are computed as follows:
 | =coefficient_distance= | Euclidean distance between fitted & real model coefficients |
 | =linear_fit_distance=  | Euclidean distance between predicted & real response        |
 | =D=                    | Computed as usual by =AlgDesign::eval.design()=             |
+
+I've also computed the distance between the following two metrics, in an attempt
+to detect the model's hability to identify significant coefficients in a set
+were most coefficients do not impact the response.
+
+| Value                        | Computation                                                |
+|------------------------------+------------------------------------------------------------|
+| =real_coefficients_prf_sum=  | Sum of the fitted model's Pr(>F) values for actual coeffs. |
+| =noise_coefficients_prf_sum= | Sum of the fitted model's Pr(>F) values for noise coeffs.  |
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -24192,16 +24232,16 @@ the interval $[-5, -3] \cup [3, 5]$, and unsignificant coefficients are picked
 from a normal distribution in the interval $[-0.2, 0.2]$.
 
 After generating the coefficients, we generate a set of experiments for
-comparing model fits. Then, each iteration generates designs of size 40 for 30
+comparing model fits. Then, each iteration generates designs of size 70 for 30
 numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
 below:
 
 | Strategy                  | Description                                                  |
 |---------------------------+--------------------------------------------------------------|
-| Uniform Sample            | Pick 40 experiments from a uniform distribution              |
-| Biased Sample             | Pick 40 experiments from a biased distribution               |
-| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 40 w.r.t. D |
-| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 40 w.r.t. D  |
+| Uniform Sample            | Pick 70 experiments from a uniform distribution              |
+| Biased Sample             | Pick 70 experiments from a biased distribution               |
+| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 70 w.r.t. D |
+| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 70 w.r.t. D  |
 
 Responses are computed using the generated coefficient set, with added noise
 from a normal distribution with standard deviation $sd = 2$ and mean zero. The
@@ -24224,7 +24264,6 @@ were most coefficients do not impact the response.
 |------------------------------+------------------------------------------------------------|
 | =real_coefficients_prf_sum=  | Sum of the fitted model's Pr(>F) values for actual coeffs. |
 | =noise_coefficients_prf_sum= | Sum of the fitted model's Pr(>F) values for noise coeffs.  |
-
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -24479,3 +24518,82 @@ ggpairs(decode.data(federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", 
 
 #+RESULTS:
 [[file:/tmp/babel-hIxYUy/figureAcd7yv.png]]
+** February
+*** [2019-02-01 Fri]
+**** Sampling from Multivariate Distributions in =R=
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(MASS)
+library(GGally)
+library(ggplot2)
+
+means <- c(0, -5, 2, 1, 10)
+variances <- c(1, 10, 3, 5, 8)
+correlations <- c(0)
+
+sigma_m <- matrix(rep(correlations[1]), length(means), length(means))
+
+for(i in 1:length(means)) {
+    sigma_m[i, i] <- variances[i]
+}
+
+sample <- data.frame(mvrnorm(n = 100, means, sigma_m))
+
+ggpairs(sample) +
+        theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-7hEm7H/figureYdbURn.png]]
+*** [2019-02-04 Mon]
+**** Gaussian Processes in R
+Adapted from the example from [[https://cran.r-project.org/web/packages/kergp/kergp.pdf][kergp's documentation]] for the =gp= function:
+
+#+begin_SRC R :results output :session *R*
+library(kergp)
+library(dplyr)
+library(tidyr)
+
+#set.seed(1234)
+
+myCov <- covTS(inputs = c("Temp", "Humid", "Wei"),
+               dep = c(range = "input"),
+               value = c(range = 0.4))
+
+## change coefficients (variances)
+coef(myCov) <- c(1000, 1, 1000, 1, 10000, 1)
+d <- myCov@d
+n <- 100
+
+## design matrix
+X <- matrix(runif(n * d), nrow = n, ncol = d)
+colnames(X) <- inputNames(myCov)
+
+## generate the GP realization
+myGp <- gp(formula = y ~ 1, data = data.frame(y = rep(0, n), X),
+           cov = myCov, estim = FALSE,
+           beta = 0.0, varNoise = 0.05)
+
+samples <- data.frame(simulate(myGp, nsim = 8, cond = FALSE)$sim)
+
+samples$Temp <- data.frame(X)$Temp
+samples$Humid <- data.frame(X)$Humid
+samples$Wei <- data.frame(X)$Wei
+
+samples <- gather(samples, id, Y, -Temp, -Humid, -Wei)
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+ggplot(samples, aes(x = Humid, y = Y, color = id)) +
+       geom_line() +
+       theme_bw(base_size = 20)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-aASbNk/figureXPtMLP.png]]
