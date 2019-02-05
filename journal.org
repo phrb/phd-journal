@@ -24558,17 +24558,18 @@ library(tidyr)
 
 #set.seed(1234)
 
-myCov <- covTS(inputs = c("Temp", "Humid", "Wei"),
+myCov <- covTS(inputs = c("Temp", "Humid"),
                dep = c(range = "input"),
                value = c(range = 0.4))
 
 ## change coefficients (variances)
-coef(myCov) <- c(1000, 1, 1000, 1, 10000, 1)
+coef(myCov) <- c(100, 10, 1, 50000)
 d <- myCov@d
-n <- 100
+n <- 400
 
 ## design matrix
-X <- matrix(runif(n * d), nrow = n, ncol = d)
+X <- expand.grid(seq(0, 1, length.out = 20),
+                 seq(0, 1, length.out = 20))
 colnames(X) <- inputNames(myCov)
 
 ## generate the GP realization
@@ -24580,9 +24581,8 @@ samples <- data.frame(simulate(myGp, nsim = 8, cond = FALSE)$sim)
 
 samples$Temp <- data.frame(X)$Temp
 samples$Humid <- data.frame(X)$Humid
-samples$Wei <- data.frame(X)$Wei
 
-samples <- gather(samples, id, Y, -Temp, -Humid, -Wei)
+samples <- gather(samples, id, Y, -Temp, -Humid)
 #+end_SRC
 
 #+RESULTS:
@@ -24590,10 +24590,377 @@ samples <- gather(samples, id, Y, -Temp, -Humid, -Wei)
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-ggplot(samples, aes(x = Humid, y = Y, color = id)) +
+ggplot(samples[samples$id=="X3",], aes(x = Humid, y = Y,
+                                       color = Temp,
+                                       group = factor(Temp))) +
        geom_line() +
        theme_bw(base_size = 20)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-aASbNk/figureXPtMLP.png]]
+[[file:/tmp/babel-psN6ww/figure48NFek.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+ggplot(samples[samples$id=="X3",], aes(x = Temp, y = Y,
+                                       color = Humid,
+                                       group = factor(Humid))) +
+       geom_line() +
+       theme_bw(base_size = 20)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-psN6ww/figureQ7KOmN.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+ggplot(samples[samples$id=="X3",], aes(fill = Y, x = Temp, z = Y, y = Humid)) +
+       geom_point() +
+       geom_contour() +
+       geom_raster() +
+       theme_bw(base_size = 20)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-psN6ww/figures7LVRJ.png]]
+
+#+begin_SRC R :results output :session *R*
+samples_f1 <- filter(samples, id == "X1")
+str(samples_f1)
+
+regression_f1 <- lm(Y ~ Temp + Humid + I(Temp ^ 2) + I(Humid ^ 2), samples_f1)
+summary.aov(regression_f1)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	400 obs. of  4 variables:
+ $ Temp : num  0 0.0526 0.1053 0.1579 0.2105 ...
+ $ Humid: num  0 0 0 0 0 0 0 0 0 0 ...
+ $ id   : chr  "X1" "X1" "X1" "X1" ...
+ $ Y    : num  170 170 170 170 170 ...
+
+             Df Sum Sq Mean Sq   F value Pr(>F)
+Temp          1      0       0 1.560e-01  0.693
+Humid         1  73263   73263 1.345e+06 <2e-16 ***
+I(Temp^2)     1      0       0 1.500e-02  0.903
+I(Humid^2)    1     68      68 1.243e+03 <2e-16 ***
+Residuals   395     22       0
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+*** [2019-02-05 Tue]
+**** Practical Efficiency with Numerical Factors & Functions Sampled from Gaussian Processes
+***** Experiment Definition
+1. Define factor number
+   - High-dimensional spaces
+   - Numerical factors
+2. Generate samples for Gaussian Process
+   - Testing set
+   - =runif=
+   - Biased distributions + =rnorm=
+3. Generate Covariance Matrix
+   - Choose kernel (=k1Matern5_2=, Matérn cov. Tensor Sum?)
+   - Relative significances, kernel parameters
+4. Sample function from Gaussian Process
+5. Compute response for all samples
+6. Fit models using strategies:
+   - Random & Biased designs
+   - D-Optimal with Random & Biased + =rnorm= designs
+     - ANOVA to identify significant factors
+     - Re-fit models using identified factors
+7. Compare predictions with computed responses in test set
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Setup
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+compute_response <- function(coefficients, formula, experiment) {
+    return(model.matrix(formula, experiment) %*% coefficients)
+}
+
+add_noise <- function(design, sd = 1) {
+    return(design$Y + rnorm(nrow(design), mean = 0, sd = sd))
+}
+
+compare_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
+    return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_a),
+                               sample)) ^ 2)),
+             sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_b),
+                               sample)) ^ 2))))
+}
+
+compare_coefficients <- function(coefficients, formula, design) {
+    return(sqrt(sum((coefficients - unname(coef(lm(formula, design)))) ^ 2)))
+}
+
+compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(c(sum(prf_values[abs(coefficients) > coefficient_limits$min])))
+}
+
+compare_noise_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(sum(prf_values[abs(coefficients) <= coefficient_limits$min]))
+}
+
+linear_data <- factor_cdf(linear_function, name = "Linear Factors")
+linear_cdf <- subset(linear_data, name == "Linear Factors CDF")
+
+quadratic_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quadratic_cdf <- subset(quadratic_data, name == "Quadratic Factors CDF")
+
+cubic_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cubic_cdf <- subset(cubic_data, name == "Cubic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+plot_data <- bind_rows(linear_cdf, quadratic_cdf, cubic_cdf)
+
+ggplot(plot_data, aes(x = x, y = y)) +
+       facet_wrap(name ~ ., ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-psN6ww/figurerLb68d.png]]
+
+***** Generating Data
+You can load one of the datasets from the repository:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
+#+END_SRC
+
+#+begin_SRC R :results output :session *R*
+library(rsm)
+library(dplyr)
+
+data <- NULL
+
+factors <- 31
+
+testing_sample_size <- factors * 100
+dopt_sample_size <- factors * 100
+
+linear_design_size <- factors + 10
+quadratic_design_size <- (2 * factors) + 10
+cubic_design_size <- (3 * factors) + 10
+
+quadratic_normal_ratio <- 0.2
+quadratic_normal_sd <- 0.04
+
+cubic_normal_ratio <- 0.2
+cubic_normal_sd <- 0.04
+
+significant_coefficient_ratio <- 0.2
+
+# Generating all sample sets:
+
+# Testing set to compare fit:
+
+testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                              runif(testing_sample_size))))
+testing_sample$name <- "testing_sample"
+
+# DOPT runif set to sample from:
+
+dopt_runif_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 runif(dopt_sample_size))))
+dopt_runif_sample$name <- "dopt_runif_sample"
+
+# Runif designs:
+
+linear_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(linear_design_size))))
+linear_runif_design$name <- "linear_runif_design"
+
+quadratic_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(quadratic_design_size))))
+quadratic_runif_design$name <- "quadratic_runif_design"
+
+cubic_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(cubic_design_size))))
+cubic_runif_design$name <- "cubic_runif_design"
+
+# Biased designs:
+
+linear_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                    sample_factor(linear_cdf,
+                                                                                  linear_design_size))))
+linear_biased_design$name <- "linear_biased_design"
+
+quadratic_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                       sample_factor(quadratic_cdf,
+                                                                                     as.integer((1 - quadratic_normal_ratio) * quadratic_design_size)))))
+
+quadratic_biased_design <- rbind(quadratic_biased_design, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                                      rnorm(as.integer(quadratic_normal_ratio * quadratic_design_size),
+                                                                                                                       mean = 0.5, sd = quadratic_normal_sd)))))
+quadratic_biased_design$name <- "quadratic_biased_design"
+
+cubic_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                   sample_factor(cubic_cdf,
+                                                                                 as.integer((1 - cubic_normal_ratio) * cubic_design_size)))))
+
+cubic_biased_design <- rbind(cubic_biased_design, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                              rnorm(as.integer(cubic_normal_ratio * cubic_design_size),
+                                                                                                               mean = 0.5, sd = cubic_normal_sd)))))
+cubic_biased_design$name <- "cubic_biased_design"
+
+# DOPT biased sets to sample from:
+
+dopt_linear_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                         sample_factor(linear_cdf,
+                                                                                       dopt_sample_size))))
+dopt_linear_biased_sample$name <- "dopt_linear_biased_sample"
+
+dopt_quadratic_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                            sample_factor(quadratic_cdf,
+                                                                                          as.integer((1 - quadratic_normal_ratio) * dopt_sample_size)))))
+
+dopt_quadratic_biased_sample <- rbind(dopt_quadratic_biased_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                                                rnorm(as.integer(quadratic_normal_ratio * dopt_sample_size),
+                                                                                                                                 mean = 0.5, sd = quadratic_normal_sd)))))
+dopt_quadratic_biased_sample$name <- "dopt_quadratic_biased_sample"
+
+dopt_cubic_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                        sample_factor(cubic_cdf,
+                                                                                      as.integer((1 - cubic_normal_ratio) * dopt_sample_size)))))
+
+dopt_cubic_biased_sample <- rbind(dopt_cubic_biased_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                                        rnorm(as.integer(cubic_normal_ratio * dopt_sample_size),
+                                                                                                                         mean = 0.5, sd = cubic_normal_sd)))))
+dopt_cubic_biased_sample$name <- "dopt_cubic_biased_sample"
+
+all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
+                     quadratic_runif_design, cubic_runif_design, linear_biased_design,
+                     quadratic_biased_design, cubic_biased_design, dopt_linear_biased_sample,
+                     dopt_quadratic_biased_sample, dopt_cubic_biased_sample)
+#+end_SRC
+
+#+RESULTS:
