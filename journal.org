@@ -24965,7 +24965,7 @@ all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
 
 #+RESULTS:
 *** [2019-02-07 Thu]
-**** /Practical Efficiency/ for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.
+**** Post ANOVA /Practical Efficiency/ for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.
 ***** Clone Repository
 Make sure you have the latest data:
 #+BEGIN_SRC sh :results output
@@ -25064,12 +25064,26 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
   }
 
   compare_post_anova_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
-    return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                       predict(lm(response_formula, design_a),
-                               sample)) ^ 2)),
-             sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                       predict(lm(response_formula, design_b),
-                               sample)) ^ 2))))
+      regression_summary_a <- summary(aov(response_formula, design_a))
+
+      prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
+      names(prf_values_a) <- c("values")
+
+      refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= 0.001)), sep = "", collapse = " + ")))
+
+      regression_summary_b <- summary(aov(response_formula, design_b))
+
+      prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
+      names(prf_values_b) <- c("values")
+
+      refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= 0.001)), sep = "", collapse = " + ")))
+
+      return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(refitted_formula_a, design_a),
+                                sample)) ^ 2)),
+              sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(refitted_formula_b, design_b),
+                                sample)) ^ 2))))
   }
 
   # https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
@@ -25100,6 +25114,16 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 
 #+RESULTS:
 #+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
 
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
@@ -25143,7 +25167,7 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figurebDYcuf.png]]
+[[file:/tmp/babel-Fjg75I/figureThNhJS.png]]
 
 ***** Generating Data
 You can load one of the datasets from the repository:
@@ -25164,7 +25188,10 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
   samples <- (2 * factors) + 10
   runs <- 100
 
-  coefficient_variability = list(max = 7, min = 1)
+  normal_samples_ratio <- 0.15
+
+  coefficient_probability <- 0.15
+  coefficient_variability <- list(max = 7, min = 1)
   coefficient_noise = 0.15
   noise_sd <- 0.04
   fit_comparison_sample_size <- 600
@@ -25201,7 +25228,7 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
       }
 
       coefficients <- replicate((2 * factors) + 1,
-                                ifelse(runif(1) > 0.9,
+                                ifelse(runif(1) > (1.0 - coefficient_probability),
                                        ifelse(runif(1) >= 0.5,
                                               runif(1,
                                                     min = -coefficient_variability$max,
@@ -25222,10 +25249,10 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
 
       biased_design <- get_runif_coded_design(data.frame(replicate(factors,
                                                                    sample_factor(quad_cdf,
-                                                                                 8 * (samples / 10)))))
+                                                                                 as.integer((1 - normal_samples_ratio) * samples)))))
 
       biased_design <- rbind(biased_design, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                        rnorm(2 * (samples / 10),
+                                                                                        rnorm(as.integer(normal_samples_ratio * samples),
                                                                                               mean = 0.5, sd = 0.04)))))
 
       biased_design$Y <- compute_response(coefficients, formula, biased_design)
@@ -25263,6 +25290,14 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
                                                                      biased_design,
                                                                      sample_size = fit_comparison_sample_size,
                                                                      sd = noise_sd),
+                                   linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                  fit_comparison_sample,
+                                                                                  formula,
+                                                                                  response_formula,
+                                                                                  design,
+                                                                                  biased_design,
+                                                                                  sample_size = fit_comparison_sample_size,
+                                                                                  sd = noise_sd),
                                    names = c("Uniform Sample", "Biased Sample"),
                                    id = i)
 
@@ -25304,7 +25339,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figureeZBDXj.png]]
+[[file:/tmp/babel-sI8n2m/figurefekpVs.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25324,7 +25359,7 @@ ggplot(data, aes(x = id, y = real_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figureALhl4f.png]]
+[[file:/tmp/babel-sI8n2m/figureEGWg1h.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25343,7 +25378,7 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figure2p1utt.png]]
+[[file:/tmp/babel-sI8n2m/figuretIUiUc.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25362,7 +25397,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figuredDC2Nd.png]]
+[[file:/tmp/babel-sI8n2m/figure98ElIo.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25386,7 +25421,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figuref8ylEC.png]]
+[[file:/tmp/babel-sI8n2m/figurej8fv0d.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25410,7 +25445,31 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-sI8n2m/figure7S7Rw8.png]]
+[[file:/tmp/babel-sI8n2m/figurev0BoCZ.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance /
+                                                                filter(data, names == "Biased Sample")$linear_refit_distance),
+                        id = seq(1:(nrow(data) / 2)))
+
+ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Difference Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-sI8n2m/figurecJ7QIq.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25468,7 +25527,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
       }
 
       coefficients <- replicate((2 * factors) + 1,
-                                ifelse(runif(1) > 0.9,
+                                ifelse(runif(1) > (1.0 - coefficient_probability),
                                        ifelse(runif(1) >= 0.5,
                                               runif(1,
                                                     min = -coefficient_variability$max,
@@ -25523,6 +25582,14 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
                                                                      biased_federov_design,
                                                                      sample_size = fit_comparison_sample_size,
                                                                      sd = noise_sd),
+                                   linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                  fit_comparison_sample,
+                                                                                  formula,
+                                                                                  response_formula,
+                                                                                  design,
+                                                                                  biased_design,
+                                                                                  sample_size = fit_comparison_sample_size,
+                                                                                  sd = noise_sd),
                                    names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
                                    id = i)
 
@@ -25547,12 +25614,11 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 [1] 80
 [1] 90
 [1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig_norm.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig_norm_post_anova.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -25560,7 +25626,7 @@ write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_sa
 ***** Results
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig_norm.csv", header = TRUE)
+data <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_30_factors_70_exp_random_coeff_few_sig_norm_post_anova.csv", header = TRUE)
 #+END_SRC
 
 #+RESULTS:
@@ -25629,7 +25695,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureaiOagD.png]]
+[[file:/tmp/babel-sI8n2m/figureclypMZ.png]]
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25646,7 +25712,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureEdGzmF.png]]
+[[file:/tmp/babel-sI8n2m/figuredHmt2O.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25669,7 +25735,7 @@ ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureHAVAqg.png]]
+[[file:/tmp/babel-sI8n2m/figurebvARYF.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25692,7 +25758,7 @@ ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figure8PYXHn.png]]
+[[file:/tmp/babel-sI8n2m/figureWtnK6f.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25716,7 +25782,7 @@ ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureTT4kGC.png]]
+[[file:/tmp/babel-sI8n2m/figuredPX5nr.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25738,7 +25804,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureIzKgLf.png]]
+[[file:/tmp/babel-sI8n2m/figurennX91u.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25760,7 +25826,31 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-hIxYUy/figureA2BXM3.png]]
+[[file:/tmp/babel-sI8n2m/figureWvoNh6.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance /
+                                                                filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Difference Ratio (Uniform / Biased)") +
+       geom_point(alpha = 0.5) +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-sI8n2m/figure38F0CP.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
