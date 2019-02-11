@@ -1,0 +1,328 @@
+% Created 2019-02-11 Mon 17:39
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+
+\usepackage{sourcecodepro}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage[scale=2]{ccicons}
+\usepackage{hyperref}
+\usepackage{relsize}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{wasysym}
+\usepackage{ragged2e}
+\usepackage{textcomp}
+\usepackage{pgfplots}
+\usepackage{todonotes}
+\usepgfplotslibrary{dateplot}
+\lstdefinelanguage{Julia}%
+{morekeywords={abstract,struct,break,case,catch,const,continue,do,else,elseif,%
+end,export,false,for,function,immutable,mutable,using,import,importall,if,in,%
+macro,module,quote,return,switch,true,try,catch,type,typealias,%
+while,<:,+,-,::,/},%
+sensitive=true,%
+alsoother={$},%
+morecomment=[l]\#,%
+morecomment=[n]{\#=}{=\#},%
+morestring=[s]{"}{"},%
+morestring=[m]{'}{'},%
+}[keywords,comments,strings]%
+\lstset{ %
+backgroundcolor={},
+basicstyle=\ttfamily\scriptsize,
+breakatwhitespace=true,
+breaklines=true,
+captionpos=n,
+extendedchars=true,
+frame=n,
+language=R,
+rulecolor=\color{black},
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+stepnumber=2,
+stringstyle=\color{gray},
+tabsize=2,
+}
+\renewcommand*{\UrlFont}{\ttfamily\smaller\relax}
+\author{Pedro H R Bruel}
+\date{\today}
+\title{Post ANOVA \emph{Practical Efficiency} for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.}
+\hypersetup{
+ pdfauthor={Pedro H R Bruel},
+ pdftitle={Post ANOVA \emph{Practical Efficiency} for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.2)},
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+Optimizing problems with a large number of configurable parameters, or
+\emph{factors}, is one of the main objectives of our transparent Design of
+Experiments approach to autotuning. Despite the high dimensionality of these
+problems, it is usually the case that only a \todo{add reference}small number of
+factors impacts the measured performance metrics significantly. Our approach
+aims to identify the most significant factors using an initial performance
+model, D-Optimal designs, and Analysis of Variance.
+
+Our experiments with SPAPT kernels obtained results similar to a uniform
+sampling strategy, while using significantly less evaluations. Since it was
+unfeasible to evaluate all possible configurations of each SPAPT kernel due to
+their large search spaces, the experimental designs used in each iteration of
+our iterative approach were selected from a limited sample of configurations.
+The size of these samples were always small relative to the size of each search
+space, due to the high dimension and number of values for each factor.
+
+\section{Sampling Strategies}
+\label{sec:orgcfac236}
+A practical concern derived from the limitation on the size of samples to
+choose a design from is the large amount of time it takes to evaluate a
+relatively large number of candidate configurations. Each search space also had
+several constraints on factor levels, reducing the valid search space and
+slowing the process of finding candidates to test. Another concern is the
+intuition that the \todo{improve, add reference} quality of the designs
+constructed from uniformly sampled candidates should always be poorer than in
+the case where designs are selected from complete search spaces. This property
+should be more pronounced when certain types of performance models are selected,
+such as quadratic models, due to the fact that practically none of the points
+sampled uniformly from a high-dimensional search space would be in the central
+region of the space.
+
+\begin{table}[htbp]
+\caption{\label{tab:orgca1b5aa}
+Design construction techniques and target performance models}
+\centering
+\begin{tabular}{ll}
+Sampling \& Construction Strategy & Performance Models\\
+\hline
+Uniform & Linear \& quadratic\\
+Biased & Linear\\
+Biased + Normal & Quadratic\\
+Uniform + \emph{Federov's} & Linear \& quadratic\\
+Biased + \emph{Federov's} & Linear\\
+Biased + Normal + \emph{Federov's} & Quadratic\\
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{/tmp/babel-dYWgzL/figureZJq2V8.png}
+\caption{\label{fig:orgb744699}
+Cumulative Distribution Functions used for Biased Samples}
+\end{figure}
+
+These concerns motivated the development of a methodology to evaluate the
+quality of the designs produced by \todo{add reference} \emph{Fedorov's algorithm},
+the chosen D-Optimal construction technique, in the cases where designs were
+selected from samples with different properties. We studied design efficiency,
+measured by the \emph{D-criterion}, for designs constructed using the performance
+models and construction techniques listed in Table~\ref{tab:orgca1b5aa}.
+Sampling strategies consisted of obtaining samples using the \emph{cumulative
+distribution functions} in Figure~\ref{fig:orgb744699}, and adding samples from a
+normal distribution to the quadratic model biased samples.
+
+\section{Comparing Sampling Strategies}
+\label{sec:orgc675447}
+In addition to the D-Criterion value, we also measured the quality of the
+designs generated by each technique using the \emph{euclidean distance} between the
+vector of responses generated by different models fitted using the results of a
+design's experiments. We compared the results of a model using all factors and
+of a re-fitted model using only significant factors identified with ANOVA. We
+performed this comparison for all sampling strategies in
+Table~\ref{tab:orgca1b5aa}.
+
+We decided to sample new functions for each repetition of our experiments with
+D-Criteria and model fits. This was initially done by sampling values for the
+coefficients for each model term, generating a new function that was used to
+compute the results corresponding to the factor values of each of a design's
+experiments. Coefficient sampling is described in more detail in the following
+Section.
+
+\subsection{Sampling Function Coefficients}
+\label{sec:org688fa6c}
+Consider the functions
+\(f_{\boldsymbol{\alpha},\boldsymbol{\beta}}\colon\mathbf{X}\in\mathbb{R}^n\to\mathbb{R}\)
+of the form
+
+\[
+f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}) = \alpha_0 + \sum\limits^{n}_{i = 1}{\left(\alpha_{i}x_{i} + \beta_{i}x_{i}^{2}\right)} + \varepsilon\text{,}
+\]
+
+where \(x \in [-1, 1] \; \forall x \in \mathbf{X}\), with \emph{coefficients of linear
+terms} \(\boldsymbol{\alpha} \in \mathbb{R}^{n + 1}\), \emph{coefficients of quadratic
+terms} \(\boldsymbol{\beta} \in \mathbb{R}^{n}\), and normally distributed error
+\(\varepsilon\). The procedure we used to sample new coeficients at each
+experiment starts by choosing which of the \(\alpha_i \in \boldsymbol{\alpha}\),
+\(\beta_i \in \boldsymbol{\beta}\) will be significant. With our target scenario
+in mind, each coefficient had a 15\% chance of being significant. A uniformly
+sampled value in the interval \([-x_{\text{sup}}, -x_{\text{inf}}] \cup
+[x_{\text{inf}}, x_{\text{sup}}]\) is chosen for each significant coefficient,
+where \(x_{\text{sup}},x_{\text{inf}} \in \mathbb{R}\),
+\(x_{\text{sup}}>x_{\text{inf}}>0\). Small normally distributed values with mean
+zero and standard deviation \(x_{\text{sd}}\) are assigned for the other factors.
+Figure~\ref{fig:org5d0da57} shows one coefficient sample obtained by this
+process, where \(|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
+2|\boldsymbol{X}| + 1 = 121\), \(x_{\text{inf}} = 1\), \(x_{\text{sup}} = 7\), and
+\(x_{\text{sd}} = 0.04\).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{/tmp/babel-dYWgzL/figureBN39Mt.png}
+\caption{\label{fig:org5d0da57}
+Sampled coefficients}
+\end{figure}
+
+\subsection{Comparing Response Vectors}
+\label{sec:org0e25809}
+Consider a design \(\xi_{n,k}\) with factors \(x_{k1},\dots,x_{kn}\), experiments
+\(\boldsymbol{X_1}, \dots, \boldsymbol{X_k}\), and design matrix given by
+\[
+\xi_{n,k} =
+\begin{bmatrix}
+    x_{11} & x_{12} & x_{13} & \dots  & x_{1n} \\
+    x_{21} & x_{22} & x_{23} & \dots  & x_{2n} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    x_{k1} & x_{k2} & x_{k3} & \dots  & x_{kn}
+\end{bmatrix},
+\]
+where the \(k\) experiments were chosen by Fedorov's algorithm from a relatively
+large sample of size \(K\).
+
+Using a function \(f_{\boldsymbol{\alpha},\boldsymbol{\beta}}\) sampled as
+described in the previous section, we can compute the value or \emph{response vector}
+\(\boldsymbol{y} = (y_1,\dots,y_k)\) for each experiment vector \(\boldsymbol{X_i}
+= (x_{i1},\dots,x_{in})\), obtaining the design \(\xi^{\prime}_{n,k}\) with design
+matrix given by
+\[
+\xi^{\prime}_{n,k} =
+\begin{bmatrix}
+    x_{11} & x_{12} & x_{13} & \dots  & x_{1n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_1) \\
+    x_{21} & x_{22} & x_{23} & \dots  & x_{2n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_2)\\
+    \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+    x_{k1} & x_{k2} & x_{k3} & \dots  & x_{kn} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_k)
+\end{bmatrix}.
+\]
+
+We then use \(\xi^{\prime}_{n,k}\) to perform a linear regression with model
+\[
+f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_i) = y_i = \alpha^{\prime}_0 +
+\boldsymbol{X}_i^{\top}(\alpha^{\prime}_{2}, \dots, \alpha^{\prime}_{n + 1}) +
+\boldsymbol{X}^{2\top}_i(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
+\varepsilon\text{,}
+\]
+obtaining coefficients that define the function
+\(f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}\) which
+approximates \(f_{\boldsymbol{\alpha},\boldsymbol{\beta}}\).
+Evaluating the fitted model in the original large sample of size \(K\) gives
+the response vector
+\[
+\boldsymbol{Y}^{\prime} = (f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
+(\boldsymbol{X}_1), \dots, f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
+(\boldsymbol{X}_K))\text{,}
+\]
+and evaluating the true sampled function gives the response vector
+\[
+\boldsymbol{Y} = (f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
+(\boldsymbol{X}_1), \dots, f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
+(\boldsymbol{X}_K))\text{.}
+\]
+The \emph{response vector distance} \(d(\mathbf{Y}, \mathbf{Y}^{\prime}) =
+\|\mathbf{Y} - \mathbf{Y}^{\prime}\|^{2}\) provides a measure of how well the
+fitted model approximates the real function in the initial sample of size \(K\).
+\subsection{Comparing D-Criteria}
+\label{sec:orgba04456}
+\section{Results}
+\label{sec:orgeb37116}
+The following results show 100 repetitions of the experiments described below.
+The first step of each iteration is generating model coefficients. Since it
+better mirrors our targeted use case, we decided to generate coefficient sets
+where only a small amount of coefficients is allowed to be significant, 20\% in
+this case. Significant coefficients are picked from an uniform distribution in
+the interval \([-5, -3] \cup [3, 5]\), and unsignificant coefficients are picked
+from a normal distribution in the interval \([-0.2, 0.2]\).
+
+After generating the coefficients, we generate a set of experiments for
+comparing model fits. Then, each iteration generates designs of size 70 for 30
+numerical factors in the interval \([-1.0, 1.0]\), using the strategies listed
+below:
+
+\begin{center}
+\begin{tabular}{p{0.4\textwidth}p{0.5\textwidth}}
+Strategy & Description\\
+\hline
+Uniform Sample & Pick 70 experiments from a uniform distribution\\
+Biased Sample & Pick 70 experiments from a biased distribution\\
+Federov w/ Uniform Sample & Generate uniformly a set of size 1000 exp.; pick 70 w.r.t. D\\
+Federov w/ Biased Sample & Generate biasedly a set of size 1000 exp.; pick 70 w.r.t. D\\
+\end{tabular}
+\end{center}
+
+Responses are computed using the generated coefficient set, with added noise
+from a normal distribution with standard deviation \(sd = 2\) and mean zero. The
+results are used to fit linear models, which are compared with the actual model
+generated for that iteration using 2 model metrics and 1 design metric. The
+figures below compare the \texttt{coefficient\_distance}, the \texttt{linear\_fit\_distance} and
+the \texttt{D} values of the 100 repetitions. These values are computed as follows:
+
+\begin{center}
+\begin{tabular}{ll}
+Value & Computation\\
+\hline
+\texttt{coefficient\_distance} & Euclidean distance between fitted \& real model coefficients\\
+\texttt{linear\_fit\_distance} & Euclidean distance between predicted \& real response\\
+\texttt{D} & Computed as usual by \texttt{AlgDesign::eval.design()}\\
+\end{tabular}
+\end{center}
+
+I've also computed the distance between the following two metrics, in an attempt
+to detect the model's hability to identify significant coefficients in a set
+were most coefficients do not impact the response.
+
+\begin{center}
+\begin{tabular}{ll}
+Value & Computation\\
+\hline
+\texttt{real\_coefficients\_prf\_sum} & Sum of the fitted model's Pr(>F) values for actual coeffs.\\
+\texttt{noise\_coefficients\_prf\_sum} & Sum of the fitted model's Pr(>F) values for noise coeffs.\\
+\end{tabular}
+\end{center}
+
+\subsection{Plots}
+\label{sec:org143801b}
+\subsubsection{D-Criterion}
+\label{sec:orge3fefdf}
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figureC9eccJ.png}
+\end{center}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figureDAEiyJ.png}
+\end{center}
+
+\subsubsection{Response Vector Distance}
+\label{sec:org4b58813}
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figure7GDxLi.png}
+\end{center}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figureGJVlrK.png}
+\end{center}
+
+\subsubsection{Post-ANOVA+Refit Response Vector Distance}
+\label{sec:orgec1cd30}
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figureFZD2Zn.png}
+\end{center}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{/tmp/babel-dYWgzL/figureMU3lr1.png}
+\end{center}
+\end{document}
