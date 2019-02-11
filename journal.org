@@ -25182,7 +25182,8 @@ and evaluating the true sampled function gives the response vector
 \]
 The /response vector distance/ $d(\mathbf{Y}, \mathbf{Y}^{\prime}) =
 \|\mathbf{Y} - \mathbf{Y}^{\prime}\|^{2}$ provides a measure of how well the
-fitted model approximates the real function in the initial sample of size $K$.
+fitted model approximates the real function in the initial sample of size $K$,
+and enables the comparison of two models for the same data.
 ****** Comparing D-Criteria
 # return(det((t(model_matrix) %*% model_matrix) / nrow(data)) ^ (1 / ncol(model_matrix)))
 ***** Clone Repository                                         :noexport:
@@ -25973,6 +25974,7 @@ were most coefficients do not impact the response.
 
 ****** Plots
 ******* D-Criterion
+#+NAME: fig:comparison-D-linear
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -25994,10 +25996,12 @@ ggplot(plot_data, aes(x = 1, y = D)) +
        theme(axis.ticks.x = element_blank(),
              axis.text.x = element_blank())
 #+END_SRC
+#+LABEL: fig:comparison-D-linear
+#+CAPTION: Comparison of D-Criterion values for linear models
+#+RESULTS: fig:comparison-D-linear
+[[file:/tmp/babel-dYWgzL/figureykJxmf.png]]
 
-#+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureC9eccJ.png]]
-
+#+NAME: fig:comparison-D-quadratic
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26019,9 +26023,10 @@ ggplot(plot_data, aes(x = 1, y = D)) +
        theme(axis.ticks.x = element_blank(),
              axis.text.x = element_blank())
 #+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureDAEiyJ.png]]
+#+LABEL: fig:comparison-D-quadratic
+#+CAPTION: Comparison of D-Criterion values for quadratic models
+#+RESULTS: fig:comparison-D-quadratic
+[[file:/tmp/babel-dYWgzL/figure0KuPn1.png]]
 
 ******* Coefficients                                         :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26227,7 +26232,7 @@ facet_wrap(names ~ ., ncol = 2) +
 #+RESULTS:
 [[file:/tmp/babel-dYWgzL/figure7GDxLi.png]]
 
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports none :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
@@ -26253,7 +26258,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance)) +
 #+RESULTS:
 [[file:/tmp/babel-dYWgzL/figureGJVlrK.png]]
 
-******* Post-ANOVA+Refit Response Vector Distance
+******* Post-ANOVA+Refit Response Vector Distance            :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
