@@ -16,9 +16,12 @@
 #+COLUMNS: %25ITEM %TODO %3PRIORITY %TAGS
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
+#+LATEX_CLASS_OPTIONS: [a4paper]
+#+LATEX_HEADER: \usepackage[margin=2cm]{geometry}
 #+LATEX_HEADER: \usepackage{sourcecodepro}
 #+LATEX_HEADER: \usepackage{booktabs}
 #+LATEX_HEADER: \usepackage{array}
+#+LATEX_HEADER: \usepackage{colortbl}
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{graphicx}
 #+LATEX_HEADER: \usepackage[english]{babel}
@@ -24589,6 +24592,26 @@ samples <- gather(samples, id, Y, -Temp, -Humid)
 #+end_SRC
 
 #+RESULTS:
+#+begin_example
+Loading required package: Rcpp
+Loading required package: testthat
+
+Attaching package: ‘testthat’
+
+The following object is masked from ‘package:dplyr’:
+
+    matches
+
+Loading required package: nloptr
+
+Loading required package: MASS
+
+Attaching package: ‘MASS’
+
+The following object is masked from ‘package:dplyr’:
+
+    select
+#+end_example
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24601,7 +24624,7 @@ ggplot(samples[samples$id=="X3",], aes(x = Humid, y = Y,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-psN6ww/figure48NFek.png]]
+[[file:/tmp/babel-dYWgzL/figureO6j5wX.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24614,7 +24637,7 @@ ggplot(samples[samples$id=="X3",], aes(x = Temp, y = Y,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-psN6ww/figureQ7KOmN.png]]
+[[file:/tmp/babel-dYWgzL/figureH5jBtR.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24627,7 +24650,7 @@ ggplot(samples[samples$id=="X3",], aes(fill = Y, x = Temp, z = Y, y = Humid)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-psN6ww/figures7LVRJ.png]]
+[[file:/tmp/babel-dYWgzL/figurefzvpOG.png]]
 
 #+begin_SRC R :results output :session *R*
 samples_f1 <- filter(samples, id == "X1")
@@ -24644,14 +24667,14 @@ summary.aov(regression_f1)
  $ Temp : num  0 0.0526 0.1053 0.1579 0.2105 ...
  $ Humid: num  0 0 0 0 0 0 0 0 0 0 ...
  $ id   : chr  "X1" "X1" "X1" "X1" ...
- $ Y    : num  170 170 170 170 170 ...
+ $ Y    : num  64.1 64 64.1 64.1 63.7 ...
 
              Df Sum Sq Mean Sq   F value Pr(>F)
-Temp          1      0       0 1.560e-01  0.693
-Humid         1  73263   73263 1.345e+06 <2e-16 ***
-I(Temp^2)     1      0       0 1.500e-02  0.903
-I(Humid^2)    1     68      68 1.243e+03 <2e-16 ***
-Residuals   395     22       0
+Temp          1      0       0 1.460e+00 0.2276
+Humid         1  25431   25431 4.691e+05 <2e-16 ***
+I(Temp^2)     1      0       0 3.562e+00 0.0598 .
+I(Humid^2)    1    407     407 7.503e+03 <2e-16 ***
+Residuals   395     21       0
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
@@ -24968,7 +24991,7 @@ all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
 
 #+RESULTS:
 *** [2019-02-07 Thu]
-**** Post ANOVA /Practical Efficiency/ for a Quadratic Model with Numerical Factors, Few Significant Factors + Normal Dist.
+**** Comparing Sampling Strategies for Constructing D-Optimal Designs
 Optimizing problems with a large number of configurable parameters, or
 /factors/, is one of the main objectives of our transparent Design of
 Experiments approach to autotuning. Despite the high dimensionality of these
@@ -25027,7 +25050,7 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+END_SRC
 #+CAPTION: Cumulative Distribution Functions used for Biased Samples
 #+LABEL: fig:cdfs
-#+ATTR_LATEX: :width 0.7\textwidth
+#+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:cdfs
 [[file:/tmp/babel-dYWgzL/figureZJq2V8.png]]
 
@@ -25077,7 +25100,7 @@ sampled value in the interval $[-x_{\text{sup}}, -x_{\text{inf}}] \cup
 [x_{\text{inf}}, x_{\text{sup}}]$ is chosen for each significant coefficient,
 where $x_{\text{sup}},x_{\text{inf}} \in \mathbb{R}$,
 $x_{\text{sup}}>x_{\text{inf}}>0$. Small normally distributed values with mean
-zero and standard deviation $x_{\text{sd}}$ are assigned for the other factors.
+zero and standard deviation $x_{\text{sd}}$ are assigned to the other factors.
 Figure\nbsp{}[[fig:sampled-coeff]] shows one coefficient sample obtained by this
 process, where $|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
 2|\boldsymbol{X}| + 1 = 121$, $x_{\text{inf}} = 1$, $x_{\text{sup}} = 7$, and
@@ -25119,13 +25142,13 @@ $x_{\text{sd}} = 0.04$.
 #+END_SRC
 #+CAPTION: Sampled coefficients
 #+LABEL: fig:sampled-coeff
-#+ATTR_LATEX: :width 0.7\textwidth
+#+ATTR_LATEX: :width 0.5\textwidth
 #+RESULTS: fig:sampled-coeff
 [[file:/tmp/babel-dYWgzL/figureBN39Mt.png]]
 
 ****** Comparing Response Vectors
 Consider a design $\xi_{n,k}$ with factors $x_{k1},\dots,x_{kn}$, experiments
-$\boldsymbol{X_1}, \dots, \boldsymbol{X_k}$, and design matrix given by
+$\boldsymbol{X}_1, \dots, \boldsymbol{X}_k$, and design matrix given by
 #+begin_export latex
 \[
 \xi_{n,k} =
@@ -25160,8 +25183,8 @@ matrix given by
 We then use $\xi^{\prime}_{n,k}$ to perform a linear regression with model
 \[
 f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_i) = y_i = \alpha^{\prime}_0 +
-\boldsymbol{X}_i^{\top}(\alpha^{\prime}_{2}, \dots, \alpha^{\prime}_{n + 1}) +
-\boldsymbol{X}^{2\top}_i(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
+\boldsymbol{X}_i^{\top}(\alpha^{\prime}_{1}, \dots, \alpha^{\prime}_{n}) +
+\left(\boldsymbol{X}^{2}_i\right)^{\top}(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
 \varepsilon\text{,}
 \]
 obtaining coefficients that define the function
@@ -25185,7 +25208,50 @@ The /response vector distance/ $d(\mathbf{Y}, \mathbf{Y}^{\prime}) =
 fitted model approximates the real function in the initial sample of size $K$,
 and enables the comparison of two models for the same data.
 ****** Comparing D-Criteria
-# return(det((t(model_matrix) %*% model_matrix) / nrow(data)) ^ (1 / ncol(model_matrix)))
+Consider a D-Optimal design $\xi_{n,k}$ constructed using Fedorov's algorithm,
+with $n$ factors, experiments $\boldsymbol{X}_1, \dots, \boldsymbol{X}_k$ chosen
+from a large candidate set of $K$ experiments, and design matrix given by
+#+begin_export latex
+\[
+\xi_{n,k} =
+\begin{bmatrix}
+    x_{11} & x_{12} & x_{13} & \dots  & x_{1n} \\
+    x_{21} & x_{22} & x_{23} & \dots  & x_{2n} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    x_{k1} & x_{k2} & x_{k3} & \dots  & x_{kn}
+\end{bmatrix}.
+\]
+#+end_export
+The quadratic performance model used to construct this design was
+#+begin_export latex
+\[
+\boldsymbol{y} = \boldsymbol{\beta{}M} + \varepsilon\text{,}
+\]
+#+end_export
+where $\boldsymbol{\beta}$ is the vector of $2n + 1$ coefficients for linear,
+quadratic, and intercept terms, $\varepsilon$ is the normally distributed error
+term, and $\boldsymbol{M}$ is the /model matrix/, a $(2n + 1)\times{}k$ matrix
+containing each factor level as it would appear in the performance model, given by
+#+begin_export latex
+\[
+\boldsymbol{M} =
+\begin{bmatrix}
+    1 & x_{11} & \dots  & x_{1n} & x_{11}^{2} & \dots  & x_{1n}^2 \\
+    1 & x_{21} & \dots  & x_{2n} & x_{21}^2 & \dots  & x_{2n}^2 \\
+    \vdots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+    1 & x_{k1} & \dots  & x_{kn} & x_{k1}^2 & \dots  & x_{kn}^2
+\end{bmatrix}.
+\]
+#+end_export
+
+The model matrix $\boldsymbol{M}$ is used to compute the /D-Criterion/
+$D(\boldsymbol{M}_{2n + 1, k}) \in [0,1]$. The D-Criterion of a design depends
+on the performance model used to construct it, and is defined as
+#+begin_export latex
+\[
+D(\boldsymbol{M}_{2n + 1, k}) = \left|\dfrac{\boldsymbol{M}^{\top}\boldsymbol{M}}{k}\right|^{\left(\dfrac{1}{2n + 1}\right)}\text{.}
+\]
+#+end_export
 ***** Clone Repository                                         :noexport:
 Make sure you have the latest data:
 #+BEGIN_SRC sh :results output :exports none :eval no-export
@@ -25915,7 +25981,7 @@ write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_sa
 
 #+RESULTS:
 
-***** Results
+***** Experiments & Results
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
 data_quadratic <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_random_coeff_few_sig_norm_post_anova.csv", header = TRUE)
@@ -25929,51 +25995,48 @@ data <- rbind(data_linear, data_quadratic)
 
 #+RESULTS:
 
-The following results show 100 repetitions of the experiments described below.
-The first step of each iteration is generating model coefficients. Since it
-better mirrors our targeted use case, we decided to generate coefficient sets
-where only a small amount of coefficients is allowed to be significant, 20% in
-this case. Significant coefficients are picked from an uniform distribution in
-the interval $[-5, -3] \cup [3, 5]$, and unsignificant coefficients are picked
-from a normal distribution in the interval $[-0.2, 0.2]$.
+The experiments described in this section use our Design of Experiments approach
+to optimize sampled linear and quadratic functions by identifying their most
+significant factors. First, we used the function coefficient sampling strategy
+described in Section\nbsp{}[[Sampling Function Coefficients]] to generate target
+objective functions with large numbers of factors, but with few significant
+ones. Then, we used the biased sampling strategies described in
+Section\nbsp{}[[Comparing Sampling Strategies]] to generate sets of candidate
+points, which were used to construct D-Optimal designs using Fedorov's
+algorithm. The response vectors of each design were evaluated using the
+generated functions, which enabled running ANOVA tests to identify the most
+significant factors. Finally, new models were fit to the design's data using
+only the identified factors. The relevant parameters of each experiment are
+described in Table\nbsp{}[[tab:exp-parameters]].
 
-After generating the coefficients, we generate a set of experiments for
-comparing model fits. Then, each iteration generates designs of size 70 for 30
-numerical factors in the interval $[-1.0, 1.0]$, using the strategies listed
-below:
+#+NAME: tab:exp-parameters
+#+CAPTION: Parameters of experiments with different regression models
+#+ATTR_LATEX: :booktabs :align p{0.34\linewidth}p{0.22\linewidth}p{0.2\linewidth}
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+| Parameter                                            |                                                                 Linear Model |                                    Quadratic Model |
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+| Factors                                              |                                                                           60 |                                                 60 |
+| \rowcolor{gray!25} Design Size                       |                                                                           70 |                                                130 |
+| Fedorov Samples                                      |                                                                         1000 |                                               1000 |
+| Testing Samples                                      |                                                                         1000 |                                               1000 |
+| \rowcolor{gray!25} Normal Samples Ratio              |                                                                           -- |                                                 8% |
+| \rowcolor{gray!25} Normal Samples Standard Deviation |                                                                           -- |                                               0.04 |
+| \rowcolor{gray!25} Sampling Strategies               |                                       \mbox{Uniform, Biased}, \mbox{Fedorov} |     \mbox{Uniform, Biased}, \mbox{Normal}, Fedorov |
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+| \rowcolor{gray!25} Sampled Objective Function        | As in Section\nbsp{}[[Sampling Function Coefficients]], $\boldsymbol{\beta} = 0$ | As in Section\nbsp{}[[Sampling Function Coefficients]] |
+| Noise Standard Deviation                             |                                                                          0.3 |                                                0.3 |
+| \rowcolor{gray!25} Regression Model                  |                                                                       Linear |                                          Quadratic |
+| $\text{P}_\text{r}(>\text{F})$ Threshold             |                                                                       0.0001 |                                             0.0001 |
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+| \rowcolor{gray!25} Coefficients                      |                                                                           61 |                                                121 |
+| Coefficient Significance Probability                 |                                                                          15% |                                                15% |
+| Coefficient Noise Standard Deviation                 |                                                                         0.01 |                                               0.01 |
+| Coefficient Range                                    |                                                 $x_{inf} = 1$, $x_{sup} = 7$ |                       $x_{inf} = 1$, $x_{sup} = 7$ |
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+| Repetitions                                          |                                                                          100 |                                                100 |
+|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 
-#+ATTR_LATEX: :booktabs :align p{0.4\textwidth}p{0.5\textwidth}
-| Strategy                  | Description                                                  |
-|---------------------------+--------------------------------------------------------------|
-| Uniform Sample            | Pick 70 experiments from a uniform distribution              |
-| Biased Sample             | Pick 70 experiments from a biased distribution               |
-| Federov w/ Uniform Sample | Generate uniformly a set of size 1000 exp.; pick 70 w.r.t. D |
-| Federov w/ Biased Sample  | Generate biasedly a set of size 1000 exp.; pick 70 w.r.t. D  |
-
-Responses are computed using the generated coefficient set, with added noise
-from a normal distribution with standard deviation $sd = 2$ and mean zero. The
-results are used to fit linear models, which are compared with the actual model
-generated for that iteration using 2 model metrics and 1 design metric. The
-figures below compare the =coefficient_distance=, the =linear_fit_distance= and
-the =D= values of the 100 repetitions. These values are computed as follows:
-
-| Value                  | Computation                                                 |
-|------------------------+-------------------------------------------------------------|
-| =coefficient_distance= | Euclidean distance between fitted & real model coefficients |
-| =linear_fit_distance=  | Euclidean distance between predicted & real response        |
-| =D=                    | Computed as usual by =AlgDesign::eval.design()=             |
-
-I've also computed the distance between the following two metrics, in an attempt
-to detect the model's hability to identify significant coefficients in a set
-were most coefficients do not impact the response.
-
-| Value                        | Computation                                                |
-|------------------------------+------------------------------------------------------------|
-| =real_coefficients_prf_sum=  | Sum of the fitted model's Pr(>F) values for actual coeffs. |
-| =noise_coefficients_prf_sum= | Sum of the fitted model's Pr(>F) values for noise coeffs.  |
-
-****** Plots
-******* D-Criterion
+****** D-Criterion
 #+NAME: fig:comparison-D-linear
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25998,6 +26061,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+END_SRC
 #+LABEL: fig:comparison-D-linear
 #+CAPTION: Comparison of D-Criterion values for linear models
+#+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:comparison-D-linear
 [[file:/tmp/babel-dYWgzL/figureykJxmf.png]]
 
@@ -26025,10 +26089,11 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+END_SRC
 #+LABEL: fig:comparison-D-quadratic
 #+CAPTION: Comparison of D-Criterion values for quadratic models
+#+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:comparison-D-quadratic
 [[file:/tmp/babel-dYWgzL/figure0KuPn1.png]]
 
-******* Coefficients                                         :noexport:
+****** Coefficients                                           :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26063,7 +26128,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+RESULTS:
 [[file:/tmp/babel-dYWgzL/figurexdRnet.png]]
 
-******* Pr(>F) Sums                                          :noexport:
+****** Pr(>F) Sums                                            :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26134,7 +26199,7 @@ ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
 #+RESULTS:
 [[file:/tmp/babel-sI8n2m/figuredPX5nr.png]]
 
-******* Coefficient Euclidean Distance                       :noexport:
+****** Coefficient Euclidean Distance                         :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26182,33 +26247,33 @@ facet_wrap(names ~ ., ncol = 2) +
 
 #+RESULTS:
 [[file:/tmp/babel-xq9JVx/figureuDVcAv.png]]
-******* Response Vector Distance
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+****** Response Vector Distance
+#+HEADER: :results graphics output :session *R* :exports none :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
   library(dplyr)
   library(ggplot2)
 
-  plot_linear_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_fit_distance /
+  plot_linear_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_fit_distance -
                                                            filter(data_linear, names == "Federov with Biased Sample")$linear_fit_distance),
                                  id = seq(1:nrow(filter(data_linear, names == "Federov with Uniform Sample"))))
 
   plot_linear_data$experiment = "Linear Model"
 
-  plot_quadratic_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_fit_distance /
+  plot_quadratic_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_fit_distance -
                                                               filter(data_quadratic, names == "Federov with Biased Sample")$linear_fit_distance),
                                     id = seq(1:nrow(filter(data_quadratic, names == "Federov with Uniform Sample"))))
 
   plot_quadratic_data$experiment = "Quadratic Model"
 
-  plot_quadratic_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_refit_distance /
+  plot_quadratic_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_refit_distance -
                                                                     filter(data_quadratic, names == "Federov with Biased Sample")$linear_refit_distance),
                                     id = seq(1:nrow(filter(data_quadratic, names == "Federov with Uniform Sample"))))
 
   plot_quadratic_refit_data$experiment = "Quadratic Model + ANOVA & re-fit"
 
-  plot_linear_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_refit_distance /
+  plot_linear_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_refit_distance -
                                                                  filter(data_linear, names == "Federov with Biased Sample")$linear_refit_distance),
                                     id = seq(1:nrow(filter(data_linear, names == "Federov with Uniform Sample"))))
 
@@ -26221,16 +26286,68 @@ facet_wrap(names ~ ., ncol = 2) +
                      plot_quadratic_refit_data)
 
   ggplot(plot_data, aes(x = id, y = fit_distance_ratio)) +
-         facet_wrap(experiment ~ .) +
+         facet_wrap(experiment ~ ., scale = "free") +
          scale_x_continuous(name = "Experiment") +
          scale_y_continuous(name = "Sorted Fit Distance Ratio (Federov Uniform / Biased)") +
          geom_point() +
-         geom_hline(yintercept = 1, linetype = 2) +
+         geom_hline(yintercept = 0, linetype = 2) +
          theme_bw(base_size = 26)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figure7GDxLi.png]]
+[[file:/tmp/babel-dYWgzL/figureJ1XxyE.png]]
+
+#+NAME:fig:refit-results
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+  library(dplyr)
+  library(ggplot2)
+
+  plot_linear_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_fit_distance -
+                                                           filter(data_linear, names == "Federov with Biased Sample")$linear_fit_distance),
+                                 id = seq(1:nrow(filter(data_linear, names == "Federov with Uniform Sample"))))
+
+  plot_linear_data$experiment = "Linear Model"
+
+  plot_quadratic_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_fit_distance -
+                                                              filter(data_quadratic, names == "Federov with Biased Sample")$linear_fit_distance),
+                                    id = seq(1:nrow(filter(data_quadratic, names == "Federov with Uniform Sample"))))
+
+  plot_quadratic_data$experiment = "Quadratic Model"
+
+  plot_quadratic_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_quadratic, names == "Federov with Uniform Sample")$linear_refit_distance -
+                                                                    filter(data_quadratic, names == "Federov with Biased Sample")$linear_refit_distance),
+                                    id = seq(1:nrow(filter(data_quadratic, names == "Federov with Uniform Sample"))))
+
+  plot_quadratic_refit_data$experiment = "Quadratic Model + ANOVA & re-fit"
+
+  plot_linear_refit_data <- data.frame(fit_distance_ratio = sort(filter(data_linear, names == "Federov with Uniform Sample")$linear_refit_distance -
+                                                                 filter(data_linear, names == "Federov with Biased Sample")$linear_refit_distance),
+                                    id = seq(1:nrow(filter(data_linear, names == "Federov with Uniform Sample"))))
+
+  plot_linear_refit_data$experiment = "Linear Model + ANOVA & re-fit"
+
+
+  plot_data <- rbind(plot_linear_data,
+                     plot_quadratic_data,
+                     plot_linear_refit_data,
+                     plot_quadratic_refit_data)
+
+  ggplot(plot_data, aes(x = id, y = fit_distance_ratio)) +
+         facet_wrap(experiment ~ ., scale = "free") +
+         scale_x_continuous(name = "Experiment") +
+         scale_y_continuous(name = "Sorted Fit Distance Difference (Federov Uniform - Biased)") +
+         geom_point() +
+         geom_hline(yintercept = 0, linetype = 2) +
+         theme_bw(base_size = 26)
+#+END_SRC
+#+CAPTION: Fit distance difference for linear and quadratic models
+#+LABEL: fig:refit-results
+#+ATTR_LATEX: :width 0.55\textwidth
+#+RESULTS: fig:refit-results
+[[file:/tmp/babel-dYWgzL/figureaezlDI.png]]
 
 #+HEADER: :results graphics output :session *R* :exports none :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26258,7 +26375,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance)) +
 #+RESULTS:
 [[file:/tmp/babel-dYWgzL/figureGJVlrK.png]]
 
-******* Post-ANOVA+Refit Response Vector Distance            :noexport:
+****** Post-ANOVA+Refit Response Vector Distance              :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26309,7 +26426,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance)) +
 #+RESULTS:
 [[file:/tmp/babel-dYWgzL/figureMU3lr1.png]]
 
-******* Looking at Sample Designs                            :noexport:
+****** Looking at Sample Designs                              :noexport:
 
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
