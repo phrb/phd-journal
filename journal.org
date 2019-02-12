@@ -25605,7 +25605,8 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
                                                                                   design,
                                                                                   biased_design,
                                                                                   sample_size = fit_comparison_sample_size,
-                                                                                  sd = noise_sd),
+                                                                                  sd = noise_sd,
+                                                                                  prf_threshold = 0.05),
                                    names = c("Uniform Sample", "Biased Sample"),
                                    id = i)
 
@@ -25763,7 +25764,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance /
+plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance -
                                                               filter(data, names == "Biased Sample")$linear_fit_distance),
                         id = seq(1:(nrow(data) / 2)))
 
@@ -25779,7 +25780,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figuresbUN0w.png]]
+[[file:/tmp/babel-dYWgzL/figureVit6Gi.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25798,7 +25799,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figurecyWfQr.png]]
+[[file:/tmp/babel-dYWgzL/figurelF51xM.png]]
 
 ******* Post-ANOVA+Refit Response Vector Euclidean Distance
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -25807,7 +25808,7 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance /
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance -
                                                                 filter(data, names == "Biased Sample")$linear_refit_distance),
                         id = seq(1:(nrow(data) / 2)))
 
@@ -25823,7 +25824,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figurenmdT6D.png]]
+[[file:/tmp/babel-dYWgzL/figurexsWwkY.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25945,7 +25946,8 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
                                                                                   federov_design,
                                                                                   biased_federov_design,
                                                                                   sample_size = fit_comparison_sample_size,
-                                                                                  sd = noise_sd),
+                                                                                  sd = noise_sd,
+                                                                                  prf_threshold = 0.05),
                                    names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
                                    id = i)
 
