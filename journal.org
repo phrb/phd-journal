@@ -25413,6 +25413,16 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
 2: In bind_rows_(x, .id) :
@@ -25458,7 +25468,8 @@ ggplot(plot_data, aes(x = x, y = y)) +
 [[file:/tmp/babel-xq9JVx/figureL32qsO.png]]
 
 ***** Generating Data                                          :noexport:
-****** Generating Biased & Unbiased Samples
+****** Linear Model
+******* Generating Biased & Unbiased Samples
 You can load one of the datasets from the repository:
 
 #+HEADER: :results output :session *R* :eval no-export :exports none
@@ -25468,154 +25479,532 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
-  library(rsm)
-  library(dplyr)
+library(rsm)
+library(dplyr)
 
-  data <- NULL
+data <- NULL
 
-  factors <- 60
-  samples <- (2 * factors) + 10
-  #samples <- (1 * factors) + 10
-  runs <- 100
+factors <- 60
+samples <- (1 * factors) + 10
+runs <- 100
+coefficient_number <- factors + 1
 
-  #coefficient_number <- factors + 1
-  coefficient_number <- (2 * factors) + 1
+normal_samples_ratio <- 0.08
 
-  normal_samples_ratio <- 0.08
+coefficient_probability <- 0.15
+coefficient_variability <- list(max = 7, min = 1)
+coefficient_noise = 0.01
 
-  coefficient_probability <- 0.15
-  coefficient_variability <- list(max = 7, min = 1)
-  coefficient_noise = 0.01
-  noise_sd <- 0.3
-  fit_comparison_sample_size <- 1000
+noise_sd <- 0.3
+fit_comparison_sample_size <- 1000
 
-  factor_names <- paste("x", 1:factors, sep = "")
+prf_threshold = 0.05
 
-  formula <- formula(paste("~ ",
-                          paste(factor_names,
-                                sep = "",
-                                collapse = " + "),
-                          " + ",
-                          paste("I(",
-                                factor_names,
-                                "^2)",
-                                sep = "",
-                                collapse = " + "),
-                          sep = ""))
+factor_names <- paste("x", 1:factors, sep = "")
 
-  response_formula <- formula(paste("Y ~ ",
-                              paste(factor_names,
-                                    sep = "",
-                                    collapse = " + "),
-                              " + ",
-                              paste("I(",
-                                    factor_names,
-                                    "^2)",
-                                    sep = "",
-                                    collapse = " + "),
-                              sep = ""))
-  #formula <- formula(paste("~ ",
-  #                        paste(factor_names,
-  #                              sep = "",
-  #                              collapse = " + "),
-  #                        sep = ""))
-  #
-  #response_formula <- formula(paste("Y ~ ",
-  #                            paste(factor_names,
-  #                                  sep = "",
-  #                                  collapse = " + "),
-  #                            sep = ""))
+formula <- formula(paste("~ ",
+                        paste(factor_names,
+                              sep = "",
+                              collapse = " + "),
+                        sep = ""))
 
-  for (i in 1:runs) {
-      if (i %% 10 == 0) {
-          print(i)
-      }
+response_formula <- formula(paste("Y ~ ",
+                            paste(factor_names,
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
 
-      coefficients <- replicate(coefficient_number,
-                                ifelse(runif(1) > (1.0 - coefficient_probability),
-                                       ifelse(runif(1) >= 0.5,
-                                              runif(1,
-                                                    min = -coefficient_variability$max,
-                                                    max = -coefficient_variability$min),
-                                              runif(1,
-                                                    min = coefficient_variability$min,
-                                                    max = coefficient_variability$max)),
-                                       rnorm(1, mean = 0, sd = coefficient_noise)))
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
 
-      fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                runif(fit_comparison_sample_size))))
+    coefficients <- replicate(coefficient_number,
+                              ifelse(runif(1) > (1.0 - coefficient_probability),
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
 
-      design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                              runif(fit_comparison_sample_size))))
+
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
 
 
-      design$Y <- compute_response(coefficients, formula, design)
-      design$Y <- add_noise(design, sd = noise_sd)
+    design$Y <- compute_response(coefficients, formula, design)
+    design$Y <- add_noise(design, sd = noise_sd)
 
-      #biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-      #                                                             sample_factor(lin_cdf,
-      #                                                                           samples))))
+    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 sample_factor(lin_cdf,
+                                                                               samples))))
 
-      biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                   sample_factor(quad_cdf,
-                                                                                 as.integer((1 - normal_samples_ratio) * samples)))))
+    biased_design$Y <- compute_response(coefficients, formula, biased_design)
+    biased_design$Y <- add_noise(biased_design, sd = noise_sd)
 
-      biased_design <- rbind(biased_design, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                        rnorm(as.integer(normal_samples_ratio * samples),
-                                                                                              mean = 0.5, sd = 0.04)))))
-
-      biased_design$Y <- compute_response(coefficients, formula, biased_design)
-      biased_design$Y <- add_noise(biased_design, sd = noise_sd)
-
-      new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
-                                         eval.design(formula, biased_design)$determinant),
-                                   real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, biased_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         design),
+                                                               compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         biased_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
                                                                                            coefficient_variability,
                                                                                            response_formula,
                                                                                            design),
-                                                                 compare_real_coefficients(coefficients,
+                                                                compare_noise_coefficients(coefficients,
                                                                                            coefficient_variability,
                                                                                            response_formula,
                                                                                            biased_design)),
-                                   noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
-                                                                                             coefficient_variability,
-                                                                                             response_formula,
-                                                                                             design),
-                                                                  compare_noise_coefficients(coefficients,
-                                                                                             coefficient_variability,
-                                                                                             response_formula,
-                                                                                             biased_design)),
-                                   coefficient_distance = c(compare_coefficients(coefficients,
-                                                                                 response_formula,
-                                                                                 design),
-                                                            compare_coefficients(coefficients,
-                                                                                 response_formula,
-                                                                                 biased_design)),
-                                   linear_fit_distance = compare_fit(coefficients,
-                                                                     fit_comparison_sample,
-                                                                     formula,
-                                                                     response_formula,
-                                                                     design,
-                                                                     biased_design,
-                                                                     sample_size = fit_comparison_sample_size,
-                                                                     sd = noise_sd),
-                                   linear_refit_distance = compare_post_anova_fit(coefficients,
-                                                                                  fit_comparison_sample,
-                                                                                  formula,
-                                                                                  response_formula,
-                                                                                  design,
-                                                                                  biased_design,
-                                                                                  sample_size = fit_comparison_sample_size,
-                                                                                  sd = noise_sd,
-                                                                                  prf_threshold = 0.05),
-                                   names = c("Uniform Sample", "Biased Sample"),
-                                   id = i)
+                                 coefficient_distance = c(compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               design),
+                                                          compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               biased_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   design,
+                                                                   biased_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                fit_comparison_sample,
+                                                                                formula,
+                                                                                response_formula,
+                                                                                design,
+                                                                                biased_design,
+                                                                                sample_size = fit_comparison_sample_size,
+                                                                                sd = noise_sd,
+                                                                                prf_threshold = prf_threshold),
+                                 names = c("Uniform Sample", "Biased Sample"),
+                                 id = i)
 
-      if (is.null(data)) {
-          data <- new_experiment
-      } else {
-          data <- rbind(data, new_experiment)
-      }
-  }
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- rbind(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+#+end_example
+
+******* Generating Federov with Uniform & Biased Samples
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 60
+samples <- (1 * factors) + 10
+federov_samples <- 1000
+
+runs <- 100
+
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
+
+    coefficients <- replicate(coefficient_number,
+                              ifelse(runif(1) > (1.0 - coefficient_probability),
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                               runif(fit_comparison_sample_size))))
+
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    federov_design$Y <- compute_response(coefficients, formula, federov_design)
+    federov_design$Y <- add_noise(federov_design, sd = noise_sd)
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  sample_factor(lin_cdf,
+                                                                                federov_samples))))
+
+    biased_federov_design <- optFederov(formula,
+                                        federov_sample,
+                                        nTrials = samples)$design
+
+    biased_federov_design$Y <- compute_response(coefficients, formula, biased_federov_design)
+    biased_federov_design$Y <- add_noise(biased_federov_design, sd = noise_sd)
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
+                                       eval.design(formula, biased_federov_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         federov_design),
+                                                               compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         biased_federov_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           federov_design),
+                                                                compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           biased_federov_design)),
+                                 coefficient_distance = c(compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               federov_design),
+                                                          compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               biased_federov_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   federov_design,
+                                                                   biased_federov_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                fit_comparison_sample,
+                                                                                formula,
+                                                                                response_formula,
+                                                                                federov_design,
+                                                                                biased_federov_design,
+                                                                                sample_size = fit_comparison_sample_size,
+                                                                                sd = noise_sd,
+                                                                                prf_threshold = prf_threshold),
+                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- rbind(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+#+end_example
+
+****** Quadratic Model
+******* Generating Biased & Unbiased Samples
+You can load one of the datasets from the repository:
+
+#+HEADER: :results output :session *R* :eval no-export :exports none
+#+BEGIN_SRC R
+data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
+#+END_SRC
+
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+data <- NULL
+
+factors <- 60
+samples <- (2 * factors) + 10
+runs <- 100
+
+coefficient_number <- (2 * factors) + 1
+
+#normal_samples_ratio <- 0.08
+normal_samples_ratio <- 0
+
+coefficient_probability <- 0.15
+coefficient_variability <- list(max = 7, min = 1)
+coefficient_noise = 0.01
+noise_sd <- 0.3
+fit_comparison_sample_size <- 1000
+
+factor_names <- paste("x", 1:factors, sep = "")
+
+formula <- formula(paste("~ ",
+                        paste(factor_names,
+                              sep = "",
+                              collapse = " + "),
+                        " + ",
+                        paste("I(",
+                              factor_names,
+                              "^2)",
+                              sep = "",
+                              collapse = " + "),
+                        sep = ""))
+
+response_formula <- formula(paste("Y ~ ",
+                            paste(factor_names,
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  factor_names,
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
+
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
+
+    coefficients <- replicate(coefficient_number,
+                              ifelse(runif(1) > (1.0 - coefficient_probability),
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                              runif(fit_comparison_sample_size))))
+
+    design <- get_runif_coded_design(data.frame(replicate(factors, runif(samples))))
+
+
+    design$Y <- compute_response(coefficients, formula, design)
+    design$Y <- add_noise(design, sd = noise_sd)
+
+    biased_design <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                 sample_factor(quad_cdf,
+                                                                               as.integer((1 - normal_samples_ratio) * samples)))))
+
+    if(normal_samples_ratio > 0) {
+        biased_design <- rbind(biased_design, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                          rnorm(as.integer(normal_samples_ratio * samples),
+                                                                                                mean = 0.5, sd = 0.04)))))
+    }
+
+    biased_design$Y <- compute_response(coefficients, formula, biased_design)
+    biased_design$Y <- add_noise(biased_design, sd = noise_sd)
+
+    new_experiment <- data.frame(D = c(eval.design(formula, design)$determinant,
+                                       eval.design(formula, biased_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         design),
+                                                               compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         biased_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           design),
+                                                                compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           biased_design)),
+                                 coefficient_distance = c(compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               design),
+                                                          compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               biased_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   design,
+                                                                   biased_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                fit_comparison_sample,
+                                                                                formula,
+                                                                                response_formula,
+                                                                                design,
+                                                                                biased_design,
+                                                                                sample_size = fit_comparison_sample_size,
+                                                                                sd = noise_sd,
+                                                                                prf_threshold = 0.05),
+                                 names = c("Uniform Sample", "Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- rbind(data, new_experiment)
+    }
+}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+There were 50 or more warnings (use warnings() to see the first 50)
+#+end_example
+
+******* Generating Federov with Uniform & Biased Samples
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(rsm)
+library(dplyr)
+
+factors <- 60
+samples <- (2 * factors) + 10
+federov_samples <- 1000
+
+runs <- 100
+
+for (i in 1:runs) {
+    if (i %% 10 == 0) {
+        print(i)
+    }
+
+    coefficients <- replicate(coefficient_number,
+                              ifelse(runif(1) > (1.0 - coefficient_probability),
+                                     ifelse(runif(1) >= 0.5,
+                                            runif(1,
+                                                  min = -coefficient_variability$max,
+                                                  max = -coefficient_variability$min),
+                                            runif(1,
+                                                  min = coefficient_variability$min,
+                                                  max = coefficient_variability$max)),
+                                     rnorm(1, mean = 0, sd = coefficient_noise)))
+
+    fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                               runif(fit_comparison_sample_size))))
+
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  runif(federov_samples))))
+
+    federov_design <- optFederov(formula,
+                                 federov_sample,
+                                 nTrials = samples)$design
+
+    federov_design$Y <- compute_response(coefficients, formula, federov_design)
+    federov_design$Y <- add_noise(federov_design, sd = noise_sd)
+
+    federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                  sample_factor(quad_cdf,
+                                                                                as.integer((1 - normal_samples_ratio) * federov_samples)))))
+
+    if(normal_samples_ratio > 0) {
+        federov_sample <- rbind(federov_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                            rnorm(as.integer(normal_samples_ratio * federov_samples),
+                                                                                                  mean = 0.5, sd = 0.04)))))
+    }
+
+    biased_federov_design <- optFederov(formula,
+                                        federov_sample,
+                                        nTrials = samples)$design
+
+    biased_federov_design$Y <- compute_response(coefficients, formula, biased_federov_design)
+    biased_federov_design$Y <- add_noise(biased_federov_design, sd = noise_sd)
+
+    new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
+                                       eval.design(formula, biased_federov_design)$determinant),
+                                 real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         federov_design),
+                                                               compare_real_coefficients(coefficients,
+                                                                                         coefficient_variability,
+                                                                                         response_formula,
+                                                                                         biased_federov_design)),
+                                 noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           federov_design),
+                                                                compare_noise_coefficients(coefficients,
+                                                                                           coefficient_variability,
+                                                                                           response_formula,
+                                                                                           biased_federov_design)),
+                                 coefficient_distance = c(compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               federov_design),
+                                                          compare_coefficients(coefficients,
+                                                                               response_formula,
+                                                                               biased_federov_design)),
+                                 linear_fit_distance = compare_fit(coefficients,
+                                                                   fit_comparison_sample,
+                                                                   formula,
+                                                                   response_formula,
+                                                                   federov_design,
+                                                                   biased_federov_design,
+                                                                   sample_size = fit_comparison_sample_size,
+                                                                   sd = noise_sd),
+                                 linear_refit_distance = compare_post_anova_fit(coefficients,
+                                                                                fit_comparison_sample,
+                                                                                formula,
+                                                                                response_formula,
+                                                                                federov_design,
+                                                                                biased_federov_design,
+                                                                                sample_size = fit_comparison_sample_size,
+                                                                                sd = noise_sd,
+                                                                                prf_threshold = 0.05),
+                                 names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
+                                 id = i)
+
+    if (is.null(data)) {
+        data <- new_experiment
+    } else {
+        data <- rbind(data, new_experiment)
+    }
+}
 #+END_SRC
 
 #+RESULTS:
@@ -25653,7 +26042,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figureZOTvDz.png]]
+[[file:/tmp/babel-HaOTMs/figureFk0IZQ.png]]
 
 ******* Coefficients
 #+HEADER: :results graphics output :session *R*
@@ -25780,7 +26169,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureVit6Gi.png]]
+[[file:/tmp/babel-HaOTMs/figuretmluCO.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25810,12 +26199,12 @@ library(ggplot2)
 
 plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance -
                                                                 filter(data, names == "Biased Sample")$linear_refit_distance),
-                        id = seq(1:(nrow(data) / 2)))
+                        id = seq(1:nrow(filter(data, names == "Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
        #ylim(c(0, NA)) +
        scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Difference Ratio (Uniform / Biased)") +
+       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Disance Difference (Uniform - Biased)") +
        geom_point() +
        geom_hline(yintercept = 1, linetype = 2) +
        theme_bw(base_size = 20) # +
@@ -25824,7 +26213,31 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figurexsWwkY.png]]
+[[file:/tmp/babel-HaOTMs/figure9rZf4W.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance -
+                                                                filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
+                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
+
+ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
+       #ylim(c(0, NA)) +
+       scale_x_continuous(name = "Experiment") +
+       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Disance Difference (Uniform - Biased)") +
+       geom_point() +
+       geom_hline(yintercept = 1, linetype = 2) +
+       theme_bw(base_size = 20) # +
+       #theme(axis.ticks.x = element_blank(),
+       #      axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-HaOTMs/figureE4Dt4N.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25845,149 +26258,20 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 #+RESULTS:
 [[file:/tmp/babel-xq9JVx/figure7dS33H.png]]
 
-****** Generating Federov with Uniform & Biased Samples
-#+HEADER: :results output :session *R* :exports none :eval no-export
-#+BEGIN_SRC R
-  library(rsm)
-  library(dplyr)
-
-  factors <- 60
-  samples <- (2 * factors) + 10
-  #samples <- (1 * factors) + 10
-  federov_samples <- 1000
-
-  runs <- 100
-
-  for (i in 1:runs) {
-      if (i %% 10 == 0) {
-          print(i)
-      }
-
-      coefficients <- replicate(coefficient_number,
-                                ifelse(runif(1) > (1.0 - coefficient_probability),
-                                       ifelse(runif(1) >= 0.5,
-                                              runif(1,
-                                                    min = -coefficient_variability$max,
-                                                    max = -coefficient_variability$min),
-                                              runif(1,
-                                                    min = coefficient_variability$min,
-                                                    max = coefficient_variability$max)),
-                                       rnorm(1, mean = 0, sd = coefficient_noise)))
-
-      fit_comparison_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                 runif(fit_comparison_sample_size))))
-
-
-      federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                    runif(federov_samples))))
-
-      federov_design <- optFederov(formula,
-                                   federov_sample,
-                                   nTrials = samples)$design
-
-      federov_design$Y <- compute_response(coefficients, formula, federov_design)
-      federov_design$Y <- add_noise(federov_design, sd = noise_sd)
-
-      #federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-      #                                                              sample_factor(lin_cdf,
-      #                                                                            federov_samples))))
-
-      federov_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                    sample_factor(quad_cdf,
-                                                                                  as.integer((1 - normal_samples_ratio) * federov_samples)))))
-
-      federov_sample <- rbind(federov_sample, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                          rnorm(as.integer(normal_samples_ratio * federov_samples),
-                                                                                                mean = 0.5, sd = 0.04)))))
-
-      biased_federov_design <- optFederov(formula,
-                                          federov_sample,
-                                          nTrials = samples)$design
-
-      biased_federov_design$Y <- compute_response(coefficients, formula, biased_federov_design)
-      biased_federov_design$Y <- add_noise(biased_federov_design, sd = noise_sd)
-
-      new_experiment <- data.frame(D = c(eval.design(formula, federov_design)$determinant,
-                                         eval.design(formula, biased_federov_design)$determinant),
-                                   real_coefficients_prf_sum = c(compare_real_coefficients(coefficients,
-                                                                                           coefficient_variability,
-                                                                                           response_formula,
-                                                                                           federov_design),
-                                                                 compare_real_coefficients(coefficients,
-                                                                                           coefficient_variability,
-                                                                                           response_formula,
-                                                                                           biased_federov_design)),
-                                   noise_coefficients_prf_sum = c(compare_noise_coefficients(coefficients,
-                                                                                             coefficient_variability,
-                                                                                             response_formula,
-                                                                                             federov_design),
-                                                                  compare_noise_coefficients(coefficients,
-                                                                                             coefficient_variability,
-                                                                                             response_formula,
-                                                                                             biased_federov_design)),
-                                   coefficient_distance = c(compare_coefficients(coefficients,
-                                                                                 response_formula,
-                                                                                 federov_design),
-                                                            compare_coefficients(coefficients,
-                                                                                 response_formula,
-                                                                                 biased_federov_design)),
-                                   linear_fit_distance = compare_fit(coefficients,
-                                                                     fit_comparison_sample,
-                                                                     formula,
-                                                                     response_formula,
-                                                                     federov_design,
-                                                                     biased_federov_design,
-                                                                     sample_size = fit_comparison_sample_size,
-                                                                     sd = noise_sd),
-                                   linear_refit_distance = compare_post_anova_fit(coefficients,
-                                                                                  fit_comparison_sample,
-                                                                                  formula,
-                                                                                  response_formula,
-                                                                                  federov_design,
-                                                                                  biased_federov_design,
-                                                                                  sample_size = fit_comparison_sample_size,
-                                                                                  sd = noise_sd,
-                                                                                  prf_threshold = 0.05),
-                                   names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
-                                   id = i)
-
-      if (is.null(data)) {
-          data <- new_experiment
-      } else {
-          data <- rbind(data, new_experiment)
-      }
-  }
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-
-[1] 10
-[1] 20
-[1] 30
-[1] 40
-[1] 50
-[1] 60
-[1] 70
-[1] 80
-[1] 90
-[1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
-#+end_example
-
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_random_coeff_few_sig_norm_post_anova.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
 
 ***** Experiments & Results
+- TODO: quadratic w/ no normal samples, prf = 0.0001
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-data_quadratic <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_random_coeff_few_sig_norm_post_anova.csv", header = TRUE)
-data_linear <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_random_coeff_few_sig_post_anova.csv", header = TRUE)
+data_quadratic <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", header = TRUE)
+data_linear <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", header = TRUE)
 
 data_quadratic$experiment <- "Quadratic Model"
 data_linear$experiment <- "Linear Model"
@@ -26065,7 +26349,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+CAPTION: Comparison of D-Criterion values for linear models
 #+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:comparison-D-linear
-[[file:/tmp/babel-dYWgzL/figureykJxmf.png]]
+[[file:/tmp/babel-HaOTMs/figureLms3Od.png]]
 
 #+NAME: fig:comparison-D-quadratic
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26290,14 +26574,14 @@ facet_wrap(names ~ ., ncol = 2) +
   ggplot(plot_data, aes(x = id, y = fit_distance_ratio)) +
          facet_wrap(experiment ~ ., scale = "free") +
          scale_x_continuous(name = "Experiment") +
-         scale_y_continuous(name = "Sorted Fit Distance Ratio (Federov Uniform / Biased)") +
+         scale_y_continuous(name = "Sorted Fit Distance Ratio (Federov Uniform - Biased)") +
          geom_point() +
          geom_hline(yintercept = 0, linetype = 2) +
          theme_bw(base_size = 26)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureJ1XxyE.png]]
+[[file:/tmp/babel-HaOTMs/figureQpAfSj.png]]
 
 #+NAME:fig:refit-results
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
