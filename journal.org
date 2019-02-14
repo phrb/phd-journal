@@ -25764,6 +25764,8 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
+prf_threshold = 0.0001
+
 factor_names <- paste("x", 1:factors, sep = "")
 
 formula <- formula(paste("~ ",
@@ -25868,7 +25870,7 @@ for (i in 1:runs) {
                                                                                 biased_design,
                                                                                 sample_size = fit_comparison_sample_size,
                                                                                 sd = noise_sd,
-                                                                                prf_threshold = 0.05),
+                                                                                prf_threshold = prf_threshold),
                                  names = c("Uniform Sample", "Biased Sample"),
                                  id = i)
 
@@ -25995,7 +25997,7 @@ for (i in 1:runs) {
                                                                                 biased_federov_design,
                                                                                 sample_size = fit_comparison_sample_size,
                                                                                 sd = noise_sd,
-                                                                                prf_threshold = 0.05),
+                                                                                prf_threshold = prf_threshold),
                                  names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
                                  id = i)
 
@@ -26261,17 +26263,16 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_post_anova.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
 
 ***** Experiments & Results
-- TODO: quadratic w/ no normal samples, prf = 0.0001
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-data_quadratic <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", header = TRUE)
-data_linear <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", header = TRUE)
+data_quadratic <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_post_anova.csv", header = TRUE)
+data_linear <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.0001_random_coeff_few_sig_post_anova.csv", header = TRUE)
 
 data_quadratic$experiment <- "Quadratic Model"
 data_linear$experiment <- "Linear Model"
@@ -26581,7 +26582,7 @@ facet_wrap(names ~ ., ncol = 2) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-HaOTMs/figureQpAfSj.png]]
+[[file:/tmp/babel-HaOTMs/figureZFIYx3.png]]
 
 #+NAME:fig:refit-results
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
