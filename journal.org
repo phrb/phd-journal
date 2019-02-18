@@ -25896,8 +25896,8 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                               filter(data, names == "Federov with Biased Sample")$coefficient_distance),
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_refit_distance -
+                                                               filter(data, names == "Federov with Biased Sample")$coefficient_refit_distance),
                         id = seq(1:(nrow(subset(data, names == "Uniform Sample")))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
@@ -25912,7 +25912,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figurewNUL3v.png]]
+[[file:/tmp/babel-PE51oT/figureGf3a3Q.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25984,8 +25984,8 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance -
-                                                                filter(data, names == "Biased Sample")$linear_refit_distance),
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_fit_distance -
+                                                                filter(data, names == "Federov with Biased Sample")$linear_fit_distance),
                         id = seq(1:nrow(filter(data, names == "Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
@@ -26000,7 +26000,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figureDKBSBG.png]]
+[[file:/tmp/babel-PE51oT/figureFe5NdC.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26068,7 +26068,7 @@ sampled uniformly from a high-dimensional search space would be in the central
 region of the space.
 
 #+NAME: tab:designs-models
-#+ATTR_LATEX: :align ll
+#+ATTR_LATEX: :booktabs t :align ll
 #+CAPTION: Design construction techniques and target performance models
 | Sampling & Construction Strategy | Performance Models |
 |----------------------------------+--------------------|
@@ -26097,7 +26097,7 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+LABEL: fig:cdfs
 #+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:cdfs
-[[file:/tmp/babel-XDREKh/figurenBqTzD.png]]
+[[file:/tmp/babel-PE51oT/figureUmlGlZ.png]]
 
 These concerns motivated the development of a methodology to evaluate the
 quality of the designs produced by \todo{add reference} /Fedorov's algorithm/,
@@ -26189,7 +26189,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+LABEL: fig:sampled-coeff
 #+ATTR_LATEX: :width 0.5\textwidth
 #+RESULTS: fig:sampled-coeff
-[[file:/tmp/babel-XDREKh/figureuDsCOA.png]]
+[[file:/tmp/babel-PE51oT/figureEXAy8N.png]]
 
 ****** Comparing Response Vectors
 Consider a design $\xi_{n,k}$ with factors $x_{k1},\dots,x_{kn}$, experiments
@@ -26344,7 +26344,7 @@ described in Table\nbsp{}[[tab:exp-parameters]].
 
 #+NAME: tab:exp-parameters
 #+CAPTION: Parameters of experiments with different regression models
-#+ATTR_LATEX: :booktabs :align p{0.34\linewidth}p{0.22\linewidth}p{0.2\linewidth}
+#+ATTR_LATEX: :booktabs t :align p{0.34\linewidth}p{0.22\linewidth}p{0.2\linewidth}
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 | Parameter                                            |                                                                 Linear Model |                                    Quadratic Model |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
@@ -26406,7 +26406,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+ATTR_LATEX: :width 0.55\textwidth
 #+CAPTION: Comparison of D-Criterion values for linear models
 #+RESULTS: fig:comparison-D-linear
-[[file:/tmp/babel-XDREKh/figurerzls31.png]]
+[[file:/tmp/babel-PE51oT/figurel7emgw.png]]
 
 #+NAME: fig:comparison-D-quadratic
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26434,7 +26434,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+CAPTION: Comparison of D-Criterion values for quadratic models
 #+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:comparison-D-quadratic
-[[file:/tmp/babel-XDREKh/figuregHPVJJ.png]]
+[[file:/tmp/babel-PE51oT/figurebBOi33.png]]
 
 ****** Coefficients                                           :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26804,7 +26804,7 @@ ggplot(plot_data_small_prf, aes(x = id, y = fit_distance_ratio)) +
 #+LABEL: fig:refit-results-small-prf
 #+ATTR_LATEX: :width 0.75\textwidth
 #+RESULTS: fig:refit-results-small-prf
-[[file:/tmp/babel-XDREKh/figureGUO4zd.png]]
+[[file:/tmp/babel-PE51oT/figureGqxVrv.png]]
 
 #+NAME: fig:refit-results-big-prf
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results :eval no-export
@@ -26822,7 +26822,7 @@ ggplot(plot_data_big_prf, aes(x = id, y = fit_distance_ratio)) +
 #+LABEL: fig:refit-results-big-prf
 #+ATTR_LATEX: :width 0.75\textwidth
 #+RESULTS: fig:refit-results-big-prf
-[[file:/tmp/babel-XDREKh/figurenvdiEq.png]]
+[[file:/tmp/babel-PE51oT/figure1u04SF.png]]
 ****** Post-ANOVA + Refit Response Vector Distance            :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
