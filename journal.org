@@ -25018,152 +25018,159 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 ***** Setup                                                    :noexport:
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
-  library(AlgDesign)
-  library(dplyr)
-  library(rsm)
+library(AlgDesign)
+library(dplyr)
+library(rsm)
 
-  factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
-      x <- seq(0.0, 1.0, interval)
-      y <- mapply(f, x)
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
 
-      data <- data.frame(x = x, y = y, name = name)
-      factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
 
-      factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
-      data <- bind_rows(data, factor_pdf)
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
 
-      y_cdf <- c()
+    y_cdf <- c()
 
-      target_name <- paste(name, "PDF")
+    target_name <- paste(name, "PDF")
 
-      pdf_data <- subset(data, name == target_name)$y
+    pdf_data <- subset(data, name == target_name)$y
 
-      for (i in 1:length(pdf_data)) {
-          y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
-      }
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
 
-      target_name <- paste(name, "CDF")
-      data <- bind_rows(data,
-                        data.frame(x = x, y = y_cdf, name = target_name))
-      return(data)
-  }
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
 
-  sample_factor <- function(cdf_data, samples) {
-      x_sampled <- c()
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
 
-      for (i in 1:samples) {
-          new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
-          x_sampled <- c(x_sampled, new_sample)
-      }
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
 
-      return(x_sampled)
-  }
+    return(x_sampled)
+}
 
-  get_runif_design_codings <- function(design) {
-      design_codings <- list()
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
 
-      for (i in 1:ncol(design)) {
-          design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
-                                                                    paste("(X", i, "-0.5)/0.5", sep = ""),
-                                                                    sep = ""))
-      }
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
 
-      return(design_codings)
-  }
+    return(design_codings)
+}
 
-  get_runif_coded_design <- function(design) {
-      design_codings <- get_runif_design_codings(design)
-      return(coded.data(design, formulas = design_codings))
-  }
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
 
-  cubic_function <- function(x) {
-      return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
-  }
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
 
-  quadratic_function <- function(x) {
-      return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
-  }
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
 
-  linear_function <- function(x) {
-      return((64 * (0.5 - x) ** 6))
-  }
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
 
-  compute_response <- function(coefficients, formula, experiment) {
-      return(as.vector((model.matrix(formula, experiment) %*% coefficients)))
-  }
+compute_response <- function(coefficients, formula, experiment) {
+    return(as.vector((model.matrix(formula, experiment) %*% coefficients)))
+}
 
-  add_noise <- function(design, sd = 1) {
-      return(as.vector(design$Y + rnorm(nrow(design), mean = 0, sd = sd)))
-  }
+add_noise <- function(design, sd = 1) {
+    return(as.vector(design$Y + rnorm(nrow(design), mean = 0, sd = sd)))
+}
 
-  compare_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
-      #return(c(sqrt(sum(((compute_response(coefficients, formula, sample)) -
-      #                    predict(lm(response_formula, design_a),
-      #                           sample)) ^ 2)),
-      #         sqrt(sum(((compute_response(coefficients, formula, sample)) -
-      #                    predict(lm(response_formula, design_b),
-      #                           sample)) ^ 2))))
-      return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                          predict(lm(response_formula, design_a),
-                                 sample)) ^ 2)),
-               sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                          predict(lm(response_formula, design_b),
-                                 sample)) ^ 2))))
-  }
+compare_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
+    return(c(sqrt(sum(((compute_response(coefficients, formula, sample)) -
+                        predict(lm(response_formula, design_a),
+                               sample)) ^ 2)),
+             sqrt(sum(((compute_response(coefficients, formula, sample)) -
+                        predict(lm(response_formula, design_b),
+                               sample)) ^ 2))))
+}
 
-  compare_post_anova_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1, prf_threshold = 0.0001) {
-      regression_summary_a <- summary(aov(response_formula, design_a))
+compare_post_anova_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1, prf_threshold = 0.0001) {
+    regression_summary_a <- summary(aov(response_formula, design_a))
 
-      prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
-      names(prf_values_a) <- c("values")
+    prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
+    names(prf_values_a) <- c("values")
 
-      refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
+    refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
 
-      regression_summary_b <- summary(aov(response_formula, design_b))
+    regression_summary_b <- summary(aov(response_formula, design_b))
 
-      prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
-      names(prf_values_b) <- c("values")
+    prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
+    names(prf_values_b) <- c("values")
 
-      refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+    refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
 
-      #return(c(sqrt(sum(((compute_response(coefficients, formula, sample)) -
-      #                   predict(lm(refitted_formula_a, design_a),
-      #                           sample)) ^ 2)),
-      #        sqrt(sum(((compute_response(coefficients, formula, sample)) -
-      #                  predict(lm(refitted_formula_b, design_b),
-      #                          sample)) ^ 2))))
-      return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                         predict(lm(refitted_formula_a, design_a),
-                                 sample)) ^ 2)),
-              sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
-                        predict(lm(refitted_formula_b, design_b),
-                                sample)) ^ 2))))
-  }
+    return(c(sqrt(sum(((compute_response(coefficients, formula, sample)) -
+                       predict(lm(refitted_formula_a, design_a),
+                               sample)) ^ 2)),
+            sqrt(sum(((compute_response(coefficients, formula, sample)) -
+                      predict(lm(refitted_formula_b, design_b),
+                              sample)) ^ 2))))
+}
 
-  # https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
-  #return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
-  compare_coefficients <- function(coefficients, formula, design) {
-      return(sqrt(sum((coefficients - unname(coef(lm(formula, design)))) ^ 2)))
-  }
+# https://stats.stackexchange.com/questions/93540/testing-equality-of-coefficients-from-two-different-regressions
+#return(sum((coefficients - unname(coef(lm(Y ~., design)))) / sqrt((data.frame(summary(lm(Y ~., design))["coefficients"])[, 2] ^ 2))))
+compare_coefficients <- function(coefficients, formula, design) {
+    return(sqrt(sum((coefficients - unname(coef(lm(formula, design)))) ^ 2)))
+}
 
-  compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
-      prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
-      return(c(sum(prf_values[abs(coefficients) > coefficient_limits$min])))
-  }
+compare_post_anova_coefficients <- function(coefficients, formula, design_a, design_b, prf_threshold = 0.0001) {
+    regression_summary_a <- summary(aov(formula, design_a))
 
-  compare_noise_coefficients <- function(coefficients, coefficient_limits, formula, design) {
-      prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
-      return(sum(prf_values[abs(coefficients) <= coefficient_limits$min]))
-  }
+    prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
+    names(prf_values_a) <- c("values")
 
-  lin_data <- factor_cdf(linear_function, name = "Linear Factors")
-  lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+    refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
 
-  quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
-  quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+    regression_summary_b <- summary(aov(response_formula, design_b))
 
-  cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
-  cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
+    prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
+    names(prf_values_b) <- c("values")
+
+    refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+
+    return(c(sqrt(sum((coefficients - unname(coef(lm(refitted_formula_a, design_a)))) ^ 2)),
+             sqrt(sum((coefficients - unname(coef(lm(refitted_formula_b, design_b)))) ^ 2))))
+}
+
+compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(c(sum(prf_values[abs(coefficients) > coefficient_limits$min])))
+}
+
+compare_noise_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(sum(prf_values[abs(coefficients) <= coefficient_limits$min]))
+}
+
+lin_data <- factor_cdf(linear_function, name = "Linear Factors")
+lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
+
+quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
+
+cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
 #+END_SRC
 
 #+RESULTS:
@@ -25221,7 +25228,7 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figureL32qsO.png]]
+[[file:/tmp/babel-PE51oT/figureAI6GlZ.png]]
 
 ***** Generating Data                                          :noexport:
 ****** Linear Model
@@ -25254,7 +25261,7 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.05
+prf_threshold = 0.0001
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25326,6 +25333,11 @@ for (i in 1:runs) {
                                                           compare_coefficients(coefficients,
                                                                                response_formula,
                                                                                biased_design)),
+                                 coefficient_refit_distance = compare_post_anova_coefficients(coefficients,
+                                                                                              response_formula,
+                                                                                              design,
+                                                                                              biased_design,
+                                                                                              prf_threshold = prf_threshold),
                                  linear_fit_distance = compare_fit(coefficients,
                                                                    fit_comparison_sample,
                                                                    formula,
@@ -25367,6 +25379,7 @@ for (i in 1:runs) {
 [1] 80
 [1] 90
 [1] 100
+There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 ******* Generating Federov with Uniform & Biased Samples
@@ -25446,6 +25459,11 @@ for (i in 1:runs) {
                                                           compare_coefficients(coefficients,
                                                                                response_formula,
                                                                                biased_federov_design)),
+                                 coefficient_refit_distance = compare_post_anova_coefficients(coefficients,
+                                                                                              response_formula,
+                                                                                              federov_design,
+                                                                                              biased_federov_design,
+                                                                                              prf_threshold = prf_threshold),
                                  linear_fit_distance = compare_fit(coefficients,
                                                                    fit_comparison_sample,
                                                                    formula,
@@ -25487,6 +25505,7 @@ for (i in 1:runs) {
 [1] 80
 [1] 90
 [1] 100
+There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 ****** Quadratic Model
@@ -25511,8 +25530,8 @@ runs <- 100
 
 coefficient_number <- (2 * factors) + 1
 
-#normal_samples_ratio <- 0.08
-normal_samples_ratio <- 0
+normal_samples_ratio <- 0.08
+#normal_samples_ratio <- 0
 
 coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
@@ -25610,6 +25629,11 @@ for (i in 1:runs) {
                                                           compare_coefficients(coefficients,
                                                                                response_formula,
                                                                                biased_design)),
+                                 coefficient_refit_distance = compare_post_anova_coefficients(coefficients,
+                                                                                              response_formula,
+                                                                                              design,
+                                                                                              biased_design,
+                                                                                              prf_threshold = prf_threshold),
                                  linear_fit_distance = compare_fit(coefficients,
                                                                    fit_comparison_sample,
                                                                    formula,
@@ -25737,6 +25761,11 @@ for (i in 1:runs) {
                                                           compare_coefficients(coefficients,
                                                                                response_formula,
                                                                                biased_federov_design)),
+                                 coefficient_refit_distance = compare_post_anova_coefficients(coefficients,
+                                                                                              response_formula,
+                                                                                              federov_design,
+                                                                                              biased_federov_design,
+                                                                                              prf_threshold = prf_threshold),
                                  linear_fit_distance = compare_fit(coefficients,
                                                                    fit_comparison_sample,
                                                                    formula,
@@ -25867,23 +25896,23 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_distance /
-                                                               filter(data, names == "Biased Sample")$coefficient_distance),
-                        id = seq(1:(nrow(data) / 2)))
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_distance -
+                                                               filter(data, names == "Federov with Biased Sample")$coefficient_distance),
+                        id = seq(1:(nrow(subset(data, names == "Uniform Sample")))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
        #ylim(c(0, NA)) +
        scale_x_continuous(name = "Experiment") +
        scale_y_continuous(name = "Sorted Coeff. Dist. Diff. Ratio (Uniform / Biased)") +
        geom_point() +
-       geom_hline(yintercept = 1, linetype = 2) +
+       geom_hline(yintercept = 0, linetype = 2) +
        theme_bw(base_size = 20) # +
        #theme(axis.ticks.x = element_blank(),
        #      axis.text.x = element_blank())
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figure39TxZj.png]]
+[[file:/tmp/babel-PE51oT/figurewNUL3v.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25971,7 +26000,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-HaOTMs/figure9rZf4W.png]]
+[[file:/tmp/babel-PE51oT/figureDKBSBG.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25995,7 +26024,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-HaOTMs/figureE4Dt4N.png]]
+[[file:/tmp/babel-PE51oT/figureUGJoWE.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26019,7 +26048,7 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_post_anova.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_normal_post_anova_fit_coef.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
