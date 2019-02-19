@@ -25149,8 +25149,25 @@ compare_post_anova_coefficients <- function(coefficients, formula, design_a, des
 
     refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
 
-    return(c(sqrt(sum((coefficients - unname(coef(lm(refitted_formula_a, design_a)))) ^ 2)),
-             sqrt(sum((coefficients - unname(coef(lm(refitted_formula_b, design_b)))) ^ 2))))
+    named_coefficients <- data.frame(t(coefficients))
+    names(named_coefficients) <- names(coef(lm(formula, design_a)))
+
+    named_refitted_coefficients_a <- data.frame(t(coef(lm(refitted_formula_a, design_a))))
+    names(named_refitted_coefficients_a) <- names(coef(lm(refitted_formula_a, design_a)))
+
+    named_refitted_coefficients_b <- data.frame(t(coef(lm(refitted_formula_b, design_b))))
+    names(named_refitted_coefficients_b) <- names(coef(lm(refitted_formula_b, design_b)))
+
+    coefficient_data <- bind_rows(named_coefficients,
+                                  named_refitted_coefficients_a,
+                                  named_refitted_coefficients_b)
+
+    coefficient_data[is.na(coefficient_data)] <- 0.0
+
+    #return(c(sqrt(sum((coefficients - unname(coef(lm(refitted_formula_a, design_a)))) ^ 2)),
+    #         sqrt(sum((coefficients - unname(coef(lm(refitted_formula_b, design_b)))) ^ 2))))
+    return(c(sqrt(sum((as.numeric(coefficient_data[1, ]) - as.numeric(coefficient_data[2, ])) ^ 2)),
+             sqrt(sum((as.numeric(coefficient_data[1, ]) - as.numeric(coefficient_data[3, ])) ^ 2))))
 }
 
 compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
@@ -25175,16 +25192,6 @@ cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
 
 #+RESULTS:
 #+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
 
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
@@ -25261,7 +25268,7 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.05
+prf_threshold = 0.0001
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25379,7 +25386,6 @@ for (i in 1:runs) {
 [1] 80
 [1] 90
 [1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 ******* Generating Federov with Uniform & Biased Samples
@@ -25505,7 +25511,6 @@ for (i in 1:runs) {
 [1] 80
 [1] 90
 [1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
 #+end_example
 
 ****** Quadratic Model
@@ -25516,6 +25521,12 @@ You can load one of the datasets from the repository:
 #+BEGIN_SRC R
 data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
 #+END_SRC
+
+#+RESULTS:
+: Error in file(file, "rt") : cannot open the connection
+: In addition: Warning message:
+: In file(file, "rt") :
+:   cannot open file 'dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv': No such file or directory
 
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
@@ -25539,7 +25550,7 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.05
+prf_threshold = 0.0001
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25896,8 +25907,8 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_refit_distance -
-                                                               filter(data, names == "Federov with Biased Sample")$coefficient_refit_distance),
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_refit_distance -
+                                                               filter(data, names == "Biased Sample")$coefficient_refit_distance),
                         id = seq(1:(nrow(subset(data, names == "Uniform Sample")))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
@@ -25912,7 +25923,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figureGf3a3Q.png]]
+[[file:/tmp/babel-PE51oT/figurehDPxgU.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25920,7 +25931,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = coefficient_distance)) +
+ggplot(data, aes(x = 1, y = coefficient_refit_distance)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, NA)) +
        scale_x_continuous(name = "Jittered Experiments") +
@@ -25931,7 +25942,7 @@ ggplot(data, aes(x = 1, y = coefficient_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-xq9JVx/figuresO7iEL.png]]
+[[file:/tmp/babel-PE51oT/figureGTOgri.png]]
 
 ******* Response Vector Euclidean Distance
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26048,7 +26059,7 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_norm_post_anova_fit_coef.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic/prft_0.0001_noise_0.3.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
