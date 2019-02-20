@@ -25268,7 +25268,7 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.0001
+prf_threshold = 0.001
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25550,7 +25550,7 @@ coefficient_noise = 0.01
 noise_sd <- 0.3
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.0001
+prf_threshold = 0.001
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25840,7 +25840,7 @@ ggplot(data, aes(x = 1, y = D)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-HaOTMs/figureFk0IZQ.png]]
+[[file:/tmp/babel-PE51oT/figurePioWHO.png]]
 
 ******* Coefficients
 #+HEADER: :results graphics output :session *R*
@@ -25907,8 +25907,8 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Uniform Sample")$coefficient_refit_distance -
-                                                               filter(data, names == "Biased Sample")$coefficient_refit_distance),
+plot_data <- data.frame(coefficient_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$coefficient_refit_distance -
+                                                               filter(data, names == "Federov with Biased Sample")$coefficient_refit_distance),
                         id = seq(1:(nrow(subset(data, names == "Uniform Sample")))))
 
 ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
@@ -25923,7 +25923,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figurehDPxgU.png]]
+[[file:/tmp/babel-PE51oT/figuresH4zQj.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25942,7 +25942,7 @@ ggplot(data, aes(x = 1, y = coefficient_refit_distance)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figureGTOgri.png]]
+[[file:/tmp/babel-PE51oT/figureJUFBNj.png]]
 
 ******* Response Vector Euclidean Distance
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -25951,9 +25951,9 @@ ggplot(data, aes(x = 1, y = coefficient_refit_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_fit_distance -
-                                                              filter(data, names == "Biased Sample")$linear_fit_distance),
-                        id = seq(1:(nrow(data) / 2)))
+plot_data <- data.frame(linear_fit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance -
+                                                              filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
+                        id = seq(1:(nrow(data) / 4)))
 
 ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
        #ylim(c(0, NA)) +
@@ -25967,7 +25967,7 @@ ggplot(plot_data, aes(x = id, y = linear_fit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-HaOTMs/figuretmluCO.png]]
+[[file:/tmp/babel-PE51oT/figureHwF7Gj.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -25995,8 +25995,8 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_fit_distance -
-                                                                filter(data, names == "Federov with Biased Sample")$linear_fit_distance),
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance -
+                                                                filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
                         id = seq(1:nrow(filter(data, names == "Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
@@ -26011,7 +26011,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figureFe5NdC.png]]
+[[file:/tmp/babel-PE51oT/figure2hRjTT.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26059,7 +26059,7 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic/prft_0.0001_noise_0.3.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/quadratic/prft_0.001_noise_0.3.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
@@ -26314,27 +26314,27 @@ D(\boldsymbol{M}_{2n + 1, k}) = \left|\dfrac{\boldsymbol{M}^{\top}\boldsymbol{M}
 #data_quadratic_big_prf<- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_post_anova.csv", header = TRUE)
 #data_quadratic_small_prf<- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_post_anova.csv", header = TRUE)
 
-data_quadratic_big_prf_normal <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_norm_post_anova_fit_coef.csv", header = TRUE)
-data_quadratic_small_prf_normal <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.0001_random_coeff_few_sig_norm_post_anova_fit_coef.csv", header = TRUE)
+#data_quadratic_big_prf_normal <- read.csv("dopt_sampling_tests/quadratic_comparison_federov_biased_1000_samples_100_repetitions_60_factors_130_exp_prft_0.05_random_coeff_few_sig_norm_post_anova_fit_coef.csv", header = TRUE)
+data_quadratic_small_prf_normal <- read.csv("dopt_sampling_tests/quadratic/prft_0.0001_noise_0.3.csv", header = TRUE)
 
-data_linear_big_prf <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.05_random_coeff_few_sig_post_anova_fit_coef.csv", header = TRUE)
-data_linear_small_prf <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.0001_random_coeff_few_sig_post_anova_fit_coef.csv", header = TRUE)
+#data_linear_big_prf <- read.csv("dopt_sampling_tests/linear_comparison_federov_biased_1000_samples_100_repetitions_60_factors_70_exp_prft_0.05_random_coeff_few_sig_post_anova_fit_coef.csv", header = TRUE)
+data_linear_small_prf <- read.csv("dopt_sampling_tests/linear/prft_0.0001_noise_0.3.csv", header = TRUE)
 
 #data_quadratic_big_prf$experiment <- "Quadratic Model"
 #data_quadratic_small_prf$experiment <- "Quadratic Model"
 
-data_quadratic_big_prf_normal$experiment <- "Quadratic Model + Normal"
+#data_quadratic_big_prf_normal$experiment <- "Quadratic Model + Normal"
 data_quadratic_small_prf_normal$experiment <- "Quadratic Model + Normal"
 
-data_linear_big_prf$experiment <- "Linear Model"
+#data_linear_big_prf$experiment <- "Linear Model"
 data_linear_small_prf$experiment <- "Linear Model"
 
 data <- rbind(
   #data_quadratic_big_prf,
   #data_quadratic_small_prf,
-  data_quadratic_big_prf_normal,
+  #data_quadratic_big_prf_normal,
   data_quadratic_small_prf_normal,
-  data_linear_big_prf,
+  #data_linear_big_prf,
   data_linear_small_prf
 )
 #+END_SRC
@@ -26401,10 +26401,12 @@ higher values of D.
 library(ggplot2)
 
 plot_data <- subset(data, experiment == "Linear Model")
-plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
-                                                      "Federov with Biased Sample",
-                                                      "Uniform Sample",
-                                                      "Biased Sample"))
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample",
+                                             "Uniform Sample",
+                                             "Biased Sample"
+                                           ))
 ggplot(plot_data, aes(x = 1, y = D)) +
        facet_wrap(names ~ ., ncol = 2) +
        ylim(c(0, 1)) +
@@ -26419,7 +26421,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+ATTR_LATEX: :width 0.55\textwidth
 #+CAPTION: Comparison of D-Criterion values for linear models
 #+RESULTS: fig:comparison-D-linear
-[[file:/tmp/babel-PE51oT/figurel7emgw.png]]
+[[file:/tmp/babel-PE51oT/figureXgK50w.png]]
 
 #+NAME: fig:comparison-D-quadratic
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26428,7 +26430,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- subset(data, experiment == "Quadratic Model")
+plot_data <- subset(data, experiment == "Quadratic Model + Normal")
 plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
                                                       "Federov with Biased Sample",
                                                       "Uniform Sample",
@@ -26447,7 +26449,7 @@ ggplot(plot_data, aes(x = 1, y = D)) +
 #+CAPTION: Comparison of D-Criterion values for quadratic models
 #+ATTR_LATEX: :width 0.55\textwidth
 #+RESULTS: fig:comparison-D-quadratic
-[[file:/tmp/babel-PE51oT/figurebBOi33.png]]
+[[file:/tmp/babel-PE51oT/figure7ZGIgg.png]]
 
 ****** Coefficients                                           :noexport:
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26715,17 +26717,17 @@ plot_refit_data_linear_small_prf <- data.frame(coefficient_distance_difference =
 
 plot_refit_data_linear_small_prf$experiment = "Linear Model + Re-fit"
 
-plot_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                 filter(data_linear_big_prf, names == "Federov with Biased Sample")$coefficient_distance),
-                                       id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_linear_big_prf$experiment = "Linear Model"
-
-plot_refit_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$coefficient_refit_distance -
-                                                                       filter(data_linear_big_prf, names == "Federov with Biased Sample")$coefficient_refit_distance),
-                                             id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_refit_data_linear_big_prf$experiment = "Linear Model + Re-fit"
+#plot_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$coefficient_distance -
+#                                                                 filter(data_linear_big_prf, names == "Federov with Biased Sample")$coefficient_distance),
+#                                       id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
+#
+#plot_data_linear_big_prf$experiment = "Linear Model"
+#
+#plot_refit_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$coefficient_refit_distance -
+#                                                                       filter(data_linear_big_prf, names == "Federov with Biased Sample")$coefficient_refit_distance),
+#                                             id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
+#
+#plot_refit_data_linear_big_prf$experiment = "Linear Model + Re-fit"
 
 #plot_data_quadratic_small_prf <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample")$coefficient_distance -
 #                                                                      filter(data_quadratic_small_prf, names == "Federov with Biased Sample")$coefficient_distance),
@@ -26763,17 +26765,17 @@ plot_data_quadratic_big_prf <- data.frame(coefficient_distance_difference = sort
 #
 #plot_refit_data_quadratic_big_prf$experiment = "Quadratic Model + Re-fit"
 
-plot_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                           filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$coefficient_distance),
-                                                 id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal"
-
-plot_refit_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$coefficient_refit_distance -
-                                                                                 filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$coefficient_refit_distance),
-                                                       id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
-
-plot_refit_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
+#plot_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$coefficient_distance -
+#                                                                           filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$coefficient_distance),
+#                                                 id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
+#
+#plot_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal"
+#
+#plot_refit_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$coefficient_refit_distance -
+#                                                                                 filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$coefficient_refit_distance),
+#                                                       id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
+#
+#plot_refit_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
 
 plot_data_small_prf <- NULL
 
@@ -26795,25 +26797,25 @@ plot_data_small_prf$experiment <- factor(plot_data_small_prf$experiment, levels 
                                                                            #"Quadratic Model + Re-fit",
                                                                          ))
 
-plot_data_big_prf <- NULL
-
-plot_data_big_prf <- rbind(
-  plot_data_linear_big_prf,
-  plot_refit_data_linear_big_prf,
-  #plot_data_quadratic_big_prf,
-  #plot_refit_data_quadratic_big_prf,
-  plot_data_quadratic_big_prf_normal,
-  plot_refit_data_quadratic_big_prf_normal
-)
-
-plot_data_big_prf$experiment <- factor(plot_data_big_prf$experiment, levels = c(
-                                                                       "Linear Model",
-                                                                       "Linear Model + Re-fit",
-                                                                       "Quadratic Model + Normal",
-                                                                       "Quadratic Model + Normal + Re-fit"
-                                                                       #"Quadratic Model",
-                                                                       #"Quadratic Model + Re-fit",
-                                                                     ))
+#plot_data_big_prf <- NULL
+#
+#plot_data_big_prf <- rbind(
+#  plot_data_linear_big_prf,
+#  plot_refit_data_linear_big_prf,
+#  #plot_data_quadratic_big_prf,
+#  #plot_refit_data_quadratic_big_prf,
+#  plot_data_quadratic_big_prf_normal,
+#  plot_refit_data_quadratic_big_prf_normal
+#)
+#
+#plot_data_big_prf$experiment <- factor(plot_data_big_prf$experiment, levels = c(
+#                                                                       "Linear Model",
+#                                                                       "Linear Model + Re-fit",
+#                                                                       "Quadratic Model + Normal",
+#                                                                       "Quadratic Model + Normal + Re-fit"
+#                                                                       #"Quadratic Model",
+#                                                                       #"Quadratic Model + Re-fit",
+#                                                                     ))
 
 ggplot(plot_data_small_prf, aes(x = id, y = coefficient_distance_difference)) +
        facet_wrap(experiment ~ ., ncol = 2) +
@@ -26828,10 +26830,10 @@ ggplot(plot_data_small_prf, aes(x = id, y = coefficient_distance_difference)) +
 #+LABEL: fig:coef-refit-results-small-prf
 #+ATTR_LATEX: :width 0.75\textwidth
 #+RESULTS: fig:coef-refit-results-small-prf
-[[file:/tmp/babel-PE51oT/figureBwbuqS.png]]
+[[file:/tmp/babel-PE51oT/figureUX4V5M.png]]
 
 #+NAME: fig:coef-refit-results-big-prf
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports none :eval no-export
 ggplot(plot_data_big_prf, aes(x = id, y = coefficient_distance_difference)) +
        #facet_wrap(experiment ~ ., scale = "free", ncol = 3) +
        facet_wrap(experiment ~ ., ncol = 2) +
@@ -26868,17 +26870,17 @@ plot_refit_data_linear_small_prf <- data.frame(fit_distance_ratio = sort(filter(
 
 plot_refit_data_linear_small_prf$experiment = "Linear Model + Re-fit"
 
-plot_data_linear_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$linear_fit_distance -
-                                                                 filter(data_linear_big_prf, names == "Federov with Biased Sample")$linear_fit_distance),
-                                       id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_linear_big_prf$experiment = "Linear Model"
-
-plot_refit_data_linear_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
-                                                                       filter(data_linear_big_prf, names == "Federov with Biased Sample")$linear_refit_distance),
-                                             id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_refit_data_linear_big_prf$experiment = "Linear Model + Re-fit"
+#plot_data_linear_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$linear_fit_distance -
+#                                                                 filter(data_linear_big_prf, names == "Federov with Biased Sample")$linear_fit_distance),
+#                                       id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
+#
+#plot_data_linear_big_prf$experiment = "Linear Model"
+#
+#plot_refit_data_linear_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
+#                                                                       filter(data_linear_big_prf, names == "Federov with Biased Sample")$linear_refit_distance),
+#                                             id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
+#
+#plot_refit_data_linear_big_prf$experiment = "Linear Model + Re-fit"
 
 #plot_data_quadratic_small_prf <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample")$linear_fit_distance -
 #                                                                      filter(data_quadratic_small_prf, names == "Federov with Biased Sample")$linear_fit_distance),
@@ -26904,9 +26906,9 @@ plot_refit_data_quadratic_small_prf_normal <- data.frame(fit_distance_ratio = so
 
 plot_refit_data_quadratic_small_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
 
-plot_data_quadratic_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample")$linear_fit_distance -
-                                                                    filter(data_quadratic_big_prf, names == "Federov with Biased Sample")$linear_fit_distance),
-                                          id = seq(1:nrow(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample"))))
+#plot_data_quadratic_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample")$linear_fit_distance -
+#                                                                    filter(data_quadratic_big_prf, names == "Federov with Biased Sample")$linear_fit_distance),
+#                                          id = seq(1:nrow(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample"))))
 
 #plot_data_quadratic_big_prf$experiment = "Quadratic Model"
 #
@@ -26916,15 +26918,15 @@ plot_data_quadratic_big_prf <- data.frame(fit_distance_ratio = sort(filter(data_
 #
 #plot_refit_data_quadratic_big_prf$experiment = "Quadratic Model + Re-fit"
 
-plot_data_quadratic_big_prf_normal <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$linear_fit_distance -
-                                                                           filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$linear_fit_distance),
-                                                 id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal"
-
-plot_refit_data_quadratic_big_prf_normal <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$linear_refit_distance -
-                                                                                 filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$linear_refit_distance),
-                                                       id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
+#plot_data_quadratic_big_prf_normal <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$linear_fit_distance -
+#                                                                           filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$linear_fit_distance),
+#                                                 id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
+#
+#plot_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal"
+#
+#plot_refit_data_quadratic_big_prf_normal <- data.frame(fit_distance_ratio = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$linear_refit_distance -
+#                                                                                 filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$linear_refit_distance),
+#                                                       id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
 
 plot_refit_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
 
@@ -26946,23 +26948,23 @@ plot_data_small_prf$experiment <- factor(plot_data_small_prf$experiment, levels 
                                                                            #"Quadratic Model + Re-fit",
                                                                          ))
 
-plot_data_big_prf <- rbind(
-  plot_data_linear_big_prf,
-  plot_refit_data_linear_big_prf,
-  #plot_data_quadratic_big_prf,
-  #plot_refit_data_quadratic_big_prf,
-  plot_data_quadratic_big_prf_normal,
-  plot_refit_data_quadratic_big_prf_normal
-)
-
-plot_data_big_prf$experiment <- factor(plot_data_big_prf$experiment, levels = c(
-                                                                       "Linear Model",
-                                                                       "Linear Model + Re-fit",
-                                                                       "Quadratic Model + Normal",
-                                                                       "Quadratic Model + Normal + Re-fit"
-                                                                       #"Quadratic Model",
-                                                                       #"Quadratic Model + Re-fit",
-                                                                     ))
+#plot_data_big_prf <- rbind(
+#  plot_data_linear_big_prf,
+#  plot_refit_data_linear_big_prf,
+#  #plot_data_quadratic_big_prf,
+#  #plot_refit_data_quadratic_big_prf,
+#  plot_data_quadratic_big_prf_normal,
+#  plot_refit_data_quadratic_big_prf_normal
+#)
+#
+#plot_data_big_prf$experiment <- factor(plot_data_big_prf$experiment, levels = c(
+#                                                                       "Linear Model",
+#                                                                       "Linear Model + Re-fit",
+#                                                                       "Quadratic Model + Normal",
+#                                                                       "Quadratic Model + Normal + Re-fit"
+#                                                                       #"Quadratic Model",
+#                                                                       #"Quadratic Model + Re-fit",
+#                                                                     ))
 
 ggplot(plot_data_small_prf, aes(x = id, y = fit_distance_ratio)) +
        facet_wrap(experiment ~ ., ncol = 2) +
@@ -26977,10 +26979,10 @@ ggplot(plot_data_small_prf, aes(x = id, y = fit_distance_ratio)) +
 #+LABEL: fig:refit-results-small-prf
 #+ATTR_LATEX: :width 0.75\textwidth
 #+RESULTS: fig:refit-results-small-prf
-[[file:/tmp/babel-PE51oT/figure48ujqd.png]]
+[[file:/tmp/babel-PE51oT/figureW3EV3T.png]]
 
 #+NAME: fig:refit-results-big-prf
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports none :eval no-export
 ggplot(plot_data_big_prf, aes(x = id, y = fit_distance_ratio)) +
        #facet_wrap(experiment ~ ., scale = "free", ncol = 3) +
        facet_wrap(experiment ~ ., ncol = 2) +
