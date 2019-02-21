@@ -25393,12 +25393,19 @@ for (i in 1:runs) {
 #+END_SRC
 
 #+RESULTS:
-:
-: [1] 10
-: Error in parse(text = x, keep.source = FALSE) :
-:   <text>:2:0: unexpected end of input
-: 1: Y ~
-:    ^
+#+begin_example
+
+[1] 10
+[1] 20
+[1] 30
+[1] 40
+[1] 50
+[1] 60
+[1] 70
+[1] 80
+[1] 90
+[1] 100
+#+end_example
 
 ******* Generating Federov with Uniform & Biased Samples
 #+HEADER: :results output :session *R* :exports none :eval no-export
@@ -25560,6 +25567,7 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 #noise_sd <- 0.3
+#noise_sd <- 1.5
 noise_sd <- 3.0
 
 fit_comparison_sample_size <- 1000
@@ -25937,7 +25945,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Kyfy8k/figurebjQlRd.png]]
+[[file:/tmp/babel-Kyfy8k/figurenr1UFR.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26009,8 +26017,8 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+BEGIN_SRC R
 library(ggplot2)
 
-plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance -
-                                                                filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
+plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Uniform Sample")$linear_refit_distance -
+                                                                filter(data, names == "Biased Sample")$linear_refit_distance),
                         id = seq(1:nrow(filter(data, names == "Uniform Sample"))))
 
 ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
@@ -26025,7 +26033,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-Kyfy8k/figureebeYuf.png]]
+[[file:/tmp/babel-Kyfy8k/figureqcyBa8.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
