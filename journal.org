@@ -25111,14 +25111,22 @@ compare_post_anova_fit <- function(coefficients, sample, formula, response_formu
     prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
     names(prf_values_a) <- c("values")
 
-    refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
+    if(nrow(subset(prf_values_a, values <= prf_threshold)) > 0) {
+        refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
+    } else {
+        refitted_formula_a <- response_formula
+    }
 
     regression_summary_b <- summary(aov(response_formula, design_b))
 
     prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
     names(prf_values_b) <- c("values")
 
-    refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+    if(nrow(subset(prf_values_b, values <= prf_threshold)) > 0) {
+      refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+    } else {
+      refitted_formula_b <- response_formula
+    }
 
     return(c(sqrt(sum(((compute_response(coefficients, formula, sample)) -
                        predict(lm(refitted_formula_a, design_a),
@@ -25140,14 +25148,22 @@ compare_post_anova_coefficients <- function(coefficients, formula, design_a, des
     prf_values_a <- as.data.frame(regression_summary_a[[1]])["Pr(>F)"]
     names(prf_values_a) <- c("values")
 
-    refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
+    if(nrow(subset(prf_values_a, values <= prf_threshold)) > 0) {
+      refitted_formula_a <- formula(paste("Y ~", paste(rownames(subset(prf_values_a, values <= prf_threshold)), sep = "", collapse = " + ")))
+    } else {
+      refitted_formula_a <- response_formula
+    }
 
     regression_summary_b <- summary(aov(response_formula, design_b))
 
     prf_values_b <- as.data.frame(regression_summary_b[[1]])["Pr(>F)"]
     names(prf_values_b) <- c("values")
 
-    refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+    if(nrow(subset(prf_values_b, values <= prf_threshold)) > 0) {
+      refitted_formula_b <- formula(paste("Y ~", paste(rownames(subset(prf_values_b, values <= prf_threshold)), sep = "", collapse = " + ")))
+    } else {
+      refitted_formula_b <- response_formula
+    }
 
     named_coefficients <- data.frame(t(coefficients))
     names(named_coefficients) <- names(coef(lm(formula, design_a)))
@@ -25265,7 +25281,10 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-noise_sd <- 0.3
+#noise_sd <- 0.3
+#noise_sd <- 1.5
+noise_sd <- 3.0
+
 fit_comparison_sample_size <- 1000
 
 prf_threshold = 0.001
@@ -25374,19 +25393,12 @@ for (i in 1:runs) {
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-
-[1] 10
-[1] 20
-[1] 30
-[1] 40
-[1] 50
-[1] 60
-[1] 70
-[1] 80
-[1] 90
-[1] 100
-#+end_example
+:
+: [1] 10
+: Error in parse(text = x, keep.source = FALSE) :
+:   <text>:2:0: unexpected end of input
+: 1: Y ~
+:    ^
 
 ******* Generating Federov with Uniform & Biased Samples
 #+HEADER: :results output :session *R* :exports none :eval no-export
@@ -25547,7 +25559,9 @@ normal_samples_ratio <- 0.08
 coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
-noise_sd <- 0.3
+#noise_sd <- 0.3
+noise_sd <- 3.0
+
 fit_comparison_sample_size <- 1000
 
 prf_threshold = 0.001
@@ -25923,7 +25937,7 @@ ggplot(plot_data, aes(x = id, y = coefficient_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figuresH4zQj.png]]
+[[file:/tmp/babel-Kyfy8k/figurebjQlRd.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26011,7 +26025,7 @@ ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figure2hRjTT.png]]
+[[file:/tmp/babel-Kyfy8k/figureebeYuf.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26059,7 +26073,7 @@ ggplot(data, aes(x = 1, y = linear_refit_distance)) +
 ****** Saving Data
 #+HEADER: :results output :session *R* :eval no-export :exports none
 #+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic/prft_0.001_noise_0.3.csv", row.names = FALSE)
+write.csv(data, "dopt_sampling_tests/linear/prft_0.001_noise_3.0.csv", row.names = FALSE)
 #+END_SRC
 
 #+RESULTS:
