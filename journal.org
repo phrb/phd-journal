@@ -25273,12 +25273,16 @@ You can load one of the datasets from the repository:
 data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
 #+END_SRC
 
+#+begin_SRC R :results output :session *R* :eval no-export :exports none
+new_data <- NULL
+#+end_SRC
+
+#+RESULTS:
+
 #+HEADER: :results output :session *R* :exports none :eval no-export
 #+BEGIN_SRC R
 library(rsm)
 library(dplyr)
-
-data <- NULL
 
 factors <- 60
 samples <- (1 * factors) + 10
@@ -25291,9 +25295,7 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-#noise_sd <- 0.3
-#noise_sd <- 1.5
-noise_sd <- 3.0
+noise_sd <- 1.5
 
 fit_comparison_sample_size <- 1000
 
@@ -25392,12 +25394,18 @@ for (i in 1:runs) {
                                                                                 sd = noise_sd,
                                                                                 prf_threshold = prf_threshold),
                                  names = c("Uniform Sample", "Biased Sample"),
-                                 id = i)
+                                 id = i,
+                                 prft = prf_threshold,
+                                 noise = noise_sd,
+                                 coefficient_probability = coefficient_probability,
+                                 regression_model = "linear",
+                                 normal_samples = 0.0,
+                                 coefficients = coefficient_number)
 
-    if (is.null(data)) {
-        data <- new_experiment
+    if (is.null(new_data)) {
+        new_data <- new_experiment
     } else {
-        data <- rbind(data, new_experiment)
+        new_data <- bind_rows(new_data, new_experiment)
     }
 }
 #+END_SRC
@@ -25517,12 +25525,18 @@ for (i in 1:runs) {
                                                                                 sd = noise_sd,
                                                                                 prf_threshold = prf_threshold),
                                  names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
-                                 id = i)
+                                 id = i,
+                                 prft = prf_threshold,
+                                 noise = noise_sd,
+                                 coefficient_probability = coefficient_probability,
+                                 regression_model = "linear",
+                                 normal_samples = 0.0,
+                                 coefficients = coefficient_number)
 
-    if (is.null(data)) {
-        data <- new_experiment
+    if (is.null(new_data)) {
+        new_data <- new_experiment
     } else {
-        data <- rbind(data, new_experiment)
+        new_data <- bind_rows(new_data, new_experiment)
     }
 }
 #+END_SRC
@@ -25562,7 +25576,7 @@ data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300
 library(rsm)
 library(dplyr)
 
-data <- NULL
+new_data <- NULL
 
 factors <- 60
 samples <- (2 * factors) + 10
@@ -25695,12 +25709,18 @@ for (i in 1:runs) {
                                                                                 sd = noise_sd,
                                                                                 prf_threshold = prf_threshold),
                                  names = c("Uniform Sample", "Biased Sample"),
-                                 id = i)
+                                 id = i,
+                                 prft = prf_threshold,
+                                 noise = noise_sd,
+                                 coefficient_probability = coefficient_probability,
+                                 regression_model = "linear",
+                                 normal_samples = normal_samples_ratio,
+                                 coefficients = coefficient_number)
 
-    if (is.null(data)) {
-        data <- new_experiment
+    if (is.null(new_data)) {
+        new_data <- new_experiment
     } else {
-        data <- rbind(data, new_experiment)
+        new_data <- bind_rows(new_data, new_experiment)
     }
 }
 #+END_SRC
@@ -25727,11 +25747,52 @@ There were 50 or more warnings (use warnings() to see the first 50)
 library(rsm)
 library(dplyr)
 
+new_data <- NULL
+
 factors <- 60
 samples <- (2 * factors) + 10
 federov_samples <- 1000
-
 runs <- 100
+
+coefficient_number <- (2 * factors) + 1
+
+normal_samples_ratio <- 0.08
+
+coefficient_probability <- 0.15
+coefficient_variability <- list(max = 7, min = 1)
+coefficient_noise = 0.01
+
+noise_sd <- 1.5
+
+fit_comparison_sample_size <- 1000
+
+prf_threshold = 0.001
+
+factor_names <- paste("x", 1:factors, sep = "")
+
+formula <- formula(paste("~ ",
+                        paste(factor_names,
+                              sep = "",
+                              collapse = " + "),
+                        " + ",
+                        paste("I(",
+                              factor_names,
+                              "^2)",
+                              sep = "",
+                              collapse = " + "),
+                        sep = ""))
+
+response_formula <- formula(paste("Y ~ ",
+                            paste(factor_names,
+                                  sep = "",
+                                  collapse = " + "),
+                            " + ",
+                            paste("I(",
+                                  factor_names,
+                                  "^2)",
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
 
 for (i in 1:runs) {
     if (i %% 10 == 0) {
@@ -25827,52 +25888,89 @@ for (i in 1:runs) {
                                                                                 sd = noise_sd,
                                                                                 prf_threshold = prf_threshold),
                                  names = c("Federov with Uniform Sample", "Federov with Biased Sample"),
-                                 id = i)
+                                 id = i,
+                                 prft = prf_threshold,
+                                 noise = noise_sd,
+                                 coefficient_probability = coefficient_probability,
+                                 regression_model = "linear",
+                                 normal_samples = normal_samples_ratio,
+                                 coefficients = coefficient_number)
 
-    if (is.null(data)) {
-        data <- new_experiment
+    if (is.null(new_data)) {
+        new_data <- new_experiment
     } else {
-        data <- rbind(data, new_experiment)
+        new_data <- bind_rows(new_data, new_experiment)
     }
 }
 #+END_SRC
 
 #+RESULTS:
+:
+: Error in runif(federov_samples) : object 'federov_samples' not found
+
+****** Saving Data
+#+HEADER: :results output :session *R* :eval no-export :exports none
+#+BEGIN_SRC R
+old_data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+old_data <- bind_rows(old_data, new_data)
+write.csv(old_data, "dopt_sampling_tests/experiments.csv", row.names = FALSE)
+data <- old_data
+#+END_SRC
+
+#+RESULTS:
 #+begin_example
 
-[1] 10
-[1] 20
-[1] 30
-[1] 40
-[1] 50
-[1] 60
-[1] 70
-[1] 80
-[1] 90
-[1] 100
-There were 50 or more warnings (use warnings() to see the first 50)
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+5: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+6: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
 #+end_example
 
 ****** Test Plots
 ******* D-Criterion
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 1280 :height 720
 #+BEGIN_SRC R
 library(ggplot2)
 
-ggplot(data, aes(x = 1, y = D)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, 1)) +
-       scale_x_continuous(name = "Jittered Experiments") +
-       geom_jitter(height = 0, alpha = 0.4) +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
+plot_data <- data
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Uniform Sample",
+                                             "Federov with Uniform Sample",
+                                             "Biased Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+ggplot(plot_data, aes(x = id, y = D, color = regression_model)) +
+  facet_grid(. ~ names) +
+  ylim(c(0, 1)) +
+  scale_x_continuous(name = "Experiments") +
+  geom_point(alpha = 0.4) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-PE51oT/figurePioWHO.png]]
+[[file:/tmp/babel-6doC2T/figurehuVcY4.png]]
 
 ******* Coefficients
 #+HEADER: :results graphics output :session *R*
@@ -25933,6 +26031,90 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 [[file:/tmp/babel-sI8n2m/figuretIUiUc.png]]
 
 ******* Coefficient Euclidian Distance
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+ggplot(plot_data, aes(x = id,
+                      y = coefficient_distance,
+                      color = names,
+                      group = names)) +
+  facet_grid(regression_model ~ noise, scale = "free_y") +
+  scale_x_continuous(name = "Experiments") +
+  geom_point() +
+  #geom_line() +
+  geom_smooth(method = "lm", model = y ~ 1 - x) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6doC2T/figuregAAjLF.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+ggplot(plot_data, aes(x = id,
+                      y = coefficient_refit_distance,
+                      color = names,
+                      group = names)) +
+  facet_grid(regression_model ~ noise, scale = "free_y") +
+  scale_x_continuous(name = "Experiments") +
+  geom_point() +
+  #geom_line() +
+  geom_smooth(method = "lm", model = y ~ 1 - x) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6doC2T/figureGSmvzz.png]]
+
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
@@ -26024,6 +26206,88 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 ******* Post-ANOVA+Refit Response Vector Euclidean Distance
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+ggplot(plot_data, aes(x = id,
+                      y = linear_fit_distance,
+                      color = names,
+                      group = names)) +
+  facet_grid(regression_model ~ noise, scale = "free_y") +
+  scale_x_continuous(name = "Experiments") +
+  geom_point() +
+  #geom_line() +
+  geom_smooth(method = "lm", model = y ~ 1 -  x) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6doC2T/figureOYlhME.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+ggplot(plot_data, aes(x = id,
+                      y = linear_refit_distance,
+                      color = names,
+                      group = names)) +
+  facet_grid(regression_model ~ noise, scale = "free_y") +
+  scale_x_continuous(name = "Experiments") +
+  geom_point() +
+  #geom_line() +
+  geom_smooth(method = "lm", model = y ~ 1 -  x) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-6doC2T/figurePW2gWA.png]]
+
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
 library(ggplot2)
@@ -26088,14 +26352,6 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 
 #+RESULTS:
 [[file:/tmp/babel-n3ob7h/figureXz6lIe.png]]
-
-****** Saving Data
-#+HEADER: :results output :session *R* :eval no-export :exports none
-#+BEGIN_SRC R
-write.csv(data, "dopt_sampling_tests/quadratic/prft_0.001_noise_3.0.csv", row.names = FALSE)
-#+END_SRC
-
-#+RESULTS:
 
 ***** Sampling Strategies
 A practical concern derived from the limitation on the size of samples to
