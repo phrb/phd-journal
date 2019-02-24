@@ -25274,6 +25274,8 @@ new_data <- NULL
 library(rsm)
 library(dplyr)
 
+new_data <- NULL
+
 factors <- 60
 samples <- (1 * factors) + 10
 runs <- 100
@@ -25421,11 +25423,41 @@ for (i in 1:runs) {
 library(rsm)
 library(dplyr)
 
+new_data <- NULL
+
 factors <- 60
 samples <- (1 * factors) + 10
 federov_samples <- 1000
 
 runs <- 100
+coefficient_number <- factors + 1
+
+normal_samples_ratio <- 0.08
+
+coefficient_probability <- 0.15
+coefficient_variability <- list(max = 7, min = 1)
+coefficient_noise = 0.01
+
+noise_sd <- 2.0
+
+fit_comparison_sample_size <- 1000
+
+prf_threshold = 0.001
+
+factor_names <- paste("x", 1:factors, sep = "")
+
+formula <- formula(paste("~ ",
+                        paste(factor_names,
+                              sep = "",
+                              collapse = " + "),
+                        sep = ""))
+
+response_formula <- formula(paste("Y ~ ",
+                            paste(factor_names,
+                                  sep = "",
+                                  collapse = " + "),
+                            sep = ""))
+
 
 for (i in 1:runs) {
     if (i %% 10 == 0) {
@@ -25750,7 +25782,7 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-noise_sd <- 1.5
+noise_sd <- 4.0
 
 fit_comparison_sample_size <- 1000
 
@@ -26053,6 +26085,8 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
+plot_data <- subset(plot_data, noise %in% c(0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
                       color = names,
@@ -26072,7 +26106,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figureHg6gI0.png]]
+[[file:/tmp/babel-6doC2T/figureLoe3wK.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
