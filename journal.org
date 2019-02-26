@@ -25438,11 +25438,11 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-noise_sd <- 2.0
+noise_sd <- 8.0
 
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.001
+prf_threshold = 0.01
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -25786,7 +25786,7 @@ noise_sd <- 4.0
 
 fit_comparison_sample_size <- 1000
 
-prf_threshold = 0.001
+prf_threshold = 0.01
 
 factor_names <- paste("x", 1:factors, sep = "")
 
@@ -26073,7 +26073,7 @@ data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
 
 plot_data <- data
 
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
 
 plot_data$names <- factor(plot_data$names, levels = c(
                                              "Federov with Uniform Sample",
@@ -26085,7 +26085,7 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
-plot_data <- subset(plot_data, noise %in% c(0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
 
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
@@ -26106,7 +26106,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figureLoe3wK.png]]
+[[file:/tmp/babel-6doC2T/figureuCp05F.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26116,7 +26116,7 @@ library(ggplot2)
 
 plot_data <- data
 
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
 
 plot_data$names <- factor(plot_data$names, levels = c(
                                              "Federov with Uniform Sample",
@@ -26127,6 +26127,9 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Linear Model" = "linear",
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
+
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0))
 
 ggplot(plot_data, aes(x = id,
                       y = coefficient_refit_distance,
@@ -26147,7 +26150,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figureLcLkt5.png]]
+[[file:/tmp/babel-6doC2T/figurelNi6a2.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26258,6 +26261,8 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
+plot_data <- subset(plot_data, noise %in% c(0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
 ggplot(plot_data, aes(x = id,
                       y = linear_fit_distance,
                       color = names,
@@ -26277,7 +26282,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figuresLr2dX.png]]
+[[file:/tmp/babel-6doC2T/figurelApoST.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26299,6 +26304,8 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
+plot_data <- subset(plot_data, noise %in% c(0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
 ggplot(plot_data, aes(x = id,
                       y = linear_refit_distance,
                       color = names,
@@ -26318,7 +26325,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figurevi7vxI.png]]
+[[file:/tmp/babel-6doC2T/figure22jwT6.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
