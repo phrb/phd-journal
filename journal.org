@@ -25438,7 +25438,7 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-noise_sd <- 8.0
+noise_sd <- 1.0
 
 fit_comparison_sample_size <- 1000
 
@@ -25782,7 +25782,7 @@ coefficient_probability <- 0.15
 coefficient_variability <- list(max = 7, min = 1)
 coefficient_noise = 0.01
 
-noise_sd <- 4.0
+noise_sd <- 8.0
 
 fit_comparison_sample_size <- 1000
 
@@ -26106,7 +26106,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figureuCp05F.png]]
+[[file:/tmp/babel-6doC2T/figuresTmv3I.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
