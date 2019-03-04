@@ -33,6 +33,7 @@
 #+LATEX_HEADER: \usepackage{amsfonts}
 #+LATEX_HEADER: \usepackage{bm}
 #+LATEX_HEADER: \usepackage{wasysym}
+#+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \usepackage{ragged2e}
 #+LATEX_HEADER: \usepackage{textcomp}
 #+LATEX_HEADER: \usepackage{pgfplots}
@@ -26075,15 +26076,17 @@ ggplot(data, aes(x = 1, y = noise_coefficients_prf_sum)) +
 ******* Coefficient Euclidian Distance
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
+#+HEADER: :width 900 :height 1280
 #+BEGIN_SRC R
 library(ggplot2)
+library(dplyr)
+library(tidyr)
 
 data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
 
 plot_data <- data
 
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
 
 plot_data$names <- factor(plot_data$names, levels = c(
                                              "Federov with Uniform Sample",
@@ -26095,20 +26098,37 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
 plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "coefficient_distance",
+                    coefficient_distance,
+                    coefficient_refit_distance,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+levels(plot_data$fit_stage) <- list("Before ANOVA" = "coefficient_distance",
+                                    "After ANOVA" = "coefficient_refit_distance")
+
+plot_labeller <- c(noise = label_both)
 
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  #geom_line() +
+                      color = interaction(factor(prft), names),
+                      group = interaction(factor(prft), names),
+                      shape = interaction(factor(prft), names))) +
+  facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)") +
+  scale_y_continuous(name = "Coefficient Vector Distance") +
+  geom_point(size = 1.5) +
   geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
+  theme_bw(base_size = 22) +
   scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  guides(colour = guide_legend(nrow = 2)) +
   theme(legend.position = "top",
         legend.title = element_blank(),
         axis.ticks.x = element_blank(),
@@ -26116,7 +26136,7 @@ ggplot(plot_data, aes(x = id,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-6doC2T/figureRnz584.png]]
+[[file:/tmp/babel-6doC2T/figureeaLdPb.png]]
 
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -26529,7 +26549,7 @@ coefficients <- replicate(coefficient_number,
 plot_data <- data.frame(coefficients = coefficients)
 
 ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
-       geom_point() +
+       geom_point(size = 2) +
        xlab("Coefficient") +
        ylab("Sampled Value") +
        xlim(0, 121) +
@@ -26540,7 +26560,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+LABEL: fig:sampled-coeff
 #+ATTR_LATEX: :width 0.5\textwidth
 #+RESULTS: fig:sampled-coeff
-[[file:/tmp/babel-6doC2T/figureqAn22P.png]]
+[[file:/tmp/babel-6doC2T/figure7gQTiz.png]]
 
 ****** Comparing Response Vectors
 Consider a design $\xi_{n,k}$ with factors $x_{k1},\dots,x_{kn}$, experiments
@@ -26672,7 +26692,7 @@ described in Table\nbsp{}[[tab:exp-parameters]].
 
 #+NAME: tab:exp-parameters
 #+CAPTION: Parameters of experiments with different regression models
-#+ATTR_LATEX: :booktabs t :align p{0.34\linewidth}p{0.22\linewidth}p{0.2\linewidth}
+#+ATTR_LATEX: :booktabs t :align p{0.34\linewidth}p{0.22\linewidth}p{0.19\linewidth}
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 | Parameter                                            | Linear Model                                                                 |                                    Quadratic Model |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
@@ -26687,25 +26707,29 @@ described in Table\nbsp{}[[tab:exp-parameters]].
 | \rowcolor{gray!25} Sampled Objective Function        | As in Section\nbsp{}[[Sampling Function Coefficients]], $\boldsymbol{\beta} = 0$ | As in Section\nbsp{}[[Sampling Function Coefficients]] |
 | Noise Standard Deviation                             | $[2^0,\dots,2^6]$                                                            |                                  $[2^0,\dots,2^6]$ |
 | \rowcolor{gray!25} Regression Model                  | Linear                                                                       |                                          Quadratic |
-| $\text{P}_\text{r}(>\text{F})$ Threshold             | 0.001, 0.01                                                                  |                                        0.001, 0.01 |
+| $\text{Pr}(>\text{F})$ Threshold                     | $[0.001, 0.01]$                                                              |                                    $[0.001, 0.01]$ |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 | \rowcolor{gray!25} Coefficients                      | 61                                                                           |                                                121 |
 | Coefficient Significance Probability                 | 15%                                                                          |                                                15% |
 | Coefficient Noise Standard Deviation                 | 0.01                                                                         |                                               0.01 |
-| Coefficient Range                                    | $x_{inf} = 1$, $x_{sup} = 7$                                                 |                       $x_{inf} = 1$, $x_{sup} = 7$ |
+| Coefficient Range                                    | $(x_{inf} = 1$, $x_{sup} = 7)$                                               |                     $(x_{inf} = 1$, $x_{sup} = 7)$ |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 | Repetitions                                          | 100                                                                          |                                                100 |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 
 ****** D-Criterion
-Since the evaluation of the D-Criterion does not depend on the actual response
-values, we can group the experiments using the same regression model but
-different values of $\text{P}_{\text{r}}(>\text{F})$, as well as the experiments
-with and without added normal samples.
+Since the evaluation of the D-Criterion, as described in Section\nbsp{}[[Comparing
+D-Criteria]], does not depend on the actual response values, we can group the
+experiments using the same regression model but different values of
+$\text{Pr}(>\text{F})$, as well as the experiments with and without added normal
+samples.
 
 We see in Figure\nbsp{}[[fig:d-criterion-comparison]] that the D-Criteria was much
 higher for experiments using the linear regression model, and that the biased
-samples given to Fedorov's algorithm help finding higher values of D.
+samples given to Fedorov's algorithm help finding higher values of D. The values
+of the D-Criterion do not seem to change much in the experiments with the
+quadratic model, but we will show in the next sections that the models fitted to
+the data provided by different designs had different results.
 
 #+NAME: fig:d-criterion-comparison
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -26730,11 +26754,11 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
 
 plot_data <- subset(plot_data, prft == 0.001)
 
-ggplot(plot_data, aes(x = id, y = D, color = regression_model)) +
+ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regression_model)) +
   facet_grid(. ~ names) +
   ylim(c(0, 1)) +
   scale_x_continuous(name = "Experiments") +
-  geom_point(alpha = 0.8) +
+  geom_point(alpha = 0.8, size = 3) +
   theme_bw(base_size = 25) +
   scale_color_brewer(palette = "Set1") +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
@@ -26747,254 +26771,156 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model)) +
 #+LABEL: fig:d-criterion-comparison
 #+ATTR_LATEX: :width 0.95\textwidth
 #+RESULTS: fig:d-criterion-comparison
-[[file:/tmp/babel-6doC2T/figurexfMjex.png]]
-
-****** Coefficients                                           :noexport:
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-  library(ggplot2)
-
-  factors <- 60
-  coefficient_number <- (2 * factors) + 1
-  coefficient_probability <- 0.15
-  coefficient_variability <- list(max = 7, min = 1)
-  coefficient_noise = 0.04
-
-  coefficients <- replicate(coefficient_number,
-                            ifelse(runif(1) > (1.0 - coefficient_probability),
-                                    ifelse(runif(1) >= 0.5,
-                                          runif(1,
-                                                min = -coefficient_variability$max,
-                                                max = -coefficient_variability$min),
-                                          runif(1,
-                                                min = coefficient_variability$min,
-                                                max = coefficient_variability$max)),
-                                    rnorm(1, mean = 0, sd = coefficient_noise)))
-
-  plot_data <- data.frame(coefficients = coefficients)
-
-  ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
-         geom_point() +
-         theme_bw(base_size = 20)
-
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dYWgzL/figurexdRnet.png]]
-
-****** $\text{P}_{\text{r}}(>\text{F})$ Sums                  :noexport:
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(dplyr)
-library(ggplot2)
-
-plot_data <- data.frame(real_coefficient_prf_sum_difference = (sort(filter(data, names == "Federov with Uniform Sample")$real_coefficients_prf_sum /
-                                                                    filter(data, names == "Federov with Biased Sample")$real_coefficients_prf_sum)),
-                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
-
-ggplot(plot_data, aes(x = id, y = real_coefficient_prf_sum_difference)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Real Coeff. Prf Sum Ratio (Federov Uniform / Biased)") +
-       #ylim(c(0, 100)) +
-       geom_point() +
-       geom_hline(yintercept = 1, linetype = 2) +
-       theme_bw(base_size = 20) # +
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-xq9JVx/figureQ2ItXA.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data
-plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
-                                                      "Federov with Biased Sample",
-                                                      "Uniform Sample",
-                                                      "Biased Sample"))
-
-ggplot(plot_data, aes(x = id, y = real_coefficients_prf_sum)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       #ylim(c(0, 0.001)) +
-       scale_x_continuous(name = "Experiment") +
-       geom_point() +
-       theme_bw(base_size = 20)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-sI8n2m/figureWtnK6f.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data
-plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
-                                                      "Federov with Biased Sample",
-                                                      "Uniform Sample",
-                                                      "Biased Sample"))
-
-ggplot(plot_data, aes(x = id, y = noise_coefficients_prf_sum)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       #ylim(c(0, 1)) +
-       scale_x_continuous(name = "Experiment") +
-       #geom_jitter(height = 0, alpha = 0.4) +
-       geom_point() +
-       theme_bw(base_size = 20)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-sI8n2m/figuredPX5nr.png]]
-
-****** Coefficient Euclidean Distance                         :noexport:
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(dplyr)
-library(ggplot2)
-
-plot_data_linear_small_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_small_prf, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                   filter(data_linear_small_prf, names == "Federov with Biased Sample")$coefficient_distance),
-                               id = seq(1:nrow(filter(data_linear_small_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_linear_small_prf$experiment = "Linear Model"
-
-#plot_refit_data_linear_small_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_small_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                         filter(data_linear_small_prf, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                     id = seq(1:nrow(filter(data_linear_small_prf, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_linear_small_prf$experiment = "Linear Model + Re-fit"
-
-plot_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                 filter(data_linear_big_prf, names == "Federov with Biased Sample")$coefficient_distance),
-                                       id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_linear_big_prf$experiment = "Linear Model"
-
-#plot_refit_data_linear_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_linear_big_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                       filter(data_linear_big_prf, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                             id = seq(1:nrow(filter(data_linear_big_prf, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_linear_big_prf$experiment = "Linear Model + Re-fit"
-
-plot_data_quadratic_small_prf <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                      filter(data_quadratic_small_prf, names == "Federov with Biased Sample")$coefficient_distance),
-                                            id = seq(1:nrow(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_small_prf$experiment = "Quadratic Model"
-
-#plot_refit_data_quadratic_small_prf <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                            filter(data_quadratic_small_prf, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                                  id = seq(1:nrow(filter(data_quadratic_small_prf, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_quadratic_small_prf$experiment = "Quadratic Model + Re-fit"
-
-plot_data_quadratic_small_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_small_prf_normal, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                             filter(data_quadratic_small_prf_normal, names == "Federov with Biased Sample")$coefficient_distance),
-                                                   id = seq(1:nrow(filter(data_quadratic_small_prf_normal, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_small_prf_normal$experiment = "Quadratic Model + Normal"
-
-#plot_refit_data_quadratic_small_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_small_prf_normal, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                                   filter(data_quadratic_small_prf_normal, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                                         id = seq(1:nrow(filter(data_quadratic_small_prf_normal, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_quadratic_small_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
-
-plot_data_quadratic_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                    filter(data_quadratic_big_prf, names == "Federov with Biased Sample")$coefficient_distance),
-                                          id = seq(1:nrow(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_big_prf$experiment = "Quadratic Model"
-
-#plot_refit_data_quadratic_big_prf <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                          filter(data_quadratic_big_prf, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                                id = seq(1:nrow(filter(data_quadratic_big_prf, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_quadratic_big_prf$experiment = "Quadratic Model + Re-fit"
-
-plot_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$coefficient_distance -
-                                                                           filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$coefficient_distance),
-                                                 id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
-
-plot_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal"
-
-#plot_refit_data_quadratic_big_prf_normal <- data.frame(coefficient_distance_difference = sort(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample")$linear_refit_distance -
-#                                                                                 filter(data_quadratic_big_prf_normal, names == "Federov with Biased Sample")$linear_refit_distance),
-#                                                       id = seq(1:nrow(filter(data_quadratic_big_prf_normal, names == "Federov with Uniform Sample"))))
-#
-#plot_refit_data_quadratic_big_prf_normal$experiment = "Quadratic Model + Normal + Re-fit"
-
-plot_data_small_prf <- rbind(plot_data_linear_small_prf,
-                             #plot_refit_data_linear_small_prf,
-                             plot_data_quadratic_small_prf,
-                             #plot_refit_data_quadratic_small_prf,
-                             plot_data_quadratic_small_prf_normal
-                             #plot_refit_data_quadratic_small_prf_normal
-                             )
-
-plot_data_small_prf$experiment <- factor(plot_data_small_prf$experiment, levels = c("Linear Model",
-                                                                                    "Quadratic Model",
-                                                                                    "Quadratic Model + Normal"))
-                                                                                    #"Linear Model + Re-fit",
-                                                                                    #"Quadratic Model + Re-fit",
-                                                                                    #"Quadratic Model + Normal + Re-fit"))
-
-plot_data_big_prf <- rbind(plot_data_linear_big_prf,
-                           #plot_refit_data_linear_big_prf,
-                           plot_data_quadratic_big_prf,
-                           #plot_refit_data_quadratic_big_prf,
-                           plot_data_quadratic_big_prf_normal
-                           #plot_refit_data_quadratic_big_prf_normal
-                           )
-
-plot_data_big_prf$experiment <- factor(plot_data_big_prf$experiment, levels = c("Linear Model",
-                                                                                "Quadratic Model",
-                                                                                "Quadratic Model + Normal"))
-                                                                                #"Linear Model + Re-fit",
-                                                                                #"Quadratic Model + Re-fit",
-                                                                                #"Quadratic Model + Normal + Re-fit"))
-
-ggplot(plot_data_small_prf, aes(x = id, y = coefficient_distance_difference)) +
-       #facet_wrap(experiment ~ ., scale = "free", ncol = 3) +
-       facet_wrap(experiment ~ ., ncol = 3) +
-       ylim(c(-100, 100)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Fit Distance Difference (Federov Uniform - Biased)") +
-       geom_point() +
-       geom_hline(yintercept = 0, linetype = 2) +
-       theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dkewY0/figureMtutQk.png]]
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results :eval no-export
-ggplot(plot_data_big_prf, aes(x = id, y = coefficient_distance_difference)) +
-       #facet_wrap(experiment ~ ., scale = "free", ncol = 3) +
-       facet_wrap(experiment ~ ., ncol = 3) +
-       ylim(c(-100, 100)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Fit Distance Difference (Federov Uniform - Biased)") +
-       geom_point() +
-       geom_hline(yintercept = 0, linetype = 2) +
-       theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dkewY0/figurebUTzaK.png]]
+[[file:/tmp/babel-6doC2T/figureGvfAjo.png]]
 
 ****** Coefficient Vector Distance
+#+begin_export latex
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:coef-comp-linear
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "coefficient_distance",
+                    coefficient_distance,
+                    coefficient_refit_distance,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+levels(plot_data$fit_stage) <- list("Before ANOVA" = "coefficient_distance",
+                                    "After ANOVA" = "coefficient_refit_distance")
+
+plot_labeller <- c(noise = label_both)
+
+ggplot(plot_data, aes(x = id,
+                      y = coefficient_distance,
+                      color = interaction(factor(prft), names),
+                      group = interaction(factor(prft), names),
+                      shape = interaction(factor(prft), names))) +
+  facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)") +
+  scale_y_continuous(name = "Coefficient Vector Distance") +
+  geom_point(size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ 1) +
+  theme_bw(base_size = 26) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(nrow = 2)) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: Coefficient distance for the linear model
+#+LABEL: fig:coef-comp-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:coef-comp-linear
+[[file:/tmp/babel-6doC2T/figure4gwqsy.png]]
+
+#+begin_export latex
+\end{minipage}%
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:coef-comp-quad
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "coefficient_distance",
+                    coefficient_distance,
+                    coefficient_refit_distance,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "quadratic")
+
+levels(plot_data$fit_stage) <- list("Before ANOVA" = "coefficient_distance",
+                                    "After ANOVA" = "coefficient_refit_distance")
+
+plot_labeller <- c(noise = label_both)
+
+ggplot(plot_data, aes(x = id,
+                      y = coefficient_distance,
+                      color = interaction(factor(prft), names),
+                      group = interaction(factor(prft), names),
+                      shape = interaction(factor(prft), names))) +
+  facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Quadratic Model)") +
+  scale_y_continuous(name = "Coefficient Vector Distance") +
+  geom_point(size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ 1) +
+  theme_bw(base_size = 26) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(nrow = 2)) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: Coefficient distance for the quadratic model
+#+LABEL: fig:coef-comp-quad
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:coef-comp-quad
+[[file:/tmp/babel-6doC2T/figuregWvXaz.png]]
+
+#+begin_export latex
+\end{minipage}
+#+end_export
+
+******* Results using $\text{Pr}(>\text{F}) = 0.01$          :noexport:
+
 #+NAME:fig:coef-fit-results-big-prf
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -27018,7 +26944,7 @@ plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
                                                                    "Quadratic Model" = "quadratic"
                                                                  ))
 
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
 
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
@@ -27036,11 +26962,60 @@ ggplot(plot_data, aes(x = id,
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank())
 #+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA ($\text{Pr}(>\text{F}) = 0.01$)
+#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA, with $\text{Pr}(>\text{F}) = 0.01$.
+#+CAPTION: Panels show added noise standard deviations in $[1,\dots,8]$
 #+LABEL: fig:coef-fit-results-big-prf
 #+ATTR_LATEX: :width 0.95\textwidth
 #+RESULTS: fig:coef-fit-results-big-prf
-[[file:/tmp/babel-6doC2T/figureYLCGN5.png]]
+[[file:/tmp/babel-6doC2T/figureh4SRHl.png]]
+
+#+NAME:fig:coef-fit-results-big-prf-high-noise
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1280 :height 720
+#+BEGIN_SRC R
+library(ggplot2)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, noise %in% c(16.0, 32.0, 64.0))
+
+ggplot(plot_data, aes(x = id,
+                      y = coefficient_distance,
+                      color = names,
+                      group = names)) +
+  facet_grid(regression_model ~ noise, scale = "free_y") +
+  scale_x_continuous(name = "Experiments") +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ 1) +
+  theme_bw(base_size = 25) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA, with $\text{Pr}(>\text{F}) = 0.01$.
+#+CAPTION: Panels show added noise standard deviations in $[16,\dots,64]$
+#+LABEL: fig:coef-fit-results-big-prf-high-noise
+#+ATTR_LATEX: :width 0.95\textwidth
+#+RESULTS: fig:coef-fit-results-big-prf-high-noise
+[[file:/tmp/babel-6doC2T/figuree1keNU.png]]
 
 #+NAME:fig:coef-refit-results-big-prf
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -27088,6 +27063,8 @@ ggplot(plot_data, aes(x = id,
 #+ATTR_LATEX: :width 0.95\textwidth
 #+RESULTS: fig:coef-refit-results-big-prf
 [[file:/tmp/babel-6doC2T/figurereUTGW.png]]
+
+******* Results using $\text{Pr}(>\text{F}) = 0.001$         :noexport:
 
 #+NAME:fig:coef-fit-results-small-prf
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
@@ -27184,6 +27161,152 @@ ggplot(plot_data, aes(x = id,
 [[file:/tmp/babel-6doC2T/figureyKJflO.png]]
 
 ****** Response Vector Distance
+#+begin_export latex
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:fit-comp-linear
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "fit_distance",
+                    linear_fit_distance,
+                    linear_refit_distance,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+levels(plot_data$fit_stage) <- list("Before ANOVA" = "linear_fit_distance",
+                                    "After ANOVA" = "linear_refit_distance")
+
+plot_labeller <- c(noise = label_both)
+
+ggplot(plot_data, aes(x = id,
+                      y = fit_distance,
+                      color = interaction(factor(prft), names),
+                      group = interaction(factor(prft), names),
+                      shape = interaction(factor(prft), names))) +
+  facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)") +
+  scale_y_continuous(name = "Fit Vector Distance") +
+  geom_point(size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ 1) +
+  theme_bw(base_size = 26) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(nrow = 2)) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: Fit distance for the linear model
+#+LABEL: fig:fit-comp-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:fit-comp-linear
+[[file:/tmp/babel-6doC2T/figure3h3FmS.png]]
+
+#+begin_export latex
+\end{minipage}%
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:fit-comp-quad
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0))
+#plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "fit_distance",
+                    linear_fit_distance,
+                    linear_refit_distance,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "quadratic")
+
+levels(plot_data$fit_stage) <- list("Before ANOVA" = "linear_fit_distance",
+                                    "After ANOVA" = "linear_refit_distance")
+
+plot_labeller <- c(noise = label_both)
+
+ggplot(plot_data, aes(x = id,
+                      y = fit_distance,
+                      color = interaction(factor(prft), names),
+                      group = interaction(factor(prft), names),
+                      shape = interaction(factor(prft), names))) +
+  facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Quadratic Model)") +
+  scale_y_continuous(name = "Fit Vector Distance") +
+  geom_point(size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ 1) +
+  theme_bw(base_size = 26) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(nrow = 2)) +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: Fit distance for the quadratic model
+#+LABEL: fig:fit-comp-quad
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:fit-comp-quad
+[[file:/tmp/babel-6doC2T/figuresKzQPy.png]]
+
+#+begin_export latex
+\end{minipage}
+#+end_export
+
+******* Old Plots                                            :noexport:
 #+NAME:fig:fit-results-big-prf
 #+HEADER: :results graphics output :session *R* :exports results :eval no-export
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -27359,100 +27482,3 @@ ggplot(plot_data, aes(x = id,
 #+ATTR_LATEX: :width 0.95\textwidth
 #+RESULTS: fig:refit-results-small-prf
 [[file:/tmp/babel-6doC2T/figure6R8EI0.png]]
-****** Post-ANOVA + Refit Response Vector Distance            :noexport:
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data.frame(linear_refit_distance_difference = sort(filter(data, names == "Federov with Uniform Sample")$linear_refit_distance /
-                                                                filter(data, names == "Federov with Biased Sample")$linear_refit_distance),
-                        id = seq(1:nrow(filter(data, names == "Federov with Uniform Sample"))))
-
-ggplot(plot_data, aes(x = id, y = linear_refit_distance_difference)) +
-       #ylim(c(0, NA)) +
-       scale_x_continuous(name = "Experiment") +
-       scale_y_continuous(name = "Sorted Linear Post-ANOVA-Fit Difference Ratio (Uniform / Biased)") +
-       geom_point() +
-       geom_hline(yintercept = 1, linetype = 2) +
-       theme_bw(base_size = 20) # +
-       #theme(axis.ticks.x = element_blank(),
-       #      axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureFZD2Zn.png]]
-
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data
-plot_data$names <- factor(plot_data$names, levels = c("Federov with Uniform Sample",
-                                                      "Federov with Biased Sample",
-                                                      "Uniform Sample",
-                                                      "Biased Sample"))
-
-ggplot(plot_data, aes(x = id, y = linear_refit_distance)) +
-       facet_wrap(names ~ ., ncol = 2) +
-       ylim(c(0, NA)) +
-       scale_x_continuous(name = "Experiments") +
-       #geom_jitter(height = 0, alpha = 0.4) +
-       geom_point() +
-       theme_bw(base_size = 20) +
-       theme(axis.ticks.x = element_blank(),
-             axis.text.x = element_blank())
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureMU3lr1.png]]
-
-****** Looking at Sample Designs                              :noexport:
-
-#+HEADER: :results output :session *R* :eval no-export :exports none
-#+BEGIN_SRC R
-write.csv(federov_design, "dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", row.names = FALSE)
-write.csv(biased_federov_design, "dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", row.names = FALSE)
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results output :session *R* :eval no-export :exports none
-#+BEGIN_SRC R
-federov_design <- read.csv("dopt_sampling_tests/federov_runif_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
-biased_federov_design <- read.csv("dopt_sampling_tests/federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
-#+END_SRC
-
-#+RESULTS:
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-library(GGally)
-library(rsm)
-
-ggpairs(decode.data(biased_federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
-        theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-xq9JVx/figureigvcmW.png]]
-
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720 :exports results :eval no-export
-#+BEGIN_SRC R
-library(ggplot2)
-library(GGally)
-
-ggpairs(decode.data(federov_design)[, c("X1", "X5", "X10", "X15", "X20", "X25", "X30")]) +
-        theme_bw(base_size = 18)
-#+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-xq9JVx/figured9w4oC.png]]
