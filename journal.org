@@ -25017,7 +25017,7 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 
 #+RESULTS:
 ***** Setup                                                    :noexport:
-#+HEADER: :results output :session *R* :exports none :eval no-export
+#+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 library(AlgDesign)
 library(dplyr)
@@ -26453,7 +26453,7 @@ region of the space.
 #+NAME: fig:cdfs
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 560 :exports results :eval no-export
+#+HEADER: :width 800 :height 560 :exports results
 #+BEGIN_SRC R
 library(ggplot2)
 plot_data <- bind_rows(lin_cdf, quad_cdf)
@@ -26523,7 +26523,7 @@ process, where $|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
 $x_{\text{sd}} = 0.04$.
 
 #+NAME: fig:sampled-coeff
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 800 :height 720
 #+BEGIN_SRC R
@@ -26669,7 +26669,7 @@ D(\boldsymbol{M}_{2n + 1, k}) = \left|\dfrac{\boldsymbol{M}^{\top}\boldsymbol{M}
 \]
 #+end_export
 ***** Experiments & Results
-#+HEADER: :results output :session *R* :eval no-export :exports none
+#+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
 #+END_SRC
@@ -26732,9 +26732,9 @@ quadratic model, but we will show in the next sections that the models fitted to
 the data provided by different designs had different results.
 
 #+NAME: fig:d-criterion-comparison
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
+#+HEADER: :width 1280 :height 500
 #+BEGIN_SRC R
 library(ggplot2)
 
@@ -26759,7 +26759,7 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regressio
   ylim(c(0, 1)) +
   scale_x_continuous(name = "Experiments") +
   geom_point(alpha = 0.8, size = 3) +
-  theme_bw(base_size = 25) +
+  theme_bw(base_size = 27) +
   scale_color_brewer(palette = "Set1") +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme(legend.position = "top",
@@ -26769,16 +26769,70 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regressio
 #+END_SRC
 #+CAPTION: Comparison of D-Criterion values for linear and quadratic models
 #+LABEL: fig:d-criterion-comparison
-#+ATTR_LATEX: :width 0.95\textwidth
+#+ATTR_LATEX: :width 0.75\textwidth
 #+RESULTS: fig:d-criterion-comparison
 [[file:/tmp/babel-6doC2T/figureGvfAjo.png]]
 
 ****** Coefficient Vector Distance
+We compared the sampling strategies in Table\nbsp{}[[tab:exp-parameters]] regarding
+the distances between the coefficient vectors of fitted models and the real
+sampled model, as is described in Section\nbsp{}[[Sampling Function Coefficients]].
+The results are shown in Figures\nbsp{}[[fig:coef-comp-linear]]
+and\nbsp{}[[fig:coef-comp-quad]] for the linear and quadratic regression models,
+respectively.
+
+We see that the predicted vectors of coefficients get farther from the sampled
+coefficient vector as the standard deviation of the noise increases, for both
+regression models. The distances between models produced with uniform and biased
+samples also increases with the noise for the linear model, but it has a more
+complex relationship with the noise for the quadratic model. The
+$\text{Pr}(>\text{F})$ threshold for factor selection impacts only the distances
+of the models selected after performing the ANOVA test, shown in the second
+column of each figure.
+
+The vertical lines in each plot represent a least squares regression using a
+constant model for the distances of each experiment group. The red and blue
+lines represent experiments using a uniform sample, while the green and purple
+lines represent experiments using a biased sample. Additionally, the red and
+green lines represent experiments with a $\text{Pr}(>\text{F})$ threshold of
+$0.001$, or ``three stars'' in =R= summary tables, while blue an purple lines
+represent a threshold of $0.01$, or ``two stars''.
+
+In practice, the red and blue lines should always be close or at the same place
+in the stage before the ANOVA test, as should the green and purple lines. We can
+see the impact of model selection after the ANOVA test in the plots on the right
+columns of Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]].
+
+In the linear model experiments, shown in Figure\nbsp{}[[fig:coef-comp-linear]],
+both threshold values produced improvements relative to the initial naive
+models. The larger thresholds, represented by the blue and purple lines,
+produced larger improvements than the smaller thresholds in general, but
+this difference is larger as noise standard deviation increases. The smaller
+thresholds produced almost no improvements for the higher noise values. This is
+also observed in the quadratic model experiments, shown in
+Figure\nbsp{}[[fig:coef-comp-quad]], where it is more pronounced.
+
+The chosen threshold values can be as important as the sample given to the
+D-Optimal design construction algorithm. This is seen in the quadratic model
+experiments where, even for lower noise values, the improvements represented by
+the blue line, or the high threshold using an uniform sample experiment, surpass
+the improvements represented by the green line, or the low threshold using a
+biased sample experiment. The improvements represented by the blue line also get
+close to the improvements represented by the purple line, or the high threshold
+using a biased sample experiment.
+
+In the linear and quadratic model experiments, we also observe that for higher
+noise standard deviations there is a split between closer and farther groups of
+coefficient vectors, with an empty region in the middle. This happens only after
+a model is selected using the results of ANOVA tests, and represents the impact
+of incorrect identification of significant coefficients.
+
 #+begin_export latex
+\clearpage
 \begin{minipage}{0.49\textwidth}
 #+end_export
 #+NAME:fig:coef-comp-linear
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 820 :height 2300
 #+BEGIN_SRC R
@@ -26820,25 +26874,29 @@ levels(plot_data$fit_stage) <- list("Before ANOVA" = "coefficient_distance",
 
 plot_labeller <- c(noise = label_both)
 
+point_size <- 2.5
+base_size <- 27
+rows <- 2
+
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
-                      color = interaction(factor(prft), names),
-                      group = interaction(factor(prft), names),
-                      shape = interaction(factor(prft), names))) +
+                      color = interaction(factor(prft), names, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "),
+                      shape = interaction(factor(prft), names, sep = ", "))) +
   facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
   scale_x_continuous(name = "Experiments (Linear Model)") +
-  scale_y_continuous(name = "Coefficient Vector Distance") +
-  geom_point(size = 1.5) +
+  scale_y_continuous(name = "Coefficient Vector Distance", limits = c(0, NA)) +
+  geom_point(size = point_size) +
   geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 26) +
+  theme_bw(base_size = base_size) +
   scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(nrow = 2)) +
+  guides(colour = guide_legend(nrow = rows)) +
   theme(legend.position = "top",
         legend.title = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank())
 #+END_SRC
-#+CAPTION: Coefficient distance for the linear model
+#+CAPTION: Coefficient distances for the linear model
 #+LABEL: fig:coef-comp-linear
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS: fig:coef-comp-linear
@@ -26849,7 +26907,7 @@ ggplot(plot_data, aes(x = id,
 \begin{minipage}{0.49\textwidth}
 #+end_export
 #+NAME:fig:coef-comp-quad
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 820 :height 2300
 #+BEGIN_SRC R
@@ -26893,23 +26951,23 @@ plot_labeller <- c(noise = label_both)
 
 ggplot(plot_data, aes(x = id,
                       y = coefficient_distance,
-                      color = interaction(factor(prft), names),
-                      group = interaction(factor(prft), names),
-                      shape = interaction(factor(prft), names))) +
+                      color = interaction(factor(prft), names, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "),
+                      shape = interaction(factor(prft), names, sep = ", "))) +
   facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
   scale_x_continuous(name = "Experiments (Quadratic Model)") +
-  scale_y_continuous(name = "Coefficient Vector Distance") +
-  geom_point(size = 1.5) +
+  scale_y_continuous(name = "Coefficient Vector Distance", limits = c(0, NA)) +
+  geom_point(size = point_size) +
   geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 26) +
+  theme_bw(base_size = base_size) +
   scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(nrow = 2)) +
+  guides(colour = guide_legend(nrow = rows)) +
   theme(legend.position = "top",
         legend.title = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank())
 #+END_SRC
-#+CAPTION: Coefficient distance for the quadratic model
+#+CAPTION: Coefficient distances for the quadratic model
 #+LABEL: fig:coef-comp-quad
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS: fig:coef-comp-quad
@@ -27165,7 +27223,7 @@ ggplot(plot_data, aes(x = id,
 \begin{minipage}{0.49\textwidth}
 #+end_export
 #+NAME:fig:fit-comp-linear
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 820 :height 2300
 #+BEGIN_SRC R
@@ -27209,17 +27267,17 @@ plot_labeller <- c(noise = label_both)
 
 ggplot(plot_data, aes(x = id,
                       y = fit_distance,
-                      color = interaction(factor(prft), names),
-                      group = interaction(factor(prft), names),
-                      shape = interaction(factor(prft), names))) +
+                      color = interaction(factor(prft), names, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "),
+                      shape = interaction(factor(prft), names, sep = ", "))) +
   facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
   scale_x_continuous(name = "Experiments (Linear Model)") +
-  scale_y_continuous(name = "Fit Vector Distance") +
-  geom_point(size = 1.5) +
+  scale_y_continuous(name = "Fit Vector Distance", limits = c(0, NA)) +
+  geom_point(size = point_size) +
   geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 26) +
+  theme_bw(base_size = base_size) +
   scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(nrow = 2)) +
+  guides(colour = guide_legend(nrow = rows)) +
   theme(legend.position = "top",
         legend.title = element_blank(),
         axis.ticks.x = element_blank(),
@@ -27236,7 +27294,7 @@ ggplot(plot_data, aes(x = id,
 \begin{minipage}{0.49\textwidth}
 #+end_export
 #+NAME:fig:fit-comp-quad
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 820 :height 2300
 #+BEGIN_SRC R
@@ -27280,17 +27338,17 @@ plot_labeller <- c(noise = label_both)
 
 ggplot(plot_data, aes(x = id,
                       y = fit_distance,
-                      color = interaction(factor(prft), names),
-                      group = interaction(factor(prft), names),
-                      shape = interaction(factor(prft), names))) +
+                      color = interaction(factor(prft), names, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "),
+                      shape = interaction(factor(prft), names, sep = ", "))) +
   facet_grid(noise ~ fit_stage , scale = "free_y", labeller = labeller(noise = label_both)) +
   scale_x_continuous(name = "Experiments (Quadratic Model)") +
-  scale_y_continuous(name = "Fit Vector Distance") +
-  geom_point(size = 1.5) +
+  scale_y_continuous(name = "Fit Vector Distance", limits = c(0, NA)) +
+  geom_point(size = point_size) +
   geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 26) +
+  theme_bw(base_size = base_size) +
   scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(nrow = 2)) +
+  guides(colour = guide_legend(nrow = rows)) +
   theme(legend.position = "top",
         legend.title = element_blank(),
         axis.ticks.x = element_blank(),
