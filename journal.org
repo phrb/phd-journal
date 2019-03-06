@@ -24999,7 +24999,7 @@ Experiments approach to autotuning. Despite the high dimensionality of these
 problems, it is usually the case that only a \todo{add reference}small number of
 factors impacts the measured performance metrics significantly. Our approach
 aims to identify the most significant factors using an initial performance
-model, D-Optimal designs, and Analysis of Variance.
+model, D-Optimal designs, and Analysis of Variance (ANOVA).
 
 Our experiments with SPAPT kernels obtained results similar to a uniform
 sampling strategy, while using significantly less evaluations. Since it was
@@ -25008,6 +25008,70 @@ their large search spaces, the experimental designs used in each iteration of
 our iterative approach were selected from a limited sample of configurations.
 The size of these samples were always small relative to the size of each search
 space, due to the high dimension and number of values for each factor.
+
+A practical concern derived from the limitation on the size of samples to
+choose a design from is the large amount of time it takes to evaluate a
+relatively large number of candidate configurations. Each search space also had
+several constraints on factor levels, reducing the valid search space and
+slowing the process of finding candidates to test. Another concern is the
+intuition that the \todo{improve, add reference} quality of the designs
+constructed from uniformly sampled candidates should always be poorer than in
+the case where designs are selected from complete search spaces. This property
+should be more pronounced when certain types of performance models are selected,
+such as quadratic models, due to the fact that practically none of the points
+sampled uniformly from a high-dimensional search space would be in the central
+region of the space.
+
+#+NAME: tab:designs-models
+#+ATTR_LATEX: :booktabs t :align ll
+#+CAPTION: Design construction techniques and target performance models
+|----------------------------------+--------------------|
+| Sampling & Construction Strategy | Performance Models |
+|----------------------------------+--------------------|
+| Uniform                          | Linear & quadratic |
+| Biased                           | Linear             |
+| Biased + Normal                  | Quadratic          |
+| Uniform + /Fedorov/              | Linear & quadratic |
+| Biased + /Fedorov/               | Linear             |
+| Biased + Normal + /Fedorov/      | Quadratic          |
+|----------------------------------+--------------------|
+
+#+NAME: fig:cdfs
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 560 :exports results
+#+BEGIN_SRC R
+library(ggplot2)
+plot_data <- bind_rows(lin_cdf, quad_cdf)
+
+ggplot(plot_data, aes(x = x, y = y)) +
+       facet_wrap(name ~ ., ncol = 2) +
+       ylab("P(X < x)") +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 28)
+#+END_SRC
+#+CAPTION: Cumulative Distribution Functions used for Biased Samples
+#+LABEL: fig:cdfs
+#+ATTR_LATEX: :width 0.55\textwidth
+#+RESULTS: fig:cdfs
+[[file:/tmp/babel-6doC2T/figureuT6hPe.png]]
+
+These concerns motivated the development of a methodology to evaluate the
+quality of the designs produced by \todo{add reference} /Fedorov's algorithm/,
+the chosen D-Optimal construction technique, in the cases where designs were
+selected from samples with different properties. We studied design efficiency,
+measured by the /D-criterion/, for designs constructed using the performance
+models and construction techniques listed in Table\nbsp{}[[tab:designs-models]].
+Sampling strategies consisted of obtaining samples using the /cumulative
+distribution functions/ in Figure\nbsp{}[[fig:cdfs]], and adding samples from a
+normal distribution to the quadratic model biased samples.
+
+
+This report is organized as follows. Section\nbsp{}[[Comparing Sampling Strategies]]
+presents the three metrics we used to compare each of the sampling strategies in
+Table\nbsp{}[[tab:designs-models]], Section\nbsp{}[[Experiments]] describe the
+experiments we performed to compare sampling strategies, and
+Section\nbsp{}[[Results]] discusses the results obtained.
 
 ***** Clone Repository                                         :noexport:
 Make sure you have the latest data:
@@ -26424,62 +26488,6 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 #+RESULTS:
 [[file:/tmp/babel-n3ob7h/figureXz6lIe.png]]
 
-***** Sampling Strategies
-A practical concern derived from the limitation on the size of samples to
-choose a design from is the large amount of time it takes to evaluate a
-relatively large number of candidate configurations. Each search space also had
-several constraints on factor levels, reducing the valid search space and
-slowing the process of finding candidates to test. Another concern is the
-intuition that the \todo{improve, add reference} quality of the designs
-constructed from uniformly sampled candidates should always be poorer than in
-the case where designs are selected from complete search spaces. This property
-should be more pronounced when certain types of performance models are selected,
-such as quadratic models, due to the fact that practically none of the points
-sampled uniformly from a high-dimensional search space would be in the central
-region of the space.
-
-#+NAME: tab:designs-models
-#+ATTR_LATEX: :booktabs t :align ll
-#+CAPTION: Design construction techniques and target performance models
-| Sampling & Construction Strategy | Performance Models |
-|----------------------------------+--------------------|
-| Uniform                          | Linear & quadratic |
-| Biased                           | Linear             |
-| Biased + Normal                  | Quadratic          |
-| Uniform + /Federov's/            | Linear & quadratic |
-| Biased + /Federov's/             | Linear             |
-| Biased + Normal + /Federov's/    | Quadratic          |
-
-#+NAME: fig:cdfs
-#+HEADER: :results graphics output :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 560 :exports results
-#+BEGIN_SRC R
-library(ggplot2)
-plot_data <- bind_rows(lin_cdf, quad_cdf)
-
-ggplot(plot_data, aes(x = x, y = y)) +
-       facet_wrap(name ~ ., ncol = 2) +
-       ylab("P(X < x)") +
-       geom_line(size = 1.3) +
-       theme_bw(base_size = 28)
-#+END_SRC
-#+CAPTION: Cumulative Distribution Functions used for Biased Samples
-#+LABEL: fig:cdfs
-#+ATTR_LATEX: :width 0.55\textwidth
-#+RESULTS: fig:cdfs
-[[file:/tmp/babel-6doC2T/figureuT6hPe.png]]
-
-These concerns motivated the development of a methodology to evaluate the
-quality of the designs produced by \todo{add reference} /Fedorov's algorithm/,
-the chosen D-Optimal construction technique, in the cases where designs were
-selected from samples with different properties. We studied design efficiency,
-measured by the /D-criterion/, for designs constructed using the performance
-models and construction techniques listed in Table\nbsp{}[[tab:designs-models]].
-Sampling strategies consisted of obtaining samples using the /cumulative
-distribution functions/ in Figure\nbsp{}[[fig:cdfs]], and adding samples from a
-normal distribution to the quadratic model biased samples.
-
 ***** Comparing Sampling Strategies
 In addition to the D-Criterion value, we also measured the quality of the
 designs generated by each technique using the /euclidean distance/ between the
@@ -26693,7 +26701,11 @@ on the performance model used to construct it, and is defined as
 \text{D}(\mathbf{M}_{2n + 1, k}) = \left|\dfrac{\mathbf{M}^{\top}\mathbf{M}}{k}\right|^{\left(\dfrac{1}{2n + 1}\right)}\text{.}
 \]
 #+end_export
-***** Experiments & Results
+***** Experiments
+:PROPERTIES:
+:Attachments: doe_functions_comparisons.pdf doe_functions_comparisons.svg
+:ID:       ded58374-e455-4a48-ac16-36897014b106
+:END:
 #+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
@@ -26742,6 +26754,60 @@ described in Table\nbsp{}[[tab:exp-parameters]].
 | Repetitions                                          | 100                                                                          |                                                100 |
 |------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
 
+Figure\nbsp{}[[fig:functions-comparison]] lists the objects that can be observed and
+compared after applying our approach to build a performance model, represented
+by the function $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$,
+from observations of a function $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
+\varepsilon$. In this experiment using function coefficient sampling, we are
+capable of observing $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$,
+but we also have access to $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ and to
+the actual model coefficients $(\boldsymbol{\alpha},\boldsymbol{\beta})$. This
+means we can compare the accuracy of not only the responses predicted by
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$, but also of the
+coefficients $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$.
+
+In real autotuning experiments we would not be capable of observing either the
+actual responses without added noise or the real model coefficients, and the
+only comparison possible is between the observed responses with noise
+$f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and the predicted
+responses $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$.
+
+The experiment $\mathbf{X}$ in Figure\nbsp{}[[fig:functions-comparison]] is one of
+the observed experiments $(\mathbf{X}_{1}, \dots, \mathbf{X}_{K})$ that compose
+the D-Optimal designs used for ANOVA steps and the additional experiments in the
+test set. In the experiment using function coefficient sampling, the experiments
+$(\mathbf{X}_{1}, \dots, \mathbf{X}_{K})$ consist of experiments selected for
+the D-Optimal designs, plus an additional uniform sample used later for testing.
+
+The comparison between $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
+\varepsilon$ and $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$
+is meaningful only with regards to sampled regions of the search space. What we
+would actually like to know is the accuracy of
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ for the regions
+of the search space where local and global minima of
+$f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ are found.
+
+Comparing the coefficient vectors $(\boldsymbol{\alpha},\boldsymbol{\beta})$ and
+$(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$ is a better option
+for our experiment, but it is not feasible in real autotuning experiments.
+Despite that, we will show in Section\nbsp{}[[Coefficient & Response
+Vector Distances]] that comparing $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
+\varepsilon$ with
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$, and
+$(\boldsymbol{\alpha},\boldsymbol{\beta})$ and
+$(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$ leads to similar
+conclusions in this experiment. This motivates using the comparison between
+$f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ in experimental
+settings where $(\boldsymbol{\alpha},\boldsymbol{\beta})$ is not available for
+comparison.
+
+#+NAME: fig:functions-comparison
+#+ATTR_LATEX: :width 0.6\textwidth
+#+CAPTION: Comparing coefficients and output of real and predicted models
+[[att:doe_functions_comparisons.pdf]]
+
+***** Results
 ****** D-Criterion
 Since the evaluation of the D-Criterion, as described in Section\nbsp{}[[Comparing
 D-Criteria]], does not depend on the actual response values, we can group the
@@ -26751,10 +26817,23 @@ samples.
 
 We see in Figure\nbsp{}[[fig:d-criterion-comparison]] that the D-Criteria was much
 higher for experiments using the linear regression model, and that the biased
-samples given to Fedorov's algorithm help finding higher values of D. The values
-of the D-Criterion do not seem to change much in the experiments with the
-quadratic model, but we will show in the next sections that the models fitted to
-the data provided by different designs had different results.
+samples given to Fedorov's algorithm helped finding higher values of D. The
+magnitude of the improvements produced by using a biased sample were not
+expected for the linear model, given the high number of factors. These
+improvements might be explained by the fact that most uniformly sampled points
+in such high dimension would be located in the faces of the search space
+hypercube, while few or no points at all would be located in the hypercube
+corners or center regions. The improvements could be due to our biased
+sampling strategy forcing most points to the corners of the hypercube.
+
+The values of the D-Criterion do not seem to change much in the experiments with
+the quadratic model, but we will show in the next sections that the models
+fitted to the data provided by different designs had different results. We
+attempted to add extra samples to the center region of the search space with a
+normally distributed sample with small standard deviation. Despite that, the
+observed D-Criteria remained much lower than the ones observed in linear model
+experiments. The smaller efficiency of designs could also be due to having
+double the number of factors and experiments than the linear model experiments.
 
 #+NAME: fig:d-criterion-comparison
 #+HEADER: :results graphics output :session *R* :exports results
@@ -26798,13 +26877,13 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regressio
 #+RESULTS: fig:d-criterion-comparison
 [[file:/tmp/babel-6doC2T/figureGvfAjo.png]]
 
-****** Coefficient Vector Distance
+****** Coefficient & Response Vector Distances
 We compared the sampling strategies in Table\nbsp{}[[tab:exp-parameters]] regarding
 the distances between the coefficient vectors of fitted models and the real
-sampled model, as is described in Section\nbsp{}[[Sampling Function Coefficients]].
-The results are shown in Figures\nbsp{}[[fig:coef-comp-linear]]
-and\nbsp{}[[fig:coef-comp-quad]] for the linear and quadratic regression models,
-respectively.
+sampled model, as is described in Section\nbsp{}[[Sampling Function Coefficients]]
+and shown in Figure\nbsp{}[[fig:functions-comparison]]. The results are shown in
+Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]] for the linear
+and quadratic regression models, respectively.
 
 We see that the predicted vectors of coefficients get farther from the sampled
 coefficient vector as the standard deviation of the noise increases, for both
@@ -26851,6 +26930,22 @@ noise standard deviations there is a split between closer and farther groups of
 coefficient vectors, with an empty region in the middle. This happens only after
 a model is selected using the results of ANOVA tests, and represents the impact
 of incorrect identification of significant coefficients.
+
+Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] show the results
+of comparing response vectors, as is described in Section\nbsp{}[[Comparing
+Response Vectors]] and shown in Figure\nbsp{}[[fig:functions-comparison]]. The data in
+Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] was obtained
+during the same experiments show in Figures\nbsp{}[[fig:coef-comp-linear]]
+and\nbsp{}[[fig:coef-comp-quad]]. The color and shape encodings of the four figures
+in this section are the same.
+
+We observe essentially the same behaviours in the comparisons between
+coefficient and response vectors, despite the limited size of the sets used for
+comparing the models built using data from D-Optimal designs with the real
+models at each step. This motivates using the response vector distance as a
+comparison metric for models in experimental settings where the real
+coefficients are not available for comparison, such as real autotuning problems
+or experiments using more complex function sampling techniques.
 
 #+begin_export latex
 \clearpage
@@ -27002,248 +27097,6 @@ ggplot(plot_data, aes(x = id,
 \end{minipage}
 #+end_export
 
-******* Results using $\text{Pr}(>\text{F}) = 0.01$          :noexport:
-
-#+NAME:fig:coef-fit-results-big-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = coefficient_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA, with $\text{Pr}(>\text{F}) = 0.01$.
-#+CAPTION: Panels show added noise standard deviations in $[1,\dots,8]$
-#+LABEL: fig:coef-fit-results-big-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:coef-fit-results-big-prf
-[[file:/tmp/babel-6doC2T/figureh4SRHl.png]]
-
-#+NAME:fig:coef-fit-results-big-prf-high-noise
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = coefficient_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA, with $\text{Pr}(>\text{F}) = 0.01$.
-#+CAPTION: Panels show added noise standard deviations in $[16,\dots,64]$
-#+LABEL: fig:coef-fit-results-big-prf-high-noise
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:coef-fit-results-big-prf-high-noise
-[[file:/tmp/babel-6doC2T/figuree1keNU.png]]
-
-#+NAME:fig:coef-refit-results-big-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = coefficient_refit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, after ANOVA ($\text{Pr}(>\text{F}) = 0.01$)
-#+LABEL: fig:coef-refit-results-big-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:coef-refit-results-big-prf
-[[file:/tmp/babel-6doC2T/figurereUTGW.png]]
-
-******* Results using $\text{Pr}(>\text{F}) = 0.001$         :noexport:
-
-#+NAME:fig:coef-fit-results-small-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = coefficient_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, before ANOVA ($\text{Pr}(>\text{F}) = 0.001$)
-#+LABEL: fig:coef-fit-results-small-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:coef-fit-results-small-prf
-[[file:/tmp/babel-6doC2T/figure01YmiN.png]]
-
-#+NAME:fig:coef-refit-results-small-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = coefficient_refit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Coefficient distance difference for linear and quadratic models, after ANOVA ($\text{Pr}(>\text{F}) = 0.01$)
-#+LABEL: fig:coef-refit-results-small-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:coef-refit-results-small-prf
-[[file:/tmp/babel-6doC2T/figureyKJflO.png]]
-
-****** Response Vector Distance
 #+begin_export latex
 \begin{minipage}{0.49\textwidth}
 #+end_export
@@ -27388,194 +27241,3 @@ ggplot(plot_data, aes(x = id,
 #+begin_export latex
 \end{minipage}
 #+end_export
-
-******* Old Plots                                            :noexport:
-#+NAME:fig:fit-results-big-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = linear_fit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Fit distance difference for linear and quadratic models, before ANOVA ($\text{P}_{\text{r}}(>\text{F}) = 0.01$)
-#+LABEL: fig:fit-results-big-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:fit-results-big-prf
-[[file:/tmp/babel-6doC2T/figureLsJkmY.png]]
-
-#+NAME: fig:refit-results-big-prf
-#+HEADER: :width 1280 :height 720
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :exports results :eval no-export
-library(ggplot2)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.01 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = linear_refit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Fit distance difference for linear and quadratic models, after ANOVA ($\text{P}_{\text{r}}(>\text{F}) = 0.01$)
-#+LABEL: fig:refit-results-big-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:refit-results-big-prf
-[[file:/tmp/babel-6doC2T/figureSbKPT2.png]]
-
-#+NAME:fig:fit-results-small-prf
-#+HEADER: :results graphics output :session *R* :exports results :eval no-export
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1280 :height 720
-#+BEGIN_SRC R
-library(ggplot2)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = linear_fit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Fit distance difference for linear and quadratic models, before ANOVA ($\text{P}_{\text{r}}(>\text{F}) = 0.001$)
-#+LABEL: fig:fit-results-small-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:fit-results-small-prf
-[[file:/tmp/babel-6doC2T/figure1uLOZ6.png]]
-
-#+NAME: fig:refit-results-small-prf
-#+HEADER: :width 1280 :height 720
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :exports results :eval no-export
-library(ggplot2)
-
-plot_data <- data
-
-plot_data <- subset(plot_data, prft == 0.001 & (names == "Federov with Uniform Sample" | names == "Federov with Biased Sample"))
-
-plot_data$names <- factor(plot_data$names, levels = c(
-                                             "Federov with Uniform Sample",
-                                             "Federov with Biased Sample"
-                                           ))
-
-plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
-                                                                   "Linear Model" = "linear",
-                                                                   "Quadratic Model" = "quadratic"
-                                                                 ))
-
-plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
-
-ggplot(plot_data, aes(x = id,
-                      y = linear_refit_distance,
-                      color = names,
-                      group = names)) +
-  facet_grid(regression_model ~ noise, scale = "free_y") +
-  scale_x_continuous(name = "Experiments") +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ 1) +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(legend.position = "top",
-        legend.title = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())
-#+END_SRC
-#+CAPTION: Fit distance difference for linear and quadratic models, after ANOVA ($\text{P}_{\text{r}}(>\text{F}) = 0.001$)
-#+LABEL: fig:refit-results-small-prf
-#+ATTR_LATEX: :width 0.95\textwidth
-#+RESULTS: fig:refit-results-small-prf
-[[file:/tmp/babel-6doC2T/figure6R8EI0.png]]
-
-***** Gaussian Processes                                       :noexport:
-#+NAME: tab:obtainability-comparability
-#+ATTR_LATEX: :booktabs t :align lcc
-|--------------------------------------------------------------------------------------------------+----------------------+--------------------|
-| Measurable Object                                                                                | Coefficient Sampling | Gaussian Processes |
-|--------------------------------------------------------------------------------------------------+----------------------+--------------------|
-| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}\in\mathbb{R}^n)$                      | $\times$             |                    |
-| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}\in\mathbb{R}^n) + \varepsilon$        | $\times$             | $\times$           |
-| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\forall\boldsymbol{X}\in\mathbb{R}^n)$               | $\times$             |                    |
-| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\forall\boldsymbol{X}\in\mathbb{R}^n) + \varepsilon$ | $\times$             |                    |
-| $(\boldsymbol{\alpha},\boldsymbol{\beta})$                                                       | $\times$             |                    |
-| $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$                                     | $\times$             |                    |
-|--------------------------------------------------------------------------------------------------+----------------------+--------------------|

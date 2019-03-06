@@ -12,8 +12,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="221.8333mm"
-   height="110.81895mm"
-   viewBox="0 0 221.83329 110.81895"
+   height="99.244896mm"
+   viewBox="0 0 221.83329 99.244899"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 5da689c313, 2019-01-14"
@@ -1472,9 +1472,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="158.18056"
-     inkscape:cy="268.97464"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="385.07765"
+     inkscape:cy="259.59458"
      inkscape:document-units="mm"
      inkscape:current-layer="ltx-render-layer"
      showgrid="false"
@@ -1507,13 +1507,13 @@
      id="layer2"
      inkscape:label="Shapes"
      style="display:inline"
-     transform="translate(3.5875152,12.906126)" />
+     transform="translate(3.5875152,1.3320708)" />
   <g
      inkscape:label="Latex Formulas"
      inkscape:groupmode="layer"
      id="layer1"
      style="display:none"
-     transform="translate(3.5875152,12.906126)">
+     transform="translate(3.5875152,1.3320708)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:4.93888855px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -1615,18 +1615,7 @@
      inkscape:groupmode="layer"
      inkscape:label="Rendered Latex"
      style="display:inline"
-     transform="translate(3.5875152,12.906126)">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:4.93888855px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="107.31872"
-       y="-2.9661784"
-       id="text7276-44"><tspan
-         sodipodi:role="line"
-         x="107.31872"
-         y="-2.9661784"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.70277786px;font-family:'TeX Gyre Schola Math';-inkscape-font-specification:'TeX Gyre Schola Math';text-align:center;text-anchor:middle;stroke-width:0.26458332"
-         id="tspan7280-9">Comparing Real and Predicted Models</tspan></text>
+     transform="translate(3.5875152,1.3320708)">
     <g
        id="g16496"
        transform="translate(0,-8.9958326)" />
