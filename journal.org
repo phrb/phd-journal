@@ -26500,11 +26500,11 @@ section.
 Consider the functions
 $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}\colon\mathbf{X}\in\mathbb{R}^n\to\mathbb{R}$
 of the form
-
+#+begin_export latex
 \[
 f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}) = \alpha_0 + \sum\limits^{n}_{i = 1}{\left(\alpha_{i}x_{i} + \beta_{i}x_{i}^{2}\right)} + \varepsilon\text{,}
 \]
-
+#+end_export
 where $x \in [-1, 1] \; \forall x \in \mathbf{X}$, with /coefficients of linear
 terms/ $\boldsymbol{\alpha} \in \mathbb{R}^{n + 1}$, /coefficients of quadratic
 terms/ $\boldsymbol{\beta} \in \mathbb{R}^{n}$, and normally distributed error
@@ -26519,7 +26519,7 @@ $x_{\text{sup}}>x_{\text{inf}}>0$. Small normally distributed values with mean
 zero and standard deviation $x_{\text{sd}}$ are assigned to the other factors.
 Figure\nbsp{}[[fig:sampled-coeff]] shows one coefficient sample obtained by this
 process, where $|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
-2|\boldsymbol{X}| + 1 = 121$, $x_{\text{inf}} = 1$, $x_{\text{sup}} = 7$, and
+2|\mathbf{X}| + 1 = 121$, $x_{\text{inf}} = 1$, $x_{\text{sup}} = 7$, and
 $x_{\text{sd}} = 0.04$.
 
 #+NAME: fig:sampled-coeff
@@ -26562,9 +26562,9 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 #+RESULTS: fig:sampled-coeff
 [[file:/tmp/babel-6doC2T/figure7gQTiz.png]]
 
-****** Comparing Response Vectors
+****** Comparing Coefficient Vectors
 Consider a design $\xi_{n,k}$ with factors $x_{k1},\dots,x_{kn}$, experiments
-$\boldsymbol{X}_1, \dots, \boldsymbol{X}_k$, and design matrix given by
+$\mathbf{X}_1, \dots, \mathbf{X}_k$, and design matrix given by
 #+begin_export latex
 \[
 \xi_{n,k} =
@@ -26581,51 +26581,76 @@ large sample of size $K$.
 
 Using a function $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ sampled as
 described in the previous section, we can compute the value or /response vector/
-$\boldsymbol{y} = (y_1,\dots,y_k)$ for each experiment vector $\boldsymbol{X_i}
+$\mathbf{y} = (y_1,\dots,y_k)$ for each experiment vector $\mathbf{X}_i
 = (x_{i1},\dots,x_{in})$, obtaining the design $\xi^{\prime}_{n,k}$ with design
 matrix given by
 #+begin_export latex
 \[
 \xi^{\prime}_{n,k} =
 \begin{bmatrix}
-    x_{11} & x_{12} & x_{13} & \dots  & x_{1n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_1) \\
-    x_{21} & x_{22} & x_{23} & \dots  & x_{2n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_2)\\
+    x_{11} & x_{12} & x_{13} & \dots  & x_{1n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_1) \\
+    x_{21} & x_{22} & x_{23} & \dots  & x_{2n} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_2)\\
     \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
-    x_{k1} & x_{k2} & x_{k3} & \dots  & x_{kn} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_k)
+    x_{k1} & x_{k2} & x_{k3} & \dots  & x_{kn} & f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_k)
 \end{bmatrix}.
 \]
 #+end_export
 
 We then use $\xi^{\prime}_{n,k}$ to perform a linear regression with model
+#+begin_export latex
 \[
-f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}_i) = y_i = \alpha^{\prime}_0 +
-\boldsymbol{X}_i^{\top}(\alpha^{\prime}_{1}, \dots, \alpha^{\prime}_{n}) +
-\left(\boldsymbol{X}^{2}_i\right)^{\top}(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
+f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_i) = y_i = \alpha^{\prime}_0 +
+\mathbf{X}_i^{\top}(\alpha^{\prime}_{1}, \dots, \alpha^{\prime}_{n}) +
+\left(\mathbf{X}^{2}_i\right)^{\top}(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
 \varepsilon\text{,}
 \]
+
+#+end_export
+obtaining the coefficient vector $\mathbf{C}^{\prime} =
+\boldsymbol{\alpha}^{\prime}\cup\boldsymbol{\beta}^{\prime}$ which approximates
+$\mathbf{C} = \boldsymbol{\alpha}\cup\boldsymbol{\beta}$. The /coefficient
+vector distance/ $\text{cvd}(\mathbf{C}, \mathbf{C}^{\prime}) = \|\mathbf{C} -
+\mathbf{C}^{\prime}\|^{2}$ provides a measure of how well the fitted
+coefficients approximate the real function coefficients, and enables comparing
+two models.
+****** Comparing Response Vectors
+Consider designs $\xi_{n,k}$ and $\xi^{\prime}_{n,k}$, constructed as in the
+last section. We can use $\xi^{\prime}_{n,k}$ to perform a linear regression with model
+#+begin_export latex
+\[
+f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_i) = y_i = \alpha^{\prime}_0 +
+\mathbf{X}_i^{\top}(\alpha^{\prime}_{1}, \dots, \alpha^{\prime}_{n}) +
+\left(\mathbf{X}^{2}_i\right)^{\top}(\beta^{\prime}_{1}, \dots, \beta^{\prime}_{n}) +
+\varepsilon\text{,}
+\]
+#+end_export
 obtaining coefficients that define the function
 $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ which
 approximates $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$.
 Evaluating the fitted model in the original large sample of size $K$ gives
 the response vector
+#+begin_export latex
 \[
-\boldsymbol{Y}^{\prime} = (f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
-(\boldsymbol{X}_1), \dots, f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
-(\boldsymbol{X}_K))\text{,}
+\mathbf{Y}^{\prime} = (f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
+(\mathbf{X}_1), \dots, f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
+(\mathbf{X}_K))\text{,}
 \]
+#+end_export
 and evaluating the true sampled function gives the response vector
+#+begin_export latex
 \[
-\boldsymbol{Y} = (f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
-(\boldsymbol{X}_1), \dots, f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
-(\boldsymbol{X}_K))\text{.}
+\mathbf{Y} = (f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
+(\mathbf{X}_1), \dots, f_{\boldsymbol{\alpha},\boldsymbol{\beta}}
+(\mathbf{X}_K))\text{.}
 \]
-The /response vector distance/ $d(\mathbf{Y}, \mathbf{Y}^{\prime}) =
+#+end_export
+The /response vector distance/ $\text{rvd}(\mathbf{Y}, \mathbf{Y}^{\prime}) =
 \|\mathbf{Y} - \mathbf{Y}^{\prime}\|^{2}$ provides a measure of how well the
 fitted model approximates the real function in the initial sample of size $K$,
 and enables the comparison of two models for the same data.
 ****** Comparing D-Criteria
 Consider a D-Optimal design $\xi_{n,k}$ constructed using Fedorov's algorithm,
-with $n$ factors, experiments $\boldsymbol{X}_1, \dots, \boldsymbol{X}_k$ chosen
+with $n$ factors, experiments $\mathbf{X}_1, \dots, \mathbf{X}_k$ chosen
 from a large candidate set of $K$ experiments, and design matrix given by
 #+begin_export latex
 \[
@@ -26641,16 +26666,16 @@ from a large candidate set of $K$ experiments, and design matrix given by
 The quadratic performance model used to construct this design was
 #+begin_export latex
 \[
-\boldsymbol{y} = \boldsymbol{\beta{}M} + \varepsilon\text{,}
+\mathbf{y} = \boldsymbol{\beta{}}\mathbf{M} + \varepsilon\text{,}
 \]
 #+end_export
 where $\boldsymbol{\beta}$ is the vector of $2n + 1$ coefficients for linear,
 quadratic, and intercept terms, $\varepsilon$ is the normally distributed error
-term, and $\boldsymbol{M}$ is the /model matrix/, a $(2n + 1)\times{}k$ matrix
+term, and $\mathbf{M}$ is the /model matrix/, a $(2n + 1)\times{}k$ matrix
 containing each factor level as it would appear in the performance model, given by
 #+begin_export latex
 \[
-\boldsymbol{M} =
+\mathbf{M} =
 \begin{bmatrix}
     1 & x_{11} & \dots  & x_{1n} & x_{11}^{2} & \dots  & x_{1n}^2 \\
     1 & x_{21} & \dots  & x_{2n} & x_{21}^2 & \dots  & x_{2n}^2 \\
@@ -26660,12 +26685,12 @@ containing each factor level as it would appear in the performance model, given 
 \]
 #+end_export
 
-The model matrix $\boldsymbol{M}$ is used to compute the /D-Criterion/
-$D(\boldsymbol{M}_{2n + 1, k}) \in [0,1]$. The D-Criterion of a design depends
+The model matrix $\mathbf{M}$ is used to compute the /D-Criterion/
+$D(\mathbf{M}_{2n + 1, k}) \in [0,1]$. The D-Criterion of a design depends
 on the performance model used to construct it, and is defined as
 #+begin_export latex
 \[
-D(\boldsymbol{M}_{2n + 1, k}) = \left|\dfrac{\boldsymbol{M}^{\top}\boldsymbol{M}}{k}\right|^{\left(\dfrac{1}{2n + 1}\right)}\text{.}
+\text{D}(\mathbf{M}_{2n + 1, k}) = \left|\dfrac{\mathbf{M}^{\top}\mathbf{M}}{k}\right|^{\left(\dfrac{1}{2n + 1}\right)}\text{.}
 \]
 #+end_export
 ***** Experiments & Results
@@ -27540,3 +27565,17 @@ ggplot(plot_data, aes(x = id,
 #+ATTR_LATEX: :width 0.95\textwidth
 #+RESULTS: fig:refit-results-small-prf
 [[file:/tmp/babel-6doC2T/figure6R8EI0.png]]
+
+***** Gaussian Processes                                       :noexport:
+#+NAME: tab:obtainability-comparability
+#+ATTR_LATEX: :booktabs t :align lcc
+|--------------------------------------------------------------------------------------------------+----------------------+--------------------|
+| Measurable Object                                                                                | Coefficient Sampling | Gaussian Processes |
+|--------------------------------------------------------------------------------------------------+----------------------+--------------------|
+| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}\in\mathbb{R}^n)$                      | $\times$             |                    |
+| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\boldsymbol{X}\in\mathbb{R}^n) + \varepsilon$        | $\times$             | $\times$           |
+| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\forall\boldsymbol{X}\in\mathbb{R}^n)$               | $\times$             |                    |
+| $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\forall\boldsymbol{X}\in\mathbb{R}^n) + \varepsilon$ | $\times$             |                    |
+| $(\boldsymbol{\alpha},\boldsymbol{\beta})$                                                       | $\times$             |                    |
+| $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$                                     | $\times$             |                    |
+|--------------------------------------------------------------------------------------------------+----------------------+--------------------|
