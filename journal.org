@@ -27252,7 +27252,7 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 
 #+RESULTS:
 : Already up to date.
-***** Looking at each Iteration
+***** Eliminated Factors and Fixed Values
 ****** Loading Data
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -27281,7 +27281,7 @@ The following objects are masked from ‘package:base’:
 
 'data.frame':	10 obs. of  19 variables:
  $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2
- $ run_id               : int  1537463771 1537463780 1537463775 1537463776 366 235 1537463762 1537463781 218 1537463765
+ $ run_id               : int  1537463771 1537463780 1537463775 1537463776 294 53 1537463762 1537463781 364 1537463765
  $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98
  $ de_step_1            : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153
  $ de_step_2            : num  0.178 0.158 0.129 0.19 0.239 0.149 0.182 0.16 0.4 0.27
@@ -27405,7 +27405,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
 
 'data.frame':	40 obs. of  17 variables:
  $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2 ...
- $ run_id               : Factor w/ 10 levels "218","235","366",..: 6 9 7 8 3 2 4 10 1 5 ...
+ $ run_id               : Factor w/ 10 levels "53","294","364",..: 6 9 7 8 2 1 4 10 3 5 ...
  $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98 ...
  $ removed_step_1       : Factor w/ 114 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75 ...
  $ removed_step_2       : Factor w/ 99 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42 ...
@@ -27422,7 +27422,7 @@ There were 50 or more warnings (use warnings() to see the first 50)
  $ step                 : num  1 1 1 1 1 1 1 1 1 1 ...
  $ d_efficiency         : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153 ...
 #+end_example
-****** All Metrics Plot
+****** Design & Prediction Runtime, D-Criterion & Eliminated Factor Plots
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
 #+HEADER: :width 1750 :height 1000
@@ -27468,49 +27468,15 @@ eliminated_number_plot <- ggplot(eliminated_data, aes(y = factors, x = step)) +
                                   theme_bw(base_size = 16) +
                                   scale_color_manual(values = my_palette)
 
-#eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
-#                              facet_wrap(step ~ ., ncol = 4) +
-#                              geom_bar(stat = "count", show.legend = FALSE) +
-#                              ylab("count of eliminated factors") +
-#                              xlab("") +
-#                              scale_y_continuous(breaks = 0:12) +
-#                              theme_bw(base_size = 16) +
-#                              theme(text = element_text(family = "sans"),
-#                                    legend.position = "bottom",
-#                                    legend.direction = "horizontal",
-#                                    legend.title = element_blank(),
-#                                    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-#                              guides(fill = guide_legend(nrow = 1)) +
-#                              #scale_color_manual(values = my_palette)
-#                              scale_fill_brewer(palette = "Set2")
-
-full_eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
-                              geom_bar(stat = "count", show.legend = TRUE) +
-                              ylab("count of eliminated factors") +
-                              xlab("") +
-                              scale_y_continuous(breaks = 0:12) +
-                              theme_bw(base_size = 16) +
-                              theme(text = element_text(family = "sans"),
-                                    legend.position = "bottom",
-                                    legend.direction = "horizontal",
-                                    legend.title = element_blank(),
-                                    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-                              guides(fill = guide_legend(nrow = 1)) +
-                              #scale_color_manual(values = my_palette)
-                              scale_fill_brewer(palette = "Set2")
-
 grid.arrange(d_eff_plot, predicted_plot, design_plot,
               eliminated_number_plot,
-              full_eliminated_histogram_plot,
               layout_matrix = rbind(c(1, 2),
-                                    c(3, 4),
-                                    c(5, 5),
-                                    c(5, 5)))
+                                    c(3, 4)))
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-W1l05e/figureVDLb8Q.png]]
-****** Eliminated Factors Plot
+[[file:/tmp/babel-J6sTvL/figureW2JaGm.png]]
+****** Detailed Eliminated Factors Plot
 The two top plots below show eliminated model terms and design factors at each
 step. The third plot shows what were the values fixed after each of the 10
 repetitions of the 4 steps. Each factor uses the same color scale to represent
@@ -27607,7 +27573,7 @@ grid.arrange(full_eliminated_histogram_plot,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-W1l05e/figureqfci7m.png]]
+[[file:/tmp/babel-J6sTvL/figureXZ09tz.png]]
 ****** Fixed Factors Plot
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -27634,4 +27600,232 @@ ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_va
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-W1l05e/figureFQFRdJ.png]]
+[[file:/tmp/babel-J6sTvL/figureNUmuPa.png]]
+***** Choices at Each Step
+In this section we will look at the choices made by the automated version of
+DLMT at each of the 4 steps of one of the 10 optimization iterations performed
+for =bicgkernel=.
+
+The initial contained linear, quadratic and cubic terms for all applicable
+factors of =bicgkernel=. The $\text{Pr}(>\text{F})$ threshold was set to
+0.05, or ``one star''.
+
+****** First Step
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 993,1027p
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+   993	Regression Step: Df Sum Sq Mean Sq F value  Pr(>F)
+   994	I(T1_I^2)    1   4.47    4.47   2.624 0.15642
+   995	I(T1_J^2)    1   3.00    3.00   1.762 0.23262
+   996	I(T2_I^2)    1   9.32    9.32   5.471 0.05792 .
+   997	I(T2_J^2)    1   0.00    0.00   0.001 0.98132
+   998	I(U1_I^2)    1   5.23    5.23   3.069 0.13037
+   999	I(U_I^2)     1   0.38    0.38   0.223 0.65324
+  1000	I(U_J^2)     1   4.92    4.92   2.887 0.14020
+  1001	I(RT_I^2)    1   0.16    0.16   0.091 0.77302
+  1002	I(RT_J^2)    1  17.78   17.78  10.433 0.01791 *
+  1003	T1_I         1   2.65    2.65   1.554 0.25901
+  1004	T1_J         1   9.66    9.66   5.669 0.05469 .
+  1005	T2_I         1   4.55    4.55   2.671 0.15331
+  1006	T2_J         1   0.06    0.06   0.036 0.85481
+  1007	U1_I         1   8.90    8.90   5.224 0.06231 .
+  1008	U_I          1   2.58    2.58   1.512 0.26483
+  1009	U_J          1   1.26    1.26   0.741 0.42233
+  1010	RT_I         1   5.55    5.55   3.256 0.12121
+  1011	RT_J         1   0.63    0.63   0.371 0.56470
+  1012	SCR          1  16.77   16.77   9.845 0.02013 *
+  1013	VEC1         1   0.24    0.24   0.143 0.71808
+  1014	VEC2         1   2.22    2.22   1.304 0.29700
+  1015	OMP          1  57.31   57.31  33.636 0.00115 **
+  1016	I(T1_I^3)    1   0.00    0.00   0.000 0.99334
+  1017	I(T1_J^3)    1   0.88    0.88   0.518 0.49865
+  1018	I(T2_I^3)    1   1.47    1.47   0.861 0.38916
+  1019	I(T2_J^3)    1   2.30    2.30   1.347 0.28983
+  1020	I(U1_I^3)    1   0.04    0.04   0.023 0.88542
+  1021	I(U_I^3)     1   0.04    0.04   0.025 0.87986
+  1022	I(U_J^3)     1   0.01    0.01   0.004 0.95158
+  1023	I(RT_I^3)    1   1.76    1.76   1.031 0.34910
+  1024	I(RT_J^3)    1   0.20    0.20   0.116 0.74534
+  1025	Residuals    6  10.22    1.70
+  1026	---
+  1027	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 1084,1091p
+#+end_SRC
+
+#+RESULTS:
+:   1084	Using Model: . ~ OMP + I(RT_J^2) + SCR
+:   1085	Prediction Regression Step:            Df Sum Sq Mean Sq F value   Pr(>F)
+:   1086	OMP          1  79.57   79.57   59.63 5.57e-09 ***
+:   1087	I(RT_J^2)    1  20.59   20.59   15.43 0.000398 ***
+:   1088	SCR          1  29.03   29.03   21.75 4.67e-05 ***
+:   1089	Residuals   34  45.37    1.33
+:   1090	---
+:   1091	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+****** Second Step
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 2179,2208p
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+  2179	Regression Step:            Df  Sum Sq Mean Sq F value  Pr(>F)
+  2180	I(T1_I^2)    1 0.11484 0.11484  42.840 0.00725 **
+  2181	I(T1_J^2)    1 0.00433 0.00433   1.615 0.29334
+  2182	I(T2_I^2)    1 0.04000 0.04000  14.923 0.03067 *
+  2183	I(T2_J^2)    1 0.00594 0.00594   2.214 0.23346
+  2184	I(U1_I^2)    1 0.00130 0.00130   0.485 0.53613
+  2185	I(U_I^2)     1 0.01305 0.01305   4.869 0.11446
+  2186	I(U_J^2)     1 0.00739 0.00739   2.757 0.19542
+  2187	I(RT_I^2)    1 0.00567 0.00567   2.116 0.24180
+  2188	T1_I         1 0.00066 0.00066   0.246 0.65394
+  2189	T1_J         1 0.00049 0.00049   0.184 0.69720
+  2190	T2_I         1 0.01692 0.01692   6.313 0.08674 .
+  2191	T2_J         1 0.00324 0.00324   1.210 0.35168
+  2192	U1_I         1 0.00018 0.00018   0.067 0.81317
+  2193	U_I          1 0.00108 0.00108   0.403 0.57071
+  2194	U_J          1 0.00007 0.00007   0.027 0.87924
+  2195	RT_I         1 0.02256 0.02256   8.414 0.06247 .
+  2196	VEC1         1 0.00037 0.00037   0.138 0.73520
+  2197	VEC2         1 0.00050 0.00050   0.188 0.69422
+  2198	I(T1_I^3)    1 0.00292 0.00292   1.088 0.37360
+  2199	I(T1_J^3)    1 0.00066 0.00066   0.245 0.65440
+  2200	I(T2_I^3)    1 0.00688 0.00688   2.565 0.20756
+  2201	I(T2_J^3)    1 0.00040 0.00040   0.148 0.72611
+  2202	I(U1_I^3)    1 0.02363 0.02363   8.816 0.05910 .
+  2203	I(U_I^3)     1 0.00030 0.00030   0.113 0.75893
+  2204	I(U_J^3)     1 0.00023 0.00023   0.084 0.79033
+  2205	I(RT_I^3)    1 0.00374 0.00374   1.395 0.32262
+  2206	Residuals    3 0.00804 0.00268
+  2207	---
+  2208	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 2257,2263p
+#+end_SRC
+
+#+RESULTS:
+:   2257	Using Model: . ~ I(T1_I^2) + I(T2_I^2)
+:   2258	Prediction Regression Step:            Df  Sum Sq Mean Sq F value   Pr(>F)
+:   2259	I(T1_I^2)    1 0.11484 0.11484  22.500 6.07e-05 ***
+:   2260	I(T2_I^2)    1 0.03275 0.03275   6.416   0.0174 *
+:   2261	Residuals   27 0.13781 0.00510
+:   2262	---
+:   2263	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+****** Third Step
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3024,3047p
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+  3024	Regression Step:            Df  Sum Sq Mean Sq F value  Pr(>F)
+  3025	I(T1_J^2)    1 0.00811 0.00811   3.970 0.11710
+  3026	I(T2_J^2)    1 0.01098 0.01098   5.379 0.08121 .
+  3027	I(U1_I^2)    1 0.00206 0.00206   1.009 0.37191
+  3028	I(U_I^2)     1 0.00077 0.00077   0.375 0.57346
+  3029	I(U_J^2)     1 0.00137 0.00137   0.669 0.45923
+  3030	I(RT_I^2)    1 0.03454 0.03454  16.918 0.01469 *
+  3031	T1_J         1 0.00000 0.00000   0.000 0.99613
+  3032	T2_J         1 0.00001 0.00001   0.004 0.94986
+  3033	U1_I         1 0.00001 0.00001   0.005 0.94958
+  3034	U_I          1 0.00283 0.00283   1.385 0.30457
+  3035	U_J          1 0.00058 0.00058   0.286 0.62124
+  3036	RT_I         1 0.05209 0.05209  25.512 0.00723 **
+  3037	VEC1         1 0.00001 0.00001   0.003 0.96096
+  3038	VEC2         1 0.00012 0.00012   0.057 0.82266
+  3039	I(T1_J^3)    1 0.00103 0.00103   0.505 0.51654
+  3040	I(T2_J^3)    1 0.00422 0.00422   2.069 0.22368
+  3041	I(U1_I^3)    1 0.00014 0.00014   0.067 0.80893
+  3042	I(U_I^3)     1 0.00000 0.00000   0.000 0.98505
+  3043	I(U_J^3)     1 0.00009 0.00009   0.043 0.84668
+  3044	I(RT_I^3)    1 0.00728 0.00728   3.564 0.13210
+  3045	Residuals    4 0.00817 0.00204
+  3046	---
+  3047	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3091,3097p
+#+end_SRC
+
+#+RESULTS:
+:   3091	Using Model: . ~ RT_I + I(RT_I^2)
+:   3092	Prediction Regression Step:            Df  Sum Sq Mean Sq F value   Pr(>F)
+:   3093	RT_I         1 0.01600 0.01600   7.911   0.0101 *
+:   3094	I(RT_I^2)    1 0.07390 0.07390  36.550 4.38e-06 ***
+:   3095	Residuals   22 0.04448 0.00202
+:   3096	---
+:   3097	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+****** Fourth Step
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3761,3779p
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+  3761	Regression Step:            Df   Sum Sq  Mean Sq F value Pr(>F)
+  3762	I(T1_J^2)    1 0.000005 0.000005   0.001  0.982
+  3763	I(T2_J^2)    1 0.001378 0.001378   0.176  0.703
+  3764	I(U1_I^2)    1 0.000101 0.000101   0.013  0.917
+  3765	I(U_I^2)     1 0.000493 0.000493   0.063  0.818
+  3766	I(U_J^2)     1 0.011740 0.011740   1.502  0.308
+  3767	T1_J         1 0.000730 0.000730   0.093  0.780
+  3768	T2_J         1 0.000001 0.000001   0.000  0.991
+  3769	U1_I         1 0.012678 0.012678   1.622  0.293
+  3770	U_I          1 0.000421 0.000421   0.054  0.831
+  3771	U_J          1 0.000035 0.000035   0.004  0.951
+  3772	VEC1         1 0.003009 0.003009   0.385  0.579
+  3773	VEC2         1 0.000038 0.000038   0.005  0.949
+  3774	I(T1_J^3)    1 0.000923 0.000923   0.118  0.754
+  3775	I(T2_J^3)    1 0.000045 0.000045   0.006  0.944
+  3776	I(U1_I^3)    1 0.009060 0.009060   1.159  0.361
+  3777	I(U_I^3)     1 0.000015 0.000015   0.002  0.967
+  3778	I(U_J^3)     1 0.004588 0.004588   0.587  0.499
+  3779	Residuals    3 0.023451 0.007817
+#+end_example
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3820,3839p
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+  3820	Using Model: . ~ .
+  3821	Prediction Regression Step:            Df   Sum Sq  Mean Sq F value Pr(>F)
+  3822	I(T1_J^2)    1 0.000005 0.000005   0.001  0.982
+  3823	I(T2_J^2)    1 0.001378 0.001378   0.176  0.703
+  3824	I(U1_I^2)    1 0.000101 0.000101   0.013  0.917
+  3825	I(U_I^2)     1 0.000493 0.000493   0.063  0.818
+  3826	I(U_J^2)     1 0.011740 0.011740   1.502  0.308
+  3827	T1_J         1 0.000730 0.000730   0.093  0.780
+  3828	T2_J         1 0.000001 0.000001   0.000  0.991
+  3829	U1_I         1 0.012678 0.012678   1.622  0.293
+  3830	U_I          1 0.000421 0.000421   0.054  0.831
+  3831	U_J          1 0.000035 0.000035   0.004  0.951
+  3832	VEC1         1 0.003009 0.003009   0.385  0.579
+  3833	VEC2         1 0.000038 0.000038   0.005  0.949
+  3834	I(T1_J^3)    1 0.000923 0.000923   0.118  0.754
+  3835	I(T2_J^3)    1 0.000045 0.000045   0.006  0.944
+  3836	I(U1_I^3)    1 0.009060 0.009060   1.159  0.361
+  3837	I(U_I^3)     1 0.000015 0.000015   0.002  0.967
+  3838	I(U_J^3)     1 0.004588 0.004588   0.587  0.499
+  3839	Residuals    3 0.023451 0.007817
+#+end_example
