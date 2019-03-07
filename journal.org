@@ -25039,7 +25039,7 @@ region of the space.
 #+NAME: fig:cdfs
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 560 :exports results
+#+HEADER: :width 800 :height 400 :exports results
 #+BEGIN_SRC R
 library(ggplot2)
 plot_data <- bind_rows(lin_cdf, quad_cdf)
@@ -25048,11 +25048,11 @@ ggplot(plot_data, aes(x = x, y = y)) +
        facet_wrap(name ~ ., ncol = 2) +
        ylab("P(X < x)") +
        geom_line(size = 1.3) +
-       theme_bw(base_size = 28)
+       theme_bw(base_size = 29)
 #+END_SRC
 #+CAPTION: Cumulative Distribution Functions used for Biased Samples
 #+LABEL: fig:cdfs
-#+ATTR_LATEX: :width 0.55\textwidth
+#+ATTR_LATEX: :width 0.6\textwidth
 #+RESULTS: fig:cdfs
 [[file:/tmp/babel-6doC2T/figureuT6hPe.png]]
 
@@ -26533,7 +26533,7 @@ $x_{\text{sd}} = 0.04$.
 #+NAME: fig:sampled-coeff
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 720
+#+HEADER: :width 800 :height 590
 #+BEGIN_SRC R
 library(ggplot2)
 
@@ -26862,8 +26862,8 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regressio
   facet_grid(. ~ names) +
   ylim(c(0, 1)) +
   scale_x_continuous(name = "Experiments") +
-  geom_point(alpha = 0.8, size = 3) +
-  theme_bw(base_size = 27) +
+  geom_point(alpha = 0.8, size = 3.3) +
+  theme_bw(base_size = 26) +
   scale_color_brewer(palette = "Set1") +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme(legend.position = "top",
@@ -27241,3 +27241,392 @@ ggplot(plot_data, aes(x = id,
 #+begin_export latex
 \end{minipage}
 #+end_export
+** March
+*** [2019-03-07 Thu]
+**** Optimization of =bicgkernel=
+***** Cloning/Pulling the Repository
+#+HEADER: :results output
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+***** Looking at each Iteration
+****** Loading Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+data <- read.csv("./dlmt_spapt_experiments/data/results/dlmt_run_summary.csv", header = TRUE)
+data <- subset(data, kernel == "bicgkernel")
+data[duplicated(data$run_id), "run_id"] <- sample(1:400, length(which(duplicated(data$run_id))))
+
+str(data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+'data.frame':	10 obs. of  19 variables:
+ $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2
+ $ run_id               : int  1537463771 1537463780 1537463775 1537463776 366 235 1537463762 1537463781 218 1537463765
+ $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98
+ $ de_step_1            : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153
+ $ de_step_2            : num  0.178 0.158 0.129 0.19 0.239 0.149 0.182 0.16 0.4 0.27
+ $ de_step_3            : num  0.235 0.295 0.528 0.233 0.308 0.219 0.358 0.251 0.545 0.244
+ $ de_step_4            : num  0.299 0.271 0.324 0.168 0.475 0.434 0.33 0.453 0.391 0.231
+ $ removed_step_1       : Factor w/ 114 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75
+ $ removed_step_2       : Factor w/ 99 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42
+ $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 46 1 1 1 12 48 45 53 1 47
+ $ removed_step_4       : Factor w/ 48 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1
+ $ design_best_step_1   : num  0.0976 0.1142 0.1119 0.1029 0.1063 ...
+ $ design_best_step_2   : num  0.1 0.0958 0.0928 0.0988 0.0803 ...
+ $ design_best_step_3   : num  0.0938 0.0937 0.0907 0.098 0.1095 ...
+ $ design_best_step_4   : num  0.077 0.0955 0.0792 0.0923 0.1044 ...
+ $ predicted_best_step_1: num  0.149 0.119 0.101 0.161 0.105 ...
+ $ predicted_best_step_2: num  0.1215 0.1116 0.0885 0.108 0.1182 ...
+ $ predicted_best_step_3: num  0.101 0.091 0.086 0.0932 0.1353 ...
+ $ predicted_best_step_4: num  0.0937 0.0944 0.1001 0.1029 0.1189 ...
+#+end_example
+****** Processing Data
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+d_eff_data <- data %>%
+              gather("step", "d_efficiency", paste0("de_step_", 1:4)) %>%
+              mutate(step = as.numeric(as.factor(step)),
+                     run_id = as.factor(run_id))
+
+predicted_best_data <- data %>%
+                       gather("step", "runtime", paste0("predicted_best_step_", 1:4)) %>%
+                       mutate(step = as.numeric(as.factor(step)),
+                              run_id = as.factor(run_id))
+
+predicted_best_data$inf_points <- ""
+predicted_best_data[is.infinite(predicted_best_data$runtime), "inf_points"] <- "Inf"
+
+design_best_data <- data %>%
+                    gather("step", "runtime", paste0("design_best_step_", 1:4)) %>%
+                    mutate(step = as.numeric(as.factor(step)),
+                           run_id = as.factor(run_id))
+
+design_best_data$inf_points <- ""
+design_best_data[is.infinite(design_best_data$runtime), "inf_points"] <- "Inf"
+
+eliminated_data <- data %>%
+                   gather("step", "factors", paste0("removed_step_", 1:4)) %>%
+                   mutate(step = as.numeric(as.factor(step)),
+                          run_id = as.factor(run_id),
+                          factors = sapply(strsplit(factors, ":"),
+                                           length))
+
+complete_eliminated_data <- data %>%
+                            gather("step", "factors",
+                                   paste0("removed_step_", 1:4)) %>%
+                            mutate(step = as.factor(step),
+                                   run_id = as.factor(run_id))
+
+complete_eliminated_data <- complete_eliminated_data %>% separate_rows(factors, sep = ":") %>%
+                            mutate(factors = sapply(factors, function (x) str_trim(str_replace_all(x, "'", ""))))
+
+complete_eliminated_data$factors <- factor(complete_eliminated_data$factors, levels = names(sort(table(complete_eliminated_data$factors), decreasing = TRUE)))
+
+parsed_eliminated_data <- data %>%
+                          gather("step", "factors",
+                                paste0("removed_step_", 1:4)) %>%
+                          mutate(step = as.factor(step),
+                                run_id = as.factor(run_id))
+
+parsed_eliminated_data <- parsed_eliminated_data %>%
+  separate_rows(factors, sep = ":") %>%
+  mutate(factors = sapply(factors,
+                          function (x) str_trim(str_replace_all(x,
+                                                                c("'" = "",
+                                                                  "I\\(" = "",
+                                                                  "\\)" = "",
+                                                                  "\\^2" = "",
+                                                                  "\\^3" = ""),
+                                                                ""))))
+
+parsed_eliminated_data$factors <- factor(parsed_eliminated_data$factors,
+                                         levels = names(sort(table(parsed_eliminated_data$factors),
+                                                             decreasing = TRUE)))
+
+spread_fixed_factors <- bind_rows(lapply(str_replace_all(as.vector(data$fixed_factors),
+                                                         c("," = "",
+                                                           ":" = "",
+                                                           "\\{" = "",
+                                                           "\\}" = ""
+                                                           )
+                                                         ),
+                                         function (x) spread(data.frame(read.table(text = x,
+                                                                                   col.names = c("factor", "fixed_value")
+                                                                                   )
+                                                                        ),
+                                                             factor, fixed_value
+                                                             )
+                                         )
+                                  )
+
+fixed_factors <- gather(spread_fixed_factors, "factor", "fixed_value")
+
+spread_fixed_factors <- as.data.frame(lapply(spread_fixed_factors, factor))
+
+str(d_eff_data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning message:
+attributes are not identical across measure variables;
+they will be dropped
+
+Warning message:
+attributes are not identical across measure variables;
+they will be dropped
+
+Warning message:
+attributes are not identical across measure variables;
+they will be dropped
+
+There were 50 or more warnings (use warnings() to see the first 50)
+
+'data.frame':	40 obs. of  17 variables:
+ $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2 ...
+ $ run_id               : Factor w/ 10 levels "218","235","366",..: 6 9 7 8 3 2 4 10 1 5 ...
+ $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98 ...
+ $ removed_step_1       : Factor w/ 114 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75 ...
+ $ removed_step_2       : Factor w/ 99 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42 ...
+ $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 46 1 1 1 12 48 45 53 1 47 ...
+ $ removed_step_4       : Factor w/ 48 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1 ...
+ $ design_best_step_1   : num  0.0976 0.1142 0.1119 0.1029 0.1063 ...
+ $ design_best_step_2   : num  0.1 0.0958 0.0928 0.0988 0.0803 ...
+ $ design_best_step_3   : num  0.0938 0.0937 0.0907 0.098 0.1095 ...
+ $ design_best_step_4   : num  0.077 0.0955 0.0792 0.0923 0.1044 ...
+ $ predicted_best_step_1: num  0.149 0.119 0.101 0.161 0.105 ...
+ $ predicted_best_step_2: num  0.1215 0.1116 0.0885 0.108 0.1182 ...
+ $ predicted_best_step_3: num  0.101 0.091 0.086 0.0932 0.1353 ...
+ $ predicted_best_step_4: num  0.0937 0.0944 0.1001 0.1029 0.1189 ...
+ $ step                 : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ d_efficiency         : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153 ...
+#+end_example
+****** All Metrics Plot
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1750 :height 1000
+#+BEGIN_SRC R
+library(gridExtra)
+library(ggplot2)
+library(RColorBrewer)
+library(ggrepel)
+
+my_palette = c(brewer.pal(name = "Set1", n = 9),
+                brewer.pal(name = "Set2", n = 7),
+                brewer.pal(name = "Set3", n = 8),
+                brewer.pal(name = "Dark2", n = 7),
+                brewer.pal(name = "Accent", n = 8))
+
+d_eff_plot <- ggplot(d_eff_data, aes(y = d_efficiency, x = step)) +
+                      geom_point(alpha = 0.6, pch = 21, size = 2) +
+                      geom_line(aes(group = run_id, color = run_id, alpha = 0.), size = 2, show.legend = FALSE) +
+                      theme_bw(base_size = 16) +
+                      scale_color_manual(values = my_palette)
+
+predicted_plot <- ggplot(predicted_best_data, aes(y = runtime, x = step, label = inf_points)) +
+                          geom_point(alpha = 0.6, pch = 21, size = 2) +
+                          geom_line(aes(group = run_id, color = run_id, alpha = 0.7), size = 2, show.legend = FALSE) +
+                          geom_label_repel(size = 7, nudge_x = 0.4, force = 8) +
+                          ylab("runtime of best prediction") +
+                          theme_bw(base_size = 16) +
+                          scale_color_manual(values = my_palette)
+
+design_plot <- ggplot(design_best_data, aes(y = runtime, x = step, label = inf_points)) +
+                      geom_point(alpha = 0.6, pch = 21, size = 2) +
+                      geom_line(aes(group = run_id, color = run_id, alpha = 0.7), size = 2, show.legend = FALSE) +
+                      geom_label_repel(size = 7, nudge_x = 0.4, force = 8) +
+                      ylab("runtime of design best") +
+                      theme_bw(base_size = 16) +
+                      scale_color_manual(values = my_palette)
+
+eliminated_number_plot <- ggplot(eliminated_data, aes(y = factors, x = step)) +
+                                  geom_point(alpha = 0.6, pch = 21, size = 2) +
+                                  geom_line(aes(group = run_id, color = run_id, alpha = 0.7),
+                                                size = 2, show.legend = FALSE) +
+                                  ylab("eliminated factors") +
+                                  theme_bw(base_size = 16) +
+                                  scale_color_manual(values = my_palette)
+
+#eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
+#                              facet_wrap(step ~ ., ncol = 4) +
+#                              geom_bar(stat = "count", show.legend = FALSE) +
+#                              ylab("count of eliminated factors") +
+#                              xlab("") +
+#                              scale_y_continuous(breaks = 0:12) +
+#                              theme_bw(base_size = 16) +
+#                              theme(text = element_text(family = "sans"),
+#                                    legend.position = "bottom",
+#                                    legend.direction = "horizontal",
+#                                    legend.title = element_blank(),
+#                                    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+#                              guides(fill = guide_legend(nrow = 1)) +
+#                              #scale_color_manual(values = my_palette)
+#                              scale_fill_brewer(palette = "Set2")
+
+full_eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
+                              geom_bar(stat = "count", show.legend = TRUE) +
+                              ylab("count of eliminated factors") +
+                              xlab("") +
+                              scale_y_continuous(breaks = 0:12) +
+                              theme_bw(base_size = 16) +
+                              theme(text = element_text(family = "sans"),
+                                    legend.position = "bottom",
+                                    legend.direction = "horizontal",
+                                    legend.title = element_blank(),
+                                    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+                              guides(fill = guide_legend(nrow = 1)) +
+                              #scale_color_manual(values = my_palette)
+                              scale_fill_brewer(palette = "Set2")
+
+grid.arrange(d_eff_plot, predicted_plot, design_plot,
+              eliminated_number_plot,
+              full_eliminated_histogram_plot,
+              layout_matrix = rbind(c(1, 2),
+                                    c(3, 4),
+                                    c(5, 5),
+                                    c(5, 5)))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-W1l05e/figureVDLb8Q.png]]
+****** Eliminated Factors Plot
+The two top plots below show eliminated model terms and design factors at each
+step. The third plot shows what were the values fixed after each of the 10
+repetitions of the 4 steps. Each factor uses the same color scale to represent
+its levels.
+
+The binary factors that were always identified as significant, =OMP= and =SCR=,
+had the same fixed value in all repetitions. The next three most eliminated
+factors were =RT_I=, =T2_I=, and =T1_I=, which all had linear, quadratic, and
+cubic terms in the initial model.
+
+The level selected for the =RT_I= factor was =RT_I=8= 5 times, followed by
+=RT_I=4= 3 times, and =RT_I=1= and =RT_I=2= one time each. This factor
+has We see in the topmost
+figure that the model term for =RT_I= most frequently responsible for
+eliminating the factor was the linear term, while the quadratic term was
+responsible for the elimination 2 times.
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 1750 :height 1000
+#+BEGIN_SRC R
+library(gridExtra)
+library(ggplot2)
+library(RColorBrewer)
+library(ggrepel)
+
+my_palette = c(brewer.pal(name = "Set1", n = 9),
+                brewer.pal(name = "Set2", n = 7),
+                brewer.pal(name = "Set3", n = 8),
+                brewer.pal(name = "Dark2", n = 7),
+                brewer.pal(name = "Accent", n = 8))
+
+eliminated_histogram_plot <- ggplot(subset(parsed_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
+                                          geom_bar(stat = "Count", show.legend = TRUE) +
+                                          ylab("Count of Eliminated Factors") +
+                                          xlab("") +
+                                          scale_y_continuous(breaks = 0:20) +
+                                          theme_bw(base_size = 20) +
+                                          theme(text = element_text(family = "sans"),
+                                                legend.position = "bottom",
+                                                legend.direction = "horizontal",
+                                                legend.title = element_blank(),
+                                                axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+                                          guides(fill = guide_legend(nrow = 1)) +
+                                          #scale_color_manual(values = my_palette)
+                                          scale_fill_brewer(palette = "Set1")
+
+full_eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
+                                          geom_bar(stat = "Count", show.legend = TRUE) +
+                                          ylab("Count of Eliminated Model Terms") +
+                                          xlab("") +
+                                          scale_y_continuous(breaks = 0:20) +
+                                          theme_bw(base_size = 20) +
+                                          theme(text = element_text(family = "sans"),
+                                                legend.position = "bottom",
+                                                legend.direction = "horizontal",
+                                                legend.title = element_blank(),
+                                                axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+                                          guides(fill = guide_legend(nrow = 1)) +
+                                          #scale_color_manual(values = my_palette)
+                                          scale_fill_brewer(palette = "Set1")
+
+my_palette = unlist(lapply(spread_fixed_factors,
+                           function (x) brewer.pal(name = "Set1",
+                                                   n = 9)[1:length(levels(x))]
+                           ),
+                    use.names = FALSE
+                    )
+
+fixed_factors$factor <- factor(fixed_factors$factor, levels = names(spread_fixed_factors))
+
+fixed_factors_plot <- ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_value, factor))) +
+  geom_bar() +
+  theme_bw(base_size = 20) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 3)) +
+  scale_fill_manual(values = my_palette)
+
+grid.arrange(full_eliminated_histogram_plot,
+             eliminated_histogram_plot,
+             fixed_factors_plot,
+             layout_matrix = rbind(c(1, 1),
+                                   c(2, 2),
+                                   c(3, 3)))
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-W1l05e/figureqfci7m.png]]
+****** Fixed Factors Plot
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+my_palette = unlist(lapply(spread_fixed_factors,
+                           function (x) brewer.pal(name = "Set1",
+                                                   n = 9)[1:length(levels(x))]
+                           ),
+                    use.names = FALSE
+                    )
+
+fixed_factors$factor <- factor(fixed_factors$factor, levels = names(spread_fixed_factors))
+
+ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_value, factor))) +
+  geom_bar() +
+  theme_bw(base_size = 20) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 8)) +
+  scale_fill_manual(values = my_palette)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-W1l05e/figureFQFRdJ.png]]
