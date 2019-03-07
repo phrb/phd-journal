@@ -27522,11 +27522,16 @@ factors were =RT_I=, =T2_I=, and =T1_I=, which all had linear, quadratic, and
 cubic terms in the initial model.
 
 The level selected for the =RT_I= factor was =RT_I=8= 5 times, followed by
-=RT_I=4= 3 times, and =RT_I=1= and =RT_I=2= one time each. This factor
-has We see in the topmost
-figure that the model term for =RT_I= most frequently responsible for
-eliminating the factor was the linear term, while the quadratic term was
-responsible for the elimination 2 times.
+=RT_I=4= 3 times, and =RT_I=1= and =RT_I=2= one time each. This factor has 6
+levels, which are powers of 2 from 1 to 32, and the fixed values favored the
+middle of the scale. It could be worth it to see if it would be possible to add
+more levels to this factor, specially if non-powers of two are allowed.
+
+We also see in the topmost figure that the model term for =RT_I= most frequently
+responsible for eliminating the factor was the linear term, while the quadratic
+term was responsible for the elimination 2 times, and the cubic term was never
+responsible. Further experimentation with this kernel could remove the cubic
+term.
 
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
