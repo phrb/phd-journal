@@ -25031,9 +25031,9 @@ region of the space.
 | Uniform                          | Linear & quadratic |
 | Biased                           | Linear             |
 | Biased + Normal                  | Quadratic          |
-| Uniform + /Fedorov/              | Linear & quadratic |
-| Biased + /Fedorov/               | Linear             |
-| Biased + Normal + /Fedorov/      | Quadratic          |
+| Uniform + /Fedorov/                | Linear & quadratic |
+| Biased + /Fedorov/                 | Linear             |
+| Biased + Normal + /Fedorov/        | Quadratic          |
 |----------------------------------+--------------------|
 
 #+NAME: fig:cdfs
@@ -25054,7 +25054,7 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+LABEL: fig:cdfs
 #+ATTR_LATEX: :width 0.6\textwidth
 #+RESULTS: fig:cdfs
-[[file:/tmp/babel-6doC2T/figureuT6hPe.png]]
+[[file:/tmp/babel-07XItT/figureM4Md2i.png]]
 
 These concerns motivated the development of a methodology to evaluate the
 quality of the designs produced by \todo{add reference} /Fedorov's algorithm/,
@@ -25273,16 +25273,6 @@ cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
 
 #+RESULTS:
 #+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
 
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
@@ -26877,6 +26867,41 @@ ggplot(plot_data, aes(x = id, y = D, color = regression_model, shape = regressio
 #+RESULTS: fig:d-criterion-comparison
 [[file:/tmp/babel-6doC2T/figureGvfAjo.png]]
 
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 1300 :height 720
+library(ggplot2)
+
+plot_data <- data
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Uniform Sample",
+                                             "Federov with Uniform Sample",
+                                             "Biased Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+plot_data <- subset(plot_data, prft == 0.01)
+
+ggplot(plot_data, aes(x = D, y = coefficient_refit_distance, color = regression_model, shape = regression_model)) +
+  facet_grid(. ~ names, scale = "free") +
+  scale_x_continuous(name = "D") +
+  geom_point(alpha = 0.8, size = 3.3) +
+  theme_bw(base_size = 26) +
+  scale_color_brewer(palette = "Set1") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  theme(legend.position = "top",
+        legend.title = element_blank())
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-07XItT/figureelbGyd.png]]
+
 ****** Coefficient & Response Vector Distances
 We compared the sampling strategies in Table\nbsp{}[[tab:exp-parameters]] regarding
 the distances between the coefficient vectors of fitted models and the real
@@ -27269,28 +27294,17 @@ str(data)
 #+RESULTS:
 #+begin_example
 
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-'data.frame':	10 obs. of  19 variables:
+'data.frame':	10 obs. of  18 variables:
  $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2
- $ run_id               : int  1537463771 1537463780 1537463775 1537463776 294 53 1537463762 1537463781 364 1537463765
- $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98
+ $ run_id               : int  1537463771 1537463780 1537463775 1537463776 242 159 1537463762 1537463781 12 1537463765
  $ de_step_1            : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153
  $ de_step_2            : num  0.178 0.158 0.129 0.19 0.239 0.149 0.182 0.16 0.4 0.27
  $ de_step_3            : num  0.235 0.295 0.528 0.233 0.308 0.219 0.358 0.251 0.545 0.244
  $ de_step_4            : num  0.299 0.271 0.324 0.168 0.475 0.434 0.33 0.453 0.391 0.231
- $ removed_step_1       : Factor w/ 114 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75
- $ removed_step_2       : Factor w/ 99 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42
+ $ removed_step_1       : Factor w/ 113 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75
+ $ removed_step_2       : Factor w/ 100 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42
  $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 46 1 1 1 12 48 45 53 1 47
- $ removed_step_4       : Factor w/ 48 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1
+ $ removed_step_4       : Factor w/ 47 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1
  $ design_best_step_1   : num  0.0976 0.1142 0.1119 0.1029 0.1063 ...
  $ design_best_step_2   : num  0.1 0.0958 0.0928 0.0988 0.0803 ...
  $ design_best_step_3   : num  0.0938 0.0937 0.0907 0.098 0.1095 ...
@@ -27401,16 +27415,13 @@ Warning message:
 attributes are not identical across measure variables;
 they will be dropped
 
-There were 50 or more warnings (use warnings() to see the first 50)
-
-'data.frame':	40 obs. of  17 variables:
+'data.frame':	40 obs. of  16 variables:
  $ kernel               : Factor w/ 15 levels "atax2","bicgkernel",..: 2 2 2 2 2 2 2 2 2 2 ...
- $ run_id               : Factor w/ 10 levels "53","294","364",..: 6 9 7 8 2 1 4 10 3 5 ...
- $ fixed_factors        : Factor w/ 165 levels "{ACOPY_x: False, ACOPY_y: False, RT_K: 1, T1_I: 256, T1_J: 256, T1_K: 64, U_K: 6, U_J: 10, U_I: 1, U1_I: 20, T2"| __truncated__,..: 100 105 103 97 106 104 102 101 99 98 ...
- $ removed_step_1       : Factor w/ 114 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75 ...
- $ removed_step_2       : Factor w/ 99 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42 ...
+ $ run_id               : Factor w/ 10 levels "12","159","242",..: 6 9 7 8 3 2 4 10 1 5 ...
+ $ removed_step_1       : Factor w/ 113 levels "","'I(RT_I^2)': 'RT_I'",..: 41 71 71 73 72 71 66 60 74 75 ...
+ $ removed_step_2       : Factor w/ 100 levels "","'ACOPY_A'",..: 15 40 17 1 70 12 12 12 16 42 ...
  $ removed_step_3       : Factor w/ 72 levels "","'ACOPY_x': 'I(T1_K^2)': 'T1_K': 'RT_J': 'I(T1_J^2)': 'I(RT_K^2)': 'I(U_I^2)': 'I(RT_J^3)': 'I(U1_I^2)': 'U_K': "| __truncated__,..: 46 1 1 1 12 48 45 53 1 47 ...
- $ removed_step_4       : Factor w/ 48 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1 ...
+ $ removed_step_4       : Factor w/ 47 levels "","'I(RT_J^2)'",..: 1 1 1 1 1 2 1 1 1 1 ...
  $ design_best_step_1   : num  0.0976 0.1142 0.1119 0.1029 0.1063 ...
  $ design_best_step_2   : num  0.1 0.0958 0.0928 0.0988 0.0803 ...
  $ design_best_step_3   : num  0.0938 0.0937 0.0907 0.098 0.1095 ...
@@ -27475,7 +27486,7 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-J6sTvL/figureW2JaGm.png]]
+[[file:/tmp/babel-07XItT/figure46m31D.png]]
 ****** Detailed Eliminated Factors Plot
 The two top plots below show eliminated model terms and design factors at each
 step. The third plot shows what were the values fixed after each of the 10
@@ -27573,7 +27584,7 @@ grid.arrange(full_eliminated_histogram_plot,
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-J6sTvL/figureXZ09tz.png]]
+[[file:/tmp/babel-07XItT/figurezZeqEx.png]]
 ****** Fixed Factors Plot
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -27600,7 +27611,7 @@ ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_va
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-J6sTvL/figureNUmuPa.png]]
+[[file:/tmp/babel-VCMsIU/figureycJHtP.png]]
 ***** Choices at Each Step
 In this section we will look at the choices made by the automated version of
 DLMT at each of the 4 steps of one of the 10 optimization iterations performed
@@ -27610,7 +27621,31 @@ The initial contained linear, quadratic and cubic terms for all applicable
 factors of =bicgkernel=. The $\text{Pr}(>\text{F})$ threshold was set to
 0.05, or ``one star''.
 
+With hindsight, obtained from knowing the most eliminated variables from
+Section\nbsp{}[[Detailed Eliminated Factors Plot]], we can argue that a missing
+fundamental user-centered ability of our approach is that of being capable of
+going back to the model of a previous iteration, that is, reverting a factor
+elimination if we reach a point were nothing seems to be significant.
+
+Reinforcing the argument for being able to revert iterations, a possible error
+identified from looking at these logs is that the linear terms are not added to
+the prediction step models when a quadratic term is identified as significant,
+but the linear term is not. The same happens for quadratic and linear terms not
+identified as significant when a cubic term is significant. On one hand, it
+seems that it is correct to not use terms not identified as significant on the
+prediction model, but on the other hand, it seems that by doing so we are
+trusting too much on the generality of the sample for which we ran the ANOVA
+test, plus, we might lose the flexibility added by the other terms with the same
+factor.
+
 ****** First Step
+The source blocks in the following sections show excerpts of the log file for
+one of the 10 repetitions of autotuning the =bicgkernel= SPAPT kernel. The
+excerpts are annotated with line numbers for easy referencing.
+
+This is the ANOVA table for the first design generated from a set of uniformly
+generated points:
+
 #+begin_SRC shell :results output
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 993,1027p
@@ -27655,6 +27690,16 @@ cat -n $target_file | sed -n 993,1027p
   1027	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 
+The 3 factors identified here, =RT_J=, =SCR=, and =OMP= are in the top 6 most
+eliminated factors for this kernel. This is the only one of the 10 repetitions
+where =RT_J= was eliminated in the first step. We proceed to refit the model
+using only the significant factors to the same design data used in the first
+linear regression. We then generate a new uniform sample to predict the best
+point using this new fitted model. An idea to discuss is whether it would be
+useful to generate a new design for the significant factors only, and then
+fitting the pruned new model using this new design. This could enable us to
+benefit more from cases where the significance was identified correctly.
+
 #+begin_SRC shell :results output
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 1084,1091p
@@ -27669,6 +27714,46 @@ cat -n $target_file | sed -n 1084,1091p
 :   1089	Residuals   34  45.37    1.33
 :   1090	---
 :   1091	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Next, we see that our best prediction was worse than the best point measured in
+our design. This does is not really damaging to our case, since we are not
+deeply interested in the model's accuracy, but simply in exploring better
+regions of the search space. The budget ratio is not relevant for this
+experiment, but it keeps track of how many experiments were actually evaluated.
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 1192,1195p
+#+end_SRC
+
+#+RESULTS:
+:   1192	Slowdown (Design Best): 0.097612475844
+:   1193	Slowdown (Predicted Best): 0.149470859652
+:   1194	Budget: 38/1000
+:   1195	Best point from design was better than predicted point
+
+The next excerpt shows the levels selected for each factor. We see that =RT_J=
+was set to its first level =RT_J=1=, indexed by the 0th element of a Python
+array. This is one of the 3 most common levels for =RT_J= in this kernel, which
+are 1, 2 and 16. Factors =OMP= and =SCR= were set to the only level observed in
+this experiment, which is =True=. It was therefore always easy to identify the
+significance of these factors, as well as their impact on performance. This
+could be an argument for going back and not fixing the =RT_J= factor, since its
+significance was smaller than the other 2 factors. With the 2 most significant
+factors out of the way, the significance of other factors could be
+measured better, and their levels predicted better.
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 1238p | fold -w 80 -s
+#+end_SRC
+
+#+RESULTS:
+:   1238	Current Model: {'inverse': [], 'linear': ['T1_I', 'T1_J', 'T2_I',
+: 'T2_J', 'U1_I', 'U_I', 'U_J', 'RT_I', 'VEC1', 'VEC2'], 'cubic': ['T1_I',
+: 'T1_J', 'T2_I', 'T2_J', 'U1_I', 'U_I', 'U_J', 'RT_I'], 'interactions': [],
+: 'fixed_factors': {'OMP': 1, 'RT_J': 0, 'SCR': 1}, 'quadratic': ['T1_I', 'T1_J',
+: 'T2_I', 'T2_J', 'U1_I', 'U_I', 'U_J', 'RT_I'], 'response': 'cost_mean'}
 
 ****** Second Step
 #+begin_SRC shell :results output
@@ -27772,6 +27857,34 @@ cat -n $target_file | sed -n 3091,3097p
 :   3096	---
 :   3097	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3181,3184p
+#+end_SRC
+
+#+RESULTS:
+:   3181	Slowdown (Design Best): 0.0938185300331
+:   3182	Slowdown (Predicted Best): 0.100979130227
+:   3183	Budget: 93/1000
+:   3184	Best point from design was better than predicted point
+
+The factor =RT_I= the most identified as significant, considering all its model
+terms. It was mostly eliminated at the third step, which is the case here.
+Despite that, the level selected here was the only the second most chosen level
+=RT_I=4=, the third element in a Python array, indexed by 2.
+
+#+begin_SRC shell :results output
+target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
+cat -n $target_file | sed -n 3227p | fold -w 80 -s
+#+end_SRC
+
+#+RESULTS:
+:   3227	Current Model: {'inverse': [], 'linear': ['T1_J', 'T2_J', 'U1_I',
+: 'U_I', 'U_J', 'VEC1', 'VEC2'], 'cubic': ['T1_J', 'T2_J', 'U1_I', 'U_I', 'U_J'],
+: 'interactions': [], 'fixed_factors': {'T1_I': 11, 'RT_I': 2, 'T2_I': 11, 'OMP':
+: 1, 'SCR': 1, 'RT_J': 0}, 'quadratic': ['T1_J', 'T2_J', 'U1_I', 'U_I', 'U_J'],
+: 'response': 'cost_mean'}
+
 ****** Fourth Step
 #+begin_SRC shell :results output
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
@@ -27828,4 +27941,240 @@ cat -n $target_file | sed -n 3820,3839p
   3837	I(U_I^3)     1 0.000015 0.000015   0.002  0.967
   3838	I(U_J^3)     1 0.004588 0.004588   0.587  0.499
   3839	Residuals    3 0.023451 0.007817
+#+end_example
+
+*** [2019-03-08 Fri]
+**** Improving the Function Figure on the Report
+- \theta instead of \alpha, \beta
+- use \hat instead of \prime
+*** [2019-03-13 Wed]
+**** Reviewing an ERAD Paper from Alfredo (In Portuguese)
+Este trabalho apresenta um estudo do desempenho de um programa de
+traçamento de raios numa plataforma de computação distribuída.  O
+trabalho ainda está em fase de desenvolvimento, mas é interessante e
+bem escrito, apesar de precisar de revisões de texto adicionais,
+principalmente nas Seções 3 e 4. Em uma versão completa ou extendida
+do trabalho seria interessante observar o desempenho para mais
+instâncias, especialmente para números grandes de raios. Seria também
+interessante observar as medições de desempenho de aplicações reais de
+traçamento de raios.
+
+Seguem abaixo algumas sugestões que julgo poderem aprimorar o
+trabalho:
+
+- Figuras 1, 2 e 3:
+  - Utilizar cores diferentes para linhas referentes
+    a diferentes quantidades de raios por tarefa, ou
+    de raios totais. Evitar a repetição de cores deixará
+    as figuras mais fáceis de ler
+  - Aproveitar melhor o espaço nas figuras. As fontes
+    nas figuras estão talvez muito grandes, e vale a
+    pena fazer as figuras 2 e 3, principalmente,
+    ocuparem mais espaço horizontal com os gráficos
+  - Mostrar o desvio padrão, ou fazer menção ao fato caso ele
+    seja difícil de observar nas figuras
+- Fazer uma revisão adicional do texto para resolver pequenas
+  coisas como:
+  - Corrigir o uso de "enquanto que": substituir "enquanto que" por
+    "enquanto"
+  - Corrigir "com desempenho mais próximo á de 100", substituindo por
+    algo como "com desempenho mais próximo a 100"
+  - Corrigir casos de uso de vírgula em excesso, como em "Os testes com
+    agrupamentos de 10 raios por vez, apresentaram os piores
+    desempenhos."
+  - A frase a seguir está confusa e muito longa. Vale a pena reescrevê-la
+    e deixá-la mais clara:
+    - "A hipótese é que, como estamos trabalhando com tarefas muito pequenas,
+      logo com um tempo de computação curto das tarefas, o sistema não é
+      capaz de sobrepor o tempo de computação com o tempo de distribuição
+      das tarefas e a latência de transmissão da tarefa pelo Job Manager e
+      dos resultados para o Committer, assim, tais aspectos tornam-se um
+      gargalo."
+**** How to Identify Badly Estimated Factors?
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(FrF2)
+
+"factor_efficiency" <- function(fac) {
+    X = model.matrix(~., fac)
+    Y = (t(X) %*% X) / nrow(fac)
+    #print(Y)
+    Z = (Y[, rep(2:ncol(X))])^2
+    Z = Z %*% rep(1, ncol(X) - 1)
+    #print(Z)
+    return((1 / Z) * (1 - (Y[, 1])^2))
+}
+#+END_SRC
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+fac = gen.factorial(c(2, 2, 2, 2, 2, 2, 2))
+
+fac <- fac[sample(nrow(fac), 9), ]
+fac
+
+factor_efficiency(fac)
+
+fac = FrF2(nfactors = 7, nruns = 8)
+factor_efficiency(fac)
+
+pb(16)
+eval.design(~., pb(16))
+
+factor_efficiency(pb(16))
+
+
+factors = 20
+fac = gen.factorial(rep(2, factors))
+fac = fac[sample(nrow(fac), 300), ]
+output = optFederov(~., fac, nTrials = factors + 1)
+output
+
+factor_efficiency(output$design)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+    X1 X2 X3 X4 X5 X6 X7
+60   1  1 -1  1  1  1 -1
+90   1 -1 -1  1  1 -1  1
+65  -1 -1 -1 -1 -1 -1  1
+93  -1 -1  1  1  1 -1  1
+37  -1 -1  1 -1 -1  1 -1
+103 -1  1  1 -1 -1  1  1
+57  -1 -1 -1  1  1  1 -1
+71  -1  1  1 -1 -1 -1  1
+95  -1  1  1  1  1 -1  1
+                 [,1]
+(Intercept) 0.0000000
+X1          0.4148148
+X2          0.8421053
+X3          0.5594406
+X4          0.4371585
+X5          0.4371585
+X6          0.5925926
+X7          0.4768212
+            [,1]
+(Intercept)  NaN
+A1             1
+B1             1
+C1             1
+D1             1
+E1             1
+F1             1
+G1             1
+Screening 15 factors in 16 runs involves perfect aliasing of
+ pairwise interactions of the first six factors with the last factor.
+    A  B  C  D  E  F  G  H  J  K  L  M  N  O  P
+1   1 -1 -1  1  1 -1  1 -1 -1  1 -1  1 -1  1 -1
+2  -1 -1  1 -1  1 -1  1  1 -1 -1 -1 -1  1  1  1
+3   1  1 -1  1 -1  1  1  1 -1 -1 -1 -1 -1 -1  1
+4   1 -1  1 -1 -1  1 -1  1 -1  1 -1  1  1 -1 -1
+5  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1 -1 -1  1
+6  -1 -1  1  1  1  1 -1 -1 -1 -1  1  1 -1 -1  1
+7   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+8   1  1  1 -1  1 -1 -1 -1  1  1 -1 -1 -1 -1  1
+9   1 -1  1  1 -1 -1 -1  1  1 -1  1 -1 -1  1 -1
+10 -1  1  1 -1 -1  1  1 -1 -1  1  1 -1 -1  1 -1
+11 -1  1  1  1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1
+12  1 -1 -1 -1  1  1  1 -1  1 -1  1 -1  1 -1 -1
+13 -1  1 -1  1  1 -1 -1  1 -1  1  1 -1  1 -1 -1
+14 -1  1 -1 -1  1  1 -1  1  1 -1 -1  1 -1  1 -1
+15 -1 -1 -1  1 -1  1 -1 -1  1  1 -1 -1  1  1  1
+16  1  1 -1 -1 -1 -1 -1 -1 -1 -1  1  1  1  1  1
+class=design, type= pb
+Screening 15 factors in 16 runs involves perfect aliasing of
+ pairwise interactions of the first six factors with the last factor.
+$determinant
+[1] 1
+
+$A
+[1] 1
+
+$diagonality
+[1] 1
+
+$gmean.variances
+[1] 1
+Screening 15 factors in 16 runs involves perfect aliasing of
+ pairwise interactions of the first six factors with the last factor.
+            [,1]
+(Intercept)  NaN
+A1             1
+B1             1
+C1             1
+D1             1
+E1             1
+F1             1
+G1             1
+H1             1
+J1             1
+K1             1
+L1             1
+M1             1
+N1             1
+O1             1
+P1             1
+$D
+[1] 0.7380576
+
+$A
+[1] 1.901439
+
+$Ge
+[1] 0.232
+
+$Dea
+[1] 0.037
+
+$design
+    X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19 X20
+5    1 -1 -1  1 -1 -1  1 -1  1   1   1   1   1   1   1  -1  -1   1  -1  -1
+26   1  1  1 -1 -1  1 -1 -1  1   1  -1   1   1  -1   1   1  -1  -1  -1   1
+39   1  1  1 -1  1  1  1 -1 -1   1   1   1  -1  -1   1  -1  -1  -1   1   1
+62  -1 -1  1 -1  1 -1  1 -1  1   1   1  -1   1   1  -1  -1   1   1   1  -1
+95   1 -1  1 -1 -1 -1 -1  1 -1  -1   1   1  -1  -1  -1   1   1   1  -1   1
+110  1 -1 -1 -1 -1  1  1 -1 -1  -1   1  -1   1  -1  -1  -1  -1  -1   1  -1
+115  1 -1 -1 -1 -1 -1 -1  1 -1   1  -1  -1   1   1   1   1  -1  -1  -1  -1
+161  1  1  1  1  1  1  1  1 -1  -1   1  -1   1   1   1   1   1   1   1  -1
+173  1 -1  1  1  1 -1  1 -1 -1  -1  -1   1   1   1  -1  -1  -1  -1  -1  -1
+195 -1  1 -1  1 -1 -1 -1  1 -1  -1  -1   1  -1   1   1   1   1  -1   1  -1
+201  1  1 -1  1  1 -1 -1 -1 -1   1   1  -1  -1   1  -1   1   1  -1   1   1
+216  1 -1  1  1 -1 -1 -1 -1 -1   1  -1  -1  -1  -1   1  -1   1  -1   1   1
+217  1  1  1 -1 -1  1 -1  1  1  -1   1  -1  -1   1  -1  -1   1  -1  -1  -1
+222  1 -1  1 -1 -1  1 -1  1  1  -1  -1  -1  -1   1  -1   1  -1   1   1  -1
+224  1  1  1  1 -1 -1  1  1  1   1   1   1  -1  -1  -1   1   1  -1  -1  -1
+239 -1  1  1  1 -1 -1 -1  1 -1   1  -1  -1  -1   1  -1  -1  -1   1  -1   1
+243  1  1  1 -1  1 -1 -1  1  1  -1   1  -1   1  -1   1  -1  -1  -1   1  -1
+253 -1 -1  1  1 -1  1  1  1  1  -1   1  -1  -1  -1   1   1  -1  -1  -1   1
+260 -1  1 -1 -1  1  1  1  1  1  -1  -1  -1  -1  -1   1   1   1   1  -1   1
+284 -1 -1  1 -1  1  1 -1 -1 -1   1   1  -1  -1  -1  -1   1  -1   1  -1  -1
+297  1  1 -1 -1 -1 -1  1 -1 -1  -1   1  -1  -1   1   1   1  -1  -1  -1  -1
+
+$rows
+ [1]   5  26  39  62  95 110 115 161 173 195 201 216 217 222 224 239 243 253 260
+[20] 284 297
+                 [,1]
+(Intercept) 0.0000000
+X1          0.5389222
+X2          0.7284768
+X3          0.6853147
+X4          0.6878981
+X5          0.6227545
+X6          0.6390533
+X7          0.6748466
+X8          0.5641026
+X9          0.7552448
+X10         0.7096774
+X11         0.6797386
+X12         0.7050360
+X13         0.5683060
+X14         0.6432749
+X15         0.7482993
+X16         0.6708075
+X17         0.6792453
+X18         0.6380368
+X19         0.7346939
+X20         0.5810056
 #+end_example
