@@ -28178,3 +28178,8 @@ X18         0.6380368
 X19         0.7346939
 X20         0.5810056
 #+end_example
+*** [2019-03-14 Thu]
+**** Julian J. Faraway's Practical Regression and Anova using R
+Interesting book from Arnaud:
+- https://cran.r-project.org/doc/contrib/Faraway-PRA.pdf
+- Descriptions of estimators, ANOVA, etc...
