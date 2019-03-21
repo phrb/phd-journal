@@ -1,8 +1,6 @@
-# -*- mode: org -*-
-# -*- coding: utf-8 -*-
 #+STARTUP: overview indent inlineimages logdrawer
 #+TITLE:  Pedro's Journal
-#+AUTHOR:      Pedro H R Bruel
+#+AUTHOR:      Pedro Bruel
 #+LANGUAGE:    en
 #+TAGS: noexport(n) Stats(S)
 #+TAGS: Teaching(T) R(R) OrgMode(O) Python(P)
@@ -443,7 +441,7 @@ installing to /home/phrb/R/x86_64-pc-linux-gnu-library/3.4/rPref/libs
 ,** R
 ,** inst
 ,** preparing package for lazy loading
-Warning: S3 methods ‘[.fun_list’, ‘[.grouped_df’, ‘all.equal.tbl_df’, ‘anti_join.data.frame’, ‘anti_join.tbl_df’, ‘arrange.data.frame’, ‘arrange.default’, ‘arrange.grouped_df’, ‘arrange.tbl_df’, ‘arrange_.data.frame’, ‘arrange_.tbl_df’, ‘as.data.frame.grouped_df’, ‘as.data.frame.rowwise_df’, ‘as.data.frame.tbl_cube’, ‘as.data.frame.tbl_df’, ‘as.table.tbl_cube’, ‘as.tbl.data.frame’, ‘as.tbl.tbl’, ‘as.tbl_cube.array’, ‘as.tbl_cube.data.frame’, ‘as.tbl_cube.matrix’, ‘as.tbl_cube.table’, ‘as_data_frame.grouped_df’, ‘as_data_frame.tbl_cube’, ‘auto_copy.tbl_cube’, ‘auto_copy.tbl_df’, ‘cbind.grouped_df’, ‘collapse.data.frame’, ‘collect.data.frame’, ‘common_by.NULL’, ‘common_by.character’, ‘common_by.default’, ‘common_by.list’, ‘compute.data.frame’, ‘copy_to.DBIConnection’, ‘copy_to.src_local’, ‘default_missing.data.frame’, ‘default_missing.default’, � [... truncated]
+Warning: S3 methods ‘[.fun_list’, ‘[.grouped_df’, ‘all.equal.tbl_df’, ‘anti_join.data.frame’, ‘anti_join.tbl_df’, ‘arrange.data.frame’, ‘arrange.default’, ‘arrange.grouped_df’, ‘arrange.tbl_df’, ‘arrange_.data.frame’, ‘arrange_.tbl_df’, ‘as.data.frame.grouped_df’, ‘as.data.frame.rowwise_df’, ‘as.data.frame.tbl_cube’, ‘as.data.frame.tbl_df’, ‘as.table.tbl_cube’, ‘as.tbl.data.frame’, ‘as.tbl.tbl’, ‘as.tbl_cube.array’, ‘as.tbl_cube.data.frame’, ‘as.tbl_cube.matrix’, ‘as.tbl_cube.table’, ‘as_data_frame.grouped_df’, ‘as_data_frame.tbl_cube’, ‘auto_copy.tbl_cube’, ‘auto_copy.tbl_df’, ‘cbind.grouped_df’, ‘collapse.data.frame’, ‘collect.data.frame’, ‘common_by.NULL’, ‘common_by.character’, ‘common_by.default’, ‘common_by.list’, ‘compute.data.frame’, ‘copy_to.DBIConnection’, ‘copy_to.src_local’, ‘default_missing.data.frame’, ‘default_missing.default’, [... truncated]
 Error in library.dynam(lib, package, package.lib) :
   shared object ‘dplyr.so’ not found
 ERROR: lazy loading failed for package ‘rPref’
@@ -457,7 +455,7 @@ ERROR: lazy loading failed for package ‘rPref’
 ,** demo
 ,** inst
 ,** preparing package for lazy loading
-Warning: S3 methods ‘[.fun_list’, ‘[.grouped_df’, ‘all.equal.tbl_df’, ‘anti_join.data.frame’, ‘anti_join.tbl_df’, ‘arrange.data.frame’, ‘arrange.default’, ‘arrange.grouped_df’, ‘arrange.tbl_df’, ‘arrange_.data.frame’, ‘arrange_.tbl_df’, ‘as.data.frame.grouped_df’, ‘as.data.frame.rowwise_df’, ‘as.data.frame.tbl_cube’, ‘as.data.frame.tbl_df’, ‘as.table.tbl_cube’, ‘as.tbl.data.frame’, ‘as.tbl.tbl’, ‘as.tbl_cube.array’, ‘as.tbl_cube.data.frame’, ‘as.tbl_cube.matrix’, ‘as.tbl_cube.table’, ‘as_data_frame.grouped_df’, ‘as_data_frame.tbl_cube’, ‘auto_copy.tbl_cube’, ‘auto_copy.tbl_df’, ‘cbind.grouped_df’, ‘collapse.data.frame’, ‘collect.data.frame’, ‘common_by.NULL’, ‘common_by.character’, ‘common_by.default’, ‘common_by.list’, ‘compute.data.frame’, ‘copy_to.DBIConnection’, ‘copy_to.src_local’, ‘default_missing.data.frame’, ‘default_missing.default’, � [... truncated]
+Warning: S3 methods ‘[.fun_list’, ‘[.grouped_df’, ‘all.equal.tbl_df’, ‘anti_join.data.frame’, ‘anti_join.tbl_df’, ‘arrange.data.frame’, ‘arrange.default’, ‘arrange.grouped_df’, ‘arrange.tbl_df’, ‘arrange_.data.frame’, ‘arrange_.tbl_df’, ‘as.data.frame.grouped_df’, ‘as.data.frame.rowwise_df’, ‘as.data.frame.tbl_cube’, ‘as.data.frame.tbl_df’, ‘as.table.tbl_cube’, ‘as.tbl.data.frame’, ‘as.tbl.tbl’, ‘as.tbl_cube.array’, ‘as.tbl_cube.data.frame’, ‘as.tbl_cube.matrix’, ‘as.tbl_cube.table’, ‘as_data_frame.grouped_df’, ‘as_data_frame.tbl_cube’, ‘auto_copy.tbl_cube’, ‘auto_copy.tbl_df’, ‘cbind.grouped_df’, ‘collapse.data.frame’, ‘collect.data.frame’, ‘common_by.NULL’, ‘common_by.character’, ‘common_by.default’, ‘common_by.list’, ‘compute.data.frame’, ‘copy_to.DBIConnection’, ‘copy_to.src_local’, ‘default_missing.data.frame’, ‘default_missing.default’,  [... truncated]
 Error in library.dynam(lib, package, package.lib) :
   shared object ‘dplyr.so’ not found
 ERROR: lazy loading failed for package ‘plotly’
@@ -24994,33 +24992,37 @@ all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
 *** [2019-02-07 Thu]
 **** Comparing Sampling Strategies for Constructing D-Optimal Designs
 Optimizing problems with a large number of configurable parameters, or
-/factors/, is one of the main objectives of our transparent Design of
-Experiments approach to autotuning. Despite the high dimensionality of these
-problems, it is usually the case that only a \todo{add reference}small number of
-factors impacts the measured performance metrics significantly. Our approach
-aims to identify the most significant factors using an initial performance
-model, D-Optimal designs, and Analysis of Variance (ANOVA).
+/factors/, is  one of the main  objectives of our transparent  Design of
+Experiments approach to autotuning. Despite the high dimensionality of
+these problems,  it is usually  the case that  only a small  number of
+factors impacts  the measured  performance metrics  significantly. Our
+approach  aims  to identify  the  most  significant factors  using  an
+initial performance model, D-Optimal designs, and Analysis of Variance
+(ANOVA).
 
-Our experiments with SPAPT kernels obtained results similar to a uniform
-sampling strategy, while using significantly less evaluations. Since it was
-unfeasible to evaluate all possible configurations of each SPAPT kernel due to
-their large search spaces, the experimental designs used in each iteration of
-our iterative approach were selected from a limited sample of configurations.
-The size of these samples were always small relative to the size of each search
-space, due to the high dimension and number of values for each factor.
+Our  experiments with  SPAPT  kernels obtained  results  similar to  a
+uniform   sampling   strategy,    while   using   significantly   less
+evaluations.  Since  it  was   unfeasible  to  evaluate  all  possible
+configurations of each SPAPT kernel  due to their large search spaces,
+the  experimental designs  used  in each  iteration  of our  iterative
+approach were selected  from a limited sample  of configurations.  The
+size of these  samples were always small relative to  the size of each
+search space, due to the high  dimension and number of values for each
+factor.
 
-A practical concern derived from the limitation on the size of samples to
-choose a design from is the large amount of time it takes to evaluate a
-relatively large number of candidate configurations. Each search space also had
-several constraints on factor levels, reducing the valid search space and
-slowing the process of finding candidates to test. Another concern is the
-intuition that the \todo{improve, add reference} quality of the designs
-constructed from uniformly sampled candidates should always be poorer than in
-the case where designs are selected from complete search spaces. This property
-should be more pronounced when certain types of performance models are selected,
-such as quadratic models, due to the fact that practically none of the points
-sampled uniformly from a high-dimensional search space would be in the central
-region of the space.
+A practical concern derived from the limitation on the size of samples
+to  choose a  design from  is the  large amount  of time  it takes  to
+evaluate a  relatively large number of  candidate configurations. Each
+search space also  had several constraints on  factor levels, reducing
+the valid search  space and slowing the process  of finding candidates
+to test.  Another concern  is the  intuition that  the quality  of the
+designs constructed from uniformly sampled candidates should always be
+poorer  than in  the case  where  designs are  selected from  complete
+search spaces.  This property should  be more pronounced  when certain
+types of  performance models are  selected, such as  quadratic models,
+due to the fact that practically  none of the points sampled uniformly
+from a high-dimensional search space would be in the central region of
+the space.
 
 #+NAME: tab:designs-models
 #+ATTR_LATEX: :booktabs t :align ll
@@ -25056,22 +25058,23 @@ ggplot(plot_data, aes(x = x, y = y)) +
 #+RESULTS: fig:cdfs
 [[file:/tmp/babel-07XItT/figureM4Md2i.png]]
 
-These concerns motivated the development of a methodology to evaluate the
-quality of the designs produced by \todo{add reference} /Fedorov's algorithm/,
-the chosen D-Optimal construction technique, in the cases where designs were
-selected from samples with different properties. We studied design efficiency,
-measured by the /D-criterion/, for designs constructed using the performance
-models and construction techniques listed in Table\nbsp{}[[tab:designs-models]].
-Sampling strategies consisted of obtaining samples using the /cumulative
-distribution functions/ in Figure\nbsp{}[[fig:cdfs]], and adding samples from a
-normal distribution to the quadratic model biased samples.
+These concerns motivated the development  of a methodology to evaluate
+the quality of the designs produced by /Fedorov's algorithm/, the chosen
+D-Optimal  construction technique,  in  the cases  where designs  were
+selected  from samples  with different  properties. We  studied design
+efficiency, measured by the /D-criterion/, for designs constructed using
+the  performance   models  and   construction  techniques   listed  in
+Table\nbsp{}[[tab:designs-models]].  Sampling strategies  consisted of obtaining
+samples    using   the    /cumulative    distribution   functions/    in
+Figure\nbsp{}[[fig:cdfs]], and adding samples from  a normal distribution to the
+quadratic model biased samples.
 
 
-This report is organized as follows. Section\nbsp{}[[Comparing Sampling Strategies]]
-presents the three metrics we used to compare each of the sampling strategies in
-Table\nbsp{}[[tab:designs-models]], Section\nbsp{}[[Experiments]] describe the
-experiments we performed to compare sampling strategies, and
-Section\nbsp{}[[Results]] discusses the results obtained.
+This  report  is  organized  as  follows.  Section\nbsp{}[[Comparing  Sampling
+Strategies]] presents the  three metrics we used to compare  each of the
+sampling  strategies in  Table\nbsp{}[[tab:designs-models]], Section\nbsp{}[[Experiments]]
+describe the experiments we  performed to compare sampling strategies,
+and Section\nbsp{}[[Results]] discusses the results obtained.
 
 ***** Clone Repository                                         :noexport:
 Make sure you have the latest data:
@@ -26479,20 +26482,20 @@ ggplot(data, aes(x = 1, y = linear_fit_distance)) +
 [[file:/tmp/babel-n3ob7h/figureXz6lIe.png]]
 
 ***** Comparing Sampling Strategies
-In addition to the D-Criterion value, we also measured the quality of the
-designs generated by each technique using the /euclidean distance/ between the
-vector of responses generated by different models fitted using the results of a
-design's experiments. We compared the results of a model using all factors and
-of a re-fitted model using only significant factors identified with ANOVA. We
-performed this comparison for all sampling strategies in
-Table\nbsp{}[[tab:designs-models]].
+In addition to the D-Criterion value,  we also measured the quality of
+the designs generated  by each technique using  the /euclidean distance/
+between the vector  of responses generated by  different models fitted
+using the results  of a design's experiments. We  compared the results
+of  a model  using all  factors and  of a  re-fitted model  using only
+significant  factors   identified  with   ANOVA.  We   performed  this
+comparison for all sampling strategies in Table\nbsp{}[[tab:designs-models]].
 
-We decided to sample new functions for each repetition of our experiments with
-D-Criteria and model fits. This was initially done by sampling values for the
-coefficients for each model term, generating a new function that was used to
-compute the results corresponding to the factor values of each of a design's
-experiments. Coefficient sampling is described in more detail in the following
-section.
+We  decided  to  sample  new  functions for  each  repetition  of  our
+experiments with D-Criteria and model fits. This was initially done by
+sampling values for the coefficients for each model term, generating a
+new function that was used to compute the results corresponding to the
+factor values of each of  a design's experiments. Coefficient sampling
+is described in more detail in the following section.
 
 ****** Sampling Function Coefficients
 Consider the functions
@@ -26503,21 +26506,22 @@ of the form
 f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}) = \alpha_0 + \sum\limits^{n}_{i = 1}{\left(\alpha_{i}x_{i} + \beta_{i}x_{i}^{2}\right)} + \varepsilon\text{,}
 \]
 #+end_export
-where $x \in [-1, 1] \; \forall x \in \mathbf{X}$, with /coefficients of linear
-terms/ $\boldsymbol{\alpha} \in \mathbb{R}^{n + 1}$, /coefficients of quadratic
-terms/ $\boldsymbol{\beta} \in \mathbb{R}^{n}$, and normally distributed error
-$\varepsilon$. The procedure we used to sample new coeficients at each
-experiment starts by choosing which of the $\alpha_i \in \boldsymbol{\alpha}$,
-$\beta_i \in \boldsymbol{\beta}$ will be significant. With our target scenario
-in mind, each coefficient had a 15% chance of being significant. A uniformly
-sampled value in the interval $[-x_{\text{sup}}, -x_{\text{inf}}] \cup
-[x_{\text{inf}}, x_{\text{sup}}]$ is chosen for each significant coefficient,
-where $x_{\text{sup}},x_{\text{inf}} \in \mathbb{R}$,
-$x_{\text{sup}}>x_{\text{inf}}>0$. Small normally distributed values with mean
-zero and standard deviation $x_{\text{sd}}$ are assigned to the other factors.
-Figure\nbsp{}[[fig:sampled-coeff]] shows one coefficient sample obtained by this
-process, where $|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
-2|\mathbf{X}| + 1 = 121$, $x_{\text{inf}} = 1$, $x_{\text{sup}} = 7$, and
+where $x \in [-1,  1] \; \forall x \in \mathbf{X}$,  with /coefficients of linear
+terms/ $\boldsymbol{\alpha}  \in \mathbb{R}^{n  + 1}$, /coefficients  of quadratic
+terms/ $\boldsymbol{\beta}  \in \mathbb{R}^{n}$, and normally  distributed error
+$\varepsilon$.  The  procedure  we  used  to  sample  new  coeficients  at  each
+experiment    starts   by    choosing   which    of   the    $\alpha_i   \in
+\boldsymbol{\alpha}$, $\beta_i \in \boldsymbol{\beta}$ will be significant. With
+our target  scenario in  mind, each  coefficient had  a 15%  chance of
+being  significant.   A  uniformly  sampled  value   in  the  interval
+$[-x_{\text{sup}},  -x_{\text{inf}}]  \cup  [x_{\text{inf}},  x_{\text{sup}}]$  is
+chosen      for      each     significant      coefficient,      where
+$x_{\text{sup}},x_{\text{inf}}                \in               \mathbb{R}$,
+$x_{\text{sup}}>x_{\text{inf}}>0$.  Small normally  distributed values  with
+mean  zero and  standard deviation  $x_{\text{sd}}$ are  assigned to  the
+other factors.  Figure\nbsp{}[[fig:sampled-coeff]]  shows one coefficient sample
+obtained by this process, where $|\boldsymbol{\alpha}| + |\boldsymbol{\beta}| =
+2|\mathbf{X}| +  1 = 121$, $x_{\text{inf}}  = 1$, $x_{\text{sup}} =  7$, and
 $x_{\text{sd}} = 0.04$.
 
 #+NAME: fig:sampled-coeff
@@ -26561,7 +26565,7 @@ ggplot(plot_data, aes(x = 1:length(coefficients), y = coefficients)) +
 [[file:/tmp/babel-6doC2T/figure7gQTiz.png]]
 
 ****** Comparing Coefficient Vectors
-Consider a design $\xi_{n,k}$ with factors $x_{k1},\dots,x_{kn}$, experiments
+Consider  a design  $\xi_{n,k}$ with  factors $x_{k1},\dots,x_{kn}$,  experiments
 $\mathbf{X}_1, \dots, \mathbf{X}_k$, and design matrix given by
 #+begin_export latex
 \[
@@ -26574,13 +26578,13 @@ $\mathbf{X}_1, \dots, \mathbf{X}_k$, and design matrix given by
 \end{bmatrix},
 \]
 #+end_export
-where the $k$ experiments were chosen by Fedorov's algorithm from a relatively
-large sample of size $K$.
+where the  $k$ experiments were  chosen by Fedorov's algorithm  from a
+relatively large sample of size $K$.
 
-Using a function $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ sampled as
-described in the previous section, we can compute the value or /response vector/
-$\mathbf{y} = (y_1,\dots,y_k)$ for each experiment vector $\mathbf{X}_i
-= (x_{i1},\dots,x_{in})$, obtaining the design $\xi^{\prime}_{n,k}$ with design
+Using a function $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ sampled as described
+in the previous  section, we can compute the value  or /response vector/
+$\mathbf{y} = (y_1,\dots,y_k)$ for each experiment vector $\mathbf{X}_i =
+(x_{i1},\dots,x_{in})$,  obtaining  the  design $\xi^{\prime}_{n,k}$  with  design
 matrix given by
 #+begin_export latex
 \[
@@ -26604,13 +26608,13 @@ f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_i) = y_i = \alpha^{\prime}
 \]
 
 #+end_export
-obtaining the coefficient vector $\mathbf{C}^{\prime} =
-\boldsymbol{\alpha}^{\prime}\cup\boldsymbol{\beta}^{\prime}$ which approximates
-$\mathbf{C} = \boldsymbol{\alpha}\cup\boldsymbol{\beta}$. The /coefficient
-vector distance/ $\text{cvd}(\mathbf{C}, \mathbf{C}^{\prime}) = \|\mathbf{C} -
-\mathbf{C}^{\prime}\|^{2}$ provides a measure of how well the fitted
-coefficients approximate the real function coefficients, and enables comparing
-two models.
+obtaining     the    coefficient     vector    $\mathbf{C}^{\prime}     =
+\boldsymbol{\alpha}^{\prime}\cup\boldsymbol{\beta}^{\prime}$  which  approximates
+$\mathbf{C} =  \boldsymbol{\alpha}\cup\boldsymbol{\beta}$. The  /coefficient vector
+distance/  $\text{cvd}(\mathbf{C}, \mathbf{C}^{\prime})  = \|\mathbf{C}  -
+\mathbf{C}^{\prime}\|^{2}$  provides  a  measure  of  how  well  the  fitted
+coefficients approximate  the real function coefficients,  and enables
+comparing two models.
 ****** Comparing Response Vectors
 Consider designs $\xi_{n,k}$ and $\xi^{\prime}_{n,k}$, constructed as in the
 last section. We can use $\xi^{\prime}_{n,k}$ to perform a linear regression with model
@@ -26622,11 +26626,10 @@ f_{\boldsymbol{\alpha},\boldsymbol{\beta}}(\mathbf{X}_i) = y_i = \alpha^{\prime}
 \varepsilon\text{,}
 \]
 #+end_export
-obtaining coefficients that define the function
-$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ which
-approximates $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$.
-Evaluating the fitted model in the original large sample of size $K$ gives
-the response vector
+obtaining      coefficients     that      define     the      function
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$       which      approximates
+$f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$.  Evaluating the  fitted model in the
+original large sample of size $K$ gives the response vector
 #+begin_export latex
 \[
 \mathbf{Y}^{\prime} = (f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}
@@ -26647,9 +26650,10 @@ The /response vector distance/ $\text{rvd}(\mathbf{Y}, \mathbf{Y}^{\prime}) =
 fitted model approximates the real function in the initial sample of size $K$,
 and enables the comparison of two models for the same data.
 ****** Comparing D-Criteria
-Consider a D-Optimal design $\xi_{n,k}$ constructed using Fedorov's algorithm,
-with $n$ factors, experiments $\mathbf{X}_1, \dots, \mathbf{X}_k$ chosen
-from a large candidate set of $K$ experiments, and design matrix given by
+Consider  a  D-Optimal  design   $\xi_{n,k}$  constructed  using  Fedorov's
+algorithm, with $n$ factors, experiments $\mathbf{X}_1, \dots, \mathbf{X}_k$
+chosen  from a  large candidate  set  of $K$  experiments, and  design
+matrix given by
 #+begin_export latex
 \[
 \xi_{n,k} =
@@ -26667,10 +26671,11 @@ The quadratic performance model used to construct this design was
 \mathbf{y} = \boldsymbol{\beta{}}\mathbf{M} + \varepsilon\text{,}
 \]
 #+end_export
-where $\boldsymbol{\beta}$ is the vector of $2n + 1$ coefficients for linear,
-quadratic, and intercept terms, $\varepsilon$ is the normally distributed error
-term, and $\mathbf{M}$ is the /model matrix/, a $(2n + 1)\times{}k$ matrix
-containing each factor level as it would appear in the performance model, given by
+where  $\boldsymbol{\beta}$ is  the vector  of $2n  + 1$  coefficients for
+linear,  quadratic,   and  intercept   terms,  $\varepsilon$  is   the  normally
+distributed error term, and $\mathbf{M}$ is the /model matrix/, a $(2n +
+1)\times{}k$ matrix  containing each factor level  as it would appear  in the
+performance model, given by
 #+begin_export latex
 \[
 \mathbf{M} =
@@ -26703,93 +26708,96 @@ data <- read.csv("dopt_sampling_tests/experiments.csv", header = TRUE)
 
 #+RESULTS:
 
-The experiments described in this section use our Design of Experiments approach
-to optimize sampled linear and quadratic functions by identifying their most
-significant factors. First, we used the function coefficient sampling strategy
-described in Section\nbsp{}[[Sampling Function Coefficients]] to generate target
-objective functions with large numbers of factors, but with few significant
-ones. Then, we used the biased sampling strategies described in
-Section\nbsp{}[[Comparing Sampling Strategies]] to generate sets of candidate
+The  experiments  described   in  this  section  use   our  Design  of
+Experiments  approach   to  optimize  sampled  linear   and  quadratic
+functions  by identifying  their most  significant factors.  First, we
+used  the   function  coefficient   sampling  strategy   described  in
+Section\nbsp{}[[Sampling  Function Coefficients]]  to generate  target objective
+functions  with large  numbers of  factors, but  with few  significant
+ones.  Then,  we used  the  biased  sampling strategies  described  in
+Section\nbsp{}[[Comparing Sampling  Strategies]] to  generate sets  of candidate
 points, which were used to construct D-Optimal designs using Fedorov's
-algorithm. The response vectors of each design were evaluated using the
-generated functions, which enabled running ANOVA tests to identify the most
-significant factors. Finally, new models were fit to the design's data using
-only the identified factors. The relevant parameters of each experiment are
-described in Table\nbsp{}[[tab:exp-parameters]].
+algorithm. The  response vectors of  each design were  evaluated using
+the generated functions, which enabled running ANOVA tests to identify
+the  most significant  factors. Finally,  new models  were fit  to the
+design's  data  using  only   the  identified  factors.  The  relevant
+parameters     of     each     experiment     are     described     in
+Table\nbsp{}[[tab:exp-parameters]].
 
 #+NAME: tab:exp-parameters
 #+CAPTION: Parameters of experiments with different regression models
 #+ATTR_LATEX: :booktabs t :align p{0.34\linewidth}p{0.22\linewidth}p{0.19\linewidth}
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
-| Parameter                                            | Linear Model                                                                 |                                    Quadratic Model |
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
-| Factors                                              | 60                                                                           |                                                 60 |
-| \rowcolor{gray!25} Design Size                       | 70                                                                           |                                                130 |
-| Fedorov Samples                                      | 1000                                                                         |                                               1000 |
-| Testing Samples                                      | 1000                                                                         |                                               1000 |
-| \rowcolor{gray!25} Normal Samples Ratio              | --                                                                           |                                                 8% |
-| \rowcolor{gray!25} Normal Samples Standard Deviation | --                                                                           |                                               0.04 |
-| \rowcolor{gray!25} Sampling Strategies               | \mbox{Uniform, Biased}, \mbox{Fedorov}                                       |     \mbox{Uniform, Biased}, \mbox{Normal}, Fedorov |
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
-| \rowcolor{gray!25} Sampled Objective Function        | As in Section\nbsp{}[[Sampling Function Coefficients]], $\boldsymbol{\beta} = 0$ | As in Section\nbsp{}[[Sampling Function Coefficients]] |
-| Noise Standard Deviation                             | $[2^0,\dots,2^6]$                                                            |                                  $[2^0,\dots,2^6]$ |
-| \rowcolor{gray!25} Regression Model                  | Linear                                                                       |                                          Quadratic |
-| $\text{Pr}(>\text{F})$ Threshold                     | $[0.001, 0.01]$                                                              |                                    $[0.001, 0.01]$ |
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
-| \rowcolor{gray!25} Coefficients                      | 61                                                                           |                                                121 |
-| Coefficient Significance Probability                 | 15%                                                                          |                                                15% |
-| Coefficient Noise Standard Deviation                 | 0.01                                                                         |                                               0.01 |
-| Coefficient Range                                    | $(x_{inf} = 1$, $x_{sup} = 7)$                                               |                     $(x_{inf} = 1$, $x_{sup} = 7)$ |
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
-| Repetitions                                          | 100                                                                          |                                                100 |
-|------------------------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------|
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
+| Parameter                                            | Linear Model                                                       |                                Quadratic Model |
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
+| Factors                                              | 60                                                                 |                                             60 |
+| \rowcolor{gray!25} Design Size                       | 70                                                                 |                                            130 |
+| Fedorov Samples                                      | 1000                                                               |                                           1000 |
+| Testing Samples                                      | 1000                                                               |                                           1000 |
+| \rowcolor{gray!25} Normal Samples Ratio              | --                                                                 |                                             8% |
+| \rowcolor{gray!25} Normal Samples Standard Deviation | --                                                                 |                                           0.04 |
+| \rowcolor{gray!25} Sampling Strategies               | \mbox{Uniform, Biased}, \mbox{Fedorov}                             | \mbox{Uniform, Biased}, \mbox{Normal}, Fedorov |
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
+| \rowcolor{gray!25} Sampled Objective Function        | As in Section\nbsp{}[[Sampling Function Coefficients]], $\boldsymbol{\beta} = 0$ |   As in Section\nbsp{}[[Sampling Function Coefficients]] |
+| Noise Standard Deviation                             | $[2^0,\dots,2^6]$                                                        |                                    $[2^0,\dots,2^6]$ |
+| \rowcolor{gray!25} Regression Model                  | Linear                                                             |                                      Quadratic |
+| $\text{Pr}(>\text{F})$ Threshold                     | $[0.001, 0.01, 0.1]$                                               |                           $[0.001, 0.01, 0.1]$ |
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
+| \rowcolor{gray!25} Coefficients                      | 61                                                                 |                                            121 |
+| Coefficient Significance Probability                 | 15%                                                                |                                            15% |
+| Coefficient Noise Standard Deviation                 | 0.01                                                               |                                           0.01 |
+| Coefficient Range                                    | $(x_{inf} = 1$, $x_{sup} = 7)$                                           |                       $(x_{inf} = 1$, $x_{sup} = 7)$ |
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
+| Repetitions                                          | 100                                                                |                                            100 |
+|------------------------------------------------------+--------------------------------------------------------------------+------------------------------------------------|
 
-Figure\nbsp{}[[fig:functions-comparison]] lists the objects that can be observed and
-compared after applying our approach to build a performance model, represented
-by the function $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$,
-from observations of a function $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
-\varepsilon$. In this experiment using function coefficient sampling, we are
-capable of observing $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$,
-but we also have access to $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ and to
-the actual model coefficients $(\boldsymbol{\alpha},\boldsymbol{\beta})$. This
-means we can compare the accuracy of not only the responses predicted by
-$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$, but also of the
-coefficients $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$.
+Figure\nbsp{}[[fig:functions-comparison]] lists the objects that can be observed
+and compared after applying our approach to build a performance model,
+represented by  the function $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$,
+from  observations  of  a function  $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}  +
+\varepsilon$. In  this experiment  using function  coefficient sampling,  we are
+capable of observing $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$, but we also
+have  access to  $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$  and  to the  actual
+model  coefficients $(\boldsymbol{\alpha},\boldsymbol{\beta})$.  This means  we
+can  compare the  accuracy  of  not only  the  responses predicted  by
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$, but also of the coefficients
+$(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$.
 
-In real autotuning experiments we would not be capable of observing either the
-actual responses without added noise or the real model coefficients, and the
-only comparison possible is between the observed responses with noise
-$f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and the predicted
-responses $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$.
+In real  autotuning experiments we  would not be capable  of observing
+either  the actual  responses without  added noise  or the  real model
+coefficients, and the only comparison possible is between the observed
+responses  with noise  $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}  +  \varepsilon$ and  the
+predicted responses $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$.
 
-The experiment $\mathbf{X}$ in Figure\nbsp{}[[fig:functions-comparison]] is one of
-the observed experiments $(\mathbf{X}_{1}, \dots, \mathbf{X}_{K})$ that compose
-the D-Optimal designs used for ANOVA steps and the additional experiments in the
-test set. In the experiment using function coefficient sampling, the experiments
-$(\mathbf{X}_{1}, \dots, \mathbf{X}_{K})$ consist of experiments selected for
-the D-Optimal designs, plus an additional uniform sample used later for testing.
+The experiment $\mathbf{X}$  in Figure\nbsp{}[[fig:functions-comparison]] is one
+of the  observed experiments $(\mathbf{X}_{1}, \dots,  \mathbf{X}_{K})$ that
+compose the D-Optimal designs used  for ANOVA steps and the additional
+experiments  in  the  test  set.  In  the  experiment  using  function
+coefficient   sampling,   the    experiments   $(\mathbf{X}_{1},   \dots,
+\mathbf{X}_{K})$  consist  of  experiments  selected  for  the  D-Optimal
+designs, plus an additional uniform sample used later for testing.
 
-The comparison between $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
-\varepsilon$ and $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$
-is meaningful only with regards to sampled regions of the search space. What we
-would actually like to know is the accuracy of
-$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ for the regions
-of the search space where local and global minima of
+The comparison between $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ is meaningful only with
+regards to sampled regions of the search space. What we would actually
+like to know is the accuracy of
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ for the regions of the search
+space where local and global minima of
 $f_{\boldsymbol{\alpha},\boldsymbol{\beta}}$ are found.
 
-Comparing the coefficient vectors $(\boldsymbol{\alpha},\boldsymbol{\beta})$ and
-$(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$ is a better option
-for our experiment, but it is not feasible in real autotuning experiments.
-Despite that, we will show in Section\nbsp{}[[Coefficient & Response
-Vector Distances]] that comparing $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} +
-\varepsilon$ with
+Comparing the coefficient vectors $(\boldsymbol{\alpha},\boldsymbol{\beta})$
+and $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$ is a better
+option for our experiment, but it is not feasible in real autotuning
+experiments.  Despite that, we will show in Section\nbsp{}[[Coefficient &
+Response Vector Distances]] that comparing
+$f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ with
 $f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$, and
 $(\boldsymbol{\alpha},\boldsymbol{\beta})$ and
 $(\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime})$ leads to similar
-conclusions in this experiment. This motivates using the comparison between
-$f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and
-$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ in experimental
-settings where $(\boldsymbol{\alpha},\boldsymbol{\beta})$ is not available for
+conclusions in this experiment.  This motivates using the comparison
+between $f_{\boldsymbol{\alpha},\boldsymbol{\beta}} + \varepsilon$ and
+$f_{\boldsymbol{\alpha}^{\prime},\boldsymbol{\beta}^{\prime}}$ in experimental settings
+where $(\boldsymbol{\alpha},\boldsymbol{\beta})$ is not available for
 comparison.
 
 #+NAME: fig:functions-comparison
@@ -26799,11 +26807,11 @@ comparison.
 
 ***** Results
 ****** D-Criterion
-Since the evaluation of the D-Criterion, as described in Section\nbsp{}[[Comparing
-D-Criteria]], does not depend on the actual response values, we can group the
-experiments using the same regression model but different values of
-$\text{Pr}(>\text{F})$, as well as the experiments with and without added normal
-samples.
+Since   the   evaluation  of   the   D-Criterion,   as  described   in
+Section\nbsp{}[[Comparing D-Criteria]],  does not depend on  the actual response
+values, we can  group the experiments using the  same regression model
+but  different  values  of  $\text{Pr}(>\text{F})$,  as  well  as  the
+experiments with and without added normal samples.
 
 We see in Figure\nbsp{}[[fig:d-criterion-comparison]] that the D-Criteria was much
 higher for experiments using the linear regression model, and that the biased
@@ -26905,74 +26913,85 @@ ggplot(plot_data, aes(x = D, y = coefficient_refit_distance, color = regression_
 [[file:/tmp/babel-07XItT/figureelbGyd.png]]
 
 ****** Coefficient & Response Vector Distances
-We compared the sampling strategies in Table\nbsp{}[[tab:exp-parameters]] regarding
-the distances between the coefficient vectors of fitted models and the real
-sampled model, as is described in Section\nbsp{}[[Sampling Function Coefficients]]
-and shown in Figure\nbsp{}[[fig:functions-comparison]]. The results are shown in
-Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]] for the linear
-and quadratic regression models, respectively.
+We  compared  the   sampling  strategies  in  Table\nbsp{}[[tab:exp-parameters]]
+regarding  the distances  between  the coefficient  vectors of  fitted
+models and the real sampled model, as is described in Section\nbsp{}[[Sampling
+Function          Coefficients]]          and          shown          in
+Figure\nbsp{}[[fig:functions-comparison]].    The   results    are   shown    in
+Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]] for the linear and
+quadratic regression models, respectively.
 
-We see that the predicted vectors of coefficients get farther from the sampled
-coefficient vector as the standard deviation of the noise increases, for both
-regression models. The distances between models produced with uniform and biased
-samples also increases with the noise for the linear model, but it has a more
-complex relationship with the noise for the quadratic model. The
-$\text{Pr}(>\text{F})$ threshold for factor selection impacts only the distances
-of the models selected after performing the ANOVA test, shown in the second
-column of each figure.
+We see that the predicted vectors of coefficients get farther from the
+sampled  coefficient vector  as the  standard deviation  of the  noise
+increases, for  both regression  models. The distances  between models
+produced with uniform and biased samples also increases with the noise
+for the linear model, but it  has a more complex relationship with the
+noise for  the quadratic  model. The  $\text{Pr}(>\text{F})$ threshold
+for factor selection impacts only the distances of the models selected
+after performing  the ANOVA test, shown  in the second column  of each
+figure.
 
-The vertical lines in each plot represent a least squares regression using a
-constant model for the distances of each experiment group. The red and blue
-lines represent experiments using a uniform sample, while the green and purple
-lines represent experiments using a biased sample. Additionally, the red and
-green lines represent experiments with a $\text{Pr}(>\text{F})$ threshold of
-$0.001$, or ``three stars'' in =R= summary tables, while blue an purple lines
-represent a threshold of $0.01$, or ``two stars''.
+The horizontal lines in each plot represent a least squares regression
+using a constant model for the distances of each experiment group. The
+lines tagged  with labels  on the left  represent experiments  using a
+uniform  sample, while  the  lines  tagged with  labels  on the  right
+represent experiments using a  biased sample. Additionally, the dashed
+lines represent the results obtained with a model without filtering by
+ANOVA's  $\text{Pr}(>\text{F})$  thresholds.    Full  lines  represent
+experiments  using $\text{Pr}(>\text{F})$  thresholds  of $0.001$,  or
+``three stars'', of $0.01$, or ``two stars'', and of $0.1$, or ``dot''
+in =R= summary tables.
 
-In practice, the red and blue lines should always be close or at the same place
-in the stage before the ANOVA test, as should the green and purple lines. We can
-see the impact of model selection after the ANOVA test in the plots on the right
-columns of Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]].
+We can  see the impact of  different $\text{Pr}(>\text{F})$ thresholds
+after  the   ANOVA  test   by  comparing  labels   of  each   line  in
+Figures\nbsp{}[[fig:coef-comp-linear]] and\nbsp{}[[fig:coef-comp-quad]].
 
 In the linear model experiments, shown in Figure\nbsp{}[[fig:coef-comp-linear]],
-both threshold values produced improvements relative to the initial naive
-models. The larger thresholds, represented by the blue and purple lines,
-produced larger improvements than the smaller thresholds in general, but
-this difference is larger as noise standard deviation increases. The smaller
-thresholds produced almost no improvements for the higher noise values. This is
-also observed in the quadratic model experiments, shown in
-Figure\nbsp{}[[fig:coef-comp-quad]], where it is more pronounced.
+all  threshold values  produced improvements  relative to  the initial
+naive models. Higher thresholds  achieved larger improvements than the
+smaller thresholds in general, and  this difference increases with the
+standard deviation of the noise.   Lower thresholds produced almost no
+improvements for  higher noise values.   This is also observed  in the
+quadratic model experiments, shown in Figure\nbsp{}[[fig:coef-comp-quad]], where
+it is more pronounced.
 
-The chosen threshold values can be as important as the sample given to the
-D-Optimal design construction algorithm. This is seen in the quadratic model
-experiments where, even for lower noise values, the improvements represented by
-the blue line, or the high threshold using an uniform sample experiment, surpass
-the improvements represented by the green line, or the low threshold using a
-biased sample experiment. The improvements represented by the blue line also get
-close to the improvements represented by the purple line, or the high threshold
-using a biased sample experiment.
+The  chosen threshold  values can  be more  important than  the sample
+given to the D-Optimal design  construction algorithm. This is seen in
+the quadratic  model experiments where,  even for lower  noise values,
+the  improvements achieved  by high  thresholds using  uniform samples
+surpass  the  improvements achieved  by  low  thresholds using  biased
+samples.
 
-In the linear and quadratic model experiments, we also observe that for higher
-noise standard deviations there is a split between closer and farther groups of
-coefficient vectors, with an empty region in the middle. This happens only after
-a model is selected using the results of ANOVA tests, and represents the impact
-of incorrect identification of significant coefficients.
+In the  linear and quadratic  model experiments, we also  observe that
+for higher noise  standard deviations there is a  split between closer
+and farther groups of coefficient vectors, with an empty region in the
+middle. This happens only after a  model is selected using the results
+of ANOVA tests, and represents  the impact of incorrect identification
+of significant coefficients.
 
-Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] show the results
-of comparing response vectors, as is described in Section\nbsp{}[[Comparing
-Response Vectors]] and shown in Figure\nbsp{}[[fig:functions-comparison]]. The data in
-Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] was obtained
-during the same experiments show in Figures\nbsp{}[[fig:coef-comp-linear]]
-and\nbsp{}[[fig:coef-comp-quad]]. The color and shape encodings of the four figures
-in this section are the same.
+It is interesting to note that, as the standard deviation of the noise
+increases,  it  is increasingly  equivalent  to  fit a  model  without
+filtering  significant  parameters  and  to   fit  a  model  with  low
+$\text{Pr}(>\text{F})$ thresholds, for both linear and quadratic model
+experiments.  With high noise, it  produces better results when we are
+less  restrictive regarding  parameter  significance  by using  higher
+thresholds of $\text{Pr}(>\text{F})$.
 
-We observe essentially the same behaviours in the comparisons between
-coefficient and response vectors, despite the limited size of the sets used for
-comparing the models built using data from D-Optimal designs with the real
-models at each step. This motivates using the response vector distance as a
-comparison metric for models in experimental settings where the real
-coefficients are not available for comparison, such as real autotuning problems
-or experiments using more complex function sampling techniques.
+Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] show  the results of
+comparing  response  vectors,  as is  described  in  Section\nbsp{}[[Comparing
+Response  Vectors]] and  shown  in Figure\nbsp{}[[fig:functions-comparison]].  The
+data in Figures\nbsp{}[[fig:fit-comp-linear]] and\nbsp{}[[fig:fit-comp-quad]] was obtained
+during  the  same  experiments  show  in  Figures\nbsp{}[[fig:coef-comp-linear]]
+and\nbsp{}[[fig:coef-comp-quad]].
+
+We observe essentially the same  behaviours in the comparisons between
+coefficient and response vectors, despite the limited size of the sets
+used for comparing the models  built using data from D-Optimal designs
+with the real  models at each step. This motivates  using the response
+vector  distance as  a comparison  metric for  models in  experimental
+settings where the real coefficients are not available for comparison,
+such as  real autotuning  problems or  experiments using  more complex
+function sampling techniques.
 
 #+begin_export latex
 \clearpage
@@ -27068,8 +27087,8 @@ ggplot(plot_data, aes(x = as.numeric(id),
                                 max(as.numeric(plot_data$id)) + label_region_width)) +
   scale_y_continuous(name = "Coefficient Vector Distance",
                      limits = c(0, NA)) +
-  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), size = point_size, show.legend = FALSE) +
-  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), alpha = 0.38, size = point_size, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "After ANOVA"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
@@ -27198,8 +27217,8 @@ ggplot(plot_data, aes(x = as.numeric(id),
                                 max(as.numeric(plot_data$id)) + label_region_width)) +
   scale_y_continuous(name = "Coefficient Vector Distance",
                      limits = c(0, NA)) +
-  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), size = point_size, show.legend = FALSE) +
-  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), alpha = 0.38, size = point_size, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "After ANOVA"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
@@ -27331,8 +27350,8 @@ ggplot(plot_data, aes(x = as.numeric(id),
                                 max(as.numeric(plot_data$id)) + label_region_width)) +
   scale_y_continuous(name = "Fit Vector Distance",
                      limits = c(0, NA)) +
-  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), size = point_size, show.legend = FALSE) +
-  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), alpha = 0.38, size = point_size, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "After ANOVA"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
@@ -27461,8 +27480,8 @@ ggplot(plot_data, aes(x = as.numeric(id),
                                 max(as.numeric(plot_data$id)) + label_region_width)) +
   scale_y_continuous(name = "Fit Vector Distance",
                      limits = c(0, NA)) +
-  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), size = point_size, show.legend = FALSE) +
-  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "After ANOVA"), alpha = 0.38, size = point_size, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "After ANOVA"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_smooth(data = subset(plot_data, fit_stage == "Before ANOVA" & prft == 0.1), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
   geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
