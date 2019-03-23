@@ -27521,18 +27521,33 @@ ggplot(plot_data, aes(x = as.numeric(id),
 #+end_export
 ** March
 *** [2019-03-07 Thu]
-**** Optimization of =bicgkernel=
-***** Cloning/Pulling the Repository
-#+HEADER: :results output
+**** Analysing Autotuning Results on the SPAPT Benchmark
+We  started  analyzing  the  results obtained  applying  an  automated
+version of our  approach in the SPAPT benchmark,  which were presented
+in our  CCGRID paper. The objective  of this analysis was  to identify
+automated decisions that would not have  been made, or that would have
+been made differently, if user input was available.
+
+This is  an ongoing work,  and figures and  text are in  a preliminary
+state.   This document  is organized  as follows.   Section\nbsp[[Eliminated
+Factors and  Fixed Values]] presents  each eliminated factor,  and their
+set  values,   over  the  10   autotuning  runs  of  the   =bicg=  SPAPT
+kernel. Section\nbsp[[Choices at  Each Step]] presents a detailed  look at the
+decisions  taken during  each  of  the 4  steps  performed during  the
+autotuning run, and decisions are  discussed based on the ANOVA tables
+presented.
+
+***** Setup                                                    :noexport:
+****** Cloning/Pulling the Repository                         :noexport:
+#+HEADER: :results output :eval no-export :exports none
 #+BEGIN_SRC shell
 git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
 #+END_SRC
 
 #+RESULTS:
 : Already up to date.
-***** Eliminated Factors and Fixed Values
-****** Loading Data
-#+HEADER: :results output :session *R*
+****** Loading Data                                           :noexport:
+#+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 library(dplyr)
 library(tidyr)
@@ -27567,8 +27582,8 @@ str(data)
  $ predicted_best_step_3: num  0.101 0.091 0.086 0.0932 0.1353 ...
  $ predicted_best_step_4: num  0.0937 0.0944 0.1001 0.1029 0.1189 ...
 #+end_example
-****** Processing Data
-#+HEADER: :results output :session *R*
+****** Processing Data                                        :noexport:
+#+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 d_eff_data <- data %>%
               gather("step", "d_efficiency", paste0("de_step_", 1:4)) %>%
@@ -27686,10 +27701,10 @@ they will be dropped
  $ step                 : num  1 1 1 1 1 1 1 1 1 1 ...
  $ d_efficiency         : num  0.126 0.177 0.09 0.118 0.185 0.185 0.142 0.103 0.15 0.153 ...
 #+end_example
-****** Design & Prediction Runtime, D-Criterion & Eliminated Factor Plots
+****** Design & Prediction Runtime, D-Criterion & Eliminated Factor Plots :noexport:
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1750 :height 1000
+#+HEADER: :width 1750 :height 1000 :exports none :eval no-export
 #+BEGIN_SRC R
 library(gridExtra)
 library(ggplot2)
@@ -27740,32 +27755,38 @@ grid.arrange(d_eff_plot, predicted_plot, design_plot,
 
 #+RESULTS:
 [[file:/tmp/babel-07XItT/figure46m31D.png]]
-****** Detailed Eliminated Factors Plot
-The two top plots below show eliminated model terms and design factors at each
-step. The third plot shows what were the values fixed after each of the 10
-repetitions of the 4 steps. Each factor uses the same color scale to represent
-its levels.
+***** Eliminated Factors and Fixed Values
+Figure\nbsp[[fig:eliminated]]  shows the  eliminated model  terms and  program
+factors  at  each   of  the  4  steps  of  the   10  autotuning  runs.
+Figure\nbsp[[fig:eliminated]]  also shows  the levels  chosen for  each factor
+over  all 10  runs. The  two top  plots on  Figure\nbsp[[fig:eliminated]] show
+eliminated model terms and design factors at each step. The third plot
+shows what were  the values fixed after each of  the 10 repetitions of
+the 4  steps. Each factor uses  the same color scale  to represent its
+levels, which is reset for each factor.
 
-The binary factors that were always identified as significant, =OMP= and =SCR=,
-had the same fixed value in all repetitions. The next three most eliminated
-factors were =RT_I=, =T2_I=, and =T1_I=, which all had linear, quadratic, and
-cubic terms in the initial model.
+The binary factors that were always identified as significant, =OMP= and
+=SCR=, had the same fixed value  in all repetitions. The next three most
+eliminated factors  were =RT_I=, =T2_I=,  and =T1_I=, which all  had linear,
+quadratic, and cubic terms in the initial model.
 
 The level selected for the =RT_I= factor was =RT_I=8= 5 times, followed by
 =RT_I=4= 3 times, and =RT_I=1= and =RT_I=2= one time each. This factor has 6
-levels, which are powers of 2 from 1 to 32, and the fixed values favored the
-middle of the scale. It could be worth it to see if it would be possible to add
-more levels to this factor, specially if non-powers of two are allowed.
+levels, which  are powers  of 2  from 1  to 32,  and the  fixed values
+favored the  middle of the scale.  It could be  worth it to see  if it
+would be  possible to  add more  levels to  this factor,  specially if
+non-powers of two are allowed.
 
-We also see in the topmost figure that the model term for =RT_I= most frequently
-responsible for eliminating the factor was the linear term, while the quadratic
-term was responsible for the elimination 2 times, and the cubic term was never
-responsible. Further experimentation with this kernel could remove the cubic
-term.
+We also see  in the topmost figure  that the model term  for =RT_I= most
+frequently responsible for eliminating the factor was the linear term,
+while the quadratic term was  responsible for the elimination 2 times,
+and the cubic term was never responsible. Further experimentation with
+this kernel could remove the cubic term.
 
+#+NAME: fig:eliminated
 #+HEADER: :results graphics output :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 1750 :height 1000
+#+HEADER: :width 1250 :height 1500 :exports results
 #+BEGIN_SRC R
 library(gridExtra)
 library(ggplot2)
@@ -27778,12 +27799,14 @@ my_palette = c(brewer.pal(name = "Set1", n = 9),
                 brewer.pal(name = "Dark2", n = 7),
                 brewer.pal(name = "Accent", n = 8))
 
+base_size <- 25
+
 eliminated_histogram_plot <- ggplot(subset(parsed_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
                                           geom_bar(stat = "Count", show.legend = TRUE) +
-                                          ylab("Count of Eliminated Factors") +
+                                          ylab("Eliminated Factors") +
                                           xlab("") +
                                           scale_y_continuous(breaks = 0:20) +
-                                          theme_bw(base_size = 20) +
+                                          theme_bw(base_size = base_size) +
                                           theme(text = element_text(family = "sans"),
                                                 legend.position = "bottom",
                                                 legend.direction = "horizontal",
@@ -27795,10 +27818,10 @@ eliminated_histogram_plot <- ggplot(subset(parsed_eliminated_data, factors != ""
 
 full_eliminated_histogram_plot <- ggplot(subset(complete_eliminated_data, factors != ""), aes(x = factors, fill = step)) +
                                           geom_bar(stat = "Count", show.legend = TRUE) +
-                                          ylab("Count of Eliminated Model Terms") +
+                                          ylab("Eliminated Terms") +
                                           xlab("") +
                                           scale_y_continuous(breaks = 0:20) +
-                                          theme_bw(base_size = 20) +
+                                          theme_bw(base_size = base_size) +
                                           theme(text = element_text(family = "sans"),
                                                 legend.position = "bottom",
                                                 legend.direction = "horizontal",
@@ -27819,13 +27842,15 @@ fixed_factors$factor <- factor(fixed_factors$factor, levels = names(spread_fixed
 
 fixed_factors_plot <- ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_value, factor))) +
   geom_bar() +
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = base_size) +
+  ylab("Count of Levels") +
+  ylab("Factors") +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank(),
         axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  guides(fill = guide_legend(nrow = 3)) +
+  guides(fill = guide_legend(nrow = 5)) +
   scale_fill_manual(values = my_palette)
 
 grid.arrange(full_eliminated_histogram_plot,
@@ -27835,11 +27860,13 @@ grid.arrange(full_eliminated_histogram_plot,
                                    c(2, 2),
                                    c(3, 3)))
 #+END_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-07XItT/figurezZeqEx.png]]
-****** Fixed Factors Plot
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+#+CAPTION: Different visualizations of eliminated factors and set levels
+#+LABEL: fig:eliminated
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:eliminated
+[[file:/tmp/babel-dw9mIX/figurendXiKw.pdf]]
+****** Fixed Factors Plot                                     :noexport:
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
 library(ggplot2)
 
 my_palette = unlist(lapply(spread_fixed_factors,
@@ -27866,30 +27893,46 @@ ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_va
 #+RESULTS:
 [[file:/tmp/babel-VCMsIU/figureycJHtP.png]]
 ***** Choices at Each Step
-In this section we will look at the choices made by the automated version of
-DLMT at each of the 4 steps of one of the 10 optimization iterations performed
-for =bicgkernel=.
+In this  section we  will look  at the choices  made by  the automated
+version of DLMT at  each of the 4 steps of one  of the 10 optimization
+iterations performed for =bicgkernel=.
 
-The initial contained linear, quadratic and cubic terms for all applicable
-factors of =bicgkernel=. The $\text{Pr}(>\text{F})$ threshold was set to
-0.05, or ``one star''.
+The initial model contained linear,  quadratic and cubic terms for all
+applicable factors of =bicgkernel=. The $\text{Pr}(>\text{F})$ threshold
+was set to 0.05, or ``one star''.
 
-With hindsight, obtained from knowing the most eliminated variables from
-Section\nbsp{}[[Detailed Eliminated Factors Plot]], we can argue that a missing
-fundamental user-centered ability of our approach is that of being capable of
-going back to the model of a previous iteration, that is, reverting a factor
-elimination if we reach a point were nothing seems to be significant.
+With hindsight,  obtained from  knowing the most  eliminated variables
+from Section\nbsp{}[[Eliminated Factors and Fixed  Values]], we can argue that a
+missing fundamental user-centered  ability of our approach  is that of
+being capable of going back to the model of a previous iteration, that
+is, reverting  a factor elimination if  we reach a point  were nothing
+seems to be significant.
 
-Reinforcing the argument for being able to revert iterations, a possible error
-identified from looking at these logs is that the linear terms are not added to
-the prediction step models when a quadratic term is identified as significant,
-but the linear term is not. The same happens for quadratic and linear terms not
-identified as significant when a cubic term is significant. On one hand, it
-seems that it is correct to not use terms not identified as significant on the
-prediction model, but on the other hand, it seems that by doing so we are
-trusting too much on the generality of the sample for which we ran the ANOVA
-test, plus, we might lose the flexibility added by the other terms with the same
-factor.
+Reinforcing  the  argument for  being  able  to revert  iterations,  a
+possible  error identified  from looking  at  these logs  is that  the
+linear  terms are  not  added to  the prediction  step  models when  a
+quadratic term  is identified as  significant, but the linear  term is
+not. The same happens for quadratic and linear terms not identified as
+significant when  a cubic term is  significant. On one hand,  it seems
+that it is  correct to not use terms not  identified as significant on
+the prediction model, but on the other hand, it seems that by doing so
+we are trusting too much on the  generality of the sample for which we
+ran the ANOVA  test, plus, we might lose the  flexibility added by the
+other terms with the same factor.
+
+Another  useful capability  would be  adding extra  experiments to  an
+existing design in order to  explore more levels of ambiguous factors.
+Choosing to add more experiments could provide more information at the
+cost  of more  measurements,  but could  avoid  loosing an  undetected
+significant factor or choosing misidentified ones.
+
+The   next   4   sections   present  the   ANOVA   tables   for   each
+step. Sections\nbsp[[First  Step]], [[Second  Step]] and\nbsp[[Third Step]]  are annotated
+with  preliminary  analyses of  the  automated  decisions. A  complete
+version of  this document will  provide annotations and  more detailed
+discussions of each  decision. The final objectives are  having a list
+of useful user-centered features and a demonstration of how user input
+can improve the results.
 
 ****** First Step
 The source blocks in the following sections show excerpts of the log file for
@@ -27899,7 +27942,7 @@ excerpts are annotated with line numbers for easy referencing.
 This is the ANOVA table for the first design generated from a set of uniformly
 generated points:
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 993,1027p
 #+end_SRC
@@ -27953,7 +27996,7 @@ useful to generate a new design for the significant factors only, and then
 fitting the pruned new model using this new design. This could enable us to
 benefit more from cases where the significance was identified correctly.
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 1084,1091p
 #+end_SRC
@@ -27974,7 +28017,7 @@ deeply interested in the model's accuracy, but simply in exploring better
 regions of the search space. The budget ratio is not relevant for this
 experiment, but it keeps track of how many experiments were actually evaluated.
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 1192,1195p
 #+end_SRC
@@ -27996,7 +28039,7 @@ significance was smaller than the other 2 factors. With the 2 most significant
 factors out of the way, the significance of other factors could be
 measured better, and their levels predicted better.
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 1238p | fold -w 80 -s
 #+end_SRC
@@ -28009,7 +28052,7 @@ cat -n $target_file | sed -n 1238p | fold -w 80 -s
 : 'T2_I', 'T2_J', 'U1_I', 'U_I', 'U_J', 'RT_I'], 'response': 'cost_mean'}
 
 ****** Second Step
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 2179,2208p
 #+end_SRC
@@ -28048,7 +28091,7 @@ cat -n $target_file | sed -n 2179,2208p
   2208	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 2257,2263p
 #+end_SRC
@@ -28063,7 +28106,7 @@ cat -n $target_file | sed -n 2257,2263p
 :   2263	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 ****** Third Step
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3024,3047p
 #+end_SRC
@@ -28096,7 +28139,7 @@ cat -n $target_file | sed -n 3024,3047p
   3047	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3091,3097p
 #+end_SRC
@@ -28110,7 +28153,7 @@ cat -n $target_file | sed -n 3091,3097p
 :   3096	---
 :   3097	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3181,3184p
 #+end_SRC
@@ -28126,7 +28169,7 @@ terms. It was mostly eliminated at the third step, which is the case here.
 Despite that, the level selected here was the only the second most chosen level
 =RT_I=4=, the third element in a Python array, indexed by 2.
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3227p | fold -w 80 -s
 #+end_SRC
@@ -28139,7 +28182,7 @@ cat -n $target_file | sed -n 3227p | fold -w 80 -s
 : 'response': 'cost_mean'}
 
 ****** Fourth Step
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3761,3779p
 #+end_SRC
@@ -28167,7 +28210,7 @@ cat -n $target_file | sed -n 3761,3779p
   3779	Residuals    3 0.023451 0.007817
 #+end_example
 
-#+begin_SRC shell :results output
+#+begin_SRC shell :results output :exports results
 target_file=dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/bicgkernel.c_2929.log
 cat -n $target_file | sed -n 3820,3839p
 #+end_SRC
