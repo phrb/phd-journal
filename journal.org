@@ -28797,3 +28797,31 @@ ggplot(plot_data, aes(x = id,
 
 #+RESULTS:
 [[file:/tmp/babel-07XItT/figureN4pWnd.png]]
+*** [2019-03-25 Mon]
+**** Implemeting ~expand.grid~ in Julia
+#+begin_SRC julia :results output :session *Julia*
+function expand_grid(factors, levels)
+    chosen_levels = (((collect(1:levels) .- 1) / (levels - 1)) .* (2)) .- 1
+    complete_set  = Array{Float64, 2}(undef, levels ^ factors, factors)
+    iterator      = Base.product(repeat([chosen_levels], inner = factors)...)
+    set_index     = 1
+
+    for i in iterator
+        complete_set[set_index, :] = collect(i)
+        set_index += 1
+    end
+
+    complete_set
+end
+
+expand_grid(2, 2)
+#+end_SRC
+
+#+RESULTS:
+: expand_grid (generic function with 1 method)
+:
+: 4×2 Array{Float64,2}:
+:  -1.0  -1.0
+:   1.0  -1.0
+:  -1.0   1.0
+:   1.0   1.0
