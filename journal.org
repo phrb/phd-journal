@@ -28825,3 +28825,167 @@ expand_grid(2, 2)
 :   1.0  -1.0
 :  -1.0   1.0
 :   1.0   1.0
+*** [2019-03-27 Wed]
+**** =Formula= in =StatsModels=
+***** Syntax time
+Expanding before schema:
+#+begin_SRC julia :results output :session *Julia*
+using StatsModels
+@macroexpand @formula(y ~ 1 + a*b)
+#+end_SRC
+
+#+RESULTS:
+:
+: :((StatsModels.Term)(:y) ~ (StatsModels.ConstantTerm)(1) + (StatsModels.Term)(:a) + (StatsModels.Term)(:b) + (StatsModels.Term)(:a) & (StatsModels.Term)(:b))
+
+Looking at overloaded operators, terms and functions:
+
+#+begin_SRC julia :results output :session *Julia*
+dump(Term(:y) ~ Term(:a))
+#+end_SRC
+
+#+RESULTS:
+: FormulaTerm{Term,Term}
+:   lhs: Term
+:     sym: Symbol y
+:   rhs: Term
+:     sym: Symbol a
+
+Find function in code:
+
+#+begin_SRC julia :results output :session *Julia*
+@which Term(:a) ~ Term(:b)
+#+end_SRC
+
+#+RESULTS:
+: ~(lhs::Union{AbstractTerm, Tuple{Vararg{AbstractTerm,N}} where N}, rhs::Union{AbstractTerm, Tuple{Vararg{AbstractTerm,N}} where N}) in StatsModels at /home/phrb/.julia/dev/StatsModels/src/terms.jl:397
+
+Constructing formulas programatically:
+
+#+begin_SRC julia :results output :session *Julia*
+f = Term(:y) ~ sum(term.([1, :a, :b, :c]))
+typeof(f)
+#+end_SRC
+
+#+RESULTS:
+: FormulaTerm
+: Response:
+:   y(unknown)
+: Predictors:
+:   1
+:   a(unknown)
+:   b(unknown)
+:   c(unknown)
+: FormulaTerm{Term,Tuple{ConstantTerm{Int64},Term,Term,Term}}
+***** Schema time
+Building a scheme for a dataframe:
+
+#+begin_SRC julia :results output :session *Julia*
+using DataFrames
+
+data = DataFrame(y = rand(9), a = 1:9, b = rand(9), c = repeat(["a", "b", "c"], 3))
+@which schema(data)
+
+schema(data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+9×4 DataFrame
+│ Row │ y         │ a     │ b         │ c      │
+│     │ Float64   │ Int64 │ Float64   │ String │
+├─────┼───────────┼───────┼───────────┼────────┤
+│ 1   │ 0.591383  │ 1     │ 0.536372  │ a      │
+│ 2   │ 0.0304782 │ 2     │ 0.0610319 │ b      │
+│ 3   │ 0.81162   │ 3     │ 0.570985  │ c      │
+│ 4   │ 0.240959  │ 4     │ 0.582508  │ a      │
+│ 5   │ 0.792621  │ 5     │ 0.823797  │ b      │
+│ 6   │ 0.147762  │ 6     │ 0.42206   │ c      │
+│ 7   │ 0.912176  │ 7     │ 0.648603  │ a      │
+│ 8   │ 0.718913  │ 8     │ 0.894919  │ b      │
+│ 9   │ 0.431814  │ 9     │ 0.429579  │ c      │
+schema(data) in StatsModels at /home/phrb/.julia/dev/StatsModels/src/schema.jl:78
+
+Dict{Any,Any} with 4 entries:
+  b => b
+  c => c
+  y => y
+  a => a
+#+end_example
+
+Updating a formula using a schema:
+
+#+begin_SRC julia :results output :session *Julia*
+formula = @formula(y ~ 1 + a + b * c)
+typeof(formula)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+FormulaTerm
+Response:
+  y(unknown)
+Predictors:
+  1
+  a(unknown)
+  b(unknown)
+  c(unknown)
+  b(unknown) & c(unknown)
+FormulaTerm{Term,Tuple{ConstantTerm{Int64},Term,Term,Term,InteractionTerm{Tuple{Term,Term}}}}
+#+end_example
+
+#+begin_SRC julia :results output :session *Julia*
+schema_formula = apply_schema(formula, schema(formula, data))
+typeof(schema_formula)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+FormulaTerm
+Response:
+  y(continuous)
+Predictors:
+  1
+  a(continuous)
+  b(continuous)
+  c(DummyCoding:3→2)
+  b(continuous) & c(DummyCoding:3→2)
+FormulaTerm{ContinuousTerm{Float64},MatrixTerm{Tuple{InterceptTerm{true},ContinuousTerm{Float64},ContinuousTerm{Float64},CategoricalTerm{DummyCoding,String,2},InteractionTerm{Tuple{ContinuousTerm{Float64},CategoricalTerm{DummyCoding,String,2}}}}}}
+#+end_example
+***** Data time
+Getting response and predictors (factor levels):
+
+#+begin_SRC julia :results output :session *Julia*
+response, predictors = modelcols(schema_formula, data);
+
+response
+predictors
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+9-element Array{Float64,1}:
+ 0.5913826665002044
+ 0.03047815433256318
+ 0.8116198484671155
+ 0.24095947156958486
+ 0.7926207409542492
+ 0.1477616791477696
+ 0.9121762733968339
+ 0.7189132949314125
+ 0.4318141039398862
+9×7 Array{Float64,2}:
+ 1.0  1.0  0.536372   0.0  0.0  0.0        0.0
+ 1.0  2.0  0.0610319  1.0  0.0  0.0610319  0.0
+ 1.0  3.0  0.570985   0.0  1.0  0.0        0.570985
+ 1.0  4.0  0.582508   0.0  0.0  0.0        0.0
+ 1.0  5.0  0.823797   1.0  0.0  0.823797   0.0
+ 1.0  6.0  0.42206    0.0  1.0  0.0        0.42206
+ 1.0  7.0  0.648603   0.0  0.0  0.0        0.0
+ 1.0  8.0  0.894919   1.0  0.0  0.894919   0.0
+ 1.0  9.0  0.429579   0.0  1.0  0.0        0.429579
+#+end_example
