@@ -28481,16 +28481,60 @@ Interesting book from Arnaud:
 - Descriptions of estimators, ANOVA, etc...
 *** [2019-03-15 Fri]
 **** Reviewing an ISCC19 Paper from Alfredo
-***** Writing
+The paper  presents a variation  of the  \varepsilon-greedy algorithm for  the Multi-Armed
+Bandit problem to the selection of Access Points by user stations, and evaluates
+the  performance of  the  proposed approach  in two  scenarios,  varying in  the
+distribution  of  user stations.   The  proposed  approach presents  significant
+improvements in  user station  satisfaction, in relation  to a  Strongest Signal
+Access Point  selection algorithm. The paper  would benefit from a  careful text
+revision and from adding brief introductory material for the techniques used.
+***** Weaknesses
+- The paper needs careful text  revision. Examples and suggestions are presented
+  in the detailed comments section
+- The paper lacks descriptions, even if brief, of fundamental techniques used on
+  the proposed algorithm.  The definition of the satisfaction  metric could also
+  be discussed further
+***** Strengths
+- The experimental  methodology appears to  be solid, and the  proposed approach
+  convincingly performs better than a  Strongest Signal selection algorithm. The
+  study of the best values of \varepsilon was also interesting
+***** Suggestions
+****** 2. System Model
+- The paper  would benefit from  more detailed  discussions of Equations  (1) to
+  (6), unless  these are  common knowledge  in the  ISCC community,  since these
+  models are important components of the problem
+****** 3. MAB-Based AP-Selection Mechanism
+- The paper  would benefit  greatly from a  straightforward introduction  to the
+  Multi-Armed Bandit problem, and to how the algorithm used in the paper works
+****** 4. Performance Evaluation
+- It would  be interesting  to discuss  the reasoning  for selecting  the chosen
+  scenarios, and how they  are similar to or different from  real use cases. How
+  would  these  differences  and  similarities impact  the  performance  of  the
+  proposed algorithm in real situations?
+****** Writing
+The paper would benefit from a careful  review. Below are examples of what could
+be improved regarding phrasing and style,  but a comprehensive text review would
+benefit the paper greatly.
+
 - Avoid split infinitives: "to boldly go" ~> "to go boldly"
 - Avoid unspecified "it":
-  - "There were 94 million hotspots in 2016,
-     and it is expected to reach 542 million by 2021."
+  - "There were  94 million hotspots  in 2016, and it  is expected to  reach 542
+    million by 2021."
 - Avoid using reference markings as text elements:
   - "In [4] a scheme [...]"
-***** 1. Introduction
-- "[...] only for the 33% of it [...]" ~> "for only 33% of it"
--
+******* 1. Introduction
+- Correct: "[...] only for the 33% of it [...]" ~> "for only 33% of it"
+- "When  an AP  becomes  unsatisfactory, STAs  stick to  it  for SC  consecutive
+  unsatisfactory association periods [...]"
+  - The variable "SC" was used the first  time here, and could be mistaken as an
+    acronym.  It   would  be  clearer  if   it  was  introduced  earlier   as  a
+    variable. Maybe it could use small caps  and a slanted font as other formula
+    parameters
+******* 2.A Path-loss and transmission rate selection
+- Remove  the extra  comma, or  the  "it is",  in the  sentence: "The  path-loss
+  between the APs and the STAs is  obtained using the 5GHz TMB model for indoors
+  [14], It is given by:"
+- It is not clear what the variables \gamma and L_0 are, in Equation (1)
 **** Redoing Experiments with D-Opt Biased Sampling
 ***** Coefficient & Response Vector Distances
 #+HEADER: :results graphics output :session *R* :exports results
@@ -28894,18 +28938,18 @@ schema(data)
 
 
 9×4 DataFrame
-│ Row │ y         │ a     │ b         │ c      │
-│     │ Float64   │ Int64 │ Float64   │ String │
-├─────┼───────────┼───────┼───────────┼────────┤
-│ 1   │ 0.591383  │ 1     │ 0.536372  │ a      │
-│ 2   │ 0.0304782 │ 2     │ 0.0610319 │ b      │
-│ 3   │ 0.81162   │ 3     │ 0.570985  │ c      │
-│ 4   │ 0.240959  │ 4     │ 0.582508  │ a      │
-│ 5   │ 0.792621  │ 5     │ 0.823797  │ b      │
-│ 6   │ 0.147762  │ 6     │ 0.42206   │ c      │
-│ 7   │ 0.912176  │ 7     │ 0.648603  │ a      │
-│ 8   │ 0.718913  │ 8     │ 0.894919  │ b      │
-│ 9   │ 0.431814  │ 9     │ 0.429579  │ c      │
+│ Row │ y         │ a     │ b        │ c      │
+│     │ Float64   │ Int64 │ Float64  │ String │
+├─────┼───────────┼───────┼──────────┼────────┤
+│ 1   │ 0.0361576 │ 1     │ 0.380945 │ a      │
+│ 2   │ 0.683019  │ 2     │ 0.582795 │ b      │
+│ 3   │ 0.678319  │ 3     │ 0.256435 │ c      │
+│ 4   │ 0.877844  │ 4     │ 0.418163 │ a      │
+│ 5   │ 0.941465  │ 5     │ 0.698047 │ b      │
+│ 6   │ 0.364361  │ 6     │ 0.469311 │ c      │
+│ 7   │ 0.390162  │ 7     │ 0.112257 │ a      │
+│ 8   │ 0.0274286 │ 8     │ 0.544417 │ b      │
+│ 9   │ 0.489773  │ 9     │ 0.986227 │ c      │
 schema(data) in StatsModels at /home/phrb/.julia/dev/StatsModels/src/schema.jl:78
 
 Dict{Any,Any} with 4 entries:
@@ -28919,6 +28963,7 @@ Updating a formula using a schema:
 
 #+begin_SRC julia :results output :session *Julia*
 formula = @formula(y ~ 1 + a + b * c)
+empty_formula = FormulaTerm(nothing, :(1 + a + b * c));
 typeof(formula)
 #+end_SRC
 
@@ -28933,11 +28978,13 @@ Predictors:
   b(unknown)
   c(unknown)
   b(unknown) & c(unknown)
+
 FormulaTerm{Term,Tuple{ConstantTerm{Int64},Term,Term,Term,InteractionTerm{Tuple{Term,Term}}}}
 #+end_example
 
 #+begin_SRC julia :results output :session *Julia*
 schema_formula = apply_schema(formula, schema(formula, data))
+schema_empty_formula = apply_schema(empty_formula, schema(empty_formula, data))
 typeof(schema_formula)
 #+end_SRC
 
@@ -28952,6 +28999,17 @@ Predictors:
   b(continuous)
   c(DummyCoding:3→2)
   b(continuous) & c(DummyCoding:3→2)
+ERROR: MethodError: no method matching terms(::Nothing)
+Closest candidates are:
+  terms(!Matched::FormulaTerm) at /home/phrb/.julia/dev/StatsModels/src/schema.jl:11
+  terms(!Matched::InteractionTerm) at /home/phrb/.julia/dev/StatsModels/src/schema.jl:12
+  terms(!Matched::FunctionTerm{Fo,Fa,names}) where {Fo, Fa, names} at /home/phrb/.julia/dev/StatsModels/src/schema.jl:13
+  ...
+Stacktrace:
+ [1] terms(::FormulaTerm{Nothing,Expr}) at /home/phrb/.julia/dev/StatsModels/src/schema.jl:11
+ [2] schema(::FormulaTerm{Nothing,Expr}, ::DataFrame, ::Dict{Symbol,Any}) at /home/phrb/.julia/dev/StatsModels/src/schema.jl:89
+ [3] schema(::FormulaTerm{Nothing,Expr}, ::DataFrame) at /home/phrb/.julia/dev/StatsModels/src/schema.jl:92
+ [4] top-level scope at none:0
 FormulaTerm{ContinuousTerm{Float64},MatrixTerm{Tuple{InterceptTerm{true},ContinuousTerm{Float64},ContinuousTerm{Float64},CategoricalTerm{DummyCoding,String,2},InteractionTerm{Tuple{ContinuousTerm{Float64},CategoricalTerm{DummyCoding,String,2}}}}}}
 #+end_example
 ***** Data time
@@ -28989,3 +29047,87 @@ predictors
  1.0  8.0  0.894919   1.0  0.0  0.894919   0.0
  1.0  9.0  0.429579   0.0  1.0  0.0        0.429579
 #+end_example
+** April
+*** [2019-04-01 Mon]
+**** Script for PhD Day 2-Minute Presentation
+***** Slide 1
+Good morning everyone,  my name is Pedro and  today I will present my  work on a
+design of experiments approach for autotuning.
+
+***** Slide 2
+Today's  High-Performance Computing  architectures  are  extremely diverse,  and
+writing  efficient programs  for each  of these  architectures is  difficult and
+expensive.
+
+Autotuning is  one way to automate  the process of configuring  the same program
+for different architectures while minimizing metrics such as execution time.
+
+There are many popular approaches to autotuning, such as evaluating all possible
+configurations and picking the best one, using meta-heuristics such as simulated
+annealing, and using machine learning algorithms.
+
+Our approach is to use Design of Experiments.
+
+***** Slide 3
+Imagine you are planting corn, and you want to increase the yield of your crop.
+
+You can control,  for example, the type of  seed and the type of  soil where you
+plant seeds.
+
+You  have limited  time, since  corn  only grows  once  a year,  so testing  all
+combinations of seed and soil is inviable.
+
+So,  which combinations  to test?  Design of  Experiments provides  a method  to
+select which combinations to test, given we can only test a few.
+
+After testing, how  to determine which is the best  possible combination? Design
+of  Experiments provides  a method  to analyse  the results  of experiments  and
+determine  which is  the  best  combination, given  the  combinations that  were
+tested.
+
+How to apply Design of Experiments  methods on autotuning? If you are interested
+and want to know more, come to my poster later and we can talk more about it.
+
+***** Slide 4
+That is all, thank you.
+**** First Session of the Deep Learning Reading Group
+***** About the Reading Group
+- The traditional way is to divide  chapters between people, or groups, and each
+  group presents a chapter.
+***** First Part of the Book
+- The first  part of  the book is  an introduction and  a review  of fundamental
+  material.
+- People said the notation of the book is unusual, specially on the probabilties
+  part.
+***** Capacity
+- Capacity is  correlated with  the model's hability  to predict  the underlying
+  model (later, VC dimension)
+  - Underfitting: "not enough" capacity
+  - Deep Learning: Networks with high capacity
+    - Avoid overfitting with regularization, \dots
+  - Overfitting: generalization error increases
+    - Model compression: removing extra terms, drop weights
+    - Add noise
+  - Capacity: number of function parameters, weights, \dots
+- Hyperparameters must be "set by a human"
+  - Google autoML with genetic algorithms
+- Lower capacity networks can have better fit than larger ones
+  - The  greater  the  number  of  weights,  the  greater  the  opportunity  for
+    overfitting
+  - You always get  something for all terms, probability of  having a zero value
+    for a coefficient is extremely low
+  - Usually  there is  not  enough  examples to  train  larger  networks, or  to
+    identify terms that are zero, for very large networks
+***** Regularization
+- Ridge regression (norm 1)
+- Lasso regression (norm 2)
+- "No free lunch": regularization, optimization, must  be adapted to the task at
+  hand
+***** Bayesian Statistics
+- Priors on function parameters
+- Uniform  priors  are  not  always  a good  idea  on  unbounded  intervals  for
+  parameters
+***** StatLearn Conference
+- Happening @ UGA this week: http://statlearn.sfds.asso.fr/past-events/statlearn15/
+***** Next Meeting
+- Read Chapter 5
