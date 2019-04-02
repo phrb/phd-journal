@@ -24693,7 +24693,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 4. Sample function from Gaussian Process
 5. Compute response for all samples
 6. Fit models using strategies:
-   - Random & Biased designs
+   - Random & Biased designs <- not interesting?
    - D-Optimal with Random & Biased + =rnorm= designs
      - ANOVA to identify significant factors
      - Re-fit models using identified factors
@@ -24878,12 +24878,6 @@ ggplot(plot_data, aes(x = x, y = y)) +
 
 ***** Generating Data
 You can load one of the datasets from the repository:
-
-#+HEADER: :results output :session *R*
-#+BEGIN_SRC R
-data <- read.csv("dopt_sampling_tests/comparison_federov_biased_1000_samples_300_repetitions_30_factors_40_exp_coeff_10_sd_2_comp_600_rand.csv", header = TRUE)
-#+END_SRC
-
 #+begin_SRC R :results output :session *R*
 library(rsm)
 library(dplyr)
@@ -24899,88 +24893,60 @@ linear_design_size <- factors + 10
 quadratic_design_size <- (2 * factors) + 10
 cubic_design_size <- (3 * factors) + 10
 
-quadratic_normal_ratio <- 0.2
+quadratic_normal_ratio <- 0.8
 quadratic_normal_sd <- 0.04
 
-cubic_normal_ratio <- 0.2
+cubic_normal_ratio <- 0.8
 cubic_normal_sd <- 0.04
-
-significant_coefficient_ratio <- 0.2
 
 # Generating all sample sets:
 
 # Testing set to compare fit:
 
-testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                              runif(testing_sample_size))))
-testing_sample$name <- "testing_sample"
+runif_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                    runif(testing_sample_size))))
+runif_testing_sample$name <- "runif_testing_sample"
 
-# DOPT runif set to sample from:
+linear_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                     runif(testing_sample_size))))
+linear_testing_sample$name <- "linear_testing_sample"
 
-dopt_runif_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                 runif(dopt_sample_size))))
-dopt_runif_sample$name <- "dopt_runif_sample"
+quadratic_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                        runif(testing_sample_size))))
+quadratic_testing_sample$name <- "quadratic_testing_sample"
 
-# Runif designs:
+cubic_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                    runif(testing_sample_size))))
+cubic_testing_sample$name <- "cubic_testing_sample"
 
-linear_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(linear_design_size))))
-linear_runif_design$name <- "linear_runif_design"
+# Samples for D-Optimal Experiments
 
-quadratic_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(quadratic_design_size))))
-quadratic_runif_design$name <- "quadratic_runif_design"
+runif_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                            runif(dopt_sample_size))))
+runif_sample$name <- "runif_sample"
 
-cubic_runif_design <- get_runif_coded_design(data.frame(replicate(factors, runif(cubic_design_size))))
-cubic_runif_design$name <- "cubic_runif_design"
+linear_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                             sample_factor(linear_cdf,
+                                                                           dopt_sample_size))))
+linear_sample$name <- "linear_sample"
 
-# Biased designs:
+quadratic_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                sample_factor(quadratic_cdf,
+                                                                              as.integer((1 - quadratic_normal_ratio) * dopt_sample_size)))))
 
-linear_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                    sample_factor(linear_cdf,
-                                                                                  linear_design_size))))
-linear_biased_design$name <- "linear_biased_design"
+quadratic_sample <- rbind(quadratic_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                        rnorm(as.integer(quadratic_normal_ratio * dopt_sample_size),
+                                                                                              mean = 0.5, sd = quadratic_normal_sd)))))
+quadratic_sample$name <- "quadratic_sample"
 
-quadratic_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                       sample_factor(quadratic_cdf,
-                                                                                     as.integer((1 - quadratic_normal_ratio) * quadratic_design_size)))))
+cubic_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                            sample_factor(cubic_cdf,
+                                                                          as.integer((1 - cubic_normal_ratio) * dopt_sample_size)))))
 
-quadratic_biased_design <- rbind(quadratic_biased_design, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                                      rnorm(as.integer(quadratic_normal_ratio * quadratic_design_size),
-                                                                                                                       mean = 0.5, sd = quadratic_normal_sd)))))
-quadratic_biased_design$name <- "quadratic_biased_design"
-
-cubic_biased_design <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                   sample_factor(cubic_cdf,
-                                                                                 as.integer((1 - cubic_normal_ratio) * cubic_design_size)))))
-
-cubic_biased_design <- rbind(cubic_biased_design, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                              rnorm(as.integer(cubic_normal_ratio * cubic_design_size),
-                                                                                                               mean = 0.5, sd = cubic_normal_sd)))))
-cubic_biased_design$name <- "cubic_biased_design"
-
-# DOPT biased sets to sample from:
-
-dopt_linear_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                         sample_factor(linear_cdf,
-                                                                                       dopt_sample_size))))
-dopt_linear_biased_sample$name <- "dopt_linear_biased_sample"
-
-dopt_quadratic_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                            sample_factor(quadratic_cdf,
-                                                                                          as.integer((1 - quadratic_normal_ratio) * dopt_sample_size)))))
-
-dopt_quadratic_biased_sample <- rbind(dopt_quadratic_biased_sample, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                                                rnorm(as.integer(quadratic_normal_ratio * dopt_sample_size),
-                                                                                                                                 mean = 0.5, sd = quadratic_normal_sd)))))
-dopt_quadratic_biased_sample$name <- "dopt_quadratic_biased_sample"
-
-dopt_cubic_biased_sample <- get_runif_coded_design(data.frame(replicate(factors,
-                                                                        sample_factor(cubic_cdf,
-                                                                                      as.integer((1 - cubic_normal_ratio) * dopt_sample_size)))))
-
-dopt_cubic_biased_sample <- rbind(dopt_cubic_biased_sample, get_runif_coded_design(data.frame(replicate(factors,
-                                                                                                        rnorm(as.integer(cubic_normal_ratio * dopt_sample_size),
-                                                                                                                         mean = 0.5, sd = cubic_normal_sd)))))
-dopt_cubic_biased_sample$name <- "dopt_cubic_biased_sample"
+cubic_sample <- rbind(cubic_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                rnorm(as.integer(cubic_normal_ratio * dopt_sample_size),
+                                                                                      mean = 0.5, sd = cubic_normal_sd)))))
+cubic_sample$name <- "cubic_sample"
 
 all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
                      quadratic_runif_design, cubic_runif_design, linear_biased_design,
@@ -29077,13 +29043,14 @@ plant seeds.
 You  have limited  time, since  corn  only grows  once  a year,  so testing  all
 combinations of seed and soil is inviable.
 
-So,  which combinations  to test?  Design of  Experiments provides  a method  to
-select which combinations to test, given we can only test a few.
+So, which  combinations to  test?  Design  of Experiments  provides a  method to
+select which combinations to test in a  parsimonious way, given we can only test
+a few.
 
-After testing, how  to determine which is the best  possible combination? Design
-of  Experiments provides  a method  to analyse  the results  of experiments  and
-determine  which is  the  best  combination, given  the  combinations that  were
-tested.
+After testing,  how do  you determine  which is  the best  possible combination?
+Design of Experiments provides a  transparent analysis method to determine which
+is the best combination in a transparent way, extrapolating the results with the
+combinations that were actually tested.
 
 How to apply Design of Experiments  methods on autotuning? If you are interested
 and want to know more, come to my poster later and we can talk more about it.
@@ -29131,3 +29098,20 @@ That is all, thank you.
 - Happening @ UGA this week: http://statlearn.sfds.asso.fr/past-events/statlearn15/
 ***** Next Meeting
 - Read Chapter 5
+*** [2019-04-02 Tue]
+**** Systems for Hyperparameter Tuning
+***** AutoML
+- https://github.com/automl
+- For SKlearn: https://github.com/automl/auto-sklearn
+***** DeepHyper
+- https://github.com/deephyper/deephyper
+**** Reference for High-Level Synthesis / Synthesis Tuning
+Chapter 18,  /SynTunSys: A Synthesis  Parameter Autotuning System  for Optimizing
+High-Performance Processors/, of the book /Machine Learning in VLSI Computer-Aided
+Design/ presents an example of using ML  to autotune the synthesis process. It is
+an interesting  reference for  future discussions on  HLS autotuning,  since the
+system discussed in the chapter was used to optimize IBM server chips.
+
+They  highlight the  importance of  multiple  hardware metrics  on the  hardware
+design process, and they used the sam /weighted normalized sum/ of metrics we used
+in our ReConFig paper in order to obtain a single value from several metrics.
