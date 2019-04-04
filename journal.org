@@ -29115,3 +29115,90 @@ system discussed in the chapter was used to optimize IBM server chips.
 They  highlight the  importance of  multiple  hardware metrics  on the  hardware
 design process, and they used the sam /weighted normalized sum/ of metrics we used
 in our ReConFig paper in order to obtain a single value from several metrics.
+*** [2019-04-03 Wed]
+**** Book: Learning Statistics with R
+A very nice introductory statistics book: https://learningstatisticswithr.com/
+
+Chapters 14,  15, and 16, from  Part V, /Statistical Tools/,  present introductory
+and  high-level  material  on  ANOVA,   linear  regression,  and  factorial,  or
+multi-variable, ANOVA.
+
+***** Factorial ANOVA
+Defining the dataset:
+
+#+begin_SRC R :results output :session *R*
+clin.trial <- data.frame(drug = factor(c("placebo",  "placebo",  "placebo",  "anxifree",
+                                         "anxifree", "anxifree", "joyzepam", "joyzepam",
+                                         "joyzepam", "placebo",  "placebo",  "placebo",
+                                         "anxifree", "anxifree", "anxifree", "joyzepam",
+                                         "joyzepam", "joyzepam"),
+                                       levels = c("placebo",
+                                                  "anxifree",
+                                                  "joyzepam")),
+                         therapy = factor(c("no.therapy", "no.therapy", "no.therapy",
+                                            "no.therapy", "no.therapy", "no.therapy",
+                                            "no.therapy", "no.therapy", "no.therapy",
+                                            "CBT", "CBT", "CBT", "CBT", "CBT", "CBT",
+                                            "CBT", "CBT", "CBT"),
+                                          levels = c("no.therapy", "CBT")),
+                         mood.gain = c(0.5, 0.3, 0.1, 0.6, 0.4, 0.2, 1.4, 1.7, 1.3,
+                                       0.6, 0.9, 0.3, 1.1, 0.8, 1.2, 1.8, 1.3, 1.4))
+#+end_SRC
+
+#+RESULTS:
+
+This is a balanced full factorial design:
+
+#+begin_SRC R :results output :session *R*
+xtabs(~ drug + therapy, clin.trial)
+#+end_SRC
+
+#+RESULTS:
+:           therapy
+: drug       no.therapy CBT
+:   placebo           3   3
+:   anxifree          3   3
+:   joyzepam          3   3
+
+
+Looking at group means for all groups:
+
+#+begin_SRC R :results output :session *R*
+aggregate(mood.gain ~ drug + therapy, clin.trial, mean)
+#+end_SRC
+
+#+RESULTS:
+:       drug    therapy mood.gain
+: 1  placebo no.therapy  0.300000
+: 2 anxifree no.therapy  0.400000
+: 3 joyzepam no.therapy  1.466667
+: 4  placebo        CBT  0.600000
+: 5 anxifree        CBT  1.033333
+: 6 joyzepam        CBT  1.500000
+
+Looking  at group  means  for some  groups,  ignoring the  effect  of the  other
+factors' levels:
+
+#+begin_SRC R :results output :session *R*
+aggregate(mood.gain ~ therapy, clin.trial, mean)
+#+end_SRC
+
+#+RESULTS:
+:      therapy mood.gain
+: 1 no.therapy 0.7222222
+: 2        CBT 1.0444444
+
+Interpreting  Factorial ANOVA:  It  displays information  about  group means  of
+several groups, with statistics about those group means:
+
+#+begin_SRC R :results output :session *R*
+summary(aov(mood.gain ~ drug + therapy, clin.trial))
+#+end_SRC
+
+#+RESULTS:
+:             Df Sum Sq Mean Sq F value   Pr(>F)
+: drug         2  3.453  1.7267  26.149 1.87e-05 ***
+: therapy      1  0.467  0.4672   7.076   0.0187 *
+: Residuals   14  0.924  0.0660
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
