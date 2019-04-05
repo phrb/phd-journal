@@ -24567,16 +24567,76 @@ myCov <- covTS(inputs = c("Temp", "Humid"),
                dep = c(range = "input"),
                value = c(range = 0.4))
 
-## change coefficients (variances)
+myCov
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+Tensor sum covariance kernel
+o Dimension 'd' (nb of inputs): 2
+o Kernel (1D): "Matern nu = 5/2" with parameters: "range"
+o One parameter by input:
+    range: YES
+o Number of parameters: 4
+o Param. values:
+      Temp Humid
+range  0.4   0.4
+var    1.0   1.0
+#+end_example
+
+#+begin_SRC R :results output :session *R*
 coef(myCov) <- c(100, 10, 1, 50000)
 d <- myCov@d
 n <- 400
 
+myCov
+d
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+Tensor sum covariance kernel
+o Dimension 'd' (nb of inputs): 2
+o Kernel (1D): "Matern nu = 5/2" with parameters: "range"
+o One parameter by input:
+    range: YES
+o Number of parameters: 4
+o Param. values:
+      Temp Humid
+range  100    10
+var      1 50000
+
+[1] 2
+#+end_example
+
+#+begin_SRC R :results output :session *R*
 ## design matrix
 X <- expand.grid(seq(0, 1, length.out = 20),
                  seq(0, 1, length.out = 20))
 colnames(X) <- inputNames(myCov)
 
+inputNames(myCov)
+str(X)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+[1] "Temp"  "Humid"
+
+'data.frame':	400 obs. of  2 variables:
+ $ Temp : num  0 0.0526 0.1053 0.1579 0.2105 ...
+ $ Humid: num  0 0 0 0 0 0 0 0 0 0 ...
+ - attr(*, "out.attrs")=List of 2
+  ..$ dim     : int  20 20
+  ..$ dimnames:List of 2
+  .. ..$ Var1: chr  "Var1=0.00000000" "Var1=0.05263158" "Var1=0.10526316" "Var1=0.15789474" ...
+  .. ..$ Var2: chr  "Var2=0.00000000" "Var2=0.05263158" "Var2=0.10526316" "Var2=0.15789474" ...
+#+end_example
+
+#+begin_SRC R :results output :session *R*
 ## generate the GP realization
 myGp <- gp(formula = y ~ 1, data = data.frame(y = rep(0, n), X),
            cov = myCov, estim = FALSE,
@@ -24591,26 +24651,6 @@ samples <- gather(samples, id, Y, -Temp, -Humid)
 #+end_SRC
 
 #+RESULTS:
-#+begin_example
-Loading required package: Rcpp
-Loading required package: testthat
-
-Attaching package: ‘testthat’
-
-The following object is masked from ‘package:dplyr’:
-
-    matches
-
-Loading required package: nloptr
-
-Loading required package: MASS
-
-Attaching package: ‘MASS’
-
-The following object is masked from ‘package:dplyr’:
-
-    select
-#+end_example
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24623,7 +24663,7 @@ ggplot(samples[samples$id=="X3",], aes(x = Humid, y = Y,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureO6j5wX.png]]
+[[file:/tmp/babel-SpP3r7/figure5uTRXg.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24636,7 +24676,7 @@ ggplot(samples[samples$id=="X3",], aes(x = Temp, y = Y,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figureH5jBtR.png]]
+[[file:/tmp/babel-SpP3r7/figureoXD2Vi.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -24649,7 +24689,7 @@ ggplot(samples[samples$id=="X3",], aes(fill = Y, x = Temp, z = Y, y = Humid)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dYWgzL/figurefzvpOG.png]]
+[[file:/tmp/babel-SpP3r7/figurebP46Ji.png]]
 
 #+begin_SRC R :results output :session *R*
 samples_f1 <- filter(samples, id == "X1")
@@ -28808,7 +28848,7 @@ ggplot(plot_data, aes(x = id,
 #+RESULTS:
 [[file:/tmp/babel-07XItT/figureN4pWnd.png]]
 *** [2019-03-25 Mon]
-**** Implemeting ~expand.grid~ in Julia
+**** Implementing ~expand.grid~ in Julia
 #+begin_SRC julia :results output :session *Julia*
 function expand_grid(factors, levels)
     chosen_levels = (((collect(1:levels) .- 1) / (levels - 1)) .* (2)) .- 1
@@ -29202,3 +29242,50 @@ summary(aov(mood.gain ~ drug + therapy, clin.trial))
 : Residuals   14  0.924  0.0660
 : ---
 : Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+We  will use  the sum  of squares  computed  by R  to compute  the other  values
+displayed in  the ANOVA  table. We will  compute the /mean  square value/  (MS) by
+dividing  the /sum  of squares/  (SS)  by the  /degrees  of freedom/  (df) for  each
+variable.  For the /drug/ variable, $SS = 3.45$ and $df = 2$, giving $MS = 1.72$,
+and so on. The formula for MS is
+\[
+MS = SS / df\text{.}
+\]
+
+The /F-value/  is computed  by the division  of the /mean  squares/ ($MS_V$)  of each
+variable and the /mean square/ ($MS_R$) of  the residuals, that is, the formula for
+the F-value for /drugs/ $F_{drugs}$ is given by
+\[
+F_{drugs} = MS_{drugs} / MS_{R}\text{.}
+\]
+
+The /p-values/ associated  with the /F-values/ are computed by  using the F-Value as
+the quantile  of an /F-distribution/, and  the /degrees of freedom/  of the variable
+and  the residuals  as  distribution  parameters. For  the  variable /drugs/,  for
+example, we have:
+
+#+begin_SRC R :results output :session *R*
+pf(q = 26.15, df1 = 2, df2 = 14, lower.tail = FALSE)
+#+end_SRC
+
+#+RESULTS:
+: [1] 1.871981e-05
+*** [2019-04-04 Thu]
+**** Becoming MCF in France
+- CNU Section 27: Informatique
+- 3500 professors
+- Portal Galaxie MESRI: https://www.galaxie.enseignementsup-recherche.gouv.fr/ensup/candidats.html
+- Public CNU website: http://cnu27.iut2.upmf-grenoble.fr/
+*** [2019-04-05 Fri]
+**** Resources for Basic Statistics
+- Learning Statistics with R: https://learningstatisticswithr.com/lsr-0.6.pdf
+- Faraway PRA: https://cran.r-project.org/doc/contrib/Faraway-PRA.pdf
+- Sivia 2nd Edition: https://www.amazon.com/Data-Analysis-Bayesian-Devinderjit-Sivia-ebook/dp/B01BHLXKEI
+- Suggested by Léo:
+  - Statistique La théorie et ses applications (Michel Lejeune)
+  - Statistique mathématique en action (Vincent Rivoirard, Gilles Stoltz)
+  - Statistique Mathématique Cours & Exercices Corrigés (Céline Vial)
+**** Resources for Gaussian Processes
+- Gaussian Processes for Regression:A Quick Introduction: https://arxiv.org/pdf/1505.02965.pdf
+- A website with many links: http://www.gaussianprocess.org/
+**** Sampling Functions from Gaussian Processes
