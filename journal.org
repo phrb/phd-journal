@@ -29890,13 +29890,12 @@ end
 
 function generate_data()
     factors = expand_grid([collect(-1.0:0.5:1.0),
-                           collect(-1.0:0.5:1.0),
                            collect(-1.0:0.2:1.0)])
 
     #factors = convert(Matrix, random_design(5, 200))
 
     amplitude = 10.0
-    lengthscale = [1.0, 10.0, 0.2]
+    lengthscale = [10.0, 1.0]
     #lengthscale = [1.0, 10.0, 1.0, 0.2, 20.0]
 
     simulations = 1
@@ -29925,50 +29924,50 @@ simulate (generic function with 1 method)
 generate_data (generic function with 1 method)
 
 
-275×5 DataFrame
-│ Row │ Y        │ x1      │ x2      │ x3      │ id    │
-│     │ Float64  │ Float64 │ Float64 │ Float64 │ Int64 │
-├─────┼──────────┼─────────┼─────────┼─────────┼───────┤
-│ 1   │ 25.3344  │ -1.0    │ -1.0    │ -1.0    │ 1     │
-│ 2   │ 21.0257  │ -0.5    │ -1.0    │ -1.0    │ 1     │
-│ 3   │ 7.18902  │ 0.0     │ -1.0    │ -1.0    │ 1     │
-│ 4   │ -5.15563 │ 0.5     │ -1.0    │ -1.0    │ 1     │
-│ 5   │ -7.20888 │ 1.0     │ -1.0    │ -1.0    │ 1     │
-│ 6   │ 24.6563  │ -1.0    │ -0.5    │ -1.0    │ 1     │
-│ 7   │ 18.9067  │ -0.5    │ -0.5    │ -1.0    │ 1     │
-│ 8   │ 8.16805  │ 0.0     │ -0.5    │ -1.0    │ 1     │
-│ 9   │ -4.24806 │ 0.5     │ -0.5    │ -1.0    │ 1     │
-│ 10  │ -9.29258 │ 1.0     │ -0.5    │ -1.0    │ 1     │
-│ 11  │ 23.4887  │ -1.0    │ 0.0     │ -1.0    │ 1     │
-│ 12  │ 19.7939  │ -0.5    │ 0.0     │ -1.0    │ 1     │
-│ 13  │ 5.84019  │ 0.0     │ 0.0     │ -1.0    │ 1     │
-│ 14  │ -5.20903 │ 0.5     │ 0.0     │ -1.0    │ 1     │
-│ 15  │ -8.50111 │ 1.0     │ 0.0     │ -1.0    │ 1     │
-│ 16  │ 26.694   │ -1.0    │ 0.5     │ -1.0    │ 1     │
-│ 17  │ 19.5073  │ -0.5    │ 0.5     │ -1.0    │ 1     │
-│ 18  │ 6.42306  │ 0.0     │ 0.5     │ -1.0    │ 1     │
-│ 19  │ -3.26128 │ 0.5     │ 0.5     │ -1.0    │ 1     │
+55×4 DataFrame
+│ Row │ Y        │ x1      │ x2      │ id    │
+│     │ Float64  │ Float64 │ Float64 │ Int64 │
+├─────┼──────────┼─────────┼─────────┼───────┤
+│ 1   │ 14.172   │ -1.0    │ -1.0    │ 1     │
+│ 2   │ 13.7517  │ -0.5    │ -1.0    │ 1     │
+│ 3   │ 14.3038  │ 0.0     │ -1.0    │ 1     │
+│ 4   │ 14.99    │ 0.5     │ -1.0    │ 1     │
+│ 5   │ 14.7564  │ 1.0     │ -1.0    │ 1     │
+│ 6   │ 12.1308  │ -1.0    │ -0.8    │ 1     │
+│ 7   │ 12.2603  │ -0.5    │ -0.8    │ 1     │
+│ 8   │ 11.9902  │ 0.0     │ -0.8    │ 1     │
+│ 9   │ 12.6245  │ 0.5     │ -0.8    │ 1     │
+│ 10  │ 12.0192  │ 1.0     │ -0.8    │ 1     │
+│ 11  │ 10.7946  │ -1.0    │ -0.6    │ 1     │
+│ 12  │ 10.072   │ -0.5    │ -0.6    │ 1     │
+│ 13  │ 9.88866  │ 0.0     │ -0.6    │ 1     │
+│ 14  │ 9.16508  │ 0.5     │ -0.6    │ 1     │
+│ 15  │ 9.89073  │ 1.0     │ -0.6    │ 1     │
+│ 16  │ 7.93443  │ -1.0    │ -0.4    │ 1     │
+│ 17  │ 7.42716  │ -0.5    │ -0.4    │ 1     │
+│ 18  │ 7.23428  │ 0.0     │ -0.4    │ 1     │
+│ 19  │ 7.69574  │ 0.5     │ -0.4    │ 1     │
 ⋮
-│ 256 │ -17.1549 │ -1.0    │ -0.5    │ 1.0     │ 1     │
-│ 257 │ -18.3751 │ -0.5    │ -0.5    │ 1.0     │ 1     │
-│ 258 │ -11.4001 │ 0.0     │ -0.5    │ 1.0     │ 1     │
-│ 259 │ -6.0199  │ 0.5     │ -0.5    │ 1.0     │ 1     │
-│ 260 │ -4.40406 │ 1.0     │ -0.5    │ 1.0     │ 1     │
-│ 261 │ -16.5252 │ -1.0    │ 0.0     │ 1.0     │ 1     │
-│ 262 │ -17.6341 │ -0.5    │ 0.0     │ 1.0     │ 1     │
-│ 263 │ -12.3033 │ 0.0     │ 0.0     │ 1.0     │ 1     │
-│ 264 │ -6.73525 │ 0.5     │ 0.0     │ 1.0     │ 1     │
-│ 265 │ -3.73405 │ 1.0     │ 0.0     │ 1.0     │ 1     │
-│ 266 │ -17.9269 │ -1.0    │ 0.5     │ 1.0     │ 1     │
-│ 267 │ -17.9665 │ -0.5    │ 0.5     │ 1.0     │ 1     │
-│ 268 │ -13.3028 │ 0.0     │ 0.5     │ 1.0     │ 1     │
-│ 269 │ -7.58129 │ 0.5     │ 0.5     │ 1.0     │ 1     │
-│ 270 │ -4.37029 │ 1.0     │ 0.5     │ 1.0     │ 1     │
-│ 271 │ -17.6356 │ -1.0    │ 1.0     │ 1.0     │ 1     │
-│ 272 │ -19.1158 │ -0.5    │ 1.0     │ 1.0     │ 1     │
-│ 273 │ -13.495  │ 0.0     │ 1.0     │ 1.0     │ 1     │
-│ 274 │ -8.5792  │ 0.5     │ 1.0     │ 1.0     │ 1     │
-│ 275 │ -4.97269 │ 1.0     │ 1.0     │ 1.0     │ 1     │
+│ 36  │ -4.4815  │ -1.0    │ 0.4     │ 1     │
+│ 37  │ -6.53589 │ -0.5    │ 0.4     │ 1     │
+│ 38  │ -5.98725 │ 0.0     │ 0.4     │ 1     │
+│ 39  │ -7.12182 │ 0.5     │ 0.4     │ 1     │
+│ 40  │ -5.39165 │ 1.0     │ 0.4     │ 1     │
+│ 41  │ -6.2054  │ -1.0    │ 0.6     │ 1     │
+│ 42  │ -7.36619 │ -0.5    │ 0.6     │ 1     │
+│ 43  │ -7.40782 │ 0.0     │ 0.6     │ 1     │
+│ 44  │ -9.05222 │ 0.5     │ 0.6     │ 1     │
+│ 45  │ -8.95104 │ 1.0     │ 0.6     │ 1     │
+│ 46  │ -10.7628 │ -1.0    │ 0.8     │ 1     │
+│ 47  │ -12.1568 │ -0.5    │ 0.8     │ 1     │
+│ 48  │ -11.6152 │ 0.0     │ 0.8     │ 1     │
+│ 49  │ -11.1213 │ 0.5     │ 0.8     │ 1     │
+│ 50  │ -12.0495 │ 1.0     │ 0.8     │ 1     │
+│ 51  │ -14.0923 │ -1.0    │ 1.0     │ 1     │
+│ 52  │ -14.5903 │ -0.5    │ 1.0     │ 1     │
+│ 53  │ -14.4384 │ 0.0     │ 1.0     │ 1     │
+│ 54  │ -13.8261 │ 0.5     │ 1.0     │ 1     │
+│ 55  │ -14.4056 │ 1.0     │ 1.0     │ 1     │
 
 #+end_example
 
@@ -29987,7 +29986,7 @@ ggplot(data[data$id==1, ], aes(x = x1, y = Y, group = factor(x2), color = x2)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figureNJhrNF.png]]
+[[file:/tmp/babel-SpP3r7/figurebukKnl.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -30003,12 +30002,12 @@ ggplot(data[data$id==1, ], aes(x = x2, y = Y, group = factor(x1), color = x1)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figureVwlTBA.png]]
+[[file:/tmp/babel-SpP3r7/figureOGkNnw.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-ggplot(data[data$id==1, ], aes(fill = Y, x = x3, z = Y, y = x2)) +
+ggplot(data[data$id==1, ], aes(fill = Y, x = x1, z = Y, y = x2)) +
   geom_point() +
   geom_contour() +
   geom_raster() +
@@ -30016,7 +30015,7 @@ ggplot(data[data$id==1, ], aes(fill = Y, x = x3, z = Y, y = x2)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figureu9LgXC.png]]
+[[file:/tmp/babel-SpP3r7/figureR7531q.png]]
 
 ***** ANOVA Tests
 #+begin_SRC julia :results output :session *Julia*
@@ -30035,7 +30034,7 @@ aov_formula <- formula(paste("Y ~ ",
 
 aov_formula
 
-summary(aov(aov_formula, data = aov_data))
+summary(aov(Y ~ x1 + x2 + I(x2 ^ 4) + I(x2 ^ 3) +  I(x1 ^ 5) + I(x2 ^ 5), data = aov_data))
 """
 #+end_SRC
 
@@ -30046,19 +30045,19 @@ summary(aov(aov_formula, data = aov_data))
 
 
 RObject{VecSxp}
-             Df Sum Sq Mean Sq F value  Pr(>F)
-x1            1    109     109   2.009  0.1575
-x2            1      9       9   0.167  0.6828
-x3            1   8995    8995 166.359 < 2e-16 ***
-I(x1^2)       1    407     407   7.523  0.0065 **
-I(x2^2)       1      0       0   0.007  0.9328
-I(x3^2)       1   1228    1228  22.705 3.1e-06 ***
-Residuals   268  14491      54
+            Df Sum Sq Mean Sq F value Pr(>F)
+x1           1    1.0    1.01   0.109 0.7424
+x2           1   52.8   52.79   5.730 0.0206 *
+I(x2^4)      1   24.9   24.92   2.705 0.1066
+I(x2^3)      1    9.0    8.96   0.972 0.3291
+I(x1^5)      1    0.0    0.00   0.000 0.9894
+I(x2^5)      1    8.4    8.40   0.912 0.3443
+Residuals   48  442.2    9.21
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 *** [2019-04-08 Mon]
-**** Practical Efficiency with Numerical Factors & Functions Sampled from Gaussian Processes
+**** Setup for Practical Efficiency with Numerical Factors & Functions Sampled from Gaussian Processes
 ***** Experiment Definition
 1. Define factor number
    - High-dimensional spaces
@@ -30329,3 +30328,214 @@ all_samples <- rbind(runif_testing_sample,
 #+end_SRC
 
 #+RESULTS:
+*** [2019-04-11 Thu]
+**** Sampling Functions from Gaussian Processes from Scratch in R
+***** Generating Samples
+#+begin_SRC R :results output :session *R*
+library(Rcpp)
+library(dplyr)
+library(MASS)
+
+src <-
+"#include <Rcpp.h>
+#include <math.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericMatrix rcpp_squared_exponential_kernel(NumericMatrix x,
+                                              NumericMatrix y,
+                                              float amplitude,
+                                              NumericVector lengthscale){
+  NumericMatrix output(x.nrow(), y.nrow());
+  float distance;
+
+  for(int i = 0; i < x.nrow(); i++) {
+    for(int j = 0; j < y.nrow(); j++) {
+      distance = 0;
+      for(int k = 0; k < x.ncol(); k++) {
+        distance += (((x(i, k) - y(j, k)) *
+                      (x(i, k) - y(j, k))) /
+                      (lengthscale(k) * lengthscale(k)));
+      }
+
+      output(i, j) = amplitude *
+                     amplitude *
+                     exp(-0.5 * distance);
+    }
+  }
+  return(output);
+}"
+
+sourceCpp(code = src)
+
+random_design <- function(factors, size) {
+  data.frame(replicate(factors, runif(size)))
+}
+
+simulate <- function(data, amplitude, lengthscale) {
+  covariance_matrix <- rcpp_squared_exponential_kernel(as.matrix(data),
+                                                       as.matrix(data),
+                                                       amplitude,
+                                                       lengthscale)
+
+  data$Y <- unname(mvrnorm(n = 1,
+                           rep(0.0, nrow(covariance_matrix)),
+                           covariance_matrix))
+  data
+}
+
+significance_probability <- 0.15
+significance_variability <- list(max = 50, min = 10)
+significance_noise <- 0.02
+
+factors <- 30
+#experiments <- expand.grid(1:3, 1:3, 1:3, 1:3)
+experiments <- random_design(factors, 1000)
+amplitude <- 1.0
+
+lengthscale <- replicate(factors,
+                         ifelse(runif(1) < (1.0 - significance_probability),
+                                runif(1,
+                                      min = significance_variability$min,
+                                      max = significance_variability$max),
+                                rnorm(1, mean = 0.2, sd = significance_noise)))
+
+data <- simulate(experiments, amplitude, lengthscale)
+data$id <- 1
+#+end_SRC
+
+#+RESULTS:
+
+***** Test Plots
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+data$id <- factor(data$id)
+
+ggplot(data[data$id==1, ], aes(x = X1, y = Y, group = factor(X2), color = X2)) +
+  geom_point() +
+  geom_line() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SpP3r7/figuref7Il68.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+data$id <- factor(data$id)
+
+ggplot(data[data$id==1, ], aes(x = Var2, y = Y, group = factor(Var1), color = Var1)) +
+  geom_point() +
+  geom_line() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SpP3r7/figureirUkuc.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+ggplot(data[data$id==1, ], aes(fill = Y, x = Var1, z = Y, y = Var2)) +
+  geom_point() +
+  geom_contour() +
+  geom_raster() +
+  theme_bw(base_size = 20)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SpP3r7/figureosxpZE.png]]
+
+***** ANOVA Tests
+#+begin_SRC R :results output :session *R*
+library(dplyr)
+aov_data <- dplyr::select(data, -id)
+aov_formula <- formula(paste("Y ~ ",
+                             paste(names(dplyr::select(aov_data, -Y)), sep = "", collapse = " + "),
+                             " + ",
+                             paste("I(", names(dplyr::select(aov_data, -Y)), " ^ 2)", sep = "", collapse = " + "),
+                             sep = ""))
+
+aov_formula
+
+summary(aov(aov_formula, data = aov_data))
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10 + X11 +
+    X12 + X13 + X14 + X15 + X16 + X17 + X18 + X19 + X20 + X21 +
+    X22 + X23 + X24 + X25 + X26 + X27 + X28 + X29 + X30 + I(X1^2) +
+    I(X2^2) + I(X3^2) + I(X4^2) + I(X5^2) + I(X6^2) + I(X7^2) +
+    I(X8^2) + I(X9^2) + I(X10^2) + I(X11^2) + I(X12^2) + I(X13^2) +
+    I(X14^2) + I(X15^2) + I(X16^2) + I(X17^2) + I(X18^2) + I(X19^2) +
+    I(X20^2) + I(X21^2) + I(X22^2) + I(X23^2) + I(X24^2) + I(X25^2) +
+    I(X26^2) + I(X27^2) + I(X28^2) + I(X29^2) + I(X30^2)
+             Df Sum Sq Mean Sq  F value   Pr(>F)
+X1            1   0.87    0.87   11.797 0.000619 ***
+X2            1 127.13  127.13 1731.836  < 2e-16 ***
+X3            1  76.74   76.74 1045.436  < 2e-16 ***
+X4            1   0.00    0.00    0.009 0.925300
+X5            1   0.03    0.03    0.424 0.514953
+X6            1   2.15    2.15   29.352 7.67e-08 ***
+X7            1   0.24    0.24    3.261 0.071272 .
+X8            1   0.03    0.03    0.415 0.519781
+X9            1   0.26    0.26    3.510 0.061321 .
+X10           1   0.00    0.00    0.015 0.903784
+X11           1   0.68    0.68    9.315 0.002337 **
+X12           1   0.04    0.04    0.485 0.486562
+X13           1   0.01    0.01    0.138 0.709863
+X14           1   0.01    0.01    0.198 0.656564
+X15           1   0.25    0.25    3.457 0.063280 .
+X16           1   0.10    0.10    1.354 0.244908
+X17           1   0.11    0.11    1.471 0.225546
+X18           1   0.24    0.24    3.257 0.071444 .
+X19           1   1.18    1.18   16.007 6.81e-05 ***
+X20           1   0.01    0.01    0.113 0.737102
+X21           1   0.11    0.11    1.526 0.217000
+X22           1   0.38    0.38    5.159 0.023346 *
+X23           1   0.12    0.12    1.621 0.203307
+X24           1   0.03    0.03    0.361 0.547830
+X25           1   0.17    0.17    2.302 0.129526
+X26           1   0.00    0.00    0.007 0.932983
+X27           1  59.95   59.95  816.612  < 2e-16 ***
+X28           1   5.97    5.97   81.284  < 2e-16 ***
+X29           1   0.22    0.22    3.054 0.080847 .
+X30           1   0.02    0.02    0.213 0.644534
+I(X1^2)       1   0.12    0.12    1.622 0.203074
+I(X2^2)       1   2.95    2.95   40.121 3.70e-10 ***
+I(X3^2)       1   0.46    0.46    6.305 0.012205 *
+I(X4^2)       1   0.10    0.10    1.321 0.250728
+I(X5^2)       1   0.09    0.09    1.206 0.272440
+I(X6^2)       1   2.73    2.73   37.217 1.54e-09 ***
+I(X7^2)       1   0.01    0.01    0.200 0.654713
+I(X8^2)       1   0.05    0.05    0.727 0.394188
+I(X9^2)       1   0.06    0.06    0.850 0.356753
+I(X10^2)      1   0.00    0.00    0.017 0.895751
+I(X11^2)      1   0.02    0.02    0.229 0.632025
+I(X12^2)      1   0.31    0.31    4.262 0.039250 *
+I(X13^2)      1   0.01    0.01    0.108 0.742209
+I(X14^2)      1   0.01    0.01    0.118 0.731198
+I(X15^2)      1   0.07    0.07    0.979 0.322722
+I(X16^2)      1   0.02    0.02    0.292 0.589277
+I(X17^2)      1   0.05    0.05    0.707 0.400604
+I(X18^2)      1   0.01    0.01    0.168 0.681636
+I(X19^2)      1   0.03    0.03    0.450 0.502603
+I(X20^2)      1   0.08    0.08    1.065 0.302390
+I(X21^2)      1   0.14    0.14    1.911 0.167126
+I(X22^2)      1   0.02    0.02    0.316 0.574376
+I(X23^2)      1   0.07    0.07    1.020 0.312689
+I(X24^2)      1   0.35    0.35    4.755 0.029455 *
+I(X25^2)      1   0.00    0.00    0.049 0.825279
+I(X26^2)      1   0.02    0.02    0.245 0.620956
+I(X27^2)      1   0.43    0.43    5.909 0.015253 *
+I(X28^2)      1   1.77    1.77   24.061 1.10e-06 ***
+I(X29^2)      1   0.09    0.09    1.246 0.264672
+I(X30^2)      1   0.02    0.02    0.220 0.638863
+Residuals   939  68.93    0.07
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
