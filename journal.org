@@ -27013,7 +27013,7 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <-  list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
+files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
 files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
@@ -27127,7 +27127,7 @@ ggplot(plot_data, aes(x = as.numeric(id),
 #+LABEL: fig:coef-comp-linear
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS: fig:coef-comp-linear
-[[file:/tmp/babel-j6dj92/figureXxgYZI.png]]
+[[file:/tmp/babel-SpP3r7/figure8H9R9C.png]]
 
 #+begin_export latex
 \end{minipage}%
@@ -27521,6 +27521,536 @@ ggplot(plot_data, aes(x = as.numeric(id),
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS: fig:fit-comp-quad
 [[file:/tmp/babel-6doC2T/figuresKzQPy.png]]
+
+#+begin_export latex
+\end{minipage}
+#+end_export
+
+#+begin_export latex
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:falsepos-comp-linear
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(tidyr)
+
+files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+data <- lapply(files, function(x) read.csv(x, header = TRUE))
+data <- do.call(rbind, data)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "false_ids",
+                    false_positives,
+                    false_negatives,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+levels(plot_data$fit_stage) <- list("False Positives" = "false_positives",
+                                    "False Negatives" = "false_negatives")
+
+plot_labeller <- c(noise = label_both)
+
+label_info <- plot_data %>%
+  subset(fit_stage == "False Negatives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FN,T:", unique(.$prft),
+                   ",", strsplit(unique(as.character(.$names)),
+                                   " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+label_info$y_value <- unlist(label_info$y_value, use.names = FALSE)
+label_info$label <- unlist(label_info$label, use.names = FALSE)
+
+initial_label_info <- plot_data %>%
+  subset(fit_stage == "False Positives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FP,T:", unique(.$prft),
+                   strsplit(unique(as.character(.$names)),
+                            " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+initial_label_info$y_value <- unlist(initial_label_info$y_value, use.names = FALSE)
+initial_label_info$label <- unlist(initial_label_info$label, use.names = FALSE)
+
+#label_info <- bind_rows(label_info, initial_label_info)
+label_info <- initial_label_info
+
+point_size <- 2.5
+base_size <- 27
+rows <- 3
+
+label_region_width <- 110
+label_size <- 6
+
+ggplot(plot_data, aes(x = as.numeric(id),
+                      y = false_ids,
+                      color = interaction(factor(prft), names, fit_stage, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "))) +
+  facet_grid(noise ~ .,
+             scale = "free_y",
+             labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)",
+                     limits = c(min(as.numeric(plot_data$id)) - label_region_width,
+                                max(as.numeric(plot_data$id)) + label_region_width)) +
+  scale_y_continuous(name = "Coefficient Vector Distance",
+                     limits = c(0, NA)) +
+  geom_point(data = subset(plot_data, fit_stage == "False Positives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  #geom_point(data = subset(plot_data, fit_stage == "False Negatives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  #geom_smooth(data = subset(plot_data, fit_stage == "False Negatives"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_smooth(data = subset(plot_data, fit_stage == "False Positives"), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
+                   nudge_x = -label_region_width,
+                   direction = "y",
+                   hjust = 1,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = min(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Biased Sample"),
+                   nudge_x = label_region_width,
+                   direction = "y",
+                   hjust = 0,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = max(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  theme_bw(base_size = base_size) +
+  scale_color_brewer(palette = "Set1") +
+  theme(
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: False positives for the linear model
+#+LABEL: fig:falsepos-comp-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:falsepos-comp-linear
+[[file:/tmp/babel-SpP3r7/figureMCFq8a.png]]
+
+#+begin_export latex
+\end{minipage}%
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:falseneg-comp-linear
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(tidyr)
+
+files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+data <- lapply(files, function(x) read.csv(x, header = TRUE))
+data <- do.call(rbind, data)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "false_ids",
+                    false_positives,
+                    false_negatives,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "linear")
+
+levels(plot_data$fit_stage) <- list("False Positives" = "false_positives",
+                                    "False Negatives" = "false_negatives")
+
+plot_labeller <- c(noise = label_both)
+
+label_info <- plot_data %>%
+  subset(fit_stage == "False Negatives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FN,T:", unique(.$prft),
+                   ",", strsplit(unique(as.character(.$names)),
+                                   " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+label_info$y_value <- unlist(label_info$y_value, use.names = FALSE)
+label_info$label <- unlist(label_info$label, use.names = FALSE)
+
+initial_label_info <- plot_data %>%
+  subset(fit_stage == "False Positives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FP,T:", unique(.$prft),
+                   strsplit(unique(as.character(.$names)),
+                            " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+initial_label_info$y_value <- unlist(initial_label_info$y_value, use.names = FALSE)
+initial_label_info$label <- unlist(initial_label_info$label, use.names = FALSE)
+
+#label_info <- bind_rows(label_info, initial_label_info)
+label_info <- label_info
+
+point_size <- 2.5
+base_size <- 27
+rows <- 3
+
+label_region_width <- 110
+label_size <- 6
+
+ggplot(plot_data, aes(x = as.numeric(id),
+                      y = false_ids,
+                      color = interaction(factor(prft), names, fit_stage, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "))) +
+  facet_grid(noise ~ .,
+             scale = "free_y",
+             labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)",
+                     limits = c(min(as.numeric(plot_data$id)) - label_region_width,
+                                max(as.numeric(plot_data$id)) + label_region_width)) +
+  scale_y_continuous(name = "Coefficient Vector Distance",
+                     limits = c(0, NA)) +
+  #geom_point(data = subset(plot_data, fit_stage == "False Positives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "False Negatives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_smooth(data = subset(plot_data, fit_stage == "False Negatives"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  #geom_smooth(data = subset(plot_data, fit_stage == "False Positives"), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
+                   nudge_x = -label_region_width,
+                   direction = "y",
+                   hjust = 1,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = min(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Biased Sample"),
+                   nudge_x = label_region_width,
+                   direction = "y",
+                   hjust = 0,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = max(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  theme_bw(base_size = base_size) +
+  scale_color_brewer(palette = "Set1") +
+  theme(
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: False negatives for the linear model
+#+LABEL: fig:falseneg-comp-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:falseneg-comp-linear
+[[file:/tmp/babel-07XItT/figuretnO9sY.png]]
+
+#+begin_export latex
+\end{minipage}
+#+end_export
+
+#+begin_export latex
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:falsepos-comp-quad
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(tidyr)
+
+files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+data <- lapply(files, function(x) read.csv(x, header = TRUE))
+data <- do.call(rbind, data)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "false_ids",
+                    false_positives,
+                    false_negatives,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "quadratic")
+
+levels(plot_data$fit_stage) <- list("False Positives" = "false_positives",
+                                    "False Negatives" = "false_negatives")
+
+plot_labeller <- c(noise = label_both)
+
+label_info <- plot_data %>%
+  subset(fit_stage == "False Negatives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FN,T:", unique(.$prft),
+                   ",", strsplit(unique(as.character(.$names)),
+                                   " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+label_info$y_value <- unlist(label_info$y_value, use.names = FALSE)
+label_info$label <- unlist(label_info$label, use.names = FALSE)
+
+initial_label_info <- plot_data %>%
+  subset(fit_stage == "False Positives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FP,T:", unique(.$prft),
+                   strsplit(unique(as.character(.$names)),
+                            " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+initial_label_info$y_value <- unlist(initial_label_info$y_value, use.names = FALSE)
+initial_label_info$label <- unlist(initial_label_info$label, use.names = FALSE)
+
+#label_info <- bind_rows(label_info, initial_label_info)
+label_info <- initial_label_info
+
+point_size <- 2.5
+base_size <- 27
+rows <- 3
+
+label_region_width <- 110
+label_size <- 6
+
+ggplot(plot_data, aes(x = as.numeric(id),
+                      y = false_ids,
+                      color = interaction(factor(prft), names, fit_stage, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "))) +
+  facet_grid(noise ~ .,
+             scale = "free_y",
+             labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)",
+                     limits = c(min(as.numeric(plot_data$id)) - label_region_width,
+                                max(as.numeric(plot_data$id)) + label_region_width)) +
+  scale_y_continuous(name = "Coefficient Vector Distance",
+                     limits = c(0, NA)) +
+  geom_point(data = subset(plot_data, fit_stage == "False Positives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  #geom_point(data = subset(plot_data, fit_stage == "False Negatives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  #geom_smooth(data = subset(plot_data, fit_stage == "False Negatives"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_smooth(data = subset(plot_data, fit_stage == "False Positives"), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
+                   nudge_x = -label_region_width,
+                   direction = "y",
+                   hjust = 1,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = min(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Biased Sample"),
+                   nudge_x = label_region_width,
+                   direction = "y",
+                   hjust = 0,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = max(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  theme_bw(base_size = base_size) +
+  scale_color_brewer(palette = "Set1") +
+  theme(
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: False positives for the quadratic model
+#+LABEL: fig:falsepos-comp-quad
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:falsepos-comp-quad
+[[file:/tmp/babel-SpP3r7/figureMCFq8a.png]]
+
+#+begin_export latex
+\end{minipage}%
+\begin{minipage}{0.49\textwidth}
+#+end_export
+#+NAME:fig:falseneg-comp-quad
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 820 :height 2300
+#+BEGIN_SRC R
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(tidyr)
+
+files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+data <- lapply(files, function(x) read.csv(x, header = TRUE))
+data <- do.call(rbind, data)
+
+plot_data <- data
+
+plot_data <- subset(plot_data, names == "Federov with Uniform Sample" | names == "Federov with Biased Sample")
+
+plot_data$names <- factor(plot_data$names, levels = c(
+                                             "Federov with Uniform Sample",
+                                             "Federov with Biased Sample"
+                                           ))
+
+plot_data$regression_model <- factor(plot_data$regression_model, levels = list(
+                                                                   "Linear Model" = "linear",
+                                                                   "Quadratic Model" = "quadratic"
+                                                                 ))
+
+plot_data <- subset(plot_data, noise %in% c(1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+
+plot_data <- gather(plot_data,
+                    key = "fit_stage",
+                    value = "false_ids",
+                    false_positives,
+                    false_negatives,
+                    factor_key = TRUE)
+
+plot_data <- subset(plot_data, regression_model == "quadratic")
+
+levels(plot_data$fit_stage) <- list("False Positives" = "false_positives",
+                                    "False Negatives" = "false_negatives")
+
+plot_labeller <- c(noise = label_both)
+
+label_info <- plot_data %>%
+  subset(fit_stage == "False Negatives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FN,T:", unique(.$prft),
+                   ",", strsplit(unique(as.character(.$names)),
+                                   " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+label_info$y_value <- unlist(label_info$y_value, use.names = FALSE)
+label_info$label <- unlist(label_info$label, use.names = FALSE)
+
+initial_label_info <- plot_data %>%
+  subset(fit_stage == "False Positives") %>%
+  group_by(names, prft, noise) %>%
+  do(label = paste("FP,T:", unique(.$prft),
+                   strsplit(unique(as.character(.$names)),
+                            " ")[[1]][3], sep = ""),
+     y_value = lm(false_ids ~ 1,
+                         data = .)$coef[[1]])
+
+initial_label_info$y_value <- unlist(initial_label_info$y_value, use.names = FALSE)
+initial_label_info$label <- unlist(initial_label_info$label, use.names = FALSE)
+
+#label_info <- bind_rows(label_info, initial_label_info)
+label_info <- label_info
+
+point_size <- 2.5
+base_size <- 27
+rows <- 3
+
+label_region_width <- 110
+label_size <- 6
+
+ggplot(plot_data, aes(x = as.numeric(id),
+                      y = false_ids,
+                      color = interaction(factor(prft), names, fit_stage, sep = ", "),
+                      group = interaction(factor(prft), names, sep = ", "))) +
+  facet_grid(noise ~ .,
+             scale = "free_y",
+             labeller = labeller(noise = label_both)) +
+  scale_x_continuous(name = "Experiments (Linear Model)",
+                     limits = c(min(as.numeric(plot_data$id)) - label_region_width,
+                                max(as.numeric(plot_data$id)) + label_region_width)) +
+  scale_y_continuous(name = "Coefficient Vector Distance",
+                     limits = c(0, NA)) +
+  #geom_point(data = subset(plot_data, fit_stage == "False Positives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_point(data = subset(plot_data, fit_stage == "False Negatives"), alpha = 0.38, size = point_size, show.legend = FALSE) +
+  geom_smooth(data = subset(plot_data, fit_stage == "False Negatives"), method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  #geom_smooth(data = subset(plot_data, fit_stage == "False Positives"), linetype = 2, method = "lm", formula = y ~ 1, show.legend = FALSE) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Uniform Sample"),
+                   nudge_x = -label_region_width,
+                   direction = "y",
+                   hjust = 1,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = min(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  geom_label_repel(data = subset(label_info, names == "Federov with Biased Sample"),
+                   nudge_x = label_region_width,
+                   direction = "y",
+                   hjust = 0,
+                   size = label_size,
+                   inherit.aes = FALSE,
+                   aes(x = max(as.numeric(plot_data$id)),
+                       y = y_value,
+                       label = label)) +
+  theme_bw(base_size = base_size) +
+  scale_color_brewer(palette = "Set1") +
+  theme(
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+#+END_SRC
+#+CAPTION: False negatives for the quadratic model
+#+LABEL: fig:falseneg-comp-quad
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS: fig:falseneg-comp-quad
+[[file:/tmp/babel-07XItT/figuretnO9sY.png]]
 
 #+begin_export latex
 \end{minipage}
@@ -29527,3 +30057,275 @@ Residuals   268  14491      54
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
+*** [2019-04-08 Mon]
+**** Practical Efficiency with Numerical Factors & Functions Sampled from Gaussian Processes
+***** Experiment Definition
+1. Define factor number
+   - High-dimensional spaces
+   - Numerical factors
+2. Generate samples for Gaussian Process
+   - Testing set
+   - =runif=
+   - Biased distributions + =rnorm=
+3. Generate Covariance Matrix
+   - Choose kernel (=k1Matern5_2=, Matérn cov. Tensor Sum?)
+   - Relative significances, kernel parameters
+4. Sample function from Gaussian Process
+5. Compute response for all samples
+6. Fit models using strategies:
+   - Random & Biased designs <- not interesting?
+   - D-Optimal with Random & Biased + =rnorm= designs
+     - ANOVA to identify significant factors
+     - Re-fit models using identified factors
+7. Compare predictions with computed responses in test set
+***** Clone Repository
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+***** Setup
+#+HEADER: :results output :session *R* :exports none :eval no-export
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(rsm)
+
+factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
+    x <- seq(0.0, 1.0, interval)
+    y <- mapply(f, x)
+
+    data <- data.frame(x = x, y = y, name = name)
+    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
+
+    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
+    data <- bind_rows(data, factor_pdf)
+
+    y_cdf <- c()
+
+    target_name <- paste(name, "PDF")
+
+    pdf_data <- subset(data, name == target_name)$y
+
+    for (i in 1:length(pdf_data)) {
+        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    }
+
+    target_name <- paste(name, "CDF")
+    data <- bind_rows(data,
+                      data.frame(x = x, y = y_cdf, name = target_name))
+    return(data)
+}
+
+sample_factor <- function(cdf_data, samples) {
+    x_sampled <- c()
+
+    for (i in 1:samples) {
+        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
+        x_sampled <- c(x_sampled, new_sample)
+    }
+
+    return(x_sampled)
+}
+
+get_runif_design_codings <- function(design) {
+    design_codings <- list()
+
+    for (i in 1:ncol(design)) {
+        design_codings[[paste("x", i, sep = "")]] <- formula(paste(paste("x", i, "~", sep = ""),
+                                                                  paste("(X", i, "-0.5)/0.5", sep = ""),
+                                                                  sep = ""))
+    }
+
+    return(design_codings)
+}
+
+get_runif_coded_design <- function(design) {
+    design_codings <- get_runif_design_codings(design)
+    return(coded.data(design, formulas = design_codings))
+}
+
+cubic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+}
+
+quadratic_function <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
+}
+
+linear_function <- function(x) {
+    return((64 * (0.5 - x) ** 6))
+}
+
+compute_response <- function(coefficients, formula, experiment) {
+    return(model.matrix(formula, experiment) %*% coefficients)
+}
+
+add_noise <- function(design, sd = 1) {
+    return(design$Y + rnorm(nrow(design), mean = 0, sd = sd))
+}
+
+compare_fit <- function(coefficients, sample, formula, response_formula, design_a, design_b, sample_size = 100, sd = 1) {
+    return(c(sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_a),
+                               sample)) ^ 2)),
+             sqrt(sum(((compute_response(coefficients, formula, sample) + rnorm(sample_size, mean = 0, sd = sd)) -
+                        predict(lm(response_formula, design_b),
+                               sample)) ^ 2))))
+}
+
+compare_coefficients <- function(coefficients, formula, design) {
+    return(sqrt(sum((coefficients - unname(coef(lm(formula, design)))) ^ 2)))
+}
+
+compare_real_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(c(sum(prf_values[abs(coefficients) > coefficient_limits$min])))
+}
+
+compare_noise_coefficients <- function(coefficients, coefficient_limits, formula, design) {
+    prf_values <- unname(summary(lm(formula, design))[4][["coefficients"]][,4])
+    return(sum(prf_values[abs(coefficients) <= coefficient_limits$min]))
+}
+
+linear_data <- factor_cdf(linear_function, name = "Linear Factors")
+linear_cdf <- subset(linear_data, name == "Linear Factors CDF")
+
+quadratic_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
+quadratic_cdf <- subset(quadratic_data, name == "Quadratic Factors CDF")
+
+cubic_data <- factor_cdf(cubic_function, name = "Cubic Factors")
+cubic_cdf <- subset(cubic_data, name == "Cubic Factors CDF")
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+
+Warning messages:
+1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
+2: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+3: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+4: In bind_rows_(x, .id) :
+  binding character and factor vector, coercing into character vector
+#+end_example
+
+#+HEADER: :results graphics output :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 720 :exports results :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+plot_data <- bind_rows(linear_cdf, quadratic_cdf, cubic_cdf)
+
+ggplot(plot_data, aes(x = x, y = y)) +
+       facet_wrap(name ~ ., ncol = 2) +
+       geom_line(size = 1.3) +
+       theme_bw(base_size = 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-psN6ww/figurerLb68d.png]]
+
+***** Generating Data
+You can load one of the datasets from the repository:
+#+begin_SRC R :results output :session *R*
+library(rsm)
+library(dplyr)
+
+data <- NULL
+
+factors <- 31
+
+testing_sample_size <- factors * 100
+dopt_sample_size <- factors * 100
+
+linear_design_size <- factors + 10
+quadratic_design_size <- (2 * factors) + 10
+cubic_design_size <- (3 * factors) + 10
+
+quadratic_normal_ratio <- 0.8
+quadratic_normal_sd <- 0.04
+
+cubic_normal_ratio <- 0.8
+cubic_normal_sd <- 0.04
+
+# Generating all sample sets:
+
+# Testing set to compare fit:
+
+runif_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                    runif(testing_sample_size))))
+runif_testing_sample$name <- "runif_testing_sample"
+
+linear_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                     runif(testing_sample_size))))
+linear_testing_sample$name <- "linear_testing_sample"
+
+quadratic_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                        runif(testing_sample_size))))
+quadratic_testing_sample$name <- "quadratic_testing_sample"
+
+cubic_testing_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                    runif(testing_sample_size))))
+cubic_testing_sample$name <- "cubic_testing_sample"
+
+# Samples for D-Optimal Experiments
+
+runif_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                            runif(dopt_sample_size))))
+runif_sample$name <- "runif_sample"
+
+linear_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                             sample_factor(linear_cdf,
+                                                                           dopt_sample_size))))
+linear_sample$name <- "linear_sample"
+
+quadratic_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                                sample_factor(quadratic_cdf,
+                                                                              as.integer((1 - quadratic_normal_ratio) * dopt_sample_size)))))
+
+quadratic_sample <- rbind(quadratic_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                        rnorm(as.integer(quadratic_normal_ratio * dopt_sample_size),
+                                                                                              mean = 0.5, sd = quadratic_normal_sd)))))
+quadratic_sample$name <- "quadratic_sample"
+
+cubic_sample <- get_runif_coded_design(data.frame(replicate(factors,
+                                                            sample_factor(cubic_cdf,
+                                                                          as.integer((1 - cubic_normal_ratio) * dopt_sample_size)))))
+
+cubic_sample <- rbind(cubic_sample, get_runif_coded_design(data.frame(replicate(factors,
+                                                                                rnorm(as.integer(cubic_normal_ratio * dopt_sample_size),
+                                                                                      mean = 0.5, sd = cubic_normal_sd)))))
+cubic_sample$name <- "cubic_sample"
+
+all_samples <- rbind(runif_testing_sample,
+                     linear_testing_sample,
+                     quadratic_testing_sample,
+                     cubic_testing_sample,
+                     runif_sample,
+                     linear_sample,
+                     quadratic_sample,
+                     cubic_sample)
+#+end_SRC
+
+#+RESULTS:
