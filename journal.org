@@ -29811,6 +29811,7 @@ pf(q = 26.15, df1 = 2, df2 = 14, lower.tail = FALSE)
 - Learning Statistics with R: https://learningstatisticswithr.com/lsr-0.6.pdf
 - Faraway PRA: https://cran.r-project.org/doc/contrib/Faraway-PRA.pdf
 - Sivia 2nd Edition: https://www.amazon.com/Data-Analysis-Bayesian-Devinderjit-Sivia-ebook/dp/B01BHLXKEI
+- Statistics with Julia: https://people.smp.uq.edu.au/YoniNazarathy/julia-stats/StatisticsWithJulia.pdf
 - Suggested by Léo:
   - Statistique La théorie et ses applications (Michel Lejeune)
   - Statistique mathématique en action (Vincent Rivoirard, Gilles Stoltz)
@@ -30409,6 +30410,7 @@ str(spread_data)
 library(Rcpp)
 library(dplyr)
 library(MASS)
+library(logging)
 
 src <-
 "#include <Rcpp.h>
@@ -30448,14 +30450,17 @@ random_design <- function(factors, size) {
 }
 
 simulate <- function(data, amplitude, lengthscale) {
+  loginfo("Computing covariance matrix")
   covariance_matrix <- rcpp_squared_exponential_kernel(as.matrix(data),
                                                        as.matrix(data),
                                                        amplitude,
                                                        lengthscale)
 
+  loginfo("Sampling from multivariate normal")
   data$Y <- unname(mvrnorm(n = 1,
                            rep(0.0, nrow(covariance_matrix)),
                            covariance_matrix))
+  loginfo("Done")
   data
 }
 
@@ -30465,7 +30470,7 @@ significance_noise <- 0.02
 
 factors <- 30
 #experiments <- expand.grid(1:3, 1:3, 1:3, 1:3)
-experiments <- random_design(factors, 1000)
+experiments <- random_design(factors, 4500)
 amplitude <- 1.0
 
 lengthscale <- replicate(factors,
@@ -30480,6 +30485,10 @@ data$id <- 1
 #+end_SRC
 
 #+RESULTS:
+:
+: [0m2019-04-12 18:05:56 INFO::Computing covariance matrix[0m[0m[0m
+: [0m2019-04-12 18:07:11 INFO::Sampling from multivariate normal[0m[0m[0m
+: [0m2019-04-12 18:07:53 INFO::Done[0m[0m[0m
 
 ***** Test Plots
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
@@ -30629,15 +30638,17 @@ factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
     factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
     data <- bind_rows(data, factor_pdf)
 
-    y_cdf <- c()
+    #y_cdf <- c()
 
     target_name <- paste(name, "PDF")
 
     pdf_data <- subset(data, name == target_name)$y
 
-    for (i in 1:length(pdf_data)) {
-        y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
-    }
+    #for (i in 1:length(pdf_data)) {
+    #    y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
+    #}
+
+    y_cdf <- cumsum(pdf_data)
 
     target_name <- paste(name, "CDF")
     data <- bind_rows(data,
@@ -30708,6 +30719,17 @@ Warning messages:
   binding character and factor vector, coercing into character vector
 #+end_example
 
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+ggplot(quad_cdf, aes(x = x, y = y)) +
+  geom_point() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SpP3r7/figureImWqlK.png]]
+
 #+begin_SRC R :results output :session *R*
 src <-
 "#include <Rcpp.h>
@@ -30766,3 +30788,38 @@ ggplot(biased_sample, aes(x = X1, y = X2)) +
 
 #+RESULTS:
 [[file:/tmp/babel-SpP3r7/figure9i1N9v.png]]
+**** Testing Factor CDFs
+***** Clone Repository                                         :noexport:
+Make sure you have the latest data:
+#+BEGIN_SRC sh :results output :exports none :eval no-export
+git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_sampling_tests pull
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+
+***** Plots
+#+begin_SRC R :results output :session *R*
+library(dplyr)
+library(ggplot2)
+
+data <- read.csv("dopt_sampling_tests/src/gaussian_sampling/factor_cdfs.csv", header = TRUE)
+
+str(data)
+#+end_SRC
+
+#+RESULTS:
+: 'data.frame':	40004 obs. of  3 variables:
+:  $ x   : num  0e+00 1e-04 2e-04 3e-04 4e-04 5e-04 6e-04 7e-04 8e-04 9e-04 ...
+:  $ y   : num  0.0007 0.0014 0.0021 0.00279 0.00349 ...
+:  $ name: Factor w/ 4 levels "cubic","linear",..: 2 2 2 2 2 2 2 2 2 2 ...
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+ggplot(data, aes(x = x, y = y)) +
+  facet_wrap(name ~ ., ncol = 2) +
+  geom_line() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-SpP3r7/figurem92vGo.png]]
