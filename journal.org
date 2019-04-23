@@ -31074,3 +31074,80 @@ ggplot(data,
 
 #+RESULTS:
 [[file:/tmp/babel-SpP3r7/figure8dwySF.png]]
+*** [2019-04-22 Mon]
+**** Review paper for WPerformance (Portuguese)
+- Título: Investigação dos  Efeitos do Envelhecimento de  Software na Plataforma
+  Docker
+
+O artigo  apresenta um  estudo do  consumo de  memória e  do uso  de CPU  de uma
+simulação  de carga  de  trabalho  para a  plataforma  Docker,  que consiste  na
+instanciação  e parada  de  contâineres.  O  artigo observa  um  alto número  de
+fragmentações de memória  em processos relacionados à  plataforma Docker, apesar
+de não  observar efeitos decorrentes  dessas fragmentações. O artigo  observa um
+alto uso de memória no processo  NetworkManager. O artigo precisa de uma revisão
+de texto extensa,  para corrigir erros de ortografia e  concordância. O trabalho
+está  em  estado  inicial,  e  acredito que  seria  bastante  beneficiado  pelas
+discussões que  ocorrerão no WPerformance.  Abaixo estão descritas  sugestões de
+aprimoramento.
+
+***** Comentários e Sugestões
+****** Resumo
+Revisar o resumo em inglês e corrigir erros como
+
+- "This study aims to monitor and  evaluate the performance of Docker platform
+  [...]" ~> Adionar o artigo: "performance of the Docker platform"
+- "[...] where  the application  processes suffer degradation  of performance
+  throughout its use [...]" ~> Trocar "its" por "their"
+- "[...] the life cycle of contenders [...]" ~> "containers"
+- "[...] in  the importance subprocess of  the platform." ~> "in  an important
+  platform subprocess"
+
+****** Introdução
+- "Estudos  foram  realizados  para  avaliar os  efeitos  do  envelhecimento  de
+  software" ~> Citar os estudos
+- "Este artigo  está organizado da seguinte  maneira."  ~> Usada dessa  forma, a
+  frase fica  estranha.  Sugiro  usar algo  como "A  organização deste  artigo é
+  descrita a seguir". Adicionar  ":" ao final da frase, e  usar ";" para separar
+  os itens também pode funcionar.
+
+****** Trabalhos Relacionados
+- Em "[Araujo et al. 2011b] investigou [...]", e em várias outras ocorrências ~>
+  É boa prática  de escrita não usar marcações de  referências como elementos de
+  texto.  Sugiro  repetir o  nome do autor  fora das marcações.  Se o  estilo de
+  marcação de referências mudar, para um superíndice, por exemplo, a frase perde
+  o sentido.
+- "Mas o  foco do estudo  será sistemas de  gerenciamento [...]" ~>  Não começar
+  frases com conectores lógicos. Corrigir a concordância: "o foco do estudo será
+  o tópico  'sistemas de gerenciamento'", ou  "[...] o estudo se  concentrará em
+  sistemas de gerenciamento".
+
+****** Fundamentação Teórica
+- "Para auxilizar na compreensão do contexto  e a importância da investigação, é
+  necessário definir  alguns conceitos.   [Maciel et  al.  2012]"  ~> Substituir
+  "auxilizar" por "auxiliar", e usar um corretor ortográfico em geral. A citação
+  não é necessária nesse caso, mas ela deve ficar antes do ponto final em geral,
+  e próxima  do conceito citado. Sugiro  substituir essa frase por  um parágrafo
+  descrevendo a seção.
+
+****** Metodologia
+- "[...] consiste em 5 etapas. São elas:  [...]" ~> "[...] consiste de 5 etapas:
+  [...]". Evitar o uso de expressões informais.
+
+****** Estudo Experimental
+- "Já na  Tabela 1, é mostrado  os totais obtidos  por processo ao final  dos 12
+  dias de monitoramento." ~> Utilizar  corretor ortográfico em geral. Corrigir a
+  concordância  em "é  mostrado  os totais",  com algo  como  "são mostrados  os
+  totais", ou "A Tabela 1 mostra os totais".
+- Aumentar  o tamanho  da  fonte em  todas as  figuras  seria interessante  para
+  facilitar a leitura e a compreensão dos resultados, assim como utilizar linhas
+  um pouco mais grossas nos gráficos.
+- O estudo dos efeitos de envelhecimento exige experimentos de longa duração mas
+  ainda  assim,  fazer  repetições  dos experimentos  ajudaria  a  sustentar  as
+  análises e conclusões. É difícil  fazer afirmações usando apenas uma repetição
+  do experimento.
+- O  comportamento  observado  de  vazamento  de  memória  no  NetworkManager  é
+  peculiar, mas pode não ser  relacionado ao Docker. Seria interessante observar
+  a  mesma máquina  em condições  de estresse  diferentes, e  principalmente num
+  cenário de controle.  Será possível  compreender melhor o que está acontecendo
+  no estudo caso o mesmo vazamento  de memória possa ser observado numa situação
+  onde a máquina não está sob estresse, ou sob estresses diferentes.
