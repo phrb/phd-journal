@@ -30484,6 +30484,24 @@ data$id <- 1
 #+end_SRC
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘MASS’
+
+The following object is masked from ‘package:dplyr’:
+
+    select
+#+end_example
 
 ***** Test Plots
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
@@ -30501,7 +30519,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(x = X1, y = Y, group = X2, color = X2
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZCmSyJ/figureI5rAa9.png]]
+[[file:/tmp/babel-SK7LaO/figureaIrTry.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -30518,7 +30536,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(x = X2, y = Y, group = X1, color = X1
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZCmSyJ/figureo16iGo.png]]
+[[file:/tmp/babel-SK7LaO/figureDUPKdB.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -30541,7 +30559,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(z = Y, x = X1, y = X2)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZCmSyJ/figure2NpLeF.png]]
+[[file:/tmp/babel-SK7LaO/figure4FiwIk.png]]
 
 ***** ANOVA Tests
 #+begin_SRC R :results output :session *R*
@@ -30823,7 +30841,7 @@ ggplot(data,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZCmSyJ/figureuTpyR8.png]]
+[[file:/tmp/babel-SK7LaO/figureuXsuFA.png]]
 *** [2019-04-22 Mon]
 **** Review paper for WPerformance (Portuguese)
 - Título: Investigação dos  Efeitos do Envelhecimento de  Software na Plataforma
