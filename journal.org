@@ -30450,87 +30450,98 @@ random_design <- function(factors, size) {
 }
 
 simulate <- function(data, amplitude, lengthscale) {
-  loginfo("Computing covariance matrix")
   covariance_matrix <- rcpp_squared_exponential_kernel(as.matrix(data),
                                                        as.matrix(data),
                                                        amplitude,
                                                        lengthscale)
 
-  loginfo("Sampling from multivariate normal")
   data$Y <- unname(mvrnorm(n = 1,
                            rep(0.0, nrow(covariance_matrix)),
                            covariance_matrix))
-  loginfo("Done")
   data
 }
 
-significance_probability <- 0.15
+significance_probability <- 0.10
 significance_variability <- list(max = 30, min = 10)
 significance_noise <- 0.02
 
 factors <- 2
 #experiments <- expand.grid(1:3, 1:3, 1:3, 1:3)
-experiments <- random_design(factors, 100)
+experiments <- random_design(factors, 1000)
 amplitude <- 1.0
 
-lengthscale <- replicate(factors,
-                         ifelse(runif(1) < (1.0 - significance_probability),
-                                runif(1,
-                                      min = significance_variability$min,
-                                      max = significance_variability$max),
-                                rnorm(1, mean = 1.0, sd = significance_noise)))
+#lengthscale <- replicate(factors,
+#                         ifelse(runif(1) > (1.0 - significance_probability),
+#                                runif(1,
+#                                      min = significance_variability$min,
+#                                      max = significance_variability$max),
+#                                rnorm(1, mean = 1.5, sd = significance_noise)))
+
+lengthscale <- c(0.5, 20.0)
 
 data <- simulate(experiments, amplitude, lengthscale)
 data$id <- 1
 #+end_SRC
 
 #+RESULTS:
-:
-: [0m2019-04-17 19:43:01 INFO::Computing covariance matrix[0m[0m[0m
-: [0m2019-04-17 19:43:01 INFO::Sampling from multivariate normal[0m[0m[0m
-: [0m2019-04-17 19:43:01 INFO::Done[0m[0m[0m
 
 ***** Test Plots
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-data$id <- factor(data$id)
+plot_data <- data
+plot_data$id <- factor(plot_data$id)
+plot_data$X2 <- cut(plot_data$X2, seq(0.0, 1.0, length.out = 9))
 
-ggplot(data[data$id==1, ], aes(x = X1, y = Y, group = factor(X2), color = X2)) +
+ggplot(plot_data[plot_data$id == 1, ], aes(x = X1, y = Y, group = X2, color = X2)) +
   geom_point() +
   geom_line() +
+  scale_color_brewer(palette = "Greens") +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figureS7KNaZ.png]]
+[[file:/tmp/babel-ZCmSyJ/figureI5rAa9.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-data$id <- factor(data$id)
+plot_data <- data
+plot_data$id <- factor(plot_data$id)
+plot_data$X1 <- cut(plot_data$X1, seq(0.0, 1.0, length.out = 9))
 
-ggplot(data[data$id==1, ], aes(x = X2, y = Y, group = factor(X1), color = X1)) +
+ggplot(plot_data[plot_data$id == 1, ], aes(x = X2, y = Y, group = X1, color = X1)) +
   geom_point() +
   geom_line() +
+  scale_color_brewer(palette = "Greens") +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figure4Vus72.png]]
+[[file:/tmp/babel-ZCmSyJ/figureo16iGo.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-ggplot(data[data$id==1, ], aes(fill = Y, x = X1, z = Y, y = X2)) +
-  geom_point() +
-  geom_contour() +
-  geom_raster() +
+plot_data <- data
+
+plot_data$id <- factor(plot_data$id)
+#plot_data$X1 <- cut(plot_data$X1, seq(0.0, 1.0, 0.1))
+#plot_data$X2 <- cut(plot_data$X2, seq(0.0, 1.0, 0.1))
+
+#plot_data$Y <- cut(plot_data$Y,
+#                   seq(min(plot_data$Y),
+#                       max(plot_data$Y),
+#                       length.out = 9))
+
+ggplot(plot_data[plot_data$id == 1, ], aes(z = Y, x = X1, y = X2)) +
+  stat_summary_2d() +
+  scale_fill_gradient(low = "black", high = "green") +
   theme_bw(base_size = 20)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figure3ACuQ9.png]]
+[[file:/tmp/babel-ZCmSyJ/figure2NpLeF.png]]
 
 ***** ANOVA Tests
 #+begin_SRC R :results output :session *R*
@@ -30549,76 +30560,15 @@ summary(aov(aov_formula, data = aov_data))
 
 #+RESULTS:
 #+begin_example
-Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10 + X11 +
-    X12 + X13 + X14 + X15 + X16 + X17 + X18 + X19 + X20 + X21 +
-    X22 + X23 + X24 + X25 + X26 + X27 + X28 + X29 + X30 + I(X1^2) +
-    I(X2^2) + I(X3^2) + I(X4^2) + I(X5^2) + I(X6^2) + I(X7^2) +
-    I(X8^2) + I(X9^2) + I(X10^2) + I(X11^2) + I(X12^2) + I(X13^2) +
-    I(X14^2) + I(X15^2) + I(X16^2) + I(X17^2) + I(X18^2) + I(X19^2) +
-    I(X20^2) + I(X21^2) + I(X22^2) + I(X23^2) + I(X24^2) + I(X25^2) +
-    I(X26^2) + I(X27^2) + I(X28^2) + I(X29^2) + I(X30^2)
-             Df Sum Sq Mean Sq F value  Pr(>F)
-X1            1    0.1   0.082   0.090 0.76382
-X2            1    0.0   0.038   0.041 0.83908
-X3            1    3.5   3.470   3.810 0.05123 .
-X4            1    3.7   3.687   4.048 0.04450 *
-X5            1    0.2   0.188   0.207 0.64926
-X6            1    3.2   3.244   3.562 0.05942 .
-X7            1    3.6   3.564   3.913 0.04819 *
-X8            1    0.2   0.184   0.202 0.65328
-X9            1    0.1   0.104   0.114 0.73526
-X10           1    1.7   1.660   1.822 0.17737
-X11           1    0.1   0.128   0.141 0.70739
-X12           1    0.5   0.511   0.561 0.45416
-X13           1    0.6   0.619   0.680 0.40985
-X14           1    0.0   0.004   0.004 0.94860
-X15           1    0.2   0.190   0.209 0.64791
-X16           1    0.6   0.601   0.660 0.41672
-X17           1    1.2   1.173   1.288 0.25670
-X18           1    0.9   0.889   0.976 0.32342
-X19           1    0.0   0.008   0.009 0.92472
-X20           1    0.0   0.029   0.032 0.85833
-X21           1    0.5   0.545   0.599 0.43928
-X22           1    0.1   0.092   0.101 0.75119
-X23           1    0.8   0.793   0.871 0.35087
-X24           1    4.6   4.577   5.025 0.02521 *
-X25           1    0.1   0.101   0.111 0.73892
-X26           1    0.1   0.077   0.085 0.77096
-X27           1    0.4   0.443   0.486 0.48568
-X28           1    1.0   1.028   1.129 0.28835
-X29           1    3.7   3.732   4.097 0.04323 *
-X30           1    0.1   0.091   0.100 0.75223
-I(X1^2)       1    0.0   0.001   0.002 0.96768
-I(X2^2)       1    1.1   1.061   1.165 0.28071
-I(X3^2)       1    0.0   0.003   0.003 0.95375
-I(X4^2)       1    0.0   0.018   0.020 0.88721
-I(X5^2)       1    1.2   1.182   1.298 0.25495
-I(X6^2)       1    2.4   2.432   2.671 0.10255
-I(X7^2)       1    0.3   0.275   0.302 0.58268
-I(X8^2)       1    0.4   0.416   0.457 0.49940
-I(X9^2)       1    0.6   0.593   0.651 0.42006
-I(X10^2)      1    7.8   7.833   8.601 0.00344 **
-I(X11^2)      1    0.5   0.462   0.508 0.47639
-I(X12^2)      1    1.6   1.621   1.780 0.18243
-I(X13^2)      1    0.9   0.850   0.934 0.33415
-I(X14^2)      1    0.0   0.014   0.016 0.89971
-I(X15^2)      1    0.8   0.791   0.869 0.35147
-I(X16^2)      1    0.1   0.084   0.092 0.76184
-I(X17^2)      1    0.3   0.277   0.304 0.58155
-I(X18^2)      1    0.3   0.326   0.357 0.55008
-I(X19^2)      1    0.1   0.091   0.100 0.75237
-I(X20^2)      1    0.3   0.274   0.301 0.58363
-I(X21^2)      1    1.8   1.844   2.025 0.15507
-I(X22^2)      1    0.0   0.003   0.004 0.95118
-I(X23^2)      1    0.0   0.042   0.047 0.82929
-I(X24^2)      1    2.3   2.263   2.485 0.11528
-I(X25^2)      1    6.3   6.250   6.863 0.00894 **
-I(X26^2)      1    0.0   0.005   0.006 0.94037
-I(X27^2)      1    0.7   0.653   0.716 0.39752
-I(X28^2)      1    0.7   0.683   0.750 0.38668
-I(X29^2)      1    0.0   0.008   0.008 0.92712
-I(X30^2)      1    0.3   0.269   0.295 0.58716
-Residuals   939  855.2   0.911
+
+Y ~ X1 + X2 + I(X1^2) + I(X2^2)
+
+             Df Sum Sq Mean Sq   F value   Pr(>F)
+X1            1   1.26    1.26   439.493  < 2e-16 ***
+X2            1   0.07    0.07    25.832 4.45e-07 ***
+I(X1^2)       1  73.34   73.34 25675.299  < 2e-16 ***
+I(X2^2)       1   0.00    0.00     0.765    0.382
+Residuals   995   2.84    0.00
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
@@ -30631,68 +30581,38 @@ library(dplyr)
 factor_cdf <- function(f, name = "Generic Factors", interval = 0.0001) {
     x <- seq(0.0, 1.0, interval)
     y <- mapply(f, x)
-
-    data <- data.frame(x = x, y = y, name = name)
-    factor_pdf <- data.frame(x = x, y = data$y, name = paste(name, "PDF"))
-
-    factor_pdf$y <- factor_pdf$y / sum(factor_pdf$y)
-    data <- bind_rows(data, factor_pdf)
-
-    #y_cdf <- c()
-
-    target_name <- paste(name, "PDF")
-
-    pdf_data <- subset(data, name == target_name)$y
-
-    #for (i in 1:length(pdf_data)) {
-    #    y_cdf <- c(y_cdf, sum(pdf_data[1:i]))
-    #}
-
-    y_cdf <- cumsum(pdf_data)
-
-    target_name <- paste(name, "CDF")
-    data <- bind_rows(data,
-                      data.frame(x = x, y = y_cdf, name = target_name))
-    return(data)
+    factor_pdf <- cumsum(y / sum(y))
+    return(data.frame(x = x, y = factor_pdf, name = name))
 }
 
-cubic_function <- function(x) {
-    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) + (dnorm(x, 0.65, 0.04) / 10))
+cubic_pdf <- function(x) {
+    return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.35, 0.04) / 10) +
+           (dnorm(x, 0.65, 0.04) / 10))
 }
 
-quadratic_function <- function(x) {
+quadratic_pdf <- function(x) {
     return((64 * (0.5 - x) ** 6) + (dnorm(x, 0.5, 0.04) / 10))
 }
 
-linear_function <- function(x) {
+linear_pdf <- function(x) {
     return((64 * (0.5 - x) ** 6))
 }
 
-sample_factor <- function(cdf_data, samples) {
-    x_sampled <- c()
-
-    for (i in 1:samples) {
-        new_sample <- cdf_data$x[sum(cdf_data$y <= runif(1)) + 1]
-        x_sampled <- c(x_sampled, new_sample)
-    }
-
-    return(x_sampled)
+uniform_pdf <- function(x) {
+    return(1.0)
 }
 
-lin_data <- factor_cdf(linear_function, name = "Linear Factors")
-lin_cdf <- subset(lin_data, name == "Linear Factors CDF")
-
-quad_data <- factor_cdf(quadratic_function, name = "Quadratic Factors")
-quad_cdf <- subset(quad_data, name == "Quadratic Factors CDF")
-
-cube_data <- factor_cdf(cubic_function, name = "Cubic Factors")
-cube_cdf <- subset(cube_data, name == "Cubic Factors CDF")
-
-write.csv(bind_rows(lin_cdf, quad_cdf, cube_cdf), "/tmp/cdf_data.csv", row.names = FALSE)
+write.csv(bind_rows(factor_cdf(linear_pdf, name = "linear"),
+                    factor_cdf(quadratic_pdf, name = "quadratic"),
+                    factor_cdf(cubic_pdf, name = "cubic"),
+                    factor_cdf(uniform_pdf, name = "uniform")),
+          "/tmp/cdf_data.csv",
+          row.names = FALSE)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
+
 Warning messages:
 1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
 2: In bind_rows_(x, .id) :
@@ -30701,34 +30621,23 @@ Warning messages:
   binding character and factor vector, coercing into character vector
 4: In bind_rows_(x, .id) :
   binding character and factor vector, coercing into character vector
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-Warning messages:
-1: In bind_rows_(x, .id) : Unequal factor levels: coercing to character
-2: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-3: In bind_rows_(x, .id) :
-  binding character and factor vector, coercing into character vector
-4: In bind_rows_(x, .id) :
+5: In bind_rows_(x, .id) :
   binding character and factor vector, coercing into character vector
 #+end_example
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
 
-ggplot(quad_cdf, aes(x = x, y = y)) +
-  geom_point() +
+cdf_data <- read.csv("/tmp/cdf_data.csv", header = TRUE)
+
+ggplot(cdf_data, aes(x = x, y = y)) +
+  facet_wrap(name ~ .) +
+  geom_line() +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figureImWqlK.png]]
+[[file:/tmp/babel-ZCmSyJ/figureFE88c0.png]]
 
 #+begin_SRC R :results output :session *R*
 src <-
@@ -30768,15 +30677,19 @@ sourceCpp(code = src)
 #+begin_SRC R :results output :session *R*
 samples <- 300
 factors <- 2
-target_cdf <- quad_cdf
-biased_sample <- data.frame(rcpp_biased_sample(as.matrix(target_cdf[ , c("x", "y")]), samples, factors))
+target_cdf <- subset(cdf_data, name == "uniform")
+biased_sample <- data.frame(rcpp_biased_sample(as.matrix(target_cdf[ ,
+                                                                    c("x", "y")]),
+                                               samples,
+                                               factors))
 str(biased_sample)
 #+end_SRC
 
 #+RESULTS:
+:
 : 'data.frame':	300 obs. of  2 variables:
-:  $ X1: num  0.9777 0.0953 0.5054 0.1203 0.982 ...
-:  $ X2: num  0.8707 0.9807 0.0246 0.4523 0.4556 ...
+:  $ X1: num  0.562 0.004 0.465 0.457 0.394 ...
+:  $ X2: num  0.4769 0.0658 0.3736 0.2166 0.2616 ...
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 ggplot(biased_sample, aes(x = X1, y = X2)) +
@@ -30787,7 +30700,7 @@ ggplot(biased_sample, aes(x = X1, y = X2)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figure9i1N9v.png]]
+[[file:/tmp/babel-ZCmSyJ/figureueB9VM.png]]
 **** Testing Factor CDFs
 ***** Clone Repository                                         :noexport:
 Make sure you have the latest data:
@@ -30803,12 +30716,14 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 library(dplyr)
 library(ggplot2)
 
-data <- read.csv("dopt_sampling_tests/src/gaussian_sampling/factor_cdfs.csv", header = TRUE)
+data <- read.csv("dopt_sampling_tests/src/gaussian_sampling/factor_cdfs.csv",
+                 header = TRUE)
 
 str(data)
 #+end_SRC
 
 #+RESULTS:
+:
 : 'data.frame':	40004 obs. of  3 variables:
 :  $ x   : num  0e+00 1e-04 2e-04 3e-04 4e-04 5e-04 6e-04 7e-04 8e-04 9e-04 ...
 :  $ y   : num  0.0007 0.0014 0.0021 0.00279 0.00349 ...
@@ -30822,7 +30737,7 @@ ggplot(data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figurem92vGo.png]]
+[[file:/tmp/babel-ZCmSyJ/figure3PAxnw.png]]
 *** [2019-04-16 Tue]
 **** Analysing Results from Gaussian Sampling Experiments
 ***** Clone Repository
@@ -30841,222 +30756,57 @@ files <- paste("dopt_sampling_tests/data/gaussian_sampling/current/", files, sep
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
-head(data, n = 20)
+str(data)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
 
-   filter_threshold min_distance fit_distance true_positives false_positives
-1               Inf    1.8896065     63.58858              6              24
-2             0.100    3.9881223     54.47113              1               0
-3             0.010    1.8896065     63.58858              0               0
-4             0.001    1.8896065     63.58858              0               0
-5               Inf    3.7332268     67.08834              6              24
-6             0.100    1.9520361     55.42992              2               2
-7             0.010    3.7332268     67.08834              0               0
-8             0.001    3.7332268     67.08834              0               0
-9               Inf    1.2646439    205.90575              1              29
-10            0.100    1.1001324    204.78173              0               6
-11            0.010    0.6654271    206.43954              0               3
-12            0.001    1.2646439    205.90575              0               0
-13              Inf    0.5676242     84.89589              1              29
-14            0.100    0.6362272     85.70584              0               3
-15            0.010    0.5676242     84.89589              0               0
-16            0.001    0.5676242     84.89589              0               0
-17              Inf    1.0220738    225.44372              1              29
-18            0.100    0.6799086    225.72790              1              14
-19            0.010    0.4841174    226.37591              1               4
-20            0.001    1.2997734    227.77600              1               1
-   false_negatives model_positives real_positives lengthscale_x1 lengthscale_x2
-1                0              30              6       1.013717       7.806451
-2                5               1              6       1.013717       7.806451
-3                6               0              6       1.013717       7.806451
-4                6               0              6       1.013717       7.806451
-5                0              30              6       1.013717       7.806451
-6                4               4              6       1.013717       7.806451
-7                6               0              6       1.013717       7.806451
-8                6               0              6       1.013717       7.806451
-9                0              30              1       6.998067       7.957572
-10               1               6              1       6.998067       7.957572
-11               1               3              1       6.998067       7.957572
-12               1               0              1       6.998067       7.957572
-13               0              30              1       6.998067       7.957572
-14               1               3              1       6.998067       7.957572
-15               1               0              1       6.998067       7.957572
-16               1               0              1       6.998067       7.957572
-17               0              30              1       6.705812       5.757501
-18               0              15              1       6.705812       5.757501
-19               0               5              1       6.705812       5.757501
-20               0               2              1       6.705812       5.757501
-   lengthscale_x3 lengthscale_x4 lengthscale_x5 lengthscale_x6 lengthscale_x7
-1        5.442430       0.915801       5.945562       9.391049       9.443020
-2        5.442430       0.915801       5.945562       9.391049       9.443020
-3        5.442430       0.915801       5.945562       9.391049       9.443020
-4        5.442430       0.915801       5.945562       9.391049       9.443020
-5        5.442430       0.915801       5.945562       9.391049       9.443020
-6        5.442430       0.915801       5.945562       9.391049       9.443020
-7        5.442430       0.915801       5.945562       9.391049       9.443020
-8        5.442430       0.915801       5.945562       9.391049       9.443020
-9        9.021317       8.400980       8.454913       5.262584       8.119406
-10       9.021317       8.400980       8.454913       5.262584       8.119406
-11       9.021317       8.400980       8.454913       5.262584       8.119406
-12       9.021317       8.400980       8.454913       5.262584       8.119406
-13       9.021317       8.400980       8.454913       5.262584       8.119406
-14       9.021317       8.400980       8.454913       5.262584       8.119406
-15       9.021317       8.400980       8.454913       5.262584       8.119406
-16       9.021317       8.400980       8.454913       5.262584       8.119406
-17       7.118742       5.485340       5.771928       8.023199       9.772569
-18       7.118742       5.485340       5.771928       8.023199       9.772569
-19       7.118742       5.485340       5.771928       8.023199       9.772569
-20       7.118742       5.485340       5.771928       8.023199       9.772569
-   lengthscale_x8 lengthscale_x9 lengthscale_x10 lengthscale_x11
-1        7.621909       5.896081        6.612787        5.548339
-2        7.621909       5.896081        6.612787        5.548339
-3        7.621909       5.896081        6.612787        5.548339
-4        7.621909       5.896081        6.612787        5.548339
-5        7.621909       5.896081        6.612787        5.548339
-6        7.621909       5.896081        6.612787        5.548339
-7        7.621909       5.896081        6.612787        5.548339
-8        7.621909       5.896081        6.612787        5.548339
-9        9.432127       5.585166        6.220298        5.986420
-10       9.432127       5.585166        6.220298        5.986420
-11       9.432127       5.585166        6.220298        5.986420
-12       9.432127       5.585166        6.220298        5.986420
-13       9.432127       5.585166        6.220298        5.986420
-14       9.432127       5.585166        6.220298        5.986420
-15       9.432127       5.585166        6.220298        5.986420
-16       9.432127       5.585166        6.220298        5.986420
-17       7.594118       5.272298        8.583152        1.020673
-18       7.594118       5.272298        8.583152        1.020673
-19       7.594118       5.272298        8.583152        1.020673
-20       7.594118       5.272298        8.583152        1.020673
-   lengthscale_x12 lengthscale_x13 lengthscale_x14 lengthscale_x15
-1        0.9693475        9.996028        9.990426        7.837908
-2        0.9693475        9.996028        9.990426        7.837908
-3        0.9693475        9.996028        9.990426        7.837908
-4        0.9693475        9.996028        9.990426        7.837908
-5        0.9693475        9.996028        9.990426        7.837908
-6        0.9693475        9.996028        9.990426        7.837908
-7        0.9693475        9.996028        9.990426        7.837908
-8        0.9693475        9.996028        9.990426        7.837908
-9        5.4385465        9.958445        8.241924        9.024587
-10       5.4385465        9.958445        8.241924        9.024587
-11       5.4385465        9.958445        8.241924        9.024587
-12       5.4385465        9.958445        8.241924        9.024587
-13       5.4385465        9.958445        8.241924        9.024587
-14       5.4385465        9.958445        8.241924        9.024587
-15       5.4385465        9.958445        8.241924        9.024587
-16       5.4385465        9.958445        8.241924        9.024587
-17       8.0110173        6.950030        8.337411        5.773643
-18       8.0110173        6.950030        8.337411        5.773643
-19       8.0110173        6.950030        8.337411        5.773643
-20       8.0110173        6.950030        8.337411        5.773643
-   lengthscale_x16 lengthscale_x17 lengthscale_x18 lengthscale_x19
-1         8.058500       7.0464883        9.929934        6.534073
-2         8.058500       7.0464883        9.929934        6.534073
-3         8.058500       7.0464883        9.929934        6.534073
-4         8.058500       7.0464883        9.929934        6.534073
-5         8.058500       7.0464883        9.929934        6.534073
-6         8.058500       7.0464883        9.929934        6.534073
-7         8.058500       7.0464883        9.929934        6.534073
-8         8.058500       7.0464883        9.929934        6.534073
-9         6.926567       0.9777323        9.760859        8.982113
-10        6.926567       0.9777323        9.760859        8.982113
-11        6.926567       0.9777323        9.760859        8.982113
-12        6.926567       0.9777323        9.760859        8.982113
-13        6.926567       0.9777323        9.760859        8.982113
-14        6.926567       0.9777323        9.760859        8.982113
-15        6.926567       0.9777323        9.760859        8.982113
-16        6.926567       0.9777323        9.760859        8.982113
-17        6.336972       6.3743092        7.483544        6.360566
-18        6.336972       6.3743092        7.483544        6.360566
-19        6.336972       6.3743092        7.483544        6.360566
-20        6.336972       6.3743092        7.483544        6.360566
-   lengthscale_x20 lengthscale_x21 lengthscale_x22 lengthscale_x23
-1         6.903563        8.020372       0.9058959        9.049919
-2         6.903563        8.020372       0.9058959        9.049919
-3         6.903563        8.020372       0.9058959        9.049919
-4         6.903563        8.020372       0.9058959        9.049919
-5         6.903563        8.020372       0.9058959        9.049919
-6         6.903563        8.020372       0.9058959        9.049919
-7         6.903563        8.020372       0.9058959        9.049919
-8         6.903563        8.020372       0.9058959        9.049919
-9         8.516332        6.525583       9.2428575        6.755685
-10        8.516332        6.525583       9.2428575        6.755685
-11        8.516332        6.525583       9.2428575        6.755685
-12        8.516332        6.525583       9.2428575        6.755685
-13        8.516332        6.525583       9.2428575        6.755685
-14        8.516332        6.525583       9.2428575        6.755685
-15        8.516332        6.525583       9.2428575        6.755685
-16        8.516332        6.525583       9.2428575        6.755685
-17        9.250143        7.813255       6.1272761        8.782156
-18        9.250143        7.813255       6.1272761        8.782156
-19        9.250143        7.813255       6.1272761        8.782156
-20        9.250143        7.813255       6.1272761        8.782156
-   lengthscale_x24 lengthscale_x25 lengthscale_x26 lengthscale_x27
-1         9.918396       0.9502409        9.763866       0.9314269
-2         9.918396       0.9502409        9.763866       0.9314269
-3         9.918396       0.9502409        9.763866       0.9314269
-4         9.918396       0.9502409        9.763866       0.9314269
-5         9.918396       0.9502409        9.763866       0.9314269
-6         9.918396       0.9502409        9.763866       0.9314269
-7         9.918396       0.9502409        9.763866       0.9314269
-8         9.918396       0.9502409        9.763866       0.9314269
-9         7.382817       7.6078026        8.890597       8.0153317
-10        7.382817       7.6078026        8.890597       8.0153317
-11        7.382817       7.6078026        8.890597       8.0153317
-12        7.382817       7.6078026        8.890597       8.0153317
-13        7.382817       7.6078026        8.890597       8.0153317
-14        7.382817       7.6078026        8.890597       8.0153317
-15        7.382817       7.6078026        8.890597       8.0153317
-16        7.382817       7.6078026        8.890597       8.0153317
-17        9.672906       9.2371426        7.467022       8.9265216
-18        9.672906       9.2371426        7.467022       8.9265216
-19        9.672906       9.2371426        7.467022       8.9265216
-20        9.672906       9.2371426        7.467022       8.9265216
-   lengthscale_x28 lengthscale_x29 lengthscale_x30    name  model
-1         8.280421        7.025709        6.471351 uniform linear
-2         8.280421        7.025709        6.471351 uniform linear
-3         8.280421        7.025709        6.471351 uniform linear
-4         8.280421        7.025709        6.471351 uniform linear
-5         8.280421        7.025709        6.471351  biased linear
-6         8.280421        7.025709        6.471351  biased linear
-7         8.280421        7.025709        6.471351  biased linear
-8         8.280421        7.025709        6.471351  biased linear
-9         5.726128        9.655107        5.423487 uniform linear
-10        5.726128        9.655107        5.423487 uniform linear
-11        5.726128        9.655107        5.423487 uniform linear
-12        5.726128        9.655107        5.423487 uniform linear
-13        5.726128        9.655107        5.423487  biased linear
-14        5.726128        9.655107        5.423487  biased linear
-15        5.726128        9.655107        5.423487  biased linear
-16        5.726128        9.655107        5.423487  biased linear
-17        7.091211        5.888840        8.219498 uniform linear
-18        7.091211        5.888840        8.219498 uniform linear
-19        7.091211        5.888840        8.219498 uniform linear
-20        7.091211        5.888840        8.219498 uniform linear
-                                     id factors model_size amplitude
-1  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-2  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-3  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-4  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-5  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-6  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-7  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-8  510d12e4-33bf-4b63-a01c-62eb0ceaef39      30         30  1.225580
-9  395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-10 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-11 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-12 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-13 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-14 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-15 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-16 395cc1c1-76f6-468e-a1e8-89a5126f55fb      30         30  1.150876
-17 e98be9b8-157e-49cb-9509-b2823767ac47      30         30  1.250531
-18 e98be9b8-157e-49cb-9509-b2823767ac47      30         30  1.250531
-19 e98be9b8-157e-49cb-9509-b2823767ac47      30         30  1.250531
-20 e98be9b8-157e-49cb-9509-b2823767ac47      30         30  1.250531
+'data.frame':	2240 obs. of  44 variables:
+ $ filter_threshold: num  Inf 0.1 0.01 0.001 Inf ...
+ $ min_distance    : num  1.89 3.99 1.89 1.89 3.73 ...
+ $ fit_distance    : num  63.6 54.5 63.6 63.6 67.1 ...
+ $ true_positives  : int  6 1 0 0 6 2 0 0 1 0 ...
+ $ false_positives : int  24 0 0 0 24 2 0 0 29 6 ...
+ $ false_negatives : int  0 5 6 6 0 4 6 6 0 1 ...
+ $ model_positives : int  30 1 0 0 30 4 0 0 30 6 ...
+ $ real_positives  : int  6 6 6 6 6 6 6 6 1 1 ...
+ $ lengthscale_x1  : num  1.01 1.01 1.01 1.01 1.01 ...
+ $ lengthscale_x2  : num  7.81 7.81 7.81 7.81 7.81 ...
+ $ lengthscale_x3  : num  5.44 5.44 5.44 5.44 5.44 ...
+ $ lengthscale_x4  : num  0.916 0.916 0.916 0.916 0.916 ...
+ $ lengthscale_x5  : num  5.95 5.95 5.95 5.95 5.95 ...
+ $ lengthscale_x6  : num  9.39 9.39 9.39 9.39 9.39 ...
+ $ lengthscale_x7  : num  9.44 9.44 9.44 9.44 9.44 ...
+ $ lengthscale_x8  : num  7.62 7.62 7.62 7.62 7.62 ...
+ $ lengthscale_x9  : num  5.9 5.9 5.9 5.9 5.9 ...
+ $ lengthscale_x10 : num  6.61 6.61 6.61 6.61 6.61 ...
+ $ lengthscale_x11 : num  5.55 5.55 5.55 5.55 5.55 ...
+ $ lengthscale_x12 : num  0.969 0.969 0.969 0.969 0.969 ...
+ $ lengthscale_x13 : num  10 10 10 10 10 ...
+ $ lengthscale_x14 : num  9.99 9.99 9.99 9.99 9.99 ...
+ $ lengthscale_x15 : num  7.84 7.84 7.84 7.84 7.84 ...
+ $ lengthscale_x16 : num  8.06 8.06 8.06 8.06 8.06 ...
+ $ lengthscale_x17 : num  7.05 7.05 7.05 7.05 7.05 ...
+ $ lengthscale_x18 : num  9.93 9.93 9.93 9.93 9.93 ...
+ $ lengthscale_x19 : num  6.53 6.53 6.53 6.53 6.53 ...
+ $ lengthscale_x20 : num  6.9 6.9 6.9 6.9 6.9 ...
+ $ lengthscale_x21 : num  8.02 8.02 8.02 8.02 8.02 ...
+ $ lengthscale_x22 : num  0.906 0.906 0.906 0.906 0.906 ...
+ $ lengthscale_x23 : num  9.05 9.05 9.05 9.05 9.05 ...
+ $ lengthscale_x24 : num  9.92 9.92 9.92 9.92 9.92 ...
+ $ lengthscale_x25 : num  0.95 0.95 0.95 0.95 0.95 ...
+ $ lengthscale_x26 : num  9.76 9.76 9.76 9.76 9.76 ...
+ $ lengthscale_x27 : num  0.931 0.931 0.931 0.931 0.931 ...
+ $ lengthscale_x28 : num  8.28 8.28 8.28 8.28 8.28 ...
+ $ lengthscale_x29 : num  7.03 7.03 7.03 7.03 7.03 ...
+ $ lengthscale_x30 : num  6.47 6.47 6.47 6.47 6.47 ...
+ $ name            : Factor w/ 2 levels "biased","uniform": 2 2 2 2 1 1 1 1 2 2 ...
+ $ model           : Factor w/ 2 levels "linear","quadratic": 1 1 1 1 1 1 1 1 1 1 ...
+ $ id              : Factor w/ 280 levels "015dd65a-6caf-4f27-a636-4c30d9269151",..: 9 9 9 9 9 9 9 9 7 7 ...
+ $ factors         : int  30 30 30 30 30 30 30 30 30 30 ...
+ $ model_size      : int  30 30 30 30 30 30 30 30 30 30 ...
+ $ amplitude       : num  1.23 1.23 1.23 1.23 1.23 ...
 #+end_example
 ****** Boxplots
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
@@ -31065,15 +30815,15 @@ library(ggplot2)
 
 ggplot(data,
        aes(x = as.factor(filter_threshold),
-       y = false_negatives)) +
+       y = fit_distance)) +
   facet_grid(model ~ name, scales = "free_y") +
   geom_boxplot() +
-  geom_jitter(width = 0.2) +
+  geom_jitter(width = 0.2, height = 0.0, alpha = 0.4) +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SpP3r7/figure8dwySF.png]]
+[[file:/tmp/babel-ZCmSyJ/figureuTpyR8.png]]
 *** [2019-04-22 Mon]
 **** Review paper for WPerformance (Portuguese)
 - Título: Investigação dos  Efeitos do Envelhecimento de  Software na Plataforma
