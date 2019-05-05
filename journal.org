@@ -27013,8 +27013,8 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27142,8 +27142,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
-files <-  list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <-  list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27275,8 +27275,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
-files <-  list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <-  list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27405,8 +27405,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
-files <-  list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <-  list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27539,8 +27539,8 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27670,8 +27670,8 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27804,8 +27804,8 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -27935,8 +27935,8 @@ library(ggrepel)
 library(dplyr)
 library(tidyr)
 
-files <- list.files("dopt_sampling_tests/data/results/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/results/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/coefficient_sampling/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/coefficient_sampling/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -30484,24 +30484,6 @@ data$id <- 1
 #+end_SRC
 
 #+RESULTS:
-#+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-Attaching package: ‘MASS’
-
-The following object is masked from ‘package:dplyr’:
-
-    select
-#+end_example
 
 ***** Test Plots
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
@@ -30519,7 +30501,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(x = X1, y = Y, group = X2, color = X2
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SK7LaO/figureaIrTry.png]]
+[[file:/tmp/babel-qYpGgW/figurext8j1G.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -30536,7 +30518,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(x = X2, y = Y, group = X1, color = X1
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SK7LaO/figureDUPKdB.png]]
+[[file:/tmp/babel-qYpGgW/figureuKBF6q.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -30559,7 +30541,7 @@ ggplot(plot_data[plot_data$id == 1, ], aes(z = Y, x = X1, y = X2)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SK7LaO/figure4FiwIk.png]]
+[[file:/tmp/babel-qYpGgW/figurehQILQj.png]]
 
 ***** ANOVA Tests
 #+begin_SRC R :results output :session *R*
@@ -30573,7 +30555,7 @@ aov_formula <- formula(paste("Y ~ ",
 
 aov_formula
 
-summary(aov(aov_formula, data = aov_data))
+summary(lm(aov_formula, data = aov_data[sample(x = 1:nrow(aov_data), size = 8), ]))
 #+end_SRC
 
 #+RESULTS:
@@ -30581,14 +30563,27 @@ summary(aov(aov_formula, data = aov_data))
 
 Y ~ X1 + X2 + I(X1^2) + I(X2^2)
 
-             Df Sum Sq Mean Sq   F value   Pr(>F)
-X1            1   1.26    1.26   439.493  < 2e-16 ***
-X2            1   0.07    0.07    25.832 4.45e-07 ***
-I(X1^2)       1  73.34   73.34 25675.299  < 2e-16 ***
-I(X2^2)       1   0.00    0.00     0.765    0.382
-Residuals   995   2.84    0.00
+Call:
+lm(formula = aov_formula, data = aov_data[sample(x = 1:nrow(aov_data),
+    size = 8), ])
+
+Residuals:
+      440       931       935       142       544       137       313       311
+-0.001944  0.016461 -0.006630 -0.003318 -0.004053 -0.009024  0.003274  0.005234
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)
+(Intercept) -1.083440   0.024428 -44.353 2.52e-05 ***
+X1           6.514670   0.093556  69.634 6.53e-06 ***
+X2           0.005309   0.088325   0.060    0.956
+I(X1^2)     -5.375533   0.085439 -62.917 8.85e-06 ***
+I(X2^2)     -0.011957   0.074075  -0.161    0.882
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.01246 on 3 degrees of freedom
+Multiple R-squared:  0.9996,	Adjusted R-squared:  0.9991
+F-statistic:  1876 on 4 and 3 DF,  p-value: 1.996e-05
 #+end_example
 *** [2019-04-12 Fri]
 **** Saving computed CDFs and Testing Rcpp for Sampler
@@ -30769,8 +30764,8 @@ git clone https://github.com/phrb/dopt_sampling_tests.git || git -C dopt_samplin
 ***** Plots
 ****** Load Data
 #+begin_SRC R :results output :session *R*
-files <- list.files("dopt_sampling_tests/data/gaussian_sampling/current/", pattern="*.csv", recursive = TRUE)
-files <- paste("dopt_sampling_tests/data/gaussian_sampling/current/", files, sep = "")
+files <- list.files("dopt_sampling_tests/data/gaussian_sampling/old/run_3/", pattern="*.csv", recursive = TRUE)
+files <- paste("dopt_sampling_tests/data/gaussian_sampling/old/run_3/", files, sep = "")
 data <- lapply(files, function(x) read.csv(x, header = TRUE))
 data <- do.call(rbind, data)
 
@@ -30841,7 +30836,7 @@ ggplot(data,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-SK7LaO/figureuXsuFA.png]]
+[[file:/tmp/babel-qYpGgW/figureGlL3LL.png]]
 *** [2019-04-22 Mon]
 **** Review paper for WPerformance (Portuguese)
 - Título: Investigação dos  Efeitos do Envelhecimento de  Software na Plataforma
