@@ -30914,3 +30914,31 @@ Revisar o resumo em inglês e corrigir erros como
   cenário de controle.  Será possível  compreender melhor o que está acontecendo
   no estudo caso o mesmo vazamento  de memória possa ser observado numa situação
   onde a máquina não está sob estresse, ou sob estresses diferentes.
+** May
+*** [2019-05-08 Wed]
+**** Meeting with HPE
+- Sai, Dejan and Glaucimar (HP Brazil)
+- NVIDIA Jetson: https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/
+***** PUMA Paper
+- https://128.84.21.199/pdf/1901.10351.pdf
+- Design Space Exploration
+  - How was the "sweet spot" found?
+  - Complete evaluation of the search space?
+  - Interest in possible interactions?
+- Evaluation of optimizations (Compiler?)
+  - Binary optimizations? (on/off)
+  - Interest in interactions?
+***** Proposal Summary
+We  will work  on selecting  compiler optimizations  and exploring  the hardware
+design  space  for  the  PUMA   architecture,  targeting  applications  such  as
+Convolutional Neural Networks.  The compiler parameters control optimizations of
+the   transformation   of   generated  instructions.    These   source-to-source
+transformations  include  loop  unroling  and  tiling,  for  example.   Hardware
+optimizations were not discussed in the  initial meeting, but would also compose
+the autotuning search space.  The metrics  we will target with our autotuner are
+similar to the hardware metrics used in  our previous work on autotuning HLS for
+FPGAs, such as cycles, frequency and memory usage.
+
+I believe  I can start  writing the proposal  using information from  the latest
+PUMA paper  and the  work we  have done  in building  a cost  model for  our HLS
+kernels. Please let me know if something is missing from this summary.
