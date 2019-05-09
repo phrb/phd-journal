@@ -30942,3 +30942,33 @@ FPGAs, such as cycles, frequency and memory usage.
 I believe  I can start  writing the proposal  using information from  the latest
 PUMA paper  and the  work we  have done  in building  a cost  model for  our HLS
 kernels. Please let me know if something is missing from this summary.
+*** [2019-05-09 Thu]
+**** Feedback for Salah's Presentation
+- Improve the initial presentation:
+  - Say a shorter version of the title
+  - State your position clearly
+- Slide 3:
+  - start ~> starts
+  - No need for punctuation on the end of each item on a list
+    - We inevitably forget to use ";" at every bullet but the last, it is easier
+      to just leave it blank. It is also easier to read
+- Try to reduce the amount of text in slides:
+  - Add figures when applicable
+  - Only include key points and say the rest
+  - Rule of thumb: bullet points should not break lines
+- Suggestion: Never use quotes, it is a distraction
+  - Exception: quote is directly related to subject
+- Slide 8:
+  - Explain notation a bit more
+  - Maybe use two columns and add a box for notation
+- Slide 10:
+  - Figures are very hard to read
+  - Use better color palletes (Set1 or Set2 from Rcolorbrewer always work)
+  - Increase font size on axis
+  - Increase legend font size
+  - Maybe use only 1 or 2 figures per slide?
+- Slide 14:
+  - Figures are hard to read, same issues as Slide 10
+  - I did not understand this slide, maybe an intro slide should be added?
+- Slide 15:
+  - Figures readable in a small room, but not on a conference room, probably
