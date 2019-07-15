@@ -31841,7 +31841,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 
-target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_linear/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -31854,23 +31854,6 @@ summary_files <- summary_files[file.info(summary_files)$size != 0]
 summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
                                                                    header = TRUE,
                                                                    stringsAsFactors = FALSE)))
-
-names(summaries)
-#+END_SRC
-
-#+RESULTS:
-:
-:  [1] "id"                      "valid_configurations"
-:  [3] "D"                       "used_budget"
-:  [5] "model_size"              "current_best"
-:  [7] "trials"                  "current_best_coordinate"
-:  [9] "tested_configurations"   "fixed_factors"
-: [11] "step"                    "design_best"
-: [13] "total_budget"            "removed_variables"
-: [15] "model"                   "predicted_best"
-
-#+begin_SRC R :results output :session *R*
-str(summaries$removed_variables)
 
 eliminated_terms <- summaries %>%
   separate_rows(removed_variables, sep = ", ")  %>%
@@ -31900,16 +31883,25 @@ str(fixed_factors)
 
 #+RESULTS:
 #+begin_example
- chr [1:40] "['OMP']" "['I(T1_I^2)', 'RT_I']" "['SCR']" "[]" "['OMP']" ...
 
-'data.frame':	64 obs. of  2 variables:
- $ removed_variables: Factor w/ 13 levels "","OMP","SCR",..: 2 5 4 3 1 2 3 5 4 6 ...
- $ step             : int  1 2 2 3 4 1 2 3 3 3 ...
+Attaching package: ‘dplyr’
 
-'data.frame':	158 obs. of  2 variables:
- $ fixed_factors: Named chr  "OMP" "OMP" "T1_I1" "RT_I" ...
-  ..- attr(*, "names")= chr  "{'OMP': 1}" "{'OMP': 1" " 'T1_I': 11" " 'RT_I': 5}" ...
- $ step         : int  1 2 2 2 3 3 3 3 4 4 ...
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+'data.frame':	53 obs. of  2 variables:
+ $ removed_variables: Factor w/ 10 levels "","OMP","SCR",..: 1 1 2 5 3 6 4 10 7 1 ...
+ $ step             : int  1 2 3 3 3 3 3 3 3 4 ...
+
+'data.frame':	59 obs. of  2 variables:
+ $ fixed_factors: Named chr  "" "" "T1_J1" "RT_I" ...
+  ..- attr(*, "names")= chr  "{}" "" "{'T1_J': 11" " 'RT_I': 0" ...
+ $ step         : int  1 2 3 3 3 3 3 3 3 4 ...
 #+end_example
 
 ****** Loading Data for Histograms and Iterations
@@ -31923,7 +31915,7 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_linear"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 data <- NULL
 
@@ -31986,6 +31978,82 @@ complete_plot_data <- plot_data
 #+END_SRC
 
 #+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/random_search"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(plot_data, rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
 ***** Histograms and Iterations Plots
 ****** Iterations where best was found
 #+HEADER: :results graphics output :session *R* :exports none :eval no-export
@@ -32022,8 +32090,8 @@ p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     #                              filter(best_iteration == min(best_iteration)),
     #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
     geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
-    scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-    scale_y_continuous(limits = c(-10, 400), breaks = c(0, 200, 400)) +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-5, 100), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
     scale_size_manual("", values = 0.45) +
     annotation_logticks(sides = "b") +
     ggtitle("") +
@@ -32087,7 +32155,7 @@ grid.draw(new_plot)
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-zTfsXj/figureXoQB1z.png]]
+[[file:/tmp/figurex0tqyo.png]]
 ***** Eliminated Factors and Fixed Values
 #+HEADER: :results graphics :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".png")
@@ -32112,7 +32180,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-zTfsXj/figurelglvdd.png]]
+[[file:/tmp/figureBJVVXA.png]]
 
 ****** Fixed Factors Plot                                     :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
@@ -32140,7 +32208,7 @@ ggplot(fixed_factors, aes(x = factor, y = ..count.., fill = interaction(fixed_va
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VCMsIU/figureycJHtP.png]]
+[[file:/tmp/figureETFnfg.png]]
 
 *** [2019-06-27 Thu]
 **** Encoding Designs in Python/R with Rpy2
@@ -32270,3 +32338,1735 @@ List of 6
  $ SCR  : num  1 0 1 0
  $ RT1_J: num  12 0 3 6
 #+end_example
+** July
+*** [2019-07-15 Mon]
+**** Further Analysis of the =bicg= Kernel
+***** Initial Setup                                            :noexport:
+****** Cloning/Pulling the Repository                         :noexport:
+#+HEADER: :results output :eval no-export :exports none
+#+BEGIN_SRC shell
+git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_experiments && git pull)
+#+END_SRC
+
+#+RESULTS:
+: Already up to date.
+***** Encoding
+****** Setup                                                  :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+target_path <- "dlmt_spapt_experiments/data/tests/encoding/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
+                                                                   header = TRUE,
+                                                                   stringsAsFactors = FALSE)))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factors <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ": ([0-9])" = "")))))
+
+str(eliminated_terms)
+str(fixed_factors)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	97 obs. of  2 variables:
+:  $ removed_variables: Factor w/ 26 levels "","OMP","SCR",..: 2 3 5 4 8 1 25 17 2 3 ...
+:  $ step             : int  1 1 2 2 2 3 4 4 1 1 ...
+:
+: 'data.frame':	231 obs. of  2 variables:
+:  $ fixed_factors: chr  "OMP" "SCR" "T2_I1" "OMP" ...
+:  $ step         : int  1 1 2 2 2 2 2 3 3 3 ...
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/encoding"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+plot_data <- data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             ungroup()
+
+plot_data <- plot_data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application, technique) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup()
+
+complete_plot_data <- plot_data
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                       rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
+****** Histograms and Iterations Plots
+******* Iterations where best was found
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:best-found-encoding
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figuretWVj3i.png]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R* :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_y_continuous(breaks = 0:20) +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+                                        #scale_color_manual(values = my_palette)
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms-encoding
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureEtsnkI.png]]
+***** Encoding, Restrictive Filter
+****** Setup                                                  :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
+                                                                   header = TRUE,
+                                                                   stringsAsFactors = FALSE)))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factors <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ": ([0-9])" = "")))))
+
+str(eliminated_terms)
+str(fixed_factors)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	64 obs. of  2 variables:
+:  $ removed_variables: Factor w/ 13 levels "","OMP","SCR",..: 2 5 4 3 1 2 3 5 4 6 ...
+:  $ step             : int  1 2 2 3 4 1 2 3 3 3 ...
+:
+: 'data.frame':	158 obs. of  2 variables:
+:  $ fixed_factors: chr  "OMP" "OMP" "T1_I1" "RT_I" ...
+:  $ step         : int  1 2 2 2 3 3 3 3 4 4 ...
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+plot_data <- data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             ungroup()
+
+plot_data <- plot_data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application, technique) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup()
+
+complete_plot_data <- plot_data
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                       rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
+****** Histograms and Iterations Plots
+******* Iterations where best was found
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:best-found-threshold
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figure4npl93.png]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R* :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_y_continuous(breaks = 0:20) +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+                                        #scale_color_manual(values = my_palette)
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureKQn4gK.png]]
+***** Encoding, Restrictive Filter, without Cubic Terms
+****** Setup                                                  :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_2x_nocube/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
+                                                                   header = TRUE,
+                                                                   stringsAsFactors = FALSE)))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factors <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ": ([0-9])" = "")))))
+
+str(eliminated_terms)
+str(fixed_factors)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	60 obs. of  2 variables:
+:  $ removed_variables: Factor w/ 16 levels "","OMP","SCR",..: 2 1 1 1 1 3 2 7 4 15 ...
+:  $ step             : int  1 2 3 4 1 2 3 4 4 4 ...
+:
+: 'data.frame':	111 obs. of  2 variables:
+:  $ fixed_factors: chr  "OMP" "OMP" "OMP" "OMP" ...
+:  $ step         : int  1 2 3 4 1 2 3 3 4 4 ...
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01_2x_nocube"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+plot_data <- data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             ungroup()
+
+plot_data <- plot_data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application, technique) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup()
+
+complete_plot_data <- plot_data
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                       rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
+****** Histograms and Iterations Plots
+******* Iterations where best was found
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:best-found-threshold-2x-nocube
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureaOKQhd.png]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R* :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_y_continuous(breaks = 0:20) +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+                                        #scale_color_manual(values = my_palette)
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms-threshold-2x-nocube
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureKZAAtS.png]]
+***** Encoding, Restrictive Filter, only Linear Terms
+****** Setup                                                  :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_4x_linear/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
+                                                                   header = TRUE,
+                                                                   stringsAsFactors = FALSE)))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factors <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ": ([0-9])" = "")))))
+
+str(eliminated_terms)
+str(fixed_factors)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	36 obs. of  2 variables:
+:  $ removed_variables: Factor w/ 4 levels "","OMP","SCR",..: 1 2 1 1 2 1 1 1 1 1 ...
+:  $ step             : int  1 2 3 4 1 2 3 4 1 2 ...
+:
+: 'data.frame':	41 obs. of  2 variables:
+:  $ fixed_factors: chr  "" "OMP" "OMP" "OMP" ...
+:  $ step         : int  1 2 3 4 1 2 3 4 1 2 ...
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01_4x_linear"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+plot_data <- data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             ungroup()
+
+plot_data <- plot_data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application, technique) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup()
+
+complete_plot_data <- plot_data
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                       rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
+****** Histograms and Iterations Plots
+******* Iterations where best was found
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:best-found-threshold-4x-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figurefBJjKE.png]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R* :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_y_continuous(breaks = 0:20) +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+                                        #scale_color_manual(values = my_palette)
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms-threshold-4x-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureO6K3wU.png]]
+***** Encoding, Restrictive Filter, only Linear Terms, Larger Federov Sample
+****** Setup                                                  :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_linear/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, function (x) read.csv(x,
+                                                                   header = TRUE,
+                                                                   stringsAsFactors = FALSE)))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factors <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ": ([0-9])" = "")))))
+
+str(eliminated_terms)
+str(fixed_factors)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	53 obs. of  2 variables:
+:  $ removed_variables: Factor w/ 10 levels "","OMP","SCR",..: 1 1 2 5 3 6 4 10 7 1 ...
+:  $ step             : int  1 2 3 3 3 3 3 3 3 4 ...
+:
+: 'data.frame':	59 obs. of  2 variables:
+:  $ fixed_factors: chr  "" "" "T1_J1" "RT_I" ...
+:  $ step         : int  1 2 3 3 3 3 3 3 3 4 ...
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_linear"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+plot_data <- data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             ungroup()
+
+plot_data <- plot_data %>%
+             distinct(experiment_id, .keep_all = TRUE) %>%
+             group_by(application, technique) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup()
+
+complete_plot_data <- plot_data
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R* :eval no-export
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- rep(sha1(csv_file), nrow(data))
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  ungroup()
+
+rs_plot_data <- rs_plot_data %>%
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  group_by(application, technique) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+rs_plot_data <- filter(rs_plot_data, technique == "RS")
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                       rs_plot_data)
+#+END_SRC
+
+#+RESULTS:
+****** Histograms and Iterations Plots
+******* Iterations where best was found
+#+HEADER: :results graphics output :session *R* :exports results :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:best-found-threshold-16x-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureVf6Dcz.png]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R* :eval no-export
+#+HEADER: :file (org-babel-temp-file "figure" ".png")
+#+HEADER: :width 800 :height 600 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_y_continuous(breaks = 0:20) +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+                                        #scale_color_manual(values = my_palette)
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms-threshold-16x-linear
+#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/figureSAYE50.png]]
