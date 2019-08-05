@@ -36395,6 +36395,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 - Même chose pour paravance-2.
    - Est-ce que SCR devient significatif à partir de l'étape 2 ou est-ce qu'il reste systématiquement non significatif ?
 - Même chose pour pourvance-3 et paravance-31 où OMP et SCR ont été identifiés mais pas VEC1 ni VEC2.
+** August
 *** [2019-08-05 Mon]
 **** Looking at ANOVA and =lm= tests
 :PROPERTIES:
