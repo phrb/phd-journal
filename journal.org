@@ -37183,3 +37183,35 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+*** [2019-08-07 Wed]
+**** Looking at some sampled data                                 :ATTACH:
+:PROPERTIES:
+:Attachments: sampled_data.csv int_sampled_data.csv
+:ID:       37a0f66d-b2d3-40ee-bac4-6a14f32a7cfd
+:END:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+data <- read.csv("data/37/a0f66d-b2d3-40ee-bac4-6a14f32a7cfd/sampled_data.csv",
+                 stringsAsFactors = FALSE)
+
+ggplot(data, aes(x = x, y = y)) +
+  facet_wrap(interaction(mag_x, mag_y) ~ .) +
+  geom_path(alpha = 0.8) +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureYVkR1a.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+data <- read.csv("data/37/a0f66d-b2d3-40ee-bac4-6a14f32a7cfd/int_sampled_data.csv",
+                 stringsAsFactors = FALSE)
+
+ggplot(data, aes(x = x, y = y)) +
+  facet_wrap(interaction(mag_x, mag_y) ~ .) +
+  geom_path(alpha = 0.8) +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurexHPKiZ.png]]
