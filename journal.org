@@ -36421,11 +36421,11 @@ library(stringr)
 
 read_experiment <- function(x) {
   data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
-  data$experiment_id <- str_split(x, "/")[[1]][6]
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_nocube_logged/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36489,15 +36489,15 @@ str(fixed_factor_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	157 obs. of  3 variables:
- $ removed_variables: Factor w/ 23 levels "","OMP","SCR",..: 2 1 1 1 1 2 3 1 1 2 ...
- $ step             : int  1 2 3 4 1 2 2 3 4 1 ...
- $ experiment_id    : chr  "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" ...
+'data.frame':	54 obs. of  3 variables:
+ $ removed_variables: Factor w/ 17 levels "","OMP","SCR",..: 2 1 1 1 2 5 8 11 10 3 ...
+ $ step             : int  1 2 3 4 1 1 1 1 1 1 ...
+ $ experiment_id    : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
 
-'data.frame':	1313 obs. of  3 variables:
- $ current_best_coordinate: chr  "T1_I->2048" "T1_J->1" "U_J->1" "U_I->1" ...
+'data.frame':	468 obs. of  3 variables:
+ $ current_best_coordinate: chr  "T1_I->2048" "T1_J->8" "U_J->13" "U_I->1" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ experiment_id          : chr  "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" ...
+ $ experiment_id          : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
 #+end_example
 
 ******* Loading Data for Histograms and Iterations           :noexport:
@@ -36511,14 +36511,14 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_nocube_logged"
+data_dir <- "dlmt_spapt_experiments/data/tests/nocube_log_steps"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
+    data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -36592,7 +36592,7 @@ rs_data <- NULL
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
+    data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -36661,12 +36661,11 @@ library(openssl)
 
 read_experiment <- function(x) {
   data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
-  #data$experiment_id <- sha1(str_split(x, "/")[[1]][6])
-  data$experiment_id <- str_split(x, "/")[[1]][6]
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_nocube_logged/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36708,21 +36707,21 @@ str(search_spaces)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	88 obs. of  17 variables:
+'data.frame':	29 obs. of  17 variables:
  $ id                     : int  1 1 1 1 1 1 1 1 1 1 ...
  $ valid_configurations   : int  37440 37440 37440 37440 37440 37440 37440 37440 37440 37440 ...
- $ D                      : num  0.204 0.203 0.206 0.203 0.203 ...
+ $ D                      : num  0.204 0.205 0.205 0.205 0.205 ...
  $ used_budget            : int  0 0 0 0 0 0 0 0 0 0 ...
  $ model_size             : int  22 22 22 22 22 22 22 22 22 22 ...
- $ current_best           : num  0.574 0.592 0.674 0.555 0.555 ...
+ $ current_best           : num  0.591 0.651 0.651 0.651 0.651 ...
  $ trials                 : int  26 26 26 26 26 26 26 26 26 26 ...
- $ current_best_coordinate: chr  "{'T1_I': 2048, 'T1_J': 1, 'U_J': 1, 'U_I': 1, 'T2_I': 1, 'T2_J': 512, 'U1_I': 16, 'OMP': True, 'VEC2': False, '"| __truncated__ "{'T1_I': 2048, 'T1_J': 4, 'U_J': 1, 'U_I': 4, 'T2_I': 1, 'T2_J': 2048, 'U1_I': 3, 'OMP': True, 'VEC2': False, '"| __truncated__ "{'T1_I': 2048, 'T1_J': 16, 'U_J': 2, 'U_I': 1, 'T2_I': 2048, 'T2_J': 16, 'U1_I': 25, 'OMP': True, 'VEC2': False"| __truncated__ "{'T1_I': 2048, 'T1_J': 1, 'U_J': 1, 'U_I': 1, 'T2_I': 1, 'T2_J': 1024, 'U1_I': 29, 'OMP': True, 'VEC2': True, '"| __truncated__ ...
- $ tested_configurations  : int  1807739 1794354 1788866 1792531 1792531 1792531 1792531 1792531 1792531 1792531 ...
- $ fixed_factors          : chr  "{'OMP': 1}" "{'OMP': 1}" "{'OMP': 1}" "{'RT_J': 4, 'RT_I': 2, 'T1_J': 11, 'T2_J': 0, 'OMP': 1, 'VEC2': 0, 'SCR': 1}" ...
+ $ current_best_coordinate: chr  "{'T1_I': 2048, 'T1_J': 8, 'U_J': 13, 'U_I': 1, 'T2_I': 1, 'T2_J': 128, 'U1_I': 30, 'OMP': True, 'VEC2': False, "| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ ...
+ $ tested_configurations  : int  1802750 1801682 1801682 1801682 1801682 1801682 1801682 1801682 1801682 1801682 ...
+ $ fixed_factors          : chr  "{'OMP': 1}" "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ design_best            : num  0.574 0.592 0.674 0.555 0.555 ...
+ $ design_best            : num  0.591 0.651 0.651 0.651 0.651 ...
  $ total_budget           : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
- $ removed_variables      : chr  "OMP" "OMP" "OMP" "OMP" ...
+ $ removed_variables      : chr  "OMP" "OMP" "I(RT_I^2)" "I(T2_J^2)" ...
  $ model                  : chr  "~ I(T1_I ^ 2)
 I(T1_J ^ 2)
 I(T2_I ^ 2)
@@ -36752,41 +36751,140 @@ I(U1_I ^ 2)
 I(U_I ^ 2)
 I(U_J ^ 2)
 I(RT_I ^ 2) +"| __truncated__ ...
- $ predicted_best         : num  0.66 0.766 0.826 0.851 0.851 ...
- $ experiment_id          : chr  "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-46_1563917036" "xeon_e5_2630_v3_grisou-48_1563917027" "xeon_e5_2630_v3_grisou-49_1563917027" ...
+ $ predicted_best         : num  0.91 0.773 0.773 0.773 0.773 ...
+ $ experiment_id          : chr  "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" ...
 
-'data.frame':	2609 obs. of  24 variables:
+'data.frame':	869 obs. of  24 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  2048 1 2048 64 128 2048 32 1 128 2048 ...
- $ T2_I                        : int  2048 1024 512 1 128 1 1 256 2048 1 ...
- $ RT_I                        : int  1 1 32 1 1 32 8 4 32 32 ...
- $ mean_confidence_interval_inf: num  5.885 2.12 0.906 0.841 0.868 ...
+ $ T2_J                        : int  128 128 64 16 1 1 2048 512 1 1 ...
+ $ T2_I                        : int  2048 1 2048 1 4 2048 2048 2048 16 128 ...
+ $ RT_I                        : int  1 8 1 1 32 2 32 4 4 4 ...
+ $ mean_confidence_interval_inf: num  0.807 0.445 4.42 0.848 5.595 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  1 2048 32 32 4 2048 4 1 16 2048 ...
+ $ T1_J                        : int  1 8 32 1 2048 1024 1 1 512 2048 ...
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ VEC2                        : chr  "True" "True" "True" "False" ...
- $ VEC1                        : chr  "True" "False" "False" "True" ...
+ $ VEC2                        : chr  "True" "False" "False" "True" ...
+ $ VEC1                        : chr  "True" "False" "False" "False" ...
  $ SCR                         : chr  "False" "True" "False" "True" ...
- $ U1_I                        : int  24 3 30 29 3 19 29 22 20 18 ...
- $ RT_J                        : int  1 16 4 32 32 4 1 32 4 1 ...
- $ T1_I                        : int  1 8 2 64 32 1 2048 1 128 1024 ...
+ $ U1_I                        : int  30 30 3 6 1 9 17 21 30 24 ...
+ $ RT_J                        : int  8 8 8 32 2 32 1 16 1 4 ...
+ $ T1_I                        : int  16 2048 1 8 4 2048 16 1 1 64 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.002337 0.000671 0.064141 0.014671 0.026088 ...
- $ cost_mean                   : num  5.886 2.12 0.945 0.85 0.884 ...
- $ U_J                         : int  1 1 5 1 1 1 26 9 10 12 ...
- $ U_I                         : int  30 28 1 14 30 21 1 1 1 1 ...
+ $ cost_std                    : num  0.197295 0.235736 0.003218 0.038324 0.000195 ...
+ $ cost_mean                   : num  0.93 0.591 4.422 0.872 5.595 ...
+ $ U_J                         : int  3 13 1 1 25 1 1 27 1 4 ...
+ $ U_I                         : int  1 1 2 30 1 14 4 1 3 1 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "False" "False" "True" "True" ...
- $ mean_confidence_interval_sup: num  5.888 2.12 0.985 0.859 0.901 ...
- $ experiment_id               : chr  "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" "xeon_e5_2630_v3_grisou-42_1563917028" ...
+ $ OMP                         : chr  "True" "True" "False" "True" ...
+ $ mean_confidence_interval_sup: num  1.052 0.737 4.424 0.896 5.595 ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" ...
+#+end_example
+
+******* Loading Data for D-Optimality and ANOVA              :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+read_experiment <- function(x) {
+  design <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  design$id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  design$step <- as.integer(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3]) + 1
+  design$X <- NULL
+  str(design)
+  return(data)
+}
+
+target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "design_step_",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+read_experiment(summary_files[1])
+
+# summaries <- bind_rows(lapply(summary_files, read_experiment))
+#
+# eliminated_terms <- summaries %>%
+#   separate_rows(removed_variables, sep = ", ")  %>%
+#   select(removed_variables, step, experiment_id) %>%
+#   mutate(removed_variables = sapply(removed_variables,
+#                                     function (x) str_trim(str_replace_all(x,
+#                                                                           c("'" = "",
+#                                                                             "\\[" = "",
+#                                                                             "\\]" = ""))))) %>%
+#   mutate(removed_variables = factor(removed_variables,
+#                                     levels = names(sort(table(removed_variables),
+#                                                         decreasing = TRUE))))
+#
+# fixed_factor_data <- summaries %>%
+#   separate_rows(current_best_coordinate, sep = ",")  %>%
+#   select(current_best_coordinate, step, experiment_id) %>%
+#   mutate(current_best_coordinate = sapply(current_best_coordinate,
+#                                 function (x) str_trim(str_replace_all(x,
+#                                                                       c("'" = "",
+#                                                                         " " = "",
+#                                                                         "\\{" = "",
+#                                                                         "\\}" = "",
+#                                                                         ":" = "->")))))
+#
+# fixed_factor_data$current_best_coordinate[fixed_factor_data$current_best_coordinate == ""] <- "None"
+#
+# fixed_steps_data <- summaries %>%
+#   separate_rows(fixed_factors, sep = ",")  %>%
+#   select(fixed_factors, step, experiment_id) %>%
+#   mutate(fixed_factors = sapply(fixed_factors,
+#                                 function (x) str_trim(str_replace_all(x,
+#                                                                       c("'" = "",
+#                                                                         " " = "",
+#                                                                         "\\{" = "",
+#                                                                         "\\}" = "",
+#                                                                         ":" = "->")))))#%>%
+#
+# fixed_steps_data$fixed_factors[fixed_steps_data$fixed_factors == ""] <- "None"
+#
+# fixed_steps_data <- fixed_steps_data %>%
+#   group_by(experiment_id) %>%
+#   distinct(fixed_factors, .keep_all = TRUE) %>%
+#   ungroup() %>%
+#   dplyr::filter(fixed_factors != "None")
+#
+# str(eliminated_terms)
+# str(fixed_factor_data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	26 obs. of  15 variables:
+ $ T1_I: int  4 11 0 3 2 11 4 0 0 6 ...
+ $ T1_J: int  0 3 5 0 11 10 0 0 9 11 ...
+ $ T2_I: int  11 0 11 0 2 11 11 11 4 7 ...
+ $ T2_J: int  7 7 6 4 0 0 11 9 0 0 ...
+ $ U1_I: int  29 29 2 5 0 8 16 20 29 23 ...
+ $ U_I : int  0 0 1 29 0 13 3 0 2 0 ...
+ $ U_J : int  2 12 0 0 24 0 0 26 0 3 ...
+ $ RT_I: int  0 3 0 0 5 1 5 2 2 2 ...
+ $ RT_J: int  3 3 3 5 1 5 0 4 0 2 ...
+ $ SCR : int  0 1 0 1 0 0 1 0 0 1 ...
+ $ VEC1: int  1 0 0 0 0 0 0 1 1 0 ...
+ $ VEC2: int  1 0 0 1 0 0 0 0 1 1 ...
+ $ OMP : int  1 1 0 1 0 1 1 1 1 0 ...
+ $ id  : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
+ $ step: num  1 1 1 1 1 1 1 1 1 1 ...
+NULL
 #+end_example
 
 ****** Histograms and Iterations Plots
 ******* Iterations where best was found
 #+HEADER: :results graphics output :session *R* :exports results
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 900
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 10 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -36893,8 +36991,8 @@ grid.draw(new_plot)
 
 ****** Eliminated Factors and Fixed Values
 #+HEADER: :results graphics :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".png")
-#+HEADER: :width 800 :height 900 :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 10 :height 10 :exports results
 #+begin_SRC R
 base_size <- 18
 
@@ -36918,13 +37016,12 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+LABEL: fig:eliminated-terms-threshold-2x-nocube
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figure8bjOHn.png]]
-
+[[file:/tmp/babel-w5lAu8/figurergFaL8.png]]
 
 ****** Step-by-step Plots
 ******* Fixed Model Terms
 ******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -36937,15 +37034,10 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
             stat = "count",
             position = position_stack(0.5)) +
   ylab("Eliminated Terms by Step") +
-  xlab("") +
+  xlab("Steps") +
   theme_bw(base_size = 18) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  guides(fill = guide_legend(nrow = 1)) +
-                                        #scale_color_manual(values = my_palette)
+  theme(text = element_text(family = "sans")) +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
@@ -36953,10 +37045,10 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:encpnc-et-ss-ae
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figure9r5M9Z.png]]
+[[file:/tmp/babel-NP5Vbv/figure9r5M9Z.pdf]]
 
 ******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -36970,17 +37062,10 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
             stat = "count",
             position = position_stack(0.5)) +
   ylab("Eliminated Terms by Step") +
-  xlab("") +
+  xlab("Steps") +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   theme_bw(base_size = 18) +
-  theme(text = element_text(family = "sans"),
-        strip.background = element_blank(),
-        strip.text.x = element_blank(),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  guides(fill = guide_legend(nrow = 1)) +
-                                        #scale_color_manual(values = my_palette)
+  theme(text = element_text(family = "sans")) +
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
@@ -36992,7 +37077,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 
 ******* Fixed Factors & Values
 ******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37004,14 +37089,9 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
   geom_text(aes(label = fixed_factors),
             stat = "count",
             position = position_stack(0.5)) +
-  geom_jitter(aes(x = as.factor(step), y = cost_mean + 38, fill = NULL),
-              subset(search_spaces, correct_result == "True"),
-              height = 0.0,
-              width = 0.2,
-              alpha = 0.4,
-              show.legend = FALSE) +
   ylab("Fixed Factors by Step") +
-  xlab("") +
+  xlab("Steps") +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans")) +
   scale_fill_manual(values = get_palette(color_count))
@@ -37024,7 +37104,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 [[file:/tmp/babel-NP5Vbv/figureWGwxds.png]]
 
 ******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 1600 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37032,23 +37112,16 @@ color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
 ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
-  facet_wrap(experiment_id ~ ., ncol = 5) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
   geom_bar(stat = "Count", show.legend = FALSE) +
   geom_text(aes(label = fixed_factors),
             stat = "count",
             position = position_stack(0.5)) +
-  geom_jitter(aes(x = as.factor(step), y = cost_mean + 14, fill = OMP),
-              subset(search_spaces, correct_result == "True"),
-              height = 0.0,
-              width = 0.3,
-              show.legend = FALSE,
-              alpha = 0.4) +
   ylab("Fixed Factors by Step") +
-  xlab("") +
+  xlab("Steps") +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   theme_bw(base_size = 17) +
   theme(text = element_text(family = "sans")) +
-        #strip.background = element_blank(),
-        #strip.text.x = element_blank())+
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
@@ -37060,7 +37133,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 ******* Searched Spaces by Step
 ******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37068,7 +37141,8 @@ ggplot(subset(search_spaces, correct_result == "True"),
        aes(x = as.factor(step), y = cost_mean)) +
   geom_jitter(width = 0.3, height = 0, alpha = 0.56) +
   ylab("Execution Time") +
-  xlab("DLMT Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
@@ -37082,23 +37156,21 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+RESULTS:
 [[file:/tmp/babel-NP5Vbv/figureJh9c3g.png]]
 
-
 ******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 1020 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
 ggplot(subset(search_spaces, correct_result == "True"),
        aes(x = as.factor(step), y = cost_mean, color = interaction(SCR, OMP))) +
   geom_jitter(width = 0.3, height = 0, alpha = 0.6) +
-  facet_wrap(experiment_id ~ ., ncol = 5) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
   ylab("Execution Time") +
-  xlab("DLMT Step") +
+  xlab("Step") +
+  scale_x_discrete(limits = c(1, 2, 3, 4)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
-        #strip.background = element_blank(),
-        #strip.text.x = element_blank(),
         legend.direction = "horizontal",
         legend.title = element_blank()) +
         scale_color_brewer(palette = "Set1")
