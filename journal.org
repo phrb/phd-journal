@@ -36425,7 +36425,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36489,15 +36489,15 @@ str(fixed_factor_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	54 obs. of  3 variables:
- $ removed_variables: Factor w/ 17 levels "","OMP","SCR",..: 2 1 1 1 2 5 8 11 10 3 ...
- $ step             : int  1 2 3 4 1 1 1 1 1 1 ...
- $ experiment_id    : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
+'data.frame':	56 obs. of  3 variables:
+ $ removed_variables: Factor w/ 14 levels "","OMP","SCR",..: 1 1 1 2 1 2 4 3 7 1 ...
+ $ step             : int  1 2 3 4 1 2 2 2 2 3 ...
+ $ experiment_id    : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 
-'data.frame':	468 obs. of  3 variables:
- $ current_best_coordinate: chr  "T1_I->2048" "T1_J->8" "U_J->13" "U_I->1" ...
+'data.frame':	520 obs. of  3 variables:
+ $ current_best_coordinate: chr  "T1_I->32" "T1_J->1" "U_J->19" "U_I->1" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ experiment_id          : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
+ $ experiment_id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 #+end_example
 
 ******* Loading Data for Histograms and Iterations           :noexport:
@@ -36511,7 +36511,7 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/nocube_log_steps"
+data_dir <- "dlmt_spapt_experiments/data/tests/formula_log"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 data <- NULL
 
@@ -36574,6 +36574,11 @@ complete_plot_data <- plot_data
 #+END_SRC
 
 #+RESULTS:
+:
+: Error in str_split(x, "/") : object 'x' not found
+:
+: Error in UseMethod("distinct_") :
+:   no applicable method for 'distinct_' applied to an object of class "NULL"
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -36651,6 +36656,11 @@ complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
 #+END_SRC
 
 #+RESULTS:
+:
+: Error in str_split(x, "/") : object 'x' not found
+:
+: Error in UseMethod("distinct_") :
+:   no applicable method for 'distinct_' applied to an object of class "NULL"
 ******* Loading Data Step-by-step Plots                      :noexport:
 #+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
@@ -36665,7 +36675,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36707,21 +36717,21 @@ str(search_spaces)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	29 obs. of  17 variables:
- $ id                     : int  1 1 1 1 1 1 1 1 1 1 ...
+'data.frame':	30 obs. of  17 variables:
+ $ id                     : int  1 1 1 1 1 1 1 2 2 2 ...
  $ valid_configurations   : int  37440 37440 37440 37440 37440 37440 37440 37440 37440 37440 ...
- $ D                      : num  0.204 0.205 0.205 0.205 0.205 ...
- $ used_budget            : int  0 0 0 0 0 0 0 0 0 0 ...
+ $ D                      : num  0.205 0.206 0.206 0.206 0.206 ...
+ $ used_budget            : int  0 0 0 0 0 0 0 24 24 24 ...
  $ model_size             : int  22 22 22 22 22 22 22 22 22 22 ...
- $ current_best           : num  0.591 0.651 0.651 0.651 0.651 ...
+ $ current_best           : num  0.69 0.733 0.733 0.733 0.733 ...
  $ trials                 : int  26 26 26 26 26 26 26 26 26 26 ...
- $ current_best_coordinate: chr  "{'T1_I': 2048, 'T1_J': 8, 'U_J': 13, 'U_I': 1, 'T2_I': 1, 'T2_J': 128, 'U1_I': 30, 'OMP': True, 'VEC2': False, "| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ "{'T1_I': 2048, 'T1_J': 2048, 'U_J': 1, 'U_I': 10, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 8, 'OMP': True, 'VEC2': F"| __truncated__ ...
- $ tested_configurations  : int  1802750 1801682 1801682 1801682 1801682 1801682 1801682 1801682 1801682 1801682 ...
- $ fixed_factors          : chr  "{'OMP': 1}" "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ "{'RT_J': 0, 'RT_I': 2, 'T1_J': 10, 'U_J': 24, 'U_I': 0, 'T2_I': 6, 'T2_J': 11, 'U1_I': 28, 'OMP': 1, 'VEC2': 0,"| __truncated__ ...
- $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
- $ design_best            : num  0.591 0.651 0.651 0.651 0.651 ...
+ $ current_best_coordinate: chr  "{'T1_I': 256, 'T1_J': 128, 'U_J': 1, 'U_I': 5, 'T2_I': 512, 'T2_J': 512, 'U1_I': 18, 'OMP': True, 'VEC2': False"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ ...
+ $ tested_configurations  : int  1796751 1787270 1787270 1787270 1787270 1787270 1789531 1801962 1801962 1801962 ...
+ $ fixed_factors          : chr  "{'OMP': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" ...
+ $ step                   : int  1 1 1 1 1 1 1 2 2 2 ...
+ $ design_best            : num  0.752 0.74 0.74 0.74 0.74 ...
  $ total_budget           : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
- $ removed_variables      : chr  "OMP" "OMP" "I(RT_I^2)" "I(T2_J^2)" ...
+ $ removed_variables      : chr  "OMP" "OMP" "I(T1_J^2)" "SCR" ...
  $ model                  : chr  "~ I(T1_I ^ 2)
 I(T1_J ^ 2)
 I(T2_I ^ 2)
@@ -36751,34 +36761,34 @@ I(U1_I ^ 2)
 I(U_I ^ 2)
 I(U_J ^ 2)
 I(RT_I ^ 2) +"| __truncated__ ...
- $ predicted_best         : num  0.91 0.773 0.773 0.773 0.773 ...
- $ experiment_id          : chr  "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" "xeon_e5_2630_v3_grisou-31_1565116657" ...
+ $ predicted_best         : num  0.69 0.733 0.733 0.733 0.733 ...
+ $ experiment_id          : chr  "parasilo-14" "parasilo-17" "parasilo-17" "parasilo-17" ...
 
-'data.frame':	869 obs. of  24 variables:
+'data.frame':	1019 obs. of  24 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  128 128 64 16 1 1 2048 512 1 1 ...
- $ T2_I                        : int  2048 1 2048 1 4 2048 2048 2048 16 128 ...
- $ RT_I                        : int  1 8 1 1 32 2 32 4 4 4 ...
- $ mean_confidence_interval_inf: num  0.807 0.445 4.42 0.848 5.595 ...
+ $ T2_J                        : int  2048 512 32 128 1 1024 1024 64 1 64 ...
+ $ T2_I                        : int  128 64 1 128 2 1 128 2048 1 512 ...
+ $ RT_I                        : int  1 32 32 32 4 1 4 16 8 2 ...
+ $ mean_confidence_interval_inf: num  0.908 0.952 0.63 4.683 0.941 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  1 8 32 1 2048 1024 1 1 512 2048 ...
+ $ T1_J                        : int  128 1 8 1 2048 32 4 32 1024 1 ...
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ VEC2                        : chr  "True" "False" "False" "True" ...
- $ VEC1                        : chr  "True" "False" "False" "False" ...
- $ SCR                         : chr  "False" "True" "False" "True" ...
- $ U1_I                        : int  30 30 3 6 1 9 17 21 30 24 ...
- $ RT_J                        : int  8 8 8 32 2 32 1 16 1 4 ...
- $ T1_I                        : int  16 2048 1 8 4 2048 16 1 1 64 ...
+ $ VEC2                        : chr  "False" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "False" "False" "True" "False" ...
+ $ U1_I                        : int  15 10 11 29 10 4 2 21 1 17 ...
+ $ RT_J                        : int  32 2 1 1 32 2 4 2 1 4 ...
+ $ T1_I                        : int  1 16 2048 8 1 1 1 2 256 1 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.197295 0.235736 0.003218 0.038324 0.000195 ...
- $ cost_mean                   : num  0.93 0.591 4.422 0.872 5.595 ...
- $ U_J                         : int  3 13 1 1 25 1 1 27 1 4 ...
- $ U_I                         : int  1 1 2 30 1 14 4 1 3 1 ...
+ $ cost_std                    : num  0.026034 0.039186 0.172632 0.000844 0.037614 ...
+ $ cost_mean                   : num  0.925 0.976 0.737 4.684 0.964 ...
+ $ U_J                         : int  1 1 1 15 11 21 1 1 28 30 ...
+ $ U_I                         : int  16 1 30 1 1 1 30 14 1 1 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "True" "True" "False" "True" ...
- $ mean_confidence_interval_sup: num  1.052 0.737 4.424 0.896 5.595 ...
- $ experiment_id               : chr  "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" "xeon_e5_2630_v3_grisou-14_1565116657" ...
+ $ OMP                         : chr  "True" "True" "True" "False" ...
+ $ mean_confidence_interval_sup: num  0.941 1 0.844 4.684 0.987 ...
+ $ experiment_id               : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 #+end_example
 
 ******* Loading Data for D-Optimality and ANOVA              :noexport:
@@ -36787,97 +36797,93 @@ I(RT_I ^ 2) +"| __truncated__ ...
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(AlgDesign)
+library(FrF2)
+
+factor_efficiency <- function(fac, frml) {
+  #factor_names <- c("I", paste("x", 1:ncol(fac), sep = ""))
+  X = model.matrix(frml, fac)
+  Y = (t(X) %*% X) / nrow(fac)
+
+  Z = (Y[, rep(2:ncol(X))]) ^ 2
+  Z = Z %*% rep(1, ncol(X) - 1)
+
+  efficiencies <- ((1 / Z) * (1 - (Y[, 1]) ^ 2))
+  df_efficiencies <- as.data.frame(efficiencies)
+  df_efficiencies$factors <- rownames(efficiencies)
+
+  return(df_efficiencies)
+}
+
+compute_factor_efficiencies <- function(design) {
+  frml <- formula(str_replace_all(design$formula[1], "e", ""))
+  factor_efficiencies <- factor_efficiency(design, frml)
+
+  factor_efficiencies$id <- design$id[1]
+  factor_efficiencies$step <- design$step[1]
+
+  return(factor_efficiencies)
+}
 
 read_experiment <- function(x) {
   design <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
   design$id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
-  design$step <- as.integer(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3]) + 1
+  design$step <- as.integer(str_split(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3], "\\.")[[1]][1]) + 1
   design$X <- NULL
-  str(design)
-  return(data)
+  return(design)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/nocube_log_steps/bicgkernel"
+read_formula <- function(x) {
+  formula <- read.csv(x, header = FALSE, stringsAsFactors = FALSE)
+  formula$id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  formula$step <- as.integer(str_split(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3], "\\.")[[1]][1]) + 1
+  return(formula)
+}
 
-summary_files <- paste(target_path,
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
+
+designs_files <- paste(target_path,
                        list.files(path = target_path,
                                   pattern = "design_step_",
                                   recursive = TRUE),
                        sep = "/")
 
-summary_files <- summary_files[file.info(summary_files)$size != 0]
-read_experiment(summary_files[1])
+designs_files <- designs_files[file.info(designs_files)$size != 0]
+designs <- bind_rows(lapply(designs_files, read_experiment))
 
-# summaries <- bind_rows(lapply(summary_files, read_experiment))
-#
-# eliminated_terms <- summaries %>%
-#   separate_rows(removed_variables, sep = ", ")  %>%
-#   select(removed_variables, step, experiment_id) %>%
-#   mutate(removed_variables = sapply(removed_variables,
-#                                     function (x) str_trim(str_replace_all(x,
-#                                                                           c("'" = "",
-#                                                                             "\\[" = "",
-#                                                                             "\\]" = ""))))) %>%
-#   mutate(removed_variables = factor(removed_variables,
-#                                     levels = names(sort(table(removed_variables),
-#                                                         decreasing = TRUE))))
-#
-# fixed_factor_data <- summaries %>%
-#   separate_rows(current_best_coordinate, sep = ",")  %>%
-#   select(current_best_coordinate, step, experiment_id) %>%
-#   mutate(current_best_coordinate = sapply(current_best_coordinate,
-#                                 function (x) str_trim(str_replace_all(x,
-#                                                                       c("'" = "",
-#                                                                         " " = "",
-#                                                                         "\\{" = "",
-#                                                                         "\\}" = "",
-#                                                                         ":" = "->")))))
-#
-# fixed_factor_data$current_best_coordinate[fixed_factor_data$current_best_coordinate == ""] <- "None"
-#
-# fixed_steps_data <- summaries %>%
-#   separate_rows(fixed_factors, sep = ",")  %>%
-#   select(fixed_factors, step, experiment_id) %>%
-#   mutate(fixed_factors = sapply(fixed_factors,
-#                                 function (x) str_trim(str_replace_all(x,
-#                                                                       c("'" = "",
-#                                                                         " " = "",
-#                                                                         "\\{" = "",
-#                                                                         "\\}" = "",
-#                                                                         ":" = "->")))))#%>%
-#
-# fixed_steps_data$fixed_factors[fixed_steps_data$fixed_factors == ""] <- "None"
-#
-# fixed_steps_data <- fixed_steps_data %>%
-#   group_by(experiment_id) %>%
-#   distinct(fixed_factors, .keep_all = TRUE) %>%
-#   ungroup() %>%
-#   dplyr::filter(fixed_factors != "None")
-#
-# str(eliminated_terms)
-# str(fixed_factor_data)
+formulas_files <- paste(target_path,
+                        list.files(path = target_path,
+                                   pattern = "formula_step_",
+                                   recursive = TRUE),
+                        sep = "/")
+
+formulas_files <- formulas_files[file.info(formulas_files)$size != 0]
+formulas <- bind_rows(lapply(formulas_files, read_formula))
+
+names(formulas) <- c("formula", "id", "step")
+
+design_data <- inner_join(designs, formulas)
+
+design_data_plot <- design_data %>%
+  group_by(id, step) %>%
+  do(compute_factor_efficiencies(.)) %>%
+  ungroup()
+
+str(design_data_plot)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
 
-'data.frame':	26 obs. of  15 variables:
- $ T1_I: int  4 11 0 3 2 11 4 0 0 6 ...
- $ T1_J: int  0 3 5 0 11 10 0 0 9 11 ...
- $ T2_I: int  11 0 11 0 2 11 11 11 4 7 ...
- $ T2_J: int  7 7 6 4 0 0 11 9 0 0 ...
- $ U1_I: int  29 29 2 5 0 8 16 20 29 23 ...
- $ U_I : int  0 0 1 29 0 13 3 0 2 0 ...
- $ U_J : int  2 12 0 0 24 0 0 26 0 3 ...
- $ RT_I: int  0 3 0 0 5 1 5 2 2 2 ...
- $ RT_J: int  3 3 3 5 1 5 0 4 0 2 ...
- $ SCR : int  0 1 0 1 0 0 1 0 0 1 ...
- $ VEC1: int  1 0 0 0 0 0 0 1 1 0 ...
- $ VEC2: int  1 0 0 1 0 0 0 0 1 1 ...
- $ OMP : int  1 1 0 1 0 1 1 1 1 0 ...
- $ id  : chr  "grisou-14" "grisou-14" "grisou-14" "grisou-14" ...
- $ step: num  1 1 1 1 1 1 1 1 1 1 ...
-NULL
+There were 40 warnings (use warnings() to see them)
+
+Joining, by = c("id", "step")
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	853 obs. of  4 variables:
+ $ V1     : num  0.00 -5.89e-06 -5.22e-06 -6.53e-06 -5.38e-06 ...
+ $ factors: chr  "(Intercept)" "I(T1_I^2)" "I(T1_J^2)" "I(T2_I^2)" ...
+ $ id     : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+ $ step   : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
 
 ****** Histograms and Iterations Plots
@@ -37183,6 +37189,22 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+******* Brice's Metric at each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
+ggplot(design_data_plot, aes(x = factors, y = V1)) +
+  facet_grid(id ~ step) +
+  geom_bar(stat = "identity") +
+  theme_bw(base_size = 16) +
+  theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+#+end_SRC
+
+#+CAPTION: Values of Brice's metric for all model terms, considering the model formula used at each step
+#+LABEL: fig:brices-metric
+#+ATTR_LATEX: :width \textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figure4uCALf.pdf]]
+
 *** [2019-08-07 Wed]
 **** Looking at some sampled data                                 :ATTACH:
 :PROPERTIES:
@@ -37214,4 +37236,81 @@ ggplot(data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figurexHPKiZ.png]]
+[[file:/tmp/babel-w5lAu8/figure1CO4Ay.png]]
+*** [2019-08-12 Mon]
+**** Exploring Brice's Design Efficiency Metric
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(AlgDesign)
+library(dplyr)
+library(FrF2)
+
+factor_efficiency <- function(fac) {
+  factor_names <- c("I", paste("x", 1:ncol(fac), sep = ""))
+  X = model.matrix(~., fac)
+  Y = (t(X) %*% X) / nrow(fac)
+
+  Z = (Y[, rep(2:ncol(X))]) ^ 2
+  Z = Z %*% rep(1, ncol(X) - 1)
+
+  efficiencies <- ((1 / Z) * (1 - (Y[, 1]) ^ 2))
+
+  df_efficiencies <- as.data.frame(efficiencies)
+  df_efficiencies$factors <- factor_names
+
+  return(df_efficiencies)
+}
+#+END_SRC
+
+#+RESULTS:
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+fac = gen.factorial(c(2, 2, 2, 2, 2, 2, 2))
+
+fac <- fac[sample(nrow(fac), 9), ]
+
+sampled_efficiency <- factor_efficiency(fac)
+sampled_efficiency$name <- "uniformly sampled"
+
+fac = FrF2(nfactors = 7, nruns = 8)
+
+fractional_factorial_efficiency <- factor_efficiency(fac)
+fractional_factorial_efficiency$name <- "fractional factorial"
+
+plackett_burman_efficiency <- factor_efficiency(pb(8))
+plackett_burman_efficiency$name <- "plackett burman"
+
+
+factors = 7
+fac = gen.factorial(rep(2, factors))
+fac = fac[sample(nrow(fac), 30), ]
+
+output = optFederov(~., fac, nTrials = factors + 1)
+
+d_optimal_efficiency <- factor_efficiency(output$design)
+d_optimal_efficiency$name <- "d-optimal"
+
+data <- bind_rows(sampled_efficiency,
+                  fractional_factorial_efficiency,
+                  plackett_burman_efficiency,
+                  d_optimal_efficiency)
+#+END_SRC
+
+#+RESULTS:
+:
+: Warning message:
+: In pb(8) :
+:   Plackett-Burman designs in 8 runs coincide with regular fractional factorials.
+:           For screening more than four factors, you may want to consider increasing the number of runs to 12.
+:           Make sure to take the alias structure into account for interpretation!
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+ggplot(data, aes(x = factors, y = V1)) +
+  facet_wrap(name ~ ., scale = "free_x") +
+  geom_bar(stat = "identity") +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureTDDQEz.png]]
