@@ -36425,7 +36425,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36511,14 +36511,14 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/formula_log"
+data_dir <- "dlmt_spapt_experiments/data/tests/formula_log_encoded"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -36574,11 +36574,6 @@ complete_plot_data <- plot_data
 #+END_SRC
 
 #+RESULTS:
-:
-: Error in str_split(x, "/") : object 'x' not found
-:
-: Error in UseMethod("distinct_") :
-:   no applicable method for 'distinct_' applied to an object of class "NULL"
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -36596,8 +36591,7 @@ rs_data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
-
-    data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -36637,30 +36631,40 @@ for (target_dir in target_dirs) {
 }
 
 rs_plot_data <- rs_data %>%
-  distinct(experiment_id, .keep_all = TRUE) %>%
-  group_by(application) %>%
+  group_by(technique) %>%
   mutate(mean_cost_baseline = mean(cost_baseline)) %>%
-  ungroup()
-
-rs_plot_data <- rs_plot_data %>%
-  distinct(experiment_id, .keep_all = TRUE) %>%
-  group_by(application, technique) %>%
   mutate(label_center_x = mean(cost_mean)) %>%
   mutate(label_center_y = mean(best_iteration)) %>%
   ungroup()
 
-rs_plot_data <- filter(rs_plot_data, technique == "RS")
+rs_plot_data <- filter(rs_plot_data, technique == "RS") %>%
+  distinct(experiment_id, .keep_all = TRUE)
 
 complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
-                                       rs_plot_data)
+                                rs_plot_data)
+
+
+str(complete_plot_data)
+print(unique(complete_plot_data$technique))
 #+END_SRC
 
 #+RESULTS:
-:
-: Error in str_split(x, "/") : object 'x' not found
-:
-: Error in UseMethod("distinct_") :
-:   no applicable method for 'distinct_' applied to an object of class "NULL"
+#+begin_example
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  10 variables:
+ $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  4.86 4.85 4.75 4.75 4.86 ...
+ $ min_run_cost      : num  0.524 0.558 0.475 0.502 0.54 ...
+ $ best_iteration    : num  86 104 64 78 57 109 93 69 73 43 ...
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
+ $ label_center_x    : num  2.36 2.36 2.36 2.36 2.36 ...
+ $ label_center_y    : num  77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 ...
+
+[1] "DLMT" "RS"
+#+end_example
 ******* Loading Data Step-by-step Plots                      :noexport:
 #+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
@@ -36675,7 +36679,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36801,7 +36805,6 @@ library(AlgDesign)
 library(FrF2)
 
 factor_efficiency <- function(fac, frml) {
-  #factor_names <- c("I", paste("x", 1:ncol(fac), sep = ""))
   X = model.matrix(frml, fac)
   Y = (t(X) %*% X) / nrow(fac)
 
@@ -36816,7 +36819,8 @@ factor_efficiency <- function(fac, frml) {
 }
 
 compute_factor_efficiencies <- function(design) {
-  frml <- formula(str_replace_all(design$formula[1], "e", ""))
+  #frml <- formula(str_replace_all(design$formula[1], "e", ""))
+  frml <- formula(design$formula[1])
   factor_efficiencies <- factor_efficiency(design, frml)
 
   factor_efficiencies$id <- design$id[1]
@@ -36840,7 +36844,7 @@ read_formula <- function(x) {
   return(formula)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log/bicgkernel"
+target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
 
 designs_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36992,7 +36996,7 @@ grid.draw(new_plot)
 #+LABEL: fig:best-found-threshold-2x-nocube
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figureT3ftbC.png]]
+[[file:/tmp/babel-w5lAu8/figureZgRZWM.pdf]]
 
 
 ****** Eliminated Factors and Fixed Values
@@ -37022,7 +37026,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+LABEL: fig:eliminated-terms-threshold-2x-nocube
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figurergFaL8.png]]
+[[file:/tmp/babel-w5lAu8/figureNzwVAP.pdf]]
 
 ****** Step-by-step Plots
 ******* Fixed Model Terms
@@ -37051,7 +37055,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:encpnc-et-ss-ae
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figure9r5M9Z.pdf]]
+[[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
 
 ******** Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
@@ -37079,7 +37083,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:encpnc-et-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figure1LwRNK.png]]
+[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
 
 ******* Fixed Factors & Values
 ******** Combined Experiments
@@ -37107,7 +37111,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figureWGwxds.png]]
+[[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
 
 ******** Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
@@ -37131,12 +37135,12 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
-#+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figureVg4bP4.png]]
-
 #+CAPTION: Fixed Factors, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
+
 ******* Searched Spaces by Step
 ******** Combined Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
@@ -37160,7 +37164,7 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figureJh9c3g.png]]
+[[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
 
 ******** Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
@@ -37183,27 +37187,34 @@ ggplot(subset(search_spaces, correct_result == "True"),
 
 #+end_SRC
 
-#+RESULTS:
-[[file:/tmp/babel-NP5Vbv/figurebF1Fh0.png]]
-
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureXP51p5.pdf]]
+
 ******* Brice's Metric at each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
-ggplot(design_data_plot, aes(x = factors, y = V1)) +
+color_count = length(unique(design_data_plot$factors))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(design_data_plot, aes(x = factors, y = V1, fill = factors)) +
   facet_grid(id ~ step) +
   geom_bar(stat = "identity") +
   theme_bw(base_size = 16) +
-  theme(
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 3)) +
+  scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
 #+CAPTION: Values of Brice's metric for all model terms, considering the model formula used at each step
 #+LABEL: fig:brices-metric
-#+ATTR_LATEX: :width \textwidth :placement [H]
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figure4uCALf.pdf]]
+[[file:/tmp/babel-w5lAu8/figurejuvZld.pdf]]
 
 *** [2019-08-07 Wed]
 **** Looking at some sampled data                                 :ATTACH:
