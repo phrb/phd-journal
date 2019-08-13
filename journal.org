@@ -37229,7 +37229,7 @@ color_count = length(unique(spread_data$removed_variables))
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
 ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
-  facet_wrap(experiment_id ~ .) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
   geom_bar(stat = "Count", show.legend = FALSE) +
   geom_text(aes(label = removed_variables),
             stat = "count",
@@ -37335,7 +37335,7 @@ library(ggplot2)
 library(RColorBrewer)
 
 ggplot(subset(search_spaces, correct_result == "True"),
-       aes(x = as.factor(step), y = cost_mean, color = interaction(SCR, OMP))) +
+       aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
   geom_jitter(width = 0.3, height = 0, alpha = 0.6) +
   facet_wrap(experiment_id ~ ., ncol = 3) +
   ylab("Execution Time") +
@@ -37346,8 +37346,12 @@ ggplot(subset(search_spaces, correct_result == "True"),
         legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank()) +
-        scale_color_brewer(palette = "Set1")
-
+  scale_colour_manual(name = "",
+                      values=c("red", "blue", "green", "purple"),
+                      labels=c("OMP & SCR: False",
+                               "OMP: True, SCR: False",
+                               "OMP: False, SCR: True",
+                               "OMP & SCR: True"))
 #+end_SRC
 
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
@@ -37364,10 +37368,10 @@ get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 ggplot(design_data_plot, aes(x = factors, y = V1, fill = factors)) +
   facet_grid(id ~ step) +
   geom_bar(stat = "identity", show.legend = FALSE) +
-  geom_text(aes(label = factors),
+  geom_text(aes(x = factors, y = 0.0, label = factors),
             stat = "identity",
+            hjust = "left",
             size = 3,
-            position = position_stack(0.0),
             angle = 90) +
   theme_bw(base_size = 15) +
   theme(axis.text.x = element_blank(),
