@@ -36821,7 +36821,8 @@ original_factor_efficiency <- function(fac, frml) {
 
 factor_efficiency <- function(fac, frml) {
   X <- model.matrix(frml, fac)
-  efficiencies <- (1 - (colSums(X) / nrow(X)) ^ 2) / (colSums(X * X) ^ 2) # actual computation
+
+  efficiencies <- (1 - ((colSums(X) / nrow(X)) ^ 2)) / ((colSums(X * X) / nrow(X)) ^ 2) # partie importante
 
   df_efficiencies <- data.frame(efficiencies)
   names(df_efficiencies) <- c("metric_value")
