@@ -5,6 +5,7 @@
 #+TAGS: noexport(n) Stats(S)
 #+TAGS: Teaching(T) R(R) OrgMode(O) Python(P)
 #+TAGS: Book(b) DOE(D) Code(C) NODAL(N) FPGA(F) Autotuning(A) Arnaud(r)
+#+TAGS: ExportableReports(E)
 #+TAGS: DataVis(v) PaperReview(W)
 #+EXPORT_SELECT_TAGS: Blog
 #+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
@@ -24996,7 +24997,7 @@ all_samples <- rbind(testing_sample, dopt_runif_sample, linear_runif_design,
 
 #+RESULTS:
 *** [2019-02-07 Thu]
-**** Comparing Sampling Strategies for Constructing D-Optimal Designs :full_export:
+**** Comparing Sampling Strategies for Constructing D-Optimal Designs :ExportableReports:
 Optimizing problems with a large number of configurable parameters, or
 /factors/, is  one of the main  objectives of our transparent  Design of
 Experiments approach to autotuning. Despite the high dimensionality of
@@ -36397,7 +36398,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 - Même chose pour pourvance-3 et paravance-31 où OMP et SCR ont été identifiés mais pas VEC1 ni VEC2.
 ** August
 *** [2019-08-05 Mon]
-**** Looking at ANOVA and =lm= tests
+**** Performance Modelling and Optimization of the =bicg= SPAPT kernel :ExportableReports:
 :PROPERTIES:
 :EXPORT_FILE_NAME: report.pdf
 :END:
@@ -36410,8 +36411,7 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 
 #+RESULTS:
 : Already up to date.
-***** Encoding, Restrictive Filter, without Cubic Terms, Larger Federov Sample
-****** Setup                                                  :noexport:
+****** Loading Data                                           :noexport:
 ******* Loading Data for Eliminated Factors                  :noexport:
 #+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
@@ -36586,7 +36586,7 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
+data_dir <- "dlmt_spapt_experiments/data/results"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 rs_data <- NULL
 
@@ -36651,7 +36651,7 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  10 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11 obs. of  10 variables:
  $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
  $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
  $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
@@ -36662,8 +36662,6 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  10 variables:
  $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
  $ label_center_x    : num  2.36 2.36 2.36 2.36 2.36 ...
  $ label_center_y    : num  77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 ...
-
-[1] "DLMT" "RS"
 #+end_example
 ******* Loading Data Step-by-step Plots                      :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -36912,8 +36910,28 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	860 obs. of  4 variables:
  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
 
-****** Histograms and Iterations Plots
-******* Iterations where best was found
+***** Introduction
+The objective  of this  report is  to analyze  data from  our CCGRID  paper, and
+perform new experiments  as needed, in order to better  understand the statiscal
+analysis and the performance achieved by  our DoE-based approach.  We would like
+to understand how a user could  interfere and guide search space restriction and
+exploration, by intervening at each ANOVA step, for example.
+
+We are also interested in exploring new design construction metrics, in order to
+understand which  factors are best estimated  at each step and  possibly discard
+designs not capable of estimating parameters of interest.
+
+We chose to  start with the =bicg= SPAPT  kernel. It was one of  the kernels where
+our approach  achieved similar-performing  solutions using less  experiments, in
+comparison with a uniform random sampling  approach, across 10 repetitions of an
+experiment with a fixed  budget of 400 experiments and a  limit of 4 iterations,
+or steps, of our approach.
+
+The  following sections  describe  our ongoing  exploration  of the  performance
+modeling and optimization of the =bicg= kernel.
+
+***** Histograms and Iterations Plots
+****** Iterations where best was found
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
 #+HEADER: :width 10 :height 10
@@ -37021,7 +37039,7 @@ grid.draw(new_plot)
 [[file:/tmp/babel-w5lAu8/figureZgRZWM.pdf]]
 
 
-****** Eliminated Factors and Fixed Values
+***** Eliminated Factors and Fixed Values
 #+HEADER: :results graphics :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
 #+HEADER: :width 10 :height 10 :exports results
@@ -37050,9 +37068,9 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureNzwVAP.pdf]]
 
-****** Step-by-step Plots
-******* Fixed Model Terms
-******** Combined Experiments
+***** Step-by-step Plots
+****** Fixed Model Terms
+******* Combined Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37079,7 +37097,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
 
-******** Separate Experiments
+******* Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37107,8 +37125,8 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
 
-******* Fixed Factors & Values
-******** Combined Experiments
+****** Fixed Factors & Values
+******* Combined Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37135,7 +37153,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
 
-******** Separate Experiments
+******* Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37163,8 +37181,8 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
 
-******* Searched Spaces by Step
-******** Combined Experiments
+****** Searched Spaces by Step
+******* Combined Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37188,7 +37206,7 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
 
-******** Separate Experiments
+******* Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37220,8 +37238,8 @@ ggplot(subset(search_spaces, correct_result == "True"),
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figuregu9cI1.pdf]]
 
-******* D-Optimality
-******** Performance at Each Step
+****** D-Optimality
+******* Performance at Each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37251,7 +37269,7 @@ ggplot(summaries) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
-******** D-Criterion
+******* D-Criterion
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37277,7 +37295,7 @@ ggplot(summaries) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
-****** Brice's Metric at each Step
+***** Brice's Metric at each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
 color_count = length(unique(design_data_plot$factors))
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
@@ -37358,18 +37376,22 @@ original_factor_efficiency <- function(fac) {
   return(df_efficiencies)
 }
 
-factor_efficiency <- function(fac) {
-  factor_names <- c("I", paste("x", 1:ncol(fac), sep = ""))
-  X = model.matrix(~., fac)
-  Y = (t(X) %*% X) / nrow(fac)
+efficiency <- function(f, normalized_information_matrix, id_matrix) {
+  return(solve(t(id_matrix[f, ]) %*% normalized_information_matrix %*% id_matrix[f, ]))
+}
 
-  Z = Y[, rep(2:ncol(X))]
-  Z = Z %*% rep(1, ncol(X) - 1)
+factor_efficiency <- function(fac, frml) {
+  X <- model.matrix(frml, fac)
 
-  efficiencies <- 1 - (Z * abs(Y[, 1]))
+  inf_X <- solve((t(X) %*% X) / nrow(X))
+  id_matrix <- diag(ncol(inf_X))
 
-  df_efficiencies <- as.data.frame(efficiencies)
-  df_efficiencies$factors <- factor_names
+  efficiencies <- sapply(1:ncol(inf_X), efficiency, normalized_information_matrix = inf_X, id_matrix = id_matrix)
+
+  df_efficiencies <- data.frame(efficiencies)
+  names(df_efficiencies) <- c("metric_value")
+
+  df_efficiencies$factors <- names(as.data.frame(X))
 
   return(df_efficiencies)
 }
@@ -37378,15 +37400,15 @@ fac = gen.factorial(c(2, 2, 2, 2, 2, 2, 2))
 
 fac <- fac[sample(nrow(fac), 9), ]
 
-sampled_efficiency <- factor_efficiency(fac)
+sampled_efficiency <- factor_efficiency(fac, ~.)
 sampled_efficiency$name <- "uniformly sampled"
 
 fac = FrF2(nfactors = 7, nruns = 8)
 
-fractional_factorial_efficiency <- factor_efficiency(fac)
+fractional_factorial_efficiency <- factor_efficiency(fac, ~.)
 fractional_factorial_efficiency$name <- "fractional factorial"
 
-plackett_burman_efficiency <- factor_efficiency(pb(8))
+plackett_burman_efficiency <- factor_efficiency(pb(8), ~.)
 plackett_burman_efficiency$name <- "plackett burman"
 
 
@@ -37396,7 +37418,7 @@ fac = fac[sample(nrow(fac), 30), ]
 
 output = optFederov(~., fac, nTrials = factors + 1)
 
-d_optimal_efficiency <- factor_efficiency(output$design)
+d_optimal_efficiency <- factor_efficiency(output$design, ~.)
 d_optimal_efficiency$name <- "d-optimal"
 
 data <- bind_rows(sampled_efficiency,
@@ -37414,14 +37436,14 @@ data <- bind_rows(sampled_efficiency,
 :           Make sure to take the alias structure into account for interpretation!
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
-ggplot(data, aes(x = factors, y = V1)) +
+ggplot(data, aes(x = factors, y = metric_value)) +
   facet_wrap(name ~ ., scale = "free_x") +
   geom_bar(stat = "identity") +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figurerG4ezG.png]]
+[[file:/tmp/babel-ynhqKR/figureSee7Tc.png]]
 *** [2019-08-14 Wed]
 **** Testing Metrics for Factor-wise Efficiency
 #+HEADER: :results output :session *R* :exports none
@@ -37539,4 +37561,4 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureDvyLEi.png]]
+[[file:/tmp/babel-ynhqKR/figurepm7C3X.png]]
