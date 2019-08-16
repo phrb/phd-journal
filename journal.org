@@ -36425,7 +36425,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-current_experiment <- "dlmt_spapt_experiments/data/tests/no_binary"
+current_experiment <- "dlmt_spapt_experiments/data/tests/formula_log_encoded"
 target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 summary_files <- paste(target_path,
