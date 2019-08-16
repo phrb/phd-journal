@@ -36425,7 +36425,8 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
+current_experiment <- "dlmt_spapt_experiments/data/tests/no_binary"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36511,7 +36512,7 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/formula_log_encoded"
+data_dir <- current_experiment
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 data <- NULL
 
@@ -36585,7 +36586,7 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/tests/threshold_0.01"
+data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 rs_data <- NULL
 
@@ -36645,7 +36646,6 @@ complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
 
 
 str(complete_plot_data)
-print(unique(complete_plot_data$technique))
 #+END_SRC
 
 #+RESULTS:
@@ -36679,7 +36679,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 summary_files <- paste(target_path,
                        list.files(path = target_path,
@@ -36819,15 +36819,23 @@ original_factor_efficiency <- function(fac, frml) {
   return(df_efficiencies)
 }
 
+efficiency <- function(f, normalized_information_matrix, id_matrix) {
+  return(solve(t(id_matrix[f, ]) %*% normalized_information_matrix %*% id_matrix[f, ]))
+}
+
 factor_efficiency <- function(fac, frml) {
   X <- model.matrix(frml, fac)
 
-  efficiencies <- (1 - abs(colSums(X) / nrow(X))) / (1 + abs(colSums(t(X) %*% X) / (nrow(X) ^ 2))) # partie importante
+  inf_X <- solve((t(X) %*% X) / nrow(X))
+  id_matrix <- diag(ncol(inf_X))
+
+  efficiencies <- sapply(1:ncol(inf_X), efficiency, normalized_information_matrix = inf_X, id_matrix = id_matrix)
 
   df_efficiencies <- data.frame(efficiencies)
   names(df_efficiencies) <- c("metric_value")
 
-  df_efficiencies$factors <- rownames(df_efficiencies)
+  #df_efficiencies$factors <- rownames(df_efficiencies)
+  df_efficiencies$factors <- names(as.data.frame(X))
 
   return(df_efficiencies)
 }
@@ -36858,7 +36866,7 @@ read_formula <- function(x) {
   return(formula)
 }
 
-target_path <- "dlmt_spapt_experiments/data/tests/formula_log_encoded/bicgkernel"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 designs_files <- paste(target_path,
                        list.files(path = target_path,
@@ -37008,7 +37016,7 @@ grid.draw(new_plot)
 
 #+CAPTION: Iteration where best was found
 #+LABEL: fig:best-found-threshold-2x-nocube
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureZgRZWM.pdf]]
 
@@ -37038,7 +37046,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 
 #+CAPTION: Eliminated terms
 #+LABEL: fig:eliminated-terms-threshold-2x-nocube
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureNzwVAP.pdf]]
 
@@ -37061,13 +37069,13 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
   xlab("Steps") +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans")) +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
 #+CAPTION: Eliminated terms, step-by-step, for all experiments
 #+LABEL: fig:encpnc-et-ss-ae
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
 
@@ -37087,7 +37095,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
             position = position_stack(0.5)) +
   ylab("Eliminated Terms by Step") +
   xlab("Steps") +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans")) +
   scale_fill_manual(values = get_palette(color_count))
@@ -37095,7 +37103,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 
 #+CAPTION: Eliminated terms, step-by-step, by experiment
 #+LABEL: fig:encpnc-et-ss-be
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
 
@@ -37115,7 +37123,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
             position = position_stack(0.5)) +
   ylab("Fixed Factors by Step") +
   xlab("Steps") +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans")) +
   scale_fill_manual(values = get_palette(color_count))
@@ -37123,7 +37131,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 
 #+CAPTION: Fixed factors, step-by-step, for all experiments
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
 
@@ -37143,7 +37151,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
             position = position_stack(0.5)) +
   ylab("Fixed Factors by Step") +
   xlab("Steps") +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   theme_bw(base_size = 17) +
   theme(text = element_text(family = "sans")) +
   scale_fill_manual(values = get_palette(color_count))
@@ -37151,7 +37159,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 
 #+CAPTION: Fixed Factors, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
 
@@ -37166,7 +37174,7 @@ ggplot(subset(search_spaces, correct_result == "True"),
   geom_jitter(width = 0.3, height = 0, alpha = 0.56) +
   ylab("Execution Time") +
   xlab("Steps") +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
@@ -37176,7 +37184,7 @@ ggplot(subset(search_spaces, correct_result == "True"),
 
 #+CAPTION: Execution time of Searched Space, step-by-step, for all experiments
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
 
@@ -37186,30 +37194,88 @@ library(ggplot2)
 library(RColorBrewer)
 
 ggplot(subset(search_spaces, correct_result == "True"),
-       aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
+       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
+       aes(x = as.factor(step), y = cost_mean)) +
   geom_jitter(width = 0.3, height = 0, alpha = 0.6) +
   facet_wrap(experiment_id ~ ., ncol = 3) +
   ylab("Execution Time") +
   xlab("Step") +
-  scale_x_discrete(limits = c(1, 2, 3, 4)) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
   theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
-        legend.title = element_blank()) +
-  scale_colour_manual(name = "",
-                      values=c("red", "blue", "green", "purple"),
-                      labels=c("OMP & SCR: False",
-                               "OMP: True, SCR: False",
-                               "OMP: False, SCR: True",
-                               "OMP & SCR: True"))
+        legend.title = element_blank()) # +
+#  scale_colour_manual(name = "",
+#                      values=c("red", "blue", "green", "purple"),
+#                      labels=c("OMP & SCR: False",
+#                               "OMP: True, SCR: False",
+#                               "OMP: False, SCR: True",
+#                               "OMP & SCR: True"))
 #+end_SRC
 
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.98\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureXP51p5.pdf]]
+[[file:/tmp/babel-w5lAu8/figuregu9cI1.pdf]]
+
+******* D-Optimality
+******** Performance at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = predicted_best, color = "predicted_best"), size = 1) +
+  geom_point(aes(x = step, y = predicted_best, color = "predicted_best"), size = 2) +
+  geom_path(aes(x = step, y = design_best, color = "design_best"), size = 1) +
+  geom_point(aes(x = step, y = design_best, color = "design_best"), size = 2) +
+  geom_path(aes(x = step, y = current_best, color = "current_best"), size = 1) +
+  geom_point(aes(x = step, y = current_best, color = "current_best"), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("Execution Time") +
+  xlab("Step") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Performance of best points, step-by-step, by experiment
+#+LABEL: fig:pf-bp-ss
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
+
+******** D-Criterion
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = D), size = 1) +
+  geom_point(aes(x = step, y = D), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("D-Criterion") +
+  xlab("Step") +
+  scale_x_discrete(limits = unique(summaries$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: D-Criterion, step-by-step, by experiment
+#+LABEL: fig:dc-bp-ss
+#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
 ****** Brice's Metric at each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
@@ -37405,16 +37471,25 @@ names(formulas) <- c("formula", "id", "step")
 
 design_data <- inner_join(designs, formulas)
 
+efficiency <- function(f, normalized_information_matrix, id_matrix) {
+  return(solve(t(id_matrix[f, ]) %*% normalized_information_matrix %*% id_matrix[f, ]))
+}
+
 test_factor_efficiency <- function(fac, frml) {
   X <- model.matrix(frml, fac)
 
-  efficiencies <- (1 - abs(colSums(X) / nrow(X))) / (1 + abs(colSums(t(X) %*% X) / (nrow(X) ^ 2)))
-  #efficiencies <- (1 + abs(colSums(t(X) %*% X) / (nrow(X) ^ 2))) / (1 - abs(colSums(X) / nrow(X)))
+  inf_X <- solve((t(X) %*% X) / nrow(X))
+  id_matrix <- diag(ncol(inf_X))
+
+  #efficiencies <- (1 - abs(colSums(X) / nrow(X))) / (1 + abs(colSums(t(X) %*% X) / (nrow(X) ^ 2)))
+
+  efficiencies <- sapply(1:ncol(inf_X), efficiency, normalized_information_matrix = inf_X, id_matrix = id_matrix)
 
   df_efficiencies <- data.frame(efficiencies)
   names(df_efficiencies) <- c("metric_value")
 
-  df_efficiencies$factors <- rownames(df_efficiencies)
+  #df_efficiencies$factors <- rownames(df_efficiencies)
+  df_efficiencies$factors <- names(as.data.frame(X))
 
   return(df_efficiencies)
 }
@@ -37464,4 +37539,4 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureyVfpU2.png]]
+[[file:/tmp/babel-w5lAu8/figureDvyLEi.png]]
