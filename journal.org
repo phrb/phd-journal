@@ -36558,23 +36558,45 @@ for (target_dir in target_dirs) {
     }
 }
 
-plot_data <- data %>%
-             distinct(experiment_id, .keep_all = TRUE) %>%
-             group_by(application) %>%
-             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
-             ungroup()
+str(data)
 
-plot_data <- plot_data %>%
-             distinct(experiment_id, .keep_all = TRUE) %>%
-             group_by(application, technique) %>%
+plot_data <- data %>%
+             group_by(experiment_id) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
              mutate(label_center_x = mean(cost_mean)) %>%
              mutate(label_center_y = mean(best_iteration)) %>%
-             ungroup()
+             ungroup() %>%
+             distinct(experiment_id, .keep_all = TRUE)
 
 complete_plot_data <- plot_data
+
+str(complete_plot_data)
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+
+'data.frame':	999 obs. of  7 variables:
+ $ cost_mean     : num  0.913 4.582 0.868 0.907 4.576 ...
+ $ experiment_id : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+ $ technique     : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline : num  4.86 4.86 4.86 4.86 4.86 ...
+ $ min_run_cost  : num  0.524 0.524 0.524 0.524 0.524 ...
+ $ best_iteration: num  86 86 86 86 86 86 86 86 86 86 ...
+ $ application   : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  10 variables:
+ $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  4.86 4.85 4.75 4.75 4.86 ...
+ $ min_run_cost      : num  0.524 0.558 0.475 0.502 0.54 ...
+ $ best_iteration    : num  86 104 64 78 57 109 93 69 73 43
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
+ $ label_center_x    : num  1.47 1.47 1.47 1.47 1.47 ...
+ $ label_center_y    : num  78 78 78 78 78 ...
+#+end_example
 
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
@@ -36592,7 +36614,7 @@ rs_data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
-    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][5], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -36632,13 +36654,15 @@ for (target_dir in target_dirs) {
 }
 
 rs_plot_data <- rs_data %>%
-  group_by(technique) %>%
+  filter(technique == "RS", application == "bicgkernel")
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel") %>%
+  group_by(experiment_id) %>%
   mutate(mean_cost_baseline = mean(cost_baseline)) %>%
   mutate(label_center_x = mean(cost_mean)) %>%
   mutate(label_center_y = mean(best_iteration)) %>%
-  ungroup()
-
-rs_plot_data <- filter(rs_plot_data, technique == "RS") %>%
+  ungroup() %>%
   distinct(experiment_id, .keep_all = TRUE)
 
 complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
@@ -36651,7 +36675,7 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11 obs. of  10 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  10 variables:
  $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
  $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
  $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
@@ -36660,8 +36684,8 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11 obs. of  10 variables:
  $ best_iteration    : num  86 104 64 78 57 109 93 69 73 43 ...
  $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
  $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
- $ label_center_x    : num  2.36 2.36 2.36 2.36 2.36 ...
- $ label_center_y    : num  77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 77.6 ...
+ $ label_center_x    : num  1.47 1.47 1.47 1.47 1.47 ...
+ $ label_center_y    : num  78 78 78 78 78 ...
 #+end_example
 ******* Loading Data Step-by-step Plots                      :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -37295,7 +37319,7 @@ ggplot(summaries) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
-***** Brice's Metric at each Step
+***** D_a-Optimality at Each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
 color_count = length(unique(design_data_plot$factors))
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
@@ -37314,7 +37338,7 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
   scale_fill_manual(values = get_palette(color_count))
 #+end_SRC
 
-#+CAPTION: Values of Brice's metric for all model terms, considering the model formula used at each step
+#+CAPTION: Values of D\textsubscript{a}-Optimality for all model terms, considering the model formula used at each step
 #+LABEL: fig:brices-metric
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
