@@ -36965,7 +36965,7 @@ set  of 10  repetitions  the same  experiment, using  a  performance model  with
 linear, quadratic, and cubic terms, as in the paper.
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 22 :height 10
+#+HEADER: :width 15 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -38119,3 +38119,49 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
 
 #+RESULTS:
 [[file:/tmp/babel-ynhqKR/figurepm7C3X.png]]
+*** [2019-08-18 Sun]
+**** Looking at Distributions from the Distributions Julia Package
+#+begin_SRC julia :results output :session *julia:journal*
+using Distributions, DataFrames, CSV
+
+samples = 1000;
+limits = [0.0, 1.0];
+range = 0.1;
+trunc_limit = 0.25
+
+distribution = MixtureModel([Truncated(Normal(limits[1], range), limits[1], limits[1] + trunc_limit), Truncated(Normal(limits[2], range), limits[2] - trunc_limit, limits[2])])
+
+data = DataFrame(:x => rand(distribution, samples), :y => 1:samples);
+
+CSV.write("/tmp/sampling_data.csv", data);
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+
+
+
+0.25
+
+MixtureModel{Truncated{Normal{Float64},Continuous}}(K = 2)
+components[1] (prior = 0.5000): Truncated(Normal{Float64}(μ=0.0, σ=0.1), range=(0.0, 0.25))
+components[2] (prior = 0.5000): Truncated(Normal{Float64}(μ=1.0, σ=0.1), range=(0.75, 1.0))
+
+
+
+#+end_example
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
+data <- read.csv("/tmp/sampling_data.csv", header = TRUE)
+
+ggplot(data, aes(x = x)) +
+  geom_histogram() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-ZwiTvz/figureY2W1Fn.png]]
