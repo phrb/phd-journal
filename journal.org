@@ -36398,7 +36398,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 - Même chose pour pourvance-3 et paravance-31 où OMP et SCR ont été identifiés mais pas VEC1 ni VEC2.
 ** August
 *** [2019-08-05 Mon]
-**** Performance Modelling and Optimization of the =bicg= SPAPT kernel :ExportableReports:
+**** Performance Modeling and Optimization of the =bicg= SPAPT kernel :ExportableReports:
 :PROPERTIES:
 :EXPORT_FILE_NAME: report.pdf
 :END:
@@ -36411,6 +36411,27 @@ git clone https://github.com/phrb/dlmt_spapt_experiments.git || (cd dlmt_spapt_e
 
 #+RESULTS:
 : Already up to date.
+***** Introduction
+The objective  of this  report is  to analyze  data from  our CCGRID  paper, and
+perform new experiments  as needed, in order to better  understand the statiscal
+analysis and the performance achieved by  our DoE-based approach.  We would like
+to understand how a user could  interfere and guide search space restriction and
+exploration, by intervening at each ANOVA step, for example.
+
+We are also interested in exploring new design construction metrics, in order to
+understand which  factors are best estimated  at each step and  possibly discard
+designs not capable of estimating parameters of interest.
+
+We chose to  start with the =bicg= SPAPT  kernel. It was one of  the kernels where
+our approach  achieved similar-performing  solutions using less  experiments, in
+comparison with a uniform random sampling  approach, across 10 repetitions of an
+experiment with a fixed  budget of 400 experiments and a  limit of 4 iterations,
+or steps, of our approach.
+
+The  following sections  describe  our ongoing  exploration  of the  performance
+modeling and optimization of the =bicg= kernel.
+
+***** Removing Cubic Terms
 ****** Loading Data                                           :noexport:
 ******* Loading Data for Eliminated Factors                  :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -36934,38 +36955,19 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	860 obs. of  4 variables:
  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
 
-***** Introduction
-The objective  of this  report is  to analyze  data from  our CCGRID  paper, and
-perform new experiments  as needed, in order to better  understand the statiscal
-analysis and the performance achieved by  our DoE-based approach.  We would like
-to understand how a user could  interfere and guide search space restriction and
-exploration, by intervening at each ANOVA step, for example.
-
-We are also interested in exploring new design construction metrics, in order to
-understand which  factors are best estimated  at each step and  possibly discard
-designs not capable of estimating parameters of interest.
-
-We chose to  start with the =bicg= SPAPT  kernel. It was one of  the kernels where
-our approach  achieved similar-performing  solutions using less  experiments, in
-comparison with a uniform random sampling  approach, across 10 repetitions of an
-experiment with a fixed  budget of 400 experiments and a  limit of 4 iterations,
-or steps, of our approach.
-
-The  following sections  describe  our ongoing  exploration  of the  performance
-modeling and optimization of the =bicg= kernel.
-
-***** Using the Same Performance model
 ****** Iterations that found the Best Configuration
 Figure\nbsp[[fig:best-found]] shows the iterations where  the best configuration of each
 of the 10 runs was found, for uniform sampling and for our approach.
 
 The results are  the same as the ones  presented in the paper, but  the data are
 not the same.  The data for the figures  in this report were obtained with a new
-set  of 10  repetitions  the same  experiment, using  a  performance model  with
-linear, quadratic, and cubic terms, as in the paper.
+set of  10 repetitions the same  experiment, but using a  performance model with
+only linear  and quadratic terms, removing  the cubic terms used  in the paper's
+experiments.
+
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 15 :height 10
+#+HEADER: :width 13 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -37065,18 +37067,22 @@ grid.draw(new_plot)
 
 #+CAPTION: Iteration where best was found
 #+LABEL: fig:best-found
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureZgRZWM.pdf]]
 
+The results are very similar from the  ones in the paper, but our approach found
+slightly better  configurations slightly  faster. Random  sampling also  found a
+much better configuration much faster than before in one experiment.
 
 ****** Eliminated Factors and Fixed Values
 Figure\nbsp{}[[fig:eliminated-terms]] shows the /count of  model terms/ that were eliminated
-at each DLMT step, coded by color.
+at each color-coded DLMT step.  As before, we see that =OMP= and =SCR= were the most
+eliminated factors, especially on the first step.
 
 #+HEADER: :results graphics :session *R*
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 10 :height 10 :exports results
+#+HEADER: :width 13 :height 10 :exports results
 #+begin_SRC R
 base_size <- 18
 
@@ -37097,14 +37103,19 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 
 #+CAPTION: Eliminated terms
 #+LABEL: fig:eliminated-terms
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-ynhqKR/figure7r6W2z.pdf]]
 
-****** Step-by-step Plots
-******* Fixed Model Terms
-******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+****** Fixed Model Terms
+******* Combined Experiments
+Figure\nbsp{}[[fig:et-ss-ae]] shows the model terms that were identified as significant by
+ANOVA, with significance  threshold of $0.01$, at each DLMT  step. Identifying a
+model term removes the corresponding parameter from the model, regardless of the
+model term.  The height  of each stacked  box represents the  number of  times a
+given term was eliminated at each step, over 10 repetitions.
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37125,13 +37136,17 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+end_SRC
 
 #+CAPTION: Eliminated terms, step-by-step, for all experiments
-#+LABEL: fig:encpnc-et-ss-ae
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+LABEL: fig:et-ss-ae
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
 
-******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+******* Separate Experiments
+Figure\nbsp{}[[fig:et-ss-be]]  shows  the  same information  in  Figure\nbsp{}[[fig:et-ss-ae]],  but
+grouped  by each  of the  10  experiments. The  headers identify  each run,  and
+correspond to the names of the Grid5000 machines where experiments were run.
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37153,14 +37168,21 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+end_SRC
 
 #+CAPTION: Eliminated terms, step-by-step, by experiment
-#+LABEL: fig:encpnc-et-ss-be
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+LABEL: fig:et-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
 
-******* Fixed Factors & Values
-******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+It is  interesting that  only /parasilo-19/ and  /parasilo-9/ eliminated  any factor
+other than =OMP=  and =SCR= on the  first step where any factor  was eliminated, and
+also that those  runs eliminated the same  factor =RT_I=.  We will  see later that
+=OMP= and  =SCR= were fixed to  the same values  in all experiments where  they were
+eliminated, and =RT_I=  was only fixed to  a different value on  2 eliminations on
+the fourth step.
+
+****** Fixed Factors & Values
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37182,12 +37204,12 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 
 #+CAPTION: Fixed factors, step-by-step, for all experiments
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
 
-******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37210,13 +37232,13 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 
 #+CAPTION: Fixed Factors, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
 
-******* Searched Spaces by Step
-******** Combined Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+****** Searched Spaces
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37235,12 +37257,12 @@ ggplot(subset(search_spaces, correct_result == "True"),
 
 #+CAPTION: Execution time of Searched Space, step-by-step, for all experiments
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
 
-******** Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37267,13 +37289,13 @@ ggplot(subset(search_spaces, correct_result == "True"),
 
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
 #+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figuregu9cI1.pdf]]
 
-******* D-Optimality
-******** Performance at Each Step
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+****** D-Optimality
+******* Performance at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37298,12 +37320,12 @@ ggplot(summaries) +
 
 #+CAPTION: Performance of best points, step-by-step, by experiment
 #+LABEL: fig:pf-bp-ss
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
-******** D-Criterion
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+******* D-Criterion
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -37324,7 +37346,7 @@ ggplot(summaries) +
 
 #+CAPTION: D-Criterion, step-by-step, by experiment
 #+LABEL: fig:dc-bp-ss
-#+ATTR_LATEX: :width 0.45\textwidth :placement [H]
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
@@ -37353,7 +37375,7 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurehpLRFI.pdf]]
 
-***** Setup for the Next Section                               :noexport:
+***** Fixing Binary Factors
 ****** Loading Data                                           :noexport:
 ******* Loading Data for Eliminated Factors                  :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -37368,7 +37390,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-current_experiment <- "dlmt_spapt_experiments/data/tests/formula_log_encoded"
+current_experiment <- "dlmt_spapt_experiments/data/tests/no_binary"
 target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 summary_files <- paste(target_path,
@@ -37519,26 +37541,26 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	999 obs. of  7 variables:
- $ cost_mean     : num  0.913 4.582 0.868 0.907 4.576 ...
+'data.frame':	1286 obs. of  7 variables:
+ $ cost_mean     : num  0.747 0.916 0.83 0.642 0.68 ...
  $ experiment_id : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
  $ technique     : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ cost_baseline : num  4.86 4.86 4.86 4.86 4.86 ...
- $ min_run_cost  : num  0.524 0.524 0.524 0.524 0.524 ...
- $ best_iteration: num  86 86 86 86 86 86 86 86 86 86 ...
+ $ cost_baseline : num  0.869 0.869 0.869 0.869 0.869 ...
+ $ min_run_cost  : num  0.456 0.456 0.456 0.456 0.456 ...
+ $ best_iteration: num  90 90 90 90 90 90 90 90 90 90 ...
  $ application   : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  10 variables:
- $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
- $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
  $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ cost_baseline     : num  4.86 4.85 4.75 4.75 4.86 ...
- $ min_run_cost      : num  0.524 0.558 0.475 0.502 0.54 ...
- $ best_iteration    : num  86 104 64 78 57 109 93 69 73 43
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
  $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
- $ label_center_x    : num  1.47 1.47 1.47 1.47 1.47 ...
- $ label_center_y    : num  78 78 78 78 78 ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
 #+end_example
 
 #+HEADER: :results output :session *R*
@@ -37551,13 +37573,16 @@ library(openssl)
 library(RColorBrewer)
 library(extrafont)
 
-data_dir <- "dlmt_spapt_experiments/data/results"
+str(complete_plot_data)
+
+data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
 target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 rs_data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
-    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][5], "_")[[1]][5]
+
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -37606,11 +37631,11 @@ rs_plot_data <- rs_data %>%
   mutate(label_center_x = mean(cost_mean)) %>%
   mutate(label_center_y = mean(best_iteration)) %>%
   ungroup() %>%
-  distinct(experiment_id, .keep_all = TRUE)
+  distinct(experiment_id, .keep_all = TRUE) %>%
+  mutate(technique = "RS_no_bin")
 
 complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
                                 rs_plot_data)
-
 
 str(complete_plot_data)
 #+END_SRC
@@ -37618,17 +37643,29 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  10 variables:
- $ cost_mean         : num  0.913 3.213 4.583 0.935 3.598 ...
- $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-11" "parasilo-13" ...
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	22 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
  $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ cost_baseline     : num  4.86 4.85 4.75 4.75 4.86 ...
- $ min_run_cost      : num  0.524 0.558 0.475 0.502 0.54 ...
- $ best_iteration    : num  86 104 64 78 57 109 93 69 73 43 ...
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
  $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline: num  4.8 4.8 4.8 4.8 4.8 ...
- $ label_center_x    : num  1.47 1.47 1.47 1.47 1.47 ...
- $ label_center_y    : num  78 78 78 78 78 ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	22 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
 #+end_example
 ******* Loading Data Step-by-step Plots                      :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -37871,11 +37908,1327 @@ There were 40 warnings (use warnings() to see them)
 Joining, by = c("id", "step")
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	860 obs. of  4 variables:
- $ metric_value: num  0 0.0715 0.1084 0.0727 0.0661 ...
+ $ metric_value: num  0.019 0.0906 0.0788 0.0683 0.071 ...
  $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
  $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
+
+****** Iterations that found the Best Configuration
+Figure\nbsp[[fig:nobin-best-found]] shows the iterations where the best configuration of
+each of the 10 runs was found, for uniform sampling and for our approach.
+
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(subset(it_data, technique == "DLMT")$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:nobin-best-found
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-ZwiTvz/figureLNiNH0.pdf]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_x_discrete() +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-ynhqKR/figure7r6W2z.pdf]]
+
+****** Fixed Model Terms
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(spread_data$removed_variables))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = removed_variables),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Eliminated Terms by Step") +
+  xlab("Steps") +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Eliminated terms, step-by-step, for all experiments
+#+LABEL: fig:et-ss-ae
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(spread_data$removed_variables))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = removed_variables),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Eliminated Terms by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Eliminated terms, step-by-step, by experiment
+#+LABEL: fig:et-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
+
+It is  interesting that  only /parasilo-19/ and  /parasilo-9/ eliminated  any factor
+other than =OMP=  and =SCR= on the  first step where any factor  was eliminated, and
+also that those  runs eliminated the same  factor =RT_I=.  We will  see later that
+=OMP= and  =SCR= were fixed to  the same values  in all experiments where  they were
+eliminated, and =RT_I=  was only fixed to  a different value on  2 eliminations on
+the fourth step.
+
+****** Fixed Factors & Values
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(fixed_steps_data$fixed_factors))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = fixed_factors),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Fixed Factors by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Fixed factors, step-by-step, for all experiments
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = fixed_factors),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Fixed Factors by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 17) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Fixed Factors, step-by-step, by experiment
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
+
+****** Searched Spaces
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(subset(search_spaces, correct_result == "True"),
+       aes(x = as.factor(step), y = cost_mean)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 0.56) +
+  ylab("Execution Time") +
+  xlab("Steps") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank())
+#+end_SRC
+
+#+CAPTION: Execution time of Searched Space, step-by-step, for all experiments
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(subset(search_spaces, correct_result == "True"),
+       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
+       aes(x = as.factor(step), y = cost_mean)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 0.6) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("Execution Time") +
+  xlab("Step") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) # +
+#  scale_colour_manual(name = "",
+#                      values=c("red", "blue", "green", "purple"),
+#                      labels=c("OMP & SCR: False",
+#                               "OMP: True, SCR: False",
+#                               "OMP: False, SCR: True",
+#                               "OMP & SCR: True"))
+#+end_SRC
+
+#+CAPTION: Execution time of Searched Space, step-by-step, by experiment
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figuregu9cI1.pdf]]
+
+****** D-Optimality
+******* Performance at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = predicted_best, color = "predicted_best"), size = 1) +
+  geom_point(aes(x = step, y = predicted_best, color = "predicted_best"), size = 2) +
+  geom_path(aes(x = step, y = design_best, color = "design_best"), size = 1) +
+  geom_point(aes(x = step, y = design_best, color = "design_best"), size = 2) +
+  geom_path(aes(x = step, y = current_best, color = "current_best"), size = 1) +
+  geom_point(aes(x = step, y = current_best, color = "current_best"), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("Execution Time") +
+  xlab("Step") +
+  scale_x_discrete(limits = unique(spread_data$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Performance of best points, step-by-step, by experiment
+#+LABEL: fig:pf-bp-ss
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
+
+******* D-Criterion
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = D), size = 1) +
+  geom_point(aes(x = step, y = D), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("D-Criterion") +
+  xlab("Step") +
+  scale_x_discrete(limits = unique(summaries$step)) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: D-Criterion, step-by-step, by experiment
+#+LABEL: fig:dc-bp-ss
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
+
+****** D_A-Optimality at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
+color_count = length(unique(design_data_plot$factors))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
+  facet_grid(id ~ step) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  geom_text(aes(x = factors, y = 0.0, label = factors),
+            stat = "identity",
+            hjust = "left",
+            size = 3,
+            angle = 90) +
+  theme_bw(base_size = 15) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Values of D\textsubscript{A}-Optimality for all model terms, considering the model formula used at each step
+#+LABEL: fig:brices-metric
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurehpLRFI.pdf]]
+
+***** Running more Steps on the Original Experiment
+****** Loading Data                                           :noexport:
+******* Loading Data for Eliminated Factors                  :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+read_experiment <- function(x) {
+  data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  return(data)
+}
+
+dlmt_steps <- 8
+current_experiment <- "dlmt_spapt_experiments/data/tests/cubic_8steps"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, read_experiment))
+
+eliminated_terms <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  select(removed_variables, step, experiment_id) %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = ""))))) %>%
+  mutate(removed_variables = factor(removed_variables,
+                                    levels = names(sort(table(removed_variables),
+                                                        decreasing = TRUE))))
+
+fixed_factor_data <- summaries %>%
+  separate_rows(current_best_coordinate, sep = ",")  %>%
+  select(current_best_coordinate, step, experiment_id) %>%
+  mutate(current_best_coordinate = sapply(current_best_coordinate,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        " " = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ":" = "->")))))#%>%
+  #separate(current_best_coordinate, c("fixed_factor", "fixed_value"), " ")
+
+fixed_factor_data$current_best_coordinate[fixed_factor_data$current_best_coordinate == ""] <- "None"
+
+fixed_steps_data <- summaries %>%
+  separate_rows(fixed_factors, sep = ",")  %>%
+  select(fixed_factors, step, experiment_id) %>%
+  mutate(fixed_factors = sapply(fixed_factors,
+                                function (x) str_trim(str_replace_all(x,
+                                                                      c("'" = "",
+                                                                        " " = "",
+                                                                        "\\{" = "",
+                                                                        "\\}" = "",
+                                                                        ":" = "->")))))#%>%
+
+fixed_steps_data$fixed_factors[fixed_steps_data$fixed_factors == ""] <- "None"
+
+fixed_steps_data <- fixed_steps_data %>%
+  group_by(experiment_id) %>%
+  distinct(fixed_factors, .keep_all = TRUE) %>%
+  ungroup() %>%
+  dplyr::filter(fixed_factors != "None")
+
+str(eliminated_terms)
+str(fixed_factor_data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	56 obs. of  3 variables:
+ $ removed_variables: Factor w/ 14 levels "","OMP","SCR",..: 1 1 1 2 1 2 4 3 7 1 ...
+ $ step             : int  1 2 3 4 1 2 2 2 2 3 ...
+ $ experiment_id    : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+
+'data.frame':	520 obs. of  3 variables:
+ $ current_best_coordinate: chr  "T1_I->32" "T1_J->1" "U_J->19" "U_I->1" ...
+ $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ experiment_id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+#+end_example
+
+******* Loading Data for Histograms and Iterations           :noexport:
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- current_experiment
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+str(data)
+
+plot_data <- data %>%
+             group_by(experiment_id) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup() %>%
+             distinct(experiment_id, .keep_all = TRUE)
+
+complete_plot_data <- plot_data
+
+str(complete_plot_data)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	1286 obs. of  7 variables:
+ $ cost_mean     : num  0.747 0.916 0.83 0.642 0.68 ...
+ $ experiment_id : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+ $ technique     : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline : num  0.869 0.869 0.869 0.869 0.869 ...
+ $ min_run_cost  : num  0.456 0.456 0.456 0.456 0.456 ...
+ $ best_iteration: num  90 90 90 90 90 90 90 90 90 90 ...
+ $ application   : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
+#+end_example
+
+#+HEADER: :results output :session *R*
+#+BEGIN_SRC R
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+data_dir <- "dlmt_spapt_experiments/data/results"
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][5], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel")
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel") %>%
+  group_by(experiment_id) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup() %>%
+  distinct(experiment_id, .keep_all = TRUE)
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
+                                rs_plot_data)
+
+
+str(complete_plot_data)
+#+END_SRC
+
+
+#+RESULTS:
+#+begin_example
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	22 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	22 obs. of  10 variables:
+ $ cost_mean         : num  0.747 0.855 0.898 0.783 0.638 ...
+ $ experiment_id     : chr  "parasilo-1" "parasilo-10" "parasilo-12" "parasilo-13" ...
+ $ technique         : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ cost_baseline     : num  0.869 0.872 0.871 0.871 0.879 ...
+ $ min_run_cost      : num  0.456 0.442 0.445 0.536 0.553 ...
+ $ best_iteration    : num  90 29 94 40 37 46 65 22 109 49 ...
+ $ application       : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline: num  0.874 0.874 0.874 0.874 0.874 ...
+ $ label_center_x    : num  0.729 0.729 0.729 0.729 0.729 ...
+ $ label_center_y    : num  59.3 59.3 59.3 59.3 59.3 ...
+#+end_example
+******* Loading Data Step-by-step Plots                      :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(openssl)
+
+read_experiment <- function(x) {
+  data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  return(data)
+}
+
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
+
+summary_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "run_summary.csv",
+                                  recursive = TRUE),
+                       sep = "/")
+
+summary_files <- summary_files[file.info(summary_files)$size != 0]
+
+summaries <- bind_rows(lapply(summary_files, read_experiment))
+
+spread_data <- summaries %>%
+  separate_rows(removed_variables, sep = ", ")  %>%
+  mutate(removed_variables = sapply(removed_variables,
+                                    function (x) str_trim(str_replace_all(x,
+                                                                          c("'" = "",
+                                                                            "\\[" = "",
+                                                                            "\\]" = "")))))
+
+spread_data$removed_variables[spread_data$removed_variables == ""] <- "None"
+spread_data <- spread_data %>% dplyr::filter(removed_variables != "None")
+
+spread_data <- spread_data[order(spread_data$step), ]
+
+search_spaces_files <- paste(target_path,
+                             list.files(path = target_path,
+                                        pattern = "search_space.csv",
+                                        recursive = TRUE),
+                             sep = "/")
+
+search_spaces_files <- search_spaces_files[file.info(search_spaces_files)$size != 0]
+
+search_spaces <- bind_rows(lapply(search_spaces_files, read_experiment))
+
+str(spread_data)
+str(search_spaces)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	30 obs. of  17 variables:
+ $ id                     : int  1 1 1 1 1 1 1 2 2 2 ...
+ $ valid_configurations   : int  37440 37440 37440 37440 37440 37440 37440 37440 37440 37440 ...
+ $ D                      : num  0.205 0.206 0.206 0.206 0.206 ...
+ $ used_budget            : int  0 0 0 0 0 0 0 24 24 24 ...
+ $ model_size             : int  22 22 22 22 22 22 22 22 22 22 ...
+ $ current_best           : num  0.69 0.733 0.733 0.733 0.733 ...
+ $ trials                 : int  26 26 26 26 26 26 26 26 26 26 ...
+ $ current_best_coordinate: chr  "{'T1_I': 256, 'T1_J': 128, 'U_J': 1, 'U_I': 5, 'T2_I': 512, 'T2_J': 512, 'U1_I': 18, 'OMP': True, 'VEC2': False"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ "{'T1_I': 1024, 'T1_J': 2048, 'U_J': 7, 'U_I': 1, 'T2_I': 2048, 'T2_J': 2048, 'U1_I': 1, 'OMP': True, 'VEC2': Tr"| __truncated__ ...
+ $ tested_configurations  : int  1796751 1787270 1787270 1787270 1787270 1787270 1789531 1801962 1801962 1801962 ...
+ $ fixed_factors          : chr  "{'OMP': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" "{'U1_I': 0, 'OMP': 1, 'RT_J': 0, 'T1_J': 11, 'SCR': 1}" ...
+ $ step                   : int  1 1 1 1 1 1 1 2 2 2 ...
+ $ design_best            : num  0.752 0.74 0.74 0.74 0.74 ...
+ $ total_budget           : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ removed_variables      : chr  "OMP" "OMP" "I(T1_J^2)" "SCR" ...
+ $ model                  : chr  "~ I(T1_I ^ 2)
+I(T1_J ^ 2)
+I(T2_I ^ 2)
+I(T2_J ^ 2)
+I(U1_I ^ 2)
+I(U_I ^ 2)
+I(U_J ^ 2)
+I(RT_I ^ 2) +"| __truncated__ "~ I(T1_I ^ 2)
+I(T1_J ^ 2)
+I(T2_I ^ 2)
+I(T2_J ^ 2)
+I(U1_I ^ 2)
+I(U_I ^ 2)
+I(U_J ^ 2)
+I(RT_I ^ 2) +"| __truncated__ "~ I(T1_I ^ 2)
+I(T1_J ^ 2)
+I(T2_I ^ 2)
+I(T2_J ^ 2)
+I(U1_I ^ 2)
+I(U_I ^ 2)
+I(U_J ^ 2)
+I(RT_I ^ 2) +"| __truncated__ "~ I(T1_I ^ 2)
+I(T1_J ^ 2)
+I(T2_I ^ 2)
+I(T2_J ^ 2)
+I(U1_I ^ 2)
+I(U_I ^ 2)
+I(U_J ^ 2)
+I(RT_I ^ 2) +"| __truncated__ ...
+ $ predicted_best         : num  0.69 0.733 0.733 0.733 0.733 ...
+ $ experiment_id          : chr  "parasilo-14" "parasilo-17" "parasilo-17" "parasilo-17" ...
+
+'data.frame':	1019 obs. of  24 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  2048 512 32 128 1 1024 1024 64 1 64 ...
+ $ T2_I                        : int  128 64 1 128 2 1 128 2048 1 512 ...
+ $ RT_I                        : int  1 32 32 32 4 1 4 16 8 2 ...
+ $ mean_confidence_interval_inf: num  0.908 0.952 0.63 4.683 0.941 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  128 1 8 1 2048 32 4 32 1024 1 ...
+ $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
+ $ VEC2                        : chr  "False" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "False" "False" "True" "False" ...
+ $ U1_I                        : int  15 10 11 29 10 4 2 21 1 17 ...
+ $ RT_J                        : int  32 2 1 1 32 2 4 2 1 4 ...
+ $ T1_I                        : int  1 16 2048 8 1 1 1 2 256 1 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.026034 0.039186 0.172632 0.000844 0.037614 ...
+ $ cost_mean                   : num  0.925 0.976 0.737 4.684 0.964 ...
+ $ U_J                         : int  1 1 1 15 11 21 1 1 28 30 ...
+ $ U_I                         : int  16 1 30 1 1 1 30 14 1 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "False" ...
+ $ mean_confidence_interval_sup: num  0.941 1 0.844 4.684 0.987 ...
+ $ experiment_id               : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+#+end_example
+
+******* Loading Data for D-Optimality and ANOVA              :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(AlgDesign)
+library(FrF2)
+
+original_factor_efficiency <- function(fac, frml) {
+  X <- model.matrix(frml, fac)
+  Y <-  (t(X) %*% X) / nrow(X)
+
+  Z <- abs(Y[, rep(2:ncol(X))])
+  Z <- Z %*% rep(1, ncol(X) - 1)
+
+  efficiencies <- (1 / Z) * (1 - abs(Y[, 1]))
+
+  df_efficiencies <- as.data.frame(efficiencies)
+  df_efficiencies$factors <- rownames(efficiencies)
+
+  return(df_efficiencies)
+}
+
+efficiency <- function(f, normalized_information_matrix, id_matrix) {
+  return(solve(t(id_matrix[f, ]) %*% normalized_information_matrix %*% id_matrix[f, ]))
+}
+
+factor_efficiency <- function(fac, frml) {
+  X <- model.matrix(frml, fac)
+
+  inf_X <- solve((t(X) %*% X) / nrow(X))
+  id_matrix <- diag(ncol(inf_X))
+
+  efficiencies <- sapply(1:ncol(inf_X), efficiency, normalized_information_matrix = inf_X, id_matrix = id_matrix)
+
+  df_efficiencies <- data.frame(efficiencies)
+  names(df_efficiencies) <- c("metric_value")
+
+  #df_efficiencies$factors <- rownames(df_efficiencies)
+  df_efficiencies$factors <- names(as.data.frame(X))
+
+  return(df_efficiencies)
+}
+
+compute_factor_efficiencies <- function(design) {
+  #frml <- formula(str_replace_all(design$formula[1], "e", ""))
+  frml <- formula(design$formula[1])
+  factor_efficiencies <- factor_efficiency(design, frml)
+
+  factor_efficiencies$id <- design$id[1]
+  factor_efficiencies$step <- design$step[1]
+
+  return(factor_efficiencies)
+}
+
+read_experiment <- function(x) {
+  design <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  design$id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  design$step <- as.integer(str_split(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3], "\\.")[[1]][1]) + 1
+  design$X <- NULL
+  return(design)
+}
+
+read_formula <- function(x) {
+  formula <- read.csv(x, header = FALSE, stringsAsFactors = FALSE)
+  formula$id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  formula$step <- as.integer(str_split(str_split(str_split(x, "/")[[1]][7], "_")[[1]][3], "\\.")[[1]][1]) + 1
+  return(formula)
+}
+
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
+
+designs_files <- paste(target_path,
+                       list.files(path = target_path,
+                                  pattern = "design_step_",
+                                  recursive = TRUE),
+                       sep = "/")
+
+designs_files <- designs_files[file.info(designs_files)$size != 0]
+designs <- bind_rows(lapply(designs_files, read_experiment))
+
+formulas_files <- paste(target_path,
+                        list.files(path = target_path,
+                                   pattern = "formula_step_",
+                                   recursive = TRUE),
+                        sep = "/")
+
+formulas_files <- formulas_files[file.info(formulas_files)$size != 0]
+formulas <- bind_rows(lapply(formulas_files, read_formula))
+
+names(formulas) <- c("formula", "id", "step")
+
+design_data <- inner_join(designs, formulas)
+
+design_data_plot <- design_data %>%
+  group_by(id, step) %>%
+  do(compute_factor_efficiencies(.)) %>%
+  ungroup()
+
+str(design_data_plot)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+There were 40 warnings (use warnings() to see them)
+
+Joining, by = c("id", "step")
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	860 obs. of  4 variables:
+ $ metric_value: num  0.019 0.0906 0.0788 0.0683 0.071 ...
+ $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
+ $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+ $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
+#+end_example
+
+****** Iterations that found the Best Configuration
+Figure\nbsp[[fig:nobin-best-found]] shows the iterations where the best configuration of
+each of the 10 runs was found, for uniform sampling and for our approach.
+
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(subset(it_data, technique == "DLMT")$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_size_manual("", values = 0.45) +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 24) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 24) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Iteration where best was found
+#+LABEL: fig:nobin-best-found
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-ZwiTvz/figureLNiNH0.pdf]]
+
+****** Eliminated Factors and Fixed Values
+#+HEADER: :results graphics :session *R*
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10 :exports results
+#+begin_SRC R
+base_size <- 18
+
+ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+  geom_bar(stat = "Count", show.legend = TRUE) +
+  ylab("Eliminated Terms") +
+  xlab("") +
+  scale_x_discrete() +
+  theme_bw(base_size = base_size) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  guides(fill = guide_legend(nrow = 1)) +
+  scale_fill_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Eliminated terms
+#+LABEL: fig:eliminated-terms
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-ynhqKR/figure7r6W2z.pdf]]
+
+****** Fixed Model Terms
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(spread_data$removed_variables))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = removed_variables),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Eliminated Terms by Step") +
+  xlab("Steps") +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Eliminated terms, step-by-step, for all experiments
+#+LABEL: fig:et-ss-ae
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(spread_data$removed_variables))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = removed_variables),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Eliminated Terms by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Eliminated terms, step-by-step, by experiment
+#+LABEL: fig:et-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
+
+It is  interesting that  only /parasilo-19/ and  /parasilo-9/ eliminated  any factor
+other than =OMP=  and =SCR= on the  first step where any factor  was eliminated, and
+also that those  runs eliminated the same  factor =RT_I=.  We will  see later that
+=OMP= and  =SCR= were fixed to  the same values  in all experiments where  they were
+eliminated, and =RT_I=  was only fixed to  a different value on  2 eliminations on
+the fourth step.
+
+****** Fixed Factors & Values
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(fixed_steps_data$fixed_factors))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = fixed_factors),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Fixed Factors by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Fixed factors, step-by-step, for all experiments
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(stat = "Count", show.legend = FALSE) +
+  geom_text(aes(label = fixed_factors),
+            stat = "count",
+            position = position_stack(0.5)) +
+  ylab("Fixed Factors by Step") +
+  xlab("Steps") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 17) +
+  theme(text = element_text(family = "sans")) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Fixed Factors, step-by-step, by experiment
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
+
+****** Searched Spaces
+******* Combined Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(subset(search_spaces, correct_result == "True"),
+       aes(x = as.factor(step), y = cost_mean)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 0.56) +
+  ylab("Execution Time") +
+  xlab("Steps") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank())
+#+end_SRC
+
+#+CAPTION: Execution time of Searched Space, step-by-step, for all experiments
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
+
+******* Separate Experiments
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(subset(search_spaces, correct_result == "True"),
+       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
+       aes(x = as.factor(step), y = cost_mean)) +
+  geom_jitter(width = 0.3, height = 0, alpha = 0.6) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("Execution Time") +
+  xlab("Step") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) # +
+#  scale_colour_manual(name = "",
+#                      values=c("red", "blue", "green", "purple"),
+#                      labels=c("OMP & SCR: False",
+#                               "OMP: True, SCR: False",
+#                               "OMP: False, SCR: True",
+#                               "OMP & SCR: True"))
+#+end_SRC
+
+#+CAPTION: Execution time of Searched Space, step-by-step, by experiment
+#+LABEL: fig:encpnc-ff-ss-be
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figuregu9cI1.pdf]]
+
+****** D-Optimality
+******* Performance at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = predicted_best, color = "predicted_best"), size = 1) +
+  geom_point(aes(x = step, y = predicted_best, color = "predicted_best"), size = 2) +
+  geom_path(aes(x = step, y = design_best, color = "design_best"), size = 1) +
+  geom_point(aes(x = step, y = design_best, color = "design_best"), size = 2) +
+  geom_path(aes(x = step, y = current_best, color = "current_best"), size = 1) +
+  geom_point(aes(x = step, y = current_best, color = "current_best"), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("Execution Time") +
+  xlab("Step") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: Performance of best points, step-by-step, by experiment
+#+LABEL: fig:pf-bp-ss
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
+
+******* D-Criterion
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+library(ggplot2)
+library(RColorBrewer)
+
+ggplot(summaries) +
+  geom_path(aes(x = step, y = D), size = 1) +
+  geom_point(aes(x = step, y = D), size = 2) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  ylab("D-Criterion") +
+  xlab("Step") +
+  scale_x_discrete(limits = 1:dlmt_steps) +
+  theme_bw(base_size = 18) +
+  theme(text = element_text(family = "sans"),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  scale_color_brewer(palette = "Set1")
+#+end_SRC
+
+#+CAPTION: D-Criterion, step-by-step, by experiment
+#+LABEL: fig:dc-bp-ss
+#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
+
+****** D_A-Optimality at Each Step
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
+color_count = length(unique(design_data_plot$factors))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+
+ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
+  facet_grid(id ~ step) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  geom_text(aes(x = factors, y = 0.0, label = factors),
+            stat = "identity",
+            hjust = "left",
+            size = 1,
+            angle = 90) +
+  theme_bw(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  scale_fill_manual(values = get_palette(color_count))
+#+end_SRC
+
+#+CAPTION: Values of D\textsubscript{A}-Optimality for all model terms, considering the model formula used at each step
+#+LABEL: fig:brices-metric
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figurehpLRFI.pdf]]
 
 *** [2019-08-07 Wed]
 **** Looking at some sampled data                                 :ATTACH:
@@ -37910,28 +39263,12 @@ ggplot(data, aes(x = x, y = y)) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figure1CO4Ay.png]]
 *** [2019-08-12 Mon]
-**** Exploring Brice's Design Efficiency Metric
+**** Exploring D_A-Optimality
 #+HEADER: :results output :session *R*
 #+BEGIN_SRC R
 library(AlgDesign)
 library(dplyr)
 library(FrF2)
-
-original_factor_efficiency <- function(fac) {
-  factor_names <- c("I", paste("x", 1:ncol(fac), sep = ""))
-  X = model.matrix(~., fac)
-  Y = (t(X) %*% X) / nrow(fac)
-
-  Z = (Y[, rep(2:ncol(X))]) ^ 2
-  Z = Z %*% rep(1, ncol(X) - 1)
-
-  efficiencies <- ((1 / Z) * (1 - (Y[, 1]) ^ 2))
-
-  df_efficiencies <- as.data.frame(efficiencies)
-  df_efficiencies$factors <- factor_names
-
-  return(df_efficiencies)
-}
 
 efficiency <- function(f, normalized_information_matrix, id_matrix) {
   return(solve(t(id_matrix[f, ]) %*% normalized_information_matrix %*% id_matrix[f, ]))
@@ -38000,7 +39337,7 @@ ggplot(data, aes(x = factors, y = metric_value)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ynhqKR/figurem4eVaI.png]]
+[[file:/tmp/babel-ZwiTvz/figureonsoEp.png]]
 *** [2019-08-14 Wed]
 **** Testing Metrics for Factor-wise Efficiency
 #+HEADER: :results output :session *R* :exports none
@@ -38118,40 +39455,27 @@ ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ynhqKR/figurepm7C3X.png]]
+[[file:/tmp/babel-ZwiTvz/figureQ0dYUB.png]]
 *** [2019-08-18 Sun]
 **** Looking at Distributions from the Distributions Julia Package
-#+begin_SRC julia :results output :session *julia:journal*
+#+begin_SRC julia :results value :session *Julia*
 using Distributions, DataFrames, CSV
 
-samples = 1000;
+samples = 100;
 limits = [0.0, 1.0];
 range = 0.1;
-trunc_limit = 0.25
+trunc_limit = 0.25;
 
-distribution = MixtureModel([Truncated(Normal(limits[1], range), limits[1], limits[1] + trunc_limit), Truncated(Normal(limits[2], range), limits[2] - trunc_limit, limits[2])])
+distribution = MixtureModel([Truncated(Normal(limits[1], range), limits[1], limits[1] + trunc_limit), Truncated(Normal(limits[2], range), limits[2] - trunc_limit, limits[2])]);
 
 data = DataFrame(:x => rand(distribution, samples), :y => 1:samples);
 
 CSV.write("/tmp/sampling_data.csv", data);
+
+data
 #+end_SRC
 
 #+RESULTS:
-#+begin_example
-
-
-
-
-
-0.25
-
-MixtureModel{Truncated{Normal{Float64},Continuous}}(K = 2)
-components[1] (prior = 0.5000): Truncated(Normal{Float64}(μ=0.0, σ=0.1), range=(0.0, 0.25))
-components[2] (prior = 0.5000): Truncated(Normal{Float64}(μ=1.0, σ=0.1), range=(0.75, 1.0))
-
-
-
-#+end_example
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -38164,4 +39488,4 @@ ggplot(data, aes(x = x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-ZwiTvz/figureY2W1Fn.png]]
+[[file:/tmp/babel-UvvN2W/figureCgQSG6.png]]
