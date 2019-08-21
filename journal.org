@@ -39477,3 +39477,34 @@ plot(distribution, lw = 2)
 
 #+RESULTS:
 [[file:./.ob-jupyter/971c7e20efb8d094b72c8bc548477b6b88adf9bf.svg]]
+*** [2019-08-21 Wed]
+**** Looking at more sampled data                                 :ATTACH:
+:PROPERTIES:
+:Attachments: sampled_data.csv
+:ID:       14f50512-e277-4cf2-b732-754f9ebdca3f
+:END:
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+data <- read.csv("data/14/f50512-e277-4cf2-b732-754f9ebdca3f/sampled_data.csv",
+                 stringsAsFactors = FALSE)
+
+ggplot(data, aes(x = x, y = y)) +
+  facet_wrap(interaction(mag_x, mag_y) ~ .) +
+  geom_path(alpha = 0.8) +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figureYVkR1a.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+data <- read.csv("data/37/a0f66d-b2d3-40ee-bac4-6a14f32a7cfd/int_sampled_data.csv",
+                 stringsAsFactors = FALSE)
+
+ggplot(data, aes(x = x, y = y)) +
+  facet_wrap(interaction(mag_x, mag_y) ~ .) +
+  geom_path(alpha = 0.8) +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-w5lAu8/figure1CO4Ay.png]]
