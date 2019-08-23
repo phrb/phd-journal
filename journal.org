@@ -39480,31 +39480,37 @@ plot(distribution, lw = 2)
 *** [2019-08-21 Wed]
 **** Looking at more sampled data                                 :ATTACH:
 :PROPERTIES:
-:Attachments: sampled_data.csv
 :ID:       14f50512-e277-4cf2-b732-754f9ebdca3f
+:Attachments: sampled_data.csv
 :END:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+
 data <- read.csv("data/14/f50512-e277-4cf2-b732-754f9ebdca3f/sampled_data.csv",
                  stringsAsFactors = FALSE)
 
 ggplot(data, aes(x = x, y = y)) +
-  facet_wrap(interaction(mag_x, mag_y) ~ .) +
-  geom_path(alpha = 0.8) +
+  facet_wrap(name ~ .) +
+  geom_point(alpha = 0.4) +
   theme_bw(base_size = 18)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureYVkR1a.png]]
+[[file:/tmp/babel-H9uPID/figurek8VIeQ.png]]
+*** [2019-08-22 Thu]
+**** Project Meeting with Dejan & HPE
+- Sai, Dejan, Luis, Pedro, Glaucimar, Plinio
+- Missing: Alfredo, Hirata, Daniel
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
-data <- read.csv("data/37/a0f66d-b2d3-40ee-bac4-6a14f32a7cfd/int_sampled_data.csv",
-                 stringsAsFactors = FALSE)
+***** Project
+- Project until March
+- More detailed plan later on
+  - Artifacts?
 
-ggplot(data, aes(x = x, y = y)) +
-  facet_wrap(interaction(mag_x, mag_y) ~ .) +
-  geom_path(alpha = 0.8) +
-  theme_bw(base_size = 18)
-#+end_SRC
+***** Autotuning
+- Look at PUMA compiler
+- Wait for future applications from project's members
 
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figure1CO4Ay.png]]
+***** Fuzzers
+- Discussion on applications
+- Internal HPE discussions will be taken offline
