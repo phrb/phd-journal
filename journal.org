@@ -37296,7 +37296,7 @@ I(U_Je ^ 2)
 I(RT_I"| __truncated__ ...
 #+end_example
 
-******** First Step
+******** First Step:
 #+begin_SRC R :results output :session *R* :exports none
 responses <- subset(search_spaces, experiment_id == "parasilo-14" &
                                    step == 1 &
@@ -37473,7 +37473,7 @@ Multiple R-squared:  0.3647,	Adjusted R-squared:  -1.269
 F-statistic: 0.2233 on 18 and 7 DF,  p-value: 0.9952
 #+end_example
 
-******** Second Step
+******** Second Step:
 #+begin_SRC R :results output :session *R* :exports none
 responses <- subset(search_spaces, experiment_id == "parasilo-14" &
                                    step == 2 &
@@ -37649,7 +37649,7 @@ Multiple R-squared:  0.6191,	Adjusted R-squared:  -0.5234
 F-statistic: 0.5419 on 18 and 6 DF,  p-value: 0.8535
 #+end_example
 
-******** Third Step
+******** Third Step:
 #+begin_SRC R :results output :session *R* :exports none
 responses <- subset(search_spaces, experiment_id == "parasilo-14" &
                                    step == 3 &
