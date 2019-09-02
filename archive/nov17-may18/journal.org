@@ -5842,16 +5842,18 @@ The Paley construction generates [[https://en.wikipedia.org/wiki/Hadamard_matrix
     find out exactly how generate a Plackett-Burman design from a Hadamard
     matrix built with the Paley construction.
 *** [2018-01-22 Mon]
-**** Generating Plackett-Burman Designs with ~survey~
-The =survey= [[https://cran.r-project.org/web/packages/survey/index.html][package]] provides a function for generating
-Hadamard matrices using the Paley construction. To obtain
-the Plackett-Burman design from a Hadamard matrix built using
-the Paley construction, we can remove the first row and rotate
-the matrix, or simply remove the first column.
+**** Generating Plackett-Burman Designs with ~survey~               :ATTACH:
+:PROPERTIES:
+:Attachments: plackett1946design.pdf
+:ID:       8741c730-7372-4f42-8919-f3e6968c637d
+:END:
+The =survey=  [[https://cran.r-project.org/web/packages/survey/index.html][package]] provides a  function for generating Hadamard  matrices using
+the Paley  construction. To  obtain the Plackett-Burman  design from  a Hadamard
+matrix  built using  the Paley  construction, we  can remove  the first  row and
+rotate the matrix, or simply remove the first column.
 
-To check if a given design is a Plackett-Burman design,
-we will check for the following properties, obtained in
-the [[file:~/Dropbox/papers/design-of-experiments/plackett1946design.pdf][original Plackett-Burman paper]]:
+To check if  a given design is  a Plackett-Burman design, we will  check for the
+following properties, obtained in the original Plackett-Burman paper, attached:
 
 1. Each component is replicated at each of its values the
    same number of times
@@ -5861,7 +5863,7 @@ the [[file:~/Dropbox/papers/design-of-experiments/plackett1946design.pdf][origin
    - That is, the sum of each pair of columns will produce
      a column with the same number of occurrences of =2= and
      =-2=, and twice that number of occurrences of =0=
-3. The number of assemblies is divisible by the
+3. The number of experiments is divisible by the
    square of the number of values
    - This is guaranteed by the construction of the matrices,
      which generates matrices with sizes multiple of 4
