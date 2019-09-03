@@ -39853,7 +39853,7 @@ ggplot(data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figure1CO4Ay.png]]
+[[file:/tmp/babel-H9uPID/figure7HHySZ.png]]
 *** [2019-08-12 Mon]
 **** Exploring D_A-Optimality
 #+HEADER: :results output :session *R*
@@ -40060,6 +40060,8 @@ trunc_limit = 0.3
 distribution = MixtureModel([Truncated(Normal(limits[1], range),
                                        limits[1],
                                        limits[1] + trunc_limit),
+                             Truncated(Normal(0.5, range),
+                                        0.5 - range , 0.5 + range),
                              Truncated(Normal(limits[2], range),
                                        limits[2] - trunc_limit,
                                        limits[2])])
@@ -40068,7 +40070,7 @@ plot(distribution, lw = 2)
 #+end_SRC
 
 #+RESULTS:
-[[file:./.ob-jupyter/971c7e20efb8d094b72c8bc548477b6b88adf9bf.svg]]
+[[file:./.ob-jupyter/5e38edf2f52a290a491d472cf4397a4f347d917c.svg]]
 *** [2019-08-21 Wed]
 **** Looking at more sampled data                                 :ATTACH:
 :PROPERTIES:
@@ -40088,7 +40090,7 @@ ggplot(data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-H9uPID/figurek8VIeQ.png]]
+[[file:/tmp/babel-H9uPID/figureoHy1ww.png]]
 *** [2019-08-22 Thu]
 **** Project Meeting with Dejan & HPE
 - Sai, Dejan, Luis, Pedro, Glaucimar, Plinio
@@ -40106,3 +40108,16 @@ ggplot(data, aes(x = x, y = y)) +
 ***** Fuzzers
 - Discussion on applications
 - Internal HPE discussions will be taken offline
+*** [2019-09-03 Tue]
+**** Resources for Optimal Design Theory
+- Notes de cours : Stat 591: Advanced Design of Experiments Rutgers University (http://www.stat.rutgers.edu/home/buyske/591/lect_all.pdf)
+  - Tout le cour peut être intéressante, mais «Lecture 11» parle de Optimal Design, c'est une bonne introduction.
+    - Ça a donné les liens pour les livres d'avant :
+      - https://www.amazon.com/Optimal-Experiments-Classics-Applied-Mathematics/dp/0898716047
+      - https://www.springer.com/gp/book/9789400959149
+      - https://global.oup.com/academic/product/optimum-experimental-designs-9780198522546
+
+- Présentations : TILS968 STAT1: Optimal Design of Experiments (JSS25) (University of Jyväskylä) (https://koppa.jyu.fi/en/courses/180147/course-literature/)
+  - Session 1 : Introduction (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-1)
+  - Session 4 : Some Theory (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-4)
+  - Session 5 : Design construction (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-5)
