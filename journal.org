@@ -40121,3 +40121,135 @@ ggplot(data, aes(x = x, y = y)) +
   - Session 1 : Introduction (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-1)
   - Session 4 : Some Theory (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-4)
   - Session 5 : Design construction (https://koppa.jyu.fi/en/courses/180147/course-literature/lecture-5)
+**** Optimizing a Determinant Function using Automatic Determination
+#+begin_SRC jupyter-julia :results output :session jl :async yes
+using ForwardDiff, ExperimentalDesign,
+      Combinatorics, LinearAlgebra, DataFrames,
+      NaNMath
+
+candidate_set = FullFactorial((f1 = [-1, 0, 1],
+                               f2 = [-1, 0, 1],
+                               f3 = [-1, 0, 1]),
+                              explicit = true)
+
+show(candidate_set.matrix)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+27×3 DataFrame
+│ Row │ f1    │ f2    │ f3    │
+│     │ [90mInt64[39m │ [90mInt64[39m │ [90mInt64[39m │
+├─────┼───────┼───────┼───────┤
+│ 1   │ -1    │ -1    │ -1    │
+│ 2   │ 0     │ -1    │ -1    │
+│ 3   │ 1     │ -1    │ -1    │
+│ 4   │ -1    │ 0     │ -1    │
+│ 5   │ 0     │ 0     │ -1    │
+│ 6   │ 1     │ 0     │ -1    │
+│ 7   │ -1    │ 1     │ -1    │
+│ 8   │ 0     │ 1     │ -1    │
+│ 9   │ 1     │ 1     │ -1    │
+│ 10  │ -1    │ -1    │ 0     │
+⋮
+│ 17  │ 0     │ 1     │ 0     │
+│ 18  │ 1     │ 1     │ 0     │
+│ 19  │ -1    │ -1    │ 1     │
+│ 20  │ 0     │ -1    │ 1     │
+│ 21  │ 1     │ -1    │ 1     │
+│ 22  │ -1    │ 0     │ 1     │
+│ 23  │ 0     │ 0     │ 1     │
+│ 24  │ 1     │ 0     │ 1     │
+│ 25  │ -1    │ 1     │ 1     │
+│ 26  │ 0     │ 1     │ 1     │
+│ 27  │ 1     │ 1     │ 1     │
+#+end_example
+
+#+begin_SRC jupyter-julia :results output :session jl :async yes
+data = Array{Array{Float64, 2}, 1}()
+
+combination_size = 5
+it = combinations(eachrow(candidate_set.matrix), combination_size)
+
+for a in it
+    new_data = DataFrame(a[1])
+
+    for j = 2:combination_size
+        append!(new_data, DataFrame(a[j]))
+    end
+
+    push!(data, Array{Real, 2}(new_data))
+end
+
+println(typeof(data))
+println(length(data))
+#+end_SRC
+
+#+RESULTS:
+: Array{Array{Float64,2},1}
+: 80730
+
+#+begin_SRC jupyter-julia :results output :session jl :async yes
+function differentiable_D_criterion(model_matrix)
+    abs(det((model_matrix' * model_matrix) / size(model_matrix, 1))) ^ (1 / size(model_matrix, 2))
+end
+#+end_SRC
+
+#+RESULTS:
+
+Computing gradient for all experiments in full factorial:
+
+#+begin_SRC jupyter-julia :results output :session jl :async yes
+t = [ForwardDiff.gradient(differentiable_D_criterion, d) for d in data]
+#+end_SRC
+
+#+RESULTS:
+
+Computing matrix norm for all gradients of full factorial:
+
+#+begin_SRC jupyter-julia :results output :session jl :async yes
+ns = [opnorm(n, 2) for n in t]
+#+end_SRC
+
+#+RESULTS:
+
+*** [2019-09-04 Wed]
+**** Review for WSCAD (Portuguese)
+***** Comments for Authors
+O  artigo apresenta  uma implementação  de um  algoritmo de  raytracing para  um
+sistema heterogêneo CPU/FPGA. Testes de desempenho são feitos em cinco cenários,
+dos  quais apenas  um é  heterogêneo, e  os outros  são compostos  de diferentes
+números de CPUs e FPGAs.
+
+O  artigo precisa  de revisão  de texto  e de  reformatação de  posicionamento e
+idioma das legendas, por exemplo. A legenda das figuras e trechos de código deve
+ser  posicionada  abaixo   dos  elementos.   Apenas  legendas   de  tabelas  são
+posicionadas acima dos  elementos. O idioma das legendas  e identificadores deve
+seguir o  idioma do  artigo.  Uma  outra sugestão de  reformatação é  utilizar o
+mesmo formato  gráfico para todos os  trechos de código.  Também  é interessante
+produzir gráficos em formato vetorial (.svg, por exemplo).
+
+Acredito  que valha  a pena  analisar a  contribuição de  cada trecho  de código
+apresentado.  O trecho de código 1, por exemplo, não contribui excepcionalmente
+para o entendimento da implementação. Ele poderia ser substituído por uma figura
+ou por um parágrafo de texto, para economizar espaço.
+
+Além disso, a  reprodutibilidade e verificabilidade do  artigo seria beneficiada
+caso  o código  fonte  escrito  pelos autores  e  usado  nos experimentos  fosse
+disponibilizado como artefato associado ao artigo, na forma de um repositório de
+código público e com licença de software livre.
+
+A validação experimental  da implementação apresentada no artigo  precisa de uma
+extensa revisão.  O  artigo não informa o número de  repetições dos experimentos
+cujos resultados são apresentados  na Figura 5 e na Tabela  1. Discutir o número
+de repetições  e as  estatísticas associadas  aos resultados, como  a média  e o
+desvio padrão das amostras, fortalecerá os  argumentos do artigo e permitirá uma
+maior compreensão e discussão dos resultados.
+
+O  artigo também  menciona  que outros  trabalhos  realizaram implementações  de
+algoritmos  de  raytracing  em  FPGAs.  Seria  interessante  para  fortalecer  o
+argumento  do artigo  apresentar  comparações de  desempenho das  implementações
+estudadas no artigo com essas implementações em FPGAs já existentes.
+
+Sugiro que o artigo seja resubmetido  após uma revisão cuidadosa da apresentação
+dos resultados e da formatação do documento.
