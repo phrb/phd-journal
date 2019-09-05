@@ -37108,7 +37108,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 [[file:/tmp/babel-ynhqKR/figure7r6W2z.pdf]]
 
 ****** Fixed Model Terms
-******* Combined Experiments
+******* Combined Experiments                                 :noexport:
 Figure\nbsp{}[[fig:et-ss-ae]] shows the model terms that were identified as significant by
 ANOVA, with significance  threshold of $0.01$, at each DLMT  step. Identifying a
 model term removes the corresponding parameter from the model, regardless of the
@@ -37181,7 +37181,7 @@ eliminated, and =RT_I=  was only fixed to  a different value on  2 eliminations 
 the fourth step.
 
 ****** Fixed Factors & Values
-******* Combined Experiments
+******* Combined Experiments                                 :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37346,6 +37346,21 @@ VEC2e        1 11.144  11.144   3.011  0.181
 OMPe         1 10.409  10.409   2.812  0.192
 Residuals    3 11.105   3.702
 #+end_example
+
+Using the =ScottKnott= package, we see:
+
+#+begin_SRC R :results output table :session *R* :exports results
+library(ScottKnott)
+
+reg <- aov(step_formula, data = select(p14_step1, -id, -step, -formula))
+
+SK(x = reg)
+#+end_SRC
+
+#+RESULTS:
+:
+: Error in SK.aov(x = reg) : No factors in the fitted model!
+: In addition: There were 22 warnings (use warnings() to see them)
 
 And the corresponding =lm= summary, using all factors:
 
@@ -37829,7 +37844,7 @@ F-statistic: 0.8109 on 18 and 85 DF,  p-value: 0.6826
 #+end_example
 
 ****** Searched Spaces
-******* Combined Experiments
+******* Combined Experiments                                 :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
@@ -37942,7 +37957,7 @@ ggplot(summaries) +
 #+RESULTS:
 [[file:/tmp/babel-w5lAu8/figurey8nlJc.pdf]]
 
-****** D_A-Optimality at Each Step
+****** D_A-Optimality at Each Step                             :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
 color_count = length(unique(design_data_plot$factors))
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
