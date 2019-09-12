@@ -36566,6 +36566,8 @@ for (target_dir in target_dirs) {
 
 str(data)
 
+full_data <- data
+
 plot_data <- data %>%
              group_by(experiment_id) %>%
              mutate(mean_cost_baseline = mean(cost_baseline)) %>%
@@ -36632,6 +36634,9 @@ for (target_dir in target_dirs) {
     }
 }
 
+full_data <- bind_rows(filter(full_data, technique == "DLMT"),
+                       filter(rs_data, technique == "RS", application == "bicgkernel"))
+
 rs_plot_data <- rs_data %>%
   filter(technique == "RS", application == "bicgkernel") %>%
   group_by(experiment_id) %>%
@@ -36643,7 +36648,6 @@ rs_plot_data <- rs_data %>%
 
 complete_plot_data <- bind_rows(filter(plot_data, technique == "DLMT"),
                                 rs_plot_data)
-
 
 str(complete_plot_data)
 
@@ -37379,6 +37383,27 @@ ggplot() +
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-elHoq9/figure8UQjkW.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+all_parameters_plot_data <- full_data %>%
+  gather("factor", "level", T2_I, T2_J, RT_I,
+         T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
+         RT_J, T1_I, SCR) %>%
+  mutate(level = str_replace(level, "True", "1")) %>%
+  mutate(level = str_replace(level, "False", "0")) %>%
+  mutate(level = as.numeric(level)) %>%
+  subset(technique == "DLMT")
+
+ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  ggtitle("Experiments performed by DLMT") +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-elHoq9/figurejr8tsW.png]]
 
 ******* Re-running =aov= and =lm= on =parasilo-14=
 We are interested in  what would happen with =aov= and =lm=  analyses if we selected
