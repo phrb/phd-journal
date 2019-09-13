@@ -37403,7 +37403,12 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 3),
+                quantiles = c(0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "red") +
   geom_smooth(method = "lm") +
   theme_bw(base_size = 18)
 #+end_SRC
@@ -37433,7 +37438,12 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 3),
+                quantiles = c(0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "red") +
   geom_smooth(method = "lm") +
   theme_bw(base_size = 18)
 #+end_SRC
@@ -37464,7 +37474,12 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 3),
+                quantiles = c(0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "red") +
   geom_smooth(method = "lm") +
   theme_bw(base_size = 18)
 #+end_SRC
@@ -38847,18 +38862,14 @@ str(design_data_plot)
 #+end_SRC
 
 #+RESULTS:
-#+begin_example
-
-There were 44 warnings (use warnings() to see them)
-
-Joining, by = c("id", "step")
-
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1103 obs. of  4 variables:
- $ metric_value: num  0.0141 0.046 0.0596 0.0544 0.0651 ...
- $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
- $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
- $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
-#+end_example
+:
+: Joining, by = c("id", "step")
+:
+: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1103 obs. of  4 variables:
+:  $ metric_value: num  0.0141 0.046 0.0596 0.0544 0.0651 ...
+:  $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
+:  $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+:  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 
 ****** Iterations that found the Best Configuration
 Since =OMP= was  quickly fixed at most iterations of  the previous experiment, and
@@ -39308,7 +39319,12 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 3),
+                quantiles = c(0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "red") +
   geom_smooth(method = "lm", alpha = 0.5) +
   theme_bw(base_size = 18)
 #+end_SRC
@@ -39338,7 +39354,12 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 3),
+                quantiles = c(0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "red") +
   geom_smooth(method = "lm", alpha = 0.5) +
   theme_bw(base_size = 18)
 #+end_SRC
@@ -39348,7 +39369,6 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-elHoq9/figurejK50F4.png]]
-
 ****** D-Optimality
 ******* Performance at Each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
