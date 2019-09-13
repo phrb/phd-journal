@@ -37382,10 +37382,16 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figure8UQjkW.png]]
+[[file:/tmp/babel-elHoq9/figureemBVzE.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
+  mutate(RT_I = log(RT_I)) %>%
+  mutate(RT_J = log(RT_J)) %>%
+  mutate(T1_I = log(T1_I)) %>%
+  mutate(T2_I = log(T2_I)) %>%
+  mutate(T1_J = log(T1_J)) %>%
+  mutate(T2_J = log(T2_J)) %>%
   gather("factor", "level", T2_I, T2_J, RT_I,
          T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
          RT_J, T1_I, SCR) %>%
@@ -37397,13 +37403,77 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
   geom_smooth(method = "lm") +
-  ggtitle("Experiments performed by DLMT") +
   theme_bw(base_size = 18)
 #+end_SRC
 
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the DLMT runs
+#+LABEL: fig:lm-dlmt-all
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figurejr8tsW.png]]
+[[file:/tmp/babel-elHoq9/figureb6UBpo.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+all_parameters_plot_data <- full_data %>%
+  mutate(RT_I = log(RT_I)) %>%
+  mutate(RT_J = log(RT_J)) %>%
+  mutate(T1_I = log(T1_I)) %>%
+  mutate(T2_I = log(T2_I)) %>%
+  mutate(T1_J = log(T1_J)) %>%
+  mutate(T2_J = log(T2_J)) %>%
+  gather("factor", "level", T2_I, T2_J, RT_I,
+         T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
+         RT_J, T1_I, SCR) %>%
+  mutate(level = str_replace(level, "True", "1")) %>%
+  mutate(level = str_replace(level, "False", "0")) %>%
+  mutate(level = as.numeric(level)) %>%
+  subset(technique == "RS")
+
+ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs
+#+LABEL: fig:lm-rs-all
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-elHoq9/figure3xnWMZ.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+all_parameters_plot_data <- full_data %>%
+  mutate(RT_I = log(RT_I)) %>%
+  mutate(RT_J = log(RT_J)) %>%
+  mutate(T1_I = log(T1_I)) %>%
+  mutate(T2_I = log(T2_I)) %>%
+  mutate(T1_J = log(T1_J)) %>%
+  mutate(T2_J = log(T2_J)) %>%
+  subset(OMP == "True") %>%
+  gather("factor", "level", T2_I, T2_J, RT_I,
+         T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
+         RT_J, T1_I, SCR) %>%
+  mutate(level = str_replace(level, "True", "1")) %>%
+  mutate(level = str_replace(level, "False", "0")) %>%
+  mutate(level = as.numeric(level)) %>%
+  subset(technique == "RS")
+
+ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs, with \texttt{OMP} fixed to \texttt{true}
+#+LABEL: fig:lm-rs-nobin
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-elHoq9/figurecoiCie.pdf]]
 
 ******* Re-running =aov= and =lm= on =parasilo-14=
 We are interested in  what would happen with =aov= and =lm=  analyses if we selected
@@ -37665,7 +37735,7 @@ print(xtable(reg), size = "scriptsize")
 
 Nothing seems to substantially change for this case.
 
-******** Second Step:
+******** Second Step:                                       :noexport:
 #+begin_SRC R :results output :session *R* :exports none
 responses <- subset(search_spaces, experiment_id == "parasilo-14" &
                                    step == 2 &
@@ -37860,7 +37930,7 @@ print(xtable(reg), size = "scriptsize")
 \end{table}
 #+end_export
 
-******** Third Step:
+******** Third Step:                                        :noexport:
 #+begin_SRC R :results output :session *R* :exports none
 responses <- subset(search_spaces, experiment_id == "parasilo-14" &
                                    step == 3 &
@@ -39219,7 +39289,7 @@ ggplot() +
 #+RESULTS:
 [[file:/tmp/babel-elHoq9/figure8UQjkW.png]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
   mutate(RT_I = log(RT_I)) %>%
   mutate(RT_J = log(RT_J)) %>%
@@ -39240,10 +39310,42 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   geom_point(alpha = 0.4) +
   geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
   geom_smooth(method = "lm", alpha = 0.5) +
-  ggtitle("Experiments performed by RS") +
   theme_bw(base_size = 18)
 #+end_SRC
 
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the DLMT runs
+#+LABEL: fig:lm-dlmt-fixedbin
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-elHoq9/figurejK50F4.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+all_parameters_plot_data <- full_data %>%
+  mutate(RT_I = log(RT_I)) %>%
+  mutate(RT_J = log(RT_J)) %>%
+  mutate(T1_I = log(T1_I)) %>%
+  mutate(T2_I = log(T2_I)) %>%
+  mutate(T1_J = log(T1_J)) %>%
+  mutate(T2_J = log(T2_J)) %>%
+  gather("factor", "level", T2_I, T2_J, RT_I,
+         T1_J, U_J, U_I, U1_I,
+         RT_J, T1_I) %>%
+  mutate(level = str_replace(level, "True", "1")) %>%
+  mutate(level = str_replace(level, "False", "0")) %>%
+  mutate(level = as.numeric(level)) %>%
+  subset(technique == "RS")
+
+ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
+  geom_smooth(method = "lm", alpha = 0.5) +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs
+#+LABEL: fig:lm-dlmt-fixedbin
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-elHoq9/figurejK50F4.png]]
 
