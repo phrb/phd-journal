@@ -30,7 +30,6 @@
 #+LATEX_HEADER: \usepackage{amsmath}
 #+LATEX_HEADER: \usepackage{bm}
 #+LATEX_HEADER: \usepackage{amsfonts}
-#+LATEX_HEADER: \usepackage{bm}
 #+LATEX_HEADER: \usepackage{wasysym}
 #+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \usepackage{ragged2e}
@@ -40709,6 +40708,7 @@ ggplot(data, aes(x = x, y = y)) +
 ***** Fuzzers
 - Discussion on applications
 - Internal HPE discussions will be taken offline
+** September
 *** [2019-09-03 Tue]
 **** Resources for Optimal Design Theory
 - Notes de cours : Stat 591: Advanced Design of Experiments Rutgers University (http://www.stat.rutgers.edu/home/buyske/591/lect_all.pdf)
@@ -42055,3 +42055,40 @@ dos resultados e da formatação do documento.
 - Case where prediction was better than design point
 - Super point from RS at Section 3
   - Improve designs instead of restarting
+*** [2019-09-15 Sun]
+**** Project Budget Sheet (Portuguese)
+#+ATTR_LATEX: :booktabs t align ccc
+|--------------------------+------------+-------------|
+| Item                     | Custo (R$) | Porcentagem |
+|--------------------------+------------+-------------|
+| RH Direto                | 49.000,00  |   63.636364 |
+| Viagens                  | 13.000,00  |   16.883117 |
+| Infra Laboratório de P&D | 15.000,00  |   19.480519 |
+|--------------------------+------------+-------------|
+| Total Despesas           | 77.        |             |
+| Despesas Incorridas      | 15.400,00  |         20. |
+|--------------------------+------------+-------------|
+| Total                    | 92.400,00  |             |
+|--------------------------+------------+-------------|
+#+TBLFM: @2$3=(100 * (@2$2 / @5$2))::@3$3=(100 * (@3$2 / @5$2))::@4$3=(100 * (@4$2 / @5$2))::@5$2=(@2$2 + @3$2 + @4$2)::@6$3=(100 * (@6$2 / @5$2))
+
+**** Calculando Orçamento
+#+begin_SRC jupyter-python :results output :session py :async yes
+meses = 7
+doc = 4
+coord = 3
+viagem = 6.5
+overhead = 0.2
+machine = 15
+total = (meses * (doc + coord)) + (2 * viagem) + (machine)
+total_overhead = total * overhead
+
+print("Total: {0}".format(total))
+print("Overhead: {0}".format(total_overhead))
+print("Total + Overhead: {0}".format(total + total_overhead))
+#+end_SRC
+
+#+RESULTS:
+: Total: 77.0
+: Overhead: 15.4
+: Total + Overhead: 92.4
