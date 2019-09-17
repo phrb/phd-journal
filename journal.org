@@ -36994,6 +36994,8 @@ I(RT_I ^ 2) +"| __truncated__ ...
  $ mean_confidence_interval_sup: num  0.954 4.582 0.904 0.981 4.576 ...
  $ experiment_id               : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 
+There were 40 warnings (use warnings() to see them)
+
 Joining, by = c("id", "step")
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	860 obs. of  4 variables:
@@ -37347,22 +37349,22 @@ get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
        # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 4) +
-  geom_bar(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
   geom_jitter(data = subset(search_spaces, correct_result == "True"),
-              aes(x = as.factor(step), y = cost_mean),
-              width = 0.3, height = 0, alpha = 0.8) +
-  geom_text(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors,
+              aes(x = step, y = cost_mean),
+              width = 0.2, height = 0, alpha = 0.5) +
+  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            color = "white",
+            color = "black",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
   scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 16) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
@@ -37381,7 +37383,7 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figureemBVzE.pdf]]
+[[file:/tmp/babel-Bco3bb/figuretV900e.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -37402,13 +37404,14 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 3),
-                quantiles = c(0.05, 0.15, 0.25),
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
                 size = 1,
                 alpha = 0.6,
-                color = "red") +
-  geom_smooth(method = "lm") +
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -37416,7 +37419,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-all
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figureb6UBpo.pdf]]
+[[file:/tmp/babel-Bco3bb/figurelyL2D5.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -37437,13 +37440,14 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 3),
-                quantiles = c(0.05, 0.15, 0.25),
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
                 size = 1,
                 alpha = 0.6,
-                color = "red") +
-  geom_smooth(method = "lm") +
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -37473,13 +37477,14 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 3),
-                quantiles = c(0.05, 0.15, 0.25),
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
                 size = 1,
                 alpha = 0.6,
-                color = "red") +
-  geom_smooth(method = "lm") +
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -37487,7 +37492,28 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-rs-nobin
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figurecoiCie.pdf]]
+[[file:/tmp/babel-Bco3bb/figureqNvfdJ.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+ggplot(subset(all_parameters_plot_data, experiment_id == "paravance-58"), aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(subset(all_parameters_plot_data, experiment_id == "paravance-58"), cost_mean == min(cost_mean)), size = 2, color = "red") +
+  theme_bw(base_size = 18)
+#+END_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs, with \texttt{OMP} fixed to \texttt{true}, for \texttt{paravance-58}
+#+LABEL: fig:lm-rs-nobin-p58
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-Bco3bb/figureva5tXz.pdf]]
 
 ******* Re-running =aov= and =lm= on =parasilo-14=
 We are interested in  what would happen with =aov= and =lm=  analyses if we selected
@@ -38861,14 +38887,18 @@ str(design_data_plot)
 #+end_SRC
 
 #+RESULTS:
-:
-: Joining, by = c("id", "step")
-:
-: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1103 obs. of  4 variables:
-:  $ metric_value: num  0.0141 0.046 0.0596 0.0544 0.0651 ...
-:  $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
-:  $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
-:  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
+#+begin_example
+
+There were 44 warnings (use warnings() to see them)
+
+Joining, by = c("id", "step")
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1103 obs. of  4 variables:
+ $ metric_value: num  0.0141 0.046 0.0596 0.0544 0.0651 ...
+ $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
+ $ id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+ $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
+#+end_example
 
 ****** Iterations that found the Best Configuration
 Since =OMP= was  quickly fixed at most iterations of  the previous experiment, and
@@ -39263,22 +39293,22 @@ get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
        # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 4) +
-  geom_bar(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
   geom_jitter(data = subset(search_spaces, correct_result == "True"),
-              aes(x = as.factor(step), y = cost_mean),
-              width = 0.3, height = 0, alpha = 0.8) +
-  geom_text(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors,
+              aes(x = step, y = cost_mean),
+              width = 0.2, height = 0, alpha = 0.5) +
+  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            color = "white",
+            color = "black",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
   scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 16) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
@@ -39318,13 +39348,14 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 3),
-                quantiles = c(0.05, 0.15, 0.25),
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
                 size = 1,
                 alpha = 0.6,
-                color = "red") +
-  geom_smooth(method = "lm", alpha = 0.5) +
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -39332,7 +39363,28 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-fixedbin
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figurejK50F4.png]]
+[[file:/tmp/babel-Bco3bb/figuremYRSBQ.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+ggplot(subset(all_parameters_plot_data, experiment_id == "parasilo-21"), aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(subset(all_parameters_plot_data, experiment_id == "parasilo-21"), cost_mean == min(cost_mean)), size = 2, color = "red") +
+  theme_bw(base_size = 18)
+#+END_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the DLMT runs, for \texttt{parasilo-21}
+#+LABEL: fig:lm-rs-nobin-p14
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-Bco3bb/figureaYZZxh.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -39353,13 +39405,14 @@ all_parameters_plot_data <- full_data %>%
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 3),
-                quantiles = c(0.05, 0.15, 0.25),
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
                 size = 1,
                 alpha = 0.6,
-                color = "red") +
-  geom_smooth(method = "lm", alpha = 0.5) +
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -39367,7 +39420,28 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-fixedbin
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-elHoq9/figurejK50F4.png]]
+[[file:/tmp/babel-Bco3bb/figure98HYKr.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+ggplot(subset(all_parameters_plot_data, experiment_id == "parasilo-23"), aes(x = level, y = cost_mean)) +
+  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+  geom_point(alpha = 0.4) +
+  # geom_smooth(method = "lm", formula = y ~ poly(x, 4), color = "red", alpha = 0.5) +
+  geom_quantile(formula = y ~ poly(x, 4),
+                quantiles = c(0.01, 0.05, 0.15, 0.25),
+                size = 1,
+                alpha = 0.6,
+                color = "darkgreen") +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_point(data = subset(subset(all_parameters_plot_data, experiment_id == "parasilo-23"), cost_mean == min(cost_mean)), size = 2, color = "red") +
+  theme_bw(base_size = 18)
+#+END_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs, for \texttt{parasilo-23}
+#+LABEL: fig:lm-rs-nobin-p54
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-Bco3bb/figurer5tVWU.pdf]]
 ****** D-Optimality
 ******* Performance at Each Step
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
@@ -40305,22 +40379,22 @@ get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
        # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 4) +
-  geom_bar(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0) +
+  facet_wrap(experiment_id ~ ., ncol = 3) +
+  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
   geom_jitter(data = subset(search_spaces, correct_result == "True"),
-              aes(x = as.factor(step), y = cost_mean),
-              width = 0.3, height = 0, alpha = 0.8) +
-  geom_text(data = fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors,
+              aes(x = step, y = cost_mean),
+              width = 0.2, height = 0, alpha = 0.5) +
+  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            color = "white",
+            color = "black",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
   scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 16) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
@@ -42057,25 +42131,24 @@ dos resultados e da formatação do documento.
   - Improve designs instead of restarting
 *** [2019-09-15 Sun]
 **** Project Budget Sheet (Portuguese)
-#+ATTR_LATEX: :booktabs t align ccc
-|--------------------------+------------+-------------|
-| Item                     | Custo (R$) | Porcentagem |
-|--------------------------+------------+-------------|
-| RH Direto                | 49.000,00  |   63.636364 |
-| Viagens                  | 13.000,00  |   16.883117 |
-| Infra Laboratório de P&D | 15.000,00  |   19.480519 |
-|--------------------------+------------+-------------|
-| Total Despesas           | 77.        |             |
-| Despesas Incorridas      | 15.400,00  |         20. |
-|--------------------------+------------+-------------|
-| Total                    | 92.400,00  |             |
-|--------------------------+------------+-------------|
-#+TBLFM: @2$3=(100 * (@2$2 / @5$2))::@3$3=(100 * (@3$2 / @5$2))::@4$3=(100 * (@4$2 / @5$2))::@5$2=(@2$2 + @3$2 + @4$2)::@6$3=(100 * (@6$2 / @5$2))
+#+ATTR_LATEX: :booktabs true :align lrr
+|---------------------+------------+-------------|
+| Item                | Custo (R$) | Porcentagem |
+|---------------------+------------+-------------|
+| RH Direto           |      56000 |   81.159420 |
+| Viagens             |      13000 |   18.840580 |
+|---------------------+------------+-------------|
+| Total Despesas      |      69000 |             |
+| Despesas Incorridas |     13800. |         20. |
+|---------------------+------------+-------------|
+| Total               |     82800. |             |
+|---------------------+------------+-------------|
+#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
 
 **** Calculando Orçamento
 #+begin_SRC jupyter-python :results output :session py :async yes
 meses = 7
-doc = 4
+doc = 5
 coord = 3
 viagem = 6.5
 overhead = 0.2
@@ -42086,9 +42159,11 @@ total_overhead = total * overhead
 print("Total: {0}".format(total))
 print("Overhead: {0}".format(total_overhead))
 print("Total + Overhead: {0}".format(total + total_overhead))
+print((meses * (doc + coord)))
 #+end_SRC
 
 #+RESULTS:
-: Total: 77.0
-: Overhead: 15.4
-: Total + Overhead: 92.4
+: Total: 84.0
+: Overhead: 16.8
+: Total + Overhead: 100.8
+: 56
