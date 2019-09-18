@@ -42178,31 +42178,87 @@ dos resultados e da formatação do documento.
 - Super point from RS at Section 3
   - Improve designs instead of restarting
 *** [2019-09-15 Sun]
-**** Tabelas de Orçamento
-***** Valores de Bolsas, com Viagens
+**** Descrição dos Investimentos no Projeto
+O orçamento total alocado ao projeto  é R$160.000,00. As seções seguintes apresentam
+cenários possíveis  com diferentes  números de  bolsas de  Iniciação Científica,
+Doutorado,  e Mestrado.
+
+***** Valores de Bolsas, com Viagens                           :noexport:
 #+ATTR_LATEX: :booktabs true :align lrr
 |--------------------+-------+------------+----------------|
 | Bolsas             | Valor | Quantidade | Total/Mês (R$) |
 |--------------------+-------+------------+----------------|
-| IC                 |   400 |          3 |           1200 |
-| Mestrado           |  1500 |          1 |           1500 |
-| Doutorado          |  2200 |          2 |           4400 |
+| IC                 |   400 |          1 |            400 |
+| Mestrado           |  1500 |          3 |           4500 |
+| Doutorado          |  2200 |          1 |           2200 |
 | Doutorado + Gestão |  4500 |          1 |           4500 |
 | Coordenador        |  3000 |          1 |           3000 |
 |--------------------+-------+------------+----------------|
-| Total/Mês          |       |          8 |          14600 |
+| Total/Mês          |       |          7 |          14600 |
 | Total/Projeto      |       |            |         116800 |
 | Total + Desp.      |       |            |        155760. |
 |--------------------+-------+------------+----------------|
 #+TBLFM: $4=($2 * $3)::@7$3=vsum(@2..@6)::@7$4=vsum(@2..@6)::@8$4=(@7$4 * 8)::@9$4=((@8$4 + 13000) * 1.2)
 
-***** Orçamento
+***** Cenário 1
+- 2 Bolsas de Mestrado
+- 3 Bolsas de Doutorado
+- 1 Gestor de Projeto
+- 1 Coordenador de Projeto
+- 2 Apresentações de Artigo em Conferência
+
+#+CAPTION: Orçamento no Cenário 1
 #+ATTR_LATEX: :booktabs true :align lrr
 |---------------------+------------+-------------|
 | Item                | Custo (R$) | Porcentagem |
 |---------------------+------------+-------------|
-| RH Direto           |     116800 |   89.984592 |
-| Viagens             |      13000 |   10.015408 |
+| RH Direto           |     119200 |   90.166415 |
+| Viagens             |      13000 |   9.8335855 |
+|---------------------+------------+-------------|
+| Total Despesas      |     132200 |             |
+| Despesas Incorridas |     26440. |         20. |
+|---------------------+------------+-------------|
+| Total               |    158640. |             |
+|---------------------+------------+-------------|
+#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
+
+***** Cenário 2
+- 2 Bolsas de Iniciação Científica
+- 4 Bolsas de Doutorado
+- 1 Gestor de Projeto
+- 1 Coordenador de Projeto
+- 2 Apresentações de Artigo em Conferência
+
+#+CAPTION: Orçamento no Cenário 2
+#+ATTR_LATEX: :booktabs true :align lrr
+|---------------------+------------+-------------|
+| Item                | Custo (R$) | Porcentagem |
+|---------------------+------------+-------------|
+| RH Direto           |     119200 |   90.166415 |
+| Viagens             |      13000 |   9.8335855 |
+|---------------------+------------+-------------|
+| Total Despesas      |     132200 |             |
+| Despesas Incorridas |     26440. |         20. |
+|---------------------+------------+-------------|
+| Total               |    158640. |             |
+|---------------------+------------+-------------|
+#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
+
+***** Cenário 3
+- 1 Bolsa de Iniciação Científica
+- 3 Bolsas de Mestrado
+- 2 Bolsas de Doutorado
+- 1 Gestor de Projeto
+- 1 Coordenador de Projeto
+- 2 Apresentações de Artigo em Conferência
+
+#+CAPTION: Orçamento no Cenário 3
+#+ATTR_LATEX: :booktabs true :align lrr
+|---------------------+------------+-------------|
+| Item                | Custo (R$) | Porcentagem |
+|---------------------+------------+-------------|
+| RH Direto           |     116800 |   88.350983 |
+| Viagens             |      13000 |   9.8335855 |
 |---------------------+------------+-------------|
 | Total Despesas      |     129800 |             |
 | Despesas Incorridas |     25960. |         20. |
