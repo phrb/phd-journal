@@ -37506,6 +37506,7 @@ all_parameters_plot_data <- full_data %>%
   mutate(T1_J = log2(T1_J)) %>%
   mutate(T2_J = log2(T2_J)) %>%
   subset(OMP == "False") %>%
+  subset(SCR == "True") %>%
   gather("factor", "level", T2_I, T2_J, RT_I,
          T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
          RT_J, T1_I, SCR) %>%
@@ -37526,6 +37527,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
   geom_smooth(method = "lm", color = "blue") +
   geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
   geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
+  ylim(c(NA, 2.0)) +
   theme_bw(base_size = 18)
 #+end_SRC
 
@@ -37533,7 +37535,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-rs-nobin-false
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureqNvfdJ.pdf]]
+[[file:/tmp/babel-Bco3bb/figureczY2cs.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 ggplot(subset(all_parameters_plot_data, experiment_id == "paravance-58"), aes(x = level, y = cost_mean)) +
@@ -42176,22 +42178,40 @@ dos resultados e da formatação do documento.
 - Super point from RS at Section 3
   - Improve designs instead of restarting
 *** [2019-09-15 Sun]
-**** Project Budget Sheet (Portuguese)
+**** Tabelas de Orçamento
+***** Valores de Bolsas, com Viagens
+#+ATTR_LATEX: :booktabs true :align lrr
+|--------------------+-------+------------+----------------|
+| Bolsas             | Valor | Quantidade | Total/Mês (R$) |
+|--------------------+-------+------------+----------------|
+| IC                 |   400 |          3 |           1200 |
+| Mestrado           |  1500 |          1 |           1500 |
+| Doutorado          |  2200 |          2 |           4400 |
+| Doutorado + Gestão |  4500 |          1 |           4500 |
+| Coordenador        |  3000 |          1 |           3000 |
+|--------------------+-------+------------+----------------|
+| Total/Mês          |       |          8 |          14600 |
+| Total/Projeto      |       |            |         116800 |
+| Total + Desp.      |       |            |        155760. |
+|--------------------+-------+------------+----------------|
+#+TBLFM: $4=($2 * $3)::@7$3=vsum(@2..@6)::@7$4=vsum(@2..@6)::@8$4=(@7$4 * 8)::@9$4=((@8$4 + 13000) * 1.2)
+
+***** Orçamento
 #+ATTR_LATEX: :booktabs true :align lrr
 |---------------------+------------+-------------|
 | Item                | Custo (R$) | Porcentagem |
 |---------------------+------------+-------------|
-| RH Direto           |      56000 |   81.159420 |
-| Viagens             |      13000 |   18.840580 |
+| RH Direto           |     116800 |   89.984592 |
+| Viagens             |      13000 |   10.015408 |
 |---------------------+------------+-------------|
-| Total Despesas      |      69000 |             |
-| Despesas Incorridas |     13800. |         20. |
+| Total Despesas      |     129800 |             |
+| Despesas Incorridas |     25960. |         20. |
 |---------------------+------------+-------------|
-| Total               |     82800. |             |
+| Total               |    155760. |             |
 |---------------------+------------+-------------|
 #+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
 
-**** Calculando Orçamento
+***** Calculando Orçamento                                     :noexport:
 #+begin_SRC jupyter-python :results output :session py :async yes
 meses = 7
 doc = 5
