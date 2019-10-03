@@ -43466,124 +43466,124 @@ str(design_data_plot)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	54 obs. of  3 variables:
- $ removed_variables: Factor w/ 13 levels "","RT_I","I(RT_I^2)",..: 1 2 3 4 1 11 1 3 2 1 ...
- $ step             : int  1 2 2 2 3 4 1 2 2 3 ...
- $ experiment_id    : chr  "paravance-40" "paravance-40" "paravance-40" "paravance-40" ...
+'data.frame':	114 obs. of  3 variables:
+ $ removed_variables: Factor w/ 17 levels "","I(RT_I^2)",..: 1 2 3 2 3 14 11 15 12 15 ...
+ $ step             : int  1 2 2 2 2 3 3 3 3 3 ...
+ $ experiment_id    : chr  "paravance-24" "paravance-24" "paravance-24" "paravance-24" ...
 
-'data.frame':	324 obs. of  3 variables:
- $ current_best_coordinate: chr  "T1_I->1" "T1_J->128" "U_J->1" "U_I->30" ...
+'data.frame':	360 obs. of  3 variables:
+ $ current_best_coordinate: chr  "T1_I->2048" "T1_J->1" "U_J->1" "U_I->11" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 2 ...
- $ experiment_id          : chr  "paravance-40" "paravance-40" "paravance-40" "paravance-40" ...
+ $ experiment_id          : chr  "paravance-24" "paravance-24" "paravance-24" "paravance-24" ...
 
-'data.frame':	705 obs. of  27 variables:
+'data.frame':	776 obs. of  27 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_I                        : int  8 2048 256 32 64 4 2048 1024 32 1 ...
- $ T1_J                        : int  32 4 1 4 2048 64 2 2048 16 2048 ...
- $ cost_mean                   : num  4.58 3.87 6.44 3.49 5.51 ...
- $ U_J                         : int  1 1 1 1 1 30 1 1 30 30 ...
- $ U_I                         : int  30 16 30 10 19 1 2 13 1 1 ...
+ $ T1_I                        : int  4 128 32 1 1 2048 1 2 2048 2048 ...
+ $ T1_J                        : int  2048 1024 1 256 1 1 64 2048 1024 4 ...
+ $ cost_mean                   : num  4.59 3.46 4 4.05 3.3 ...
+ $ U_J                         : int  1 2 1 1 1 1 15 30 5 16 ...
+ $ U_I                         : int  29 1 22 11 1 11 1 1 1 1 ...
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ T2_I                        : int  2048 1 1 64 256 2048 2048 2048 32 1 ...
+ $ T2_I                        : int  1 512 128 64 32 2048 1 16 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ T2_J                        : int  128 2048 1 1 2048 1 32 1 128 1 ...
- $ U1_I                        : int  28 30 15 1 13 28 10 22 18 26 ...
- $ mean_confidence_interval_inf: num  4.58 3.87 6.44 3.49 5.51 ...
- $ mean_confidence_interval_sup: num  4.58 3.87 6.44 3.49 5.51 ...
- $ cost_std                    : num  0.000141 0.000275 0.000629 0.000141 0.002583 ...
+ $ T2_J                        : int  2048 1 64 2048 256 2048 256 1 2048 8 ...
+ $ U1_I                        : int  19 1 13 27 25 1 1 7 21 1 ...
+ $ mean_confidence_interval_inf: num  4.59 3.46 4 4.02 3.3 ...
+ $ mean_confidence_interval_sup: num  4.59 3.46 4 4.08 3.3 ...
+ $ cost_std                    : num  0.000138 0.003625 0.002324 0.049525 0.000176 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ RT_I                        : int  1 2 32 1 32 32 4 4 8 1 ...
- $ RT_J                        : int  8 32 4 1 1 1 1 8 16 2 ...
- $ experiment_id               : chr  "paravance-40" "paravance-40" "paravance-40" "paravance-40" ...
+ $ RT_I                        : int  1 16 4 1 4 4 32 1 4 1 ...
+ $ RT_J                        : int  1 1 32 32 4 4 4 4 32 1 ...
+ $ experiment_id               : chr  "paravance-24" "paravance-24" "paravance-24" "paravance-24" ...
  $ cost_baseline               : num  4.76 4.76 4.76 4.76 4.76 ...
- $ speedup                     : num  1.038 1.23 0.738 1.362 0.863 ...
- $ max_run_speedup             : num  1.52 1.52 1.52 1.52 1.52 ...
- $ min_run_cost                : num  3.13 3.13 3.13 3.13 3.13 ...
- $ best_iteration              : num  16 16 16 16 16 16 16 16 16 16 ...
- $ points                      : int  82 82 82 82 82 82 82 82 82 82 ...
+ $ speedup                     : num  1.04 1.38 1.19 1.18 1.44 ...
+ $ max_run_speedup             : num  1.5 1.5 1.5 1.5 1.5 ...
+ $ min_run_cost                : num  3.18 3.18 3.18 3.18 3.18 ...
+ $ best_iteration              : num  45 45 45 45 45 45 45 45 45 45 ...
+ $ points                      : int  75 75 75 75 75 75 75 75 75 75 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	9 obs. of  30 variables:
- $ id                          : int  16 7 5 8 20 62 1 55 85
- $ runs                        : int  10 10 10 10 10 10 10 10 10
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  30 variables:
+ $ id                          : int  45 54 8 36 31 80 53 19 44 41
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_I                        : int  1 1 4 1 32 16 4 1 64
- $ T1_J                        : int  128 16 32 64 2048 1 1 1 2048
- $ cost_mean                   : num  3.13 3.3 3.23 3.21 3.21 ...
- $ U_J                         : int  1 1 1 1 11 1 8 1 1
- $ U_I                         : int  30 21 1 12 1 17 1 27 2
+ $ T1_I                        : int  2048 1 256 16 1 64 32 1 1 1
+ $ T1_J                        : int  1 2048 1024 1 1 32 1 1024 16 1
+ $ cost_mean                   : num  3.18 3.18 3.3 3.14 3.18 ...
+ $ U_J                         : int  1 4 1 1 18 9 1 1 1 1
+ $ U_I                         : int  20 1 30 30 1 1 18 1 16 29
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ T2_I                        : int  128 2048 64 1 2048 64 1 2048 128
+ $ T2_I                        : int  1 16 1 2048 8 1024 32 2048 1 2048
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ T2_J                        : int  1 1 1 256 1 2048 1 1 2048
- $ U1_I                        : int  2 1 17 1 1 1 20 2 1
- $ mean_confidence_interval_inf: num  3.13 3.3 3.23 3.21 3.21 ...
- $ mean_confidence_interval_sup: num  3.13 3.3 3.23 3.22 3.21 ...
- $ cost_std                    : num  0.00036 0.000166 0.00015 0.000411 0.000133 ...
- $ step                        : int  1 1 1 1 1 3 1 3 4
- $ RT_I                        : int  8 1 4 1 16 8 4 4 16
- $ RT_J                        : int  2 4 2 2 4 2 2 2 4
- $ experiment_id               : chr  "paravance-40" "paravance-41" "paravance-54" "paravance-59" ...
- $ cost_baseline               : num  4.76 4.75 4.75 4.77 4.75 ...
- $ speedup                     : num  1.52 1.44 1.47 1.48 1.48 ...
- $ max_run_speedup             : num  1.52 1.44 1.47 1.48 1.48 ...
- $ min_run_cost                : num  3.13 3.3 3.23 3.21 3.21 ...
- $ best_iteration              : num  16 7 5 8 20 62 1 55 85
- $ points                      : int  82 84 77 74 83 86 53 82 84
+ $ T2_J                        : int  128 2048 1 2048 2048 64 2048 1024 64 2048
+ $ U1_I                        : int  22 14 29 30 30 7 15 29 19 7
+ $ mean_confidence_interval_inf: num  3.18 3.18 3.3 3.14 3.18 ...
+ $ mean_confidence_interval_sup: num  3.18 3.18 3.3 3.14 3.18 ...
+ $ cost_std                    : num  4.39e-04 6.35e-05 9.83e-05 1.38e-04 1.57e-04 ...
+ $ step                        : int  2 3 1 2 2 4 3 1 2 2
+ $ RT_I                        : int  1 4 4 16 4 16 4 16 1 16
+ $ RT_J                        : int  4 2 4 8 2 2 2 4 4 4
+ $ experiment_id               : chr  "paravance-24" "paravance-3" "paravance-65" "paravance-66" ...
+ $ cost_baseline               : num  4.76 4.76 4.75 4.75 4.75 ...
+ $ speedup                     : num  1.5 1.5 1.44 1.51 1.49 ...
+ $ max_run_speedup             : num  1.5 1.5 1.44 1.51 1.49 ...
+ $ min_run_cost                : num  3.18 3.18 3.3 3.14 3.18 ...
+ $ best_iteration              : num  45 54 8 36 31 80 53 19 44 41
+ $ points                      : int  75 80 82 76 64 79 79 84 78 79
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.79 4.79 4.79 4.79 4.79 ...
- $ label_center_x              : num  4.26 4.26 4.26 4.26 4.26 ...
- $ label_center_y              : num  30.6 30.6 30.6 30.6 30.6 ...
+ $ mean_cost_baseline          : num  4.76 4.76 4.76 4.76 4.76 ...
+ $ label_center_x              : num  4.21 4.21 4.21 4.21 4.21 ...
+ $ label_center_y              : num  41 41 41 41 41 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	19 obs. of  30 variables:
- $ id                          : int  16 7 5 8 20 62 1 55 85 18 ...
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  30 variables:
+ $ id                          : int  45 54 8 36 31 80 53 19 44 41 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_I                        : int  1 1 4 1 32 16 4 1 64 1 ...
- $ T1_J                        : int  128 16 32 64 2048 1 1 1 2048 256 ...
- $ cost_mean                   : num  3.13 3.3 3.23 3.21 3.21 ...
- $ U_J                         : int  1 1 1 1 11 1 8 1 1 25 ...
- $ U_I                         : int  30 21 1 12 1 17 1 27 2 1 ...
+ $ T1_I                        : int  2048 1 256 16 1 64 32 1 1 1 ...
+ $ T1_J                        : int  1 2048 1024 1 1 32 1 1024 16 1 ...
+ $ cost_mean                   : num  3.18 3.18 3.3 3.14 3.18 ...
+ $ U_J                         : int  1 4 1 1 18 9 1 1 1 1 ...
+ $ U_I                         : int  20 1 30 30 1 1 18 1 16 29 ...
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ T2_I                        : int  128 2048 64 1 2048 64 1 2048 128 32 ...
+ $ T2_I                        : int  1 16 1 2048 8 1024 32 2048 1 2048 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ T2_J                        : int  1 1 1 256 1 2048 1 1 2048 512 ...
- $ U1_I                        : int  2 1 17 1 1 1 20 2 1 20 ...
- $ mean_confidence_interval_inf: num  3.13 3.3 3.23 3.21 3.21 ...
- $ mean_confidence_interval_sup: num  3.13 3.3 3.23 3.22 3.21 ...
- $ cost_std                    : num  0.00036 0.000166 0.00015 0.000411 0.000133 ...
- $ step                        : int  1 1 1 1 1 3 1 3 4 1 ...
- $ RT_I                        : int  8 1 4 1 16 8 4 4 16 16 ...
- $ RT_J                        : int  2 4 2 2 4 2 2 2 4 4 ...
- $ experiment_id               : chr  "paravance-40" "paravance-41" "paravance-54" "paravance-59" ...
- $ cost_baseline               : num  4.76 4.75 4.75 4.77 4.75 ...
- $ speedup                     : num  1.52 1.44 1.47 1.48 1.48 ...
- $ max_run_speedup             : num  1.52 1.44 1.47 1.48 1.48 ...
- $ min_run_cost                : num  3.13 3.3 3.23 3.21 3.21 ...
- $ best_iteration              : num  16 7 5 8 20 62 1 55 85 18 ...
- $ points                      : int  82 84 77 74 83 86 53 82 84 398 ...
+ $ T2_J                        : int  128 2048 1 2048 2048 64 2048 1024 64 2048 ...
+ $ U1_I                        : int  22 14 29 30 30 7 15 29 19 7 ...
+ $ mean_confidence_interval_inf: num  3.18 3.18 3.3 3.14 3.18 ...
+ $ mean_confidence_interval_sup: num  3.18 3.18 3.3 3.14 3.18 ...
+ $ cost_std                    : num  4.39e-04 6.35e-05 9.83e-05 1.38e-04 1.57e-04 ...
+ $ step                        : int  2 3 1 2 2 4 3 1 2 2 ...
+ $ RT_I                        : int  1 4 4 16 4 16 4 16 1 16 ...
+ $ RT_J                        : int  4 2 4 8 2 2 2 4 4 4 ...
+ $ experiment_id               : chr  "paravance-24" "paravance-3" "paravance-65" "paravance-66" ...
+ $ cost_baseline               : num  4.76 4.76 4.75 4.75 4.75 ...
+ $ speedup                     : num  1.5 1.5 1.44 1.51 1.49 ...
+ $ max_run_speedup             : num  1.5 1.5 1.44 1.51 1.49 ...
+ $ min_run_cost                : num  3.18 3.18 3.3 3.14 3.18 ...
+ $ best_iteration              : num  45 54 8 36 31 80 53 19 44 41 ...
+ $ points                      : int  75 80 82 76 64 79 79 84 78 79 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.79 4.79 4.79 4.79 4.79 ...
- $ label_center_x              : num  4.26 4.26 4.26 4.26 4.26 ...
- $ label_center_y              : num  30.6 30.6 30.6 30.6 30.6 ...
+ $ mean_cost_baseline          : num  4.76 4.76 4.76 4.76 4.76 ...
+ $ label_center_x              : num  4.21 4.21 4.21 4.21 4.21 ...
+ $ label_center_y              : num  41 41 41 41 41 ...
 
-'data.frame':	34 obs. of  17 variables:
- $ id                     : int  1 1 1 1 1 1 1 2 2 2 ...
+'data.frame':	94 obs. of  17 variables:
+ $ id                     : int  1 1 2 2 2 2 2 2 2 2 ...
  $ valid_configurations   : int  52800 52800 52800 52800 52800 52800 52800 52800 52800 52800 ...
- $ D                      : num  0.219 0.218 0.218 0.218 0.218 ...
- $ used_budget            : int  0 0 0 0 0 0 0 22 22 22 ...
+ $ D                      : num  0.382 0.382 0.395 0.395 0.395 ...
+ $ used_budget            : int  0 0 21 21 21 21 22 22 22 22 ...
  $ model_size             : int  18 18 18 18 18 18 18 18 18 18 ...
- $ current_best           : num  3.23 3.16 3.16 3.16 3.16 ...
+ $ current_best           : num  3.32 3.32 3.18 3.18 3.18 ...
  $ trials                 : int  22 22 22 22 22 22 22 22 22 22 ...
- $ current_best_coordinate: chr  "{'T1_I': 4, 'T1_J': 32, 'U_J': 1, 'U_I': 1, 'T2_I': 64, 'T2_J': 1, 'U1_I': 17, 'RT_I': 4, 'RT_J': 2}" "{'T1_I': 4, 'T1_J': 1, 'U_J': 8, 'U_I': 1, 'T2_I': 1, 'T2_J': 1, 'U1_I': 20, 'RT_I': 4, 'RT_J': 2}" "{'T1_I': 4, 'T1_J': 1, 'U_J': 8, 'U_I': 1, 'T2_I': 1, 'T2_J': 1, 'U1_I': 20, 'RT_I': 4, 'RT_J': 2}" "{'T1_I': 4, 'T1_J': 1, 'U_J': 8, 'U_I': 1, 'T2_I': 1, 'T2_J': 1, 'U1_I': 20, 'RT_I': 4, 'RT_J': 2}" ...
- $ tested_configurations  : int  2543526 2523646 2523646 2523646 2523646 2523646 2523646 2509565 2509565 2509565 ...
- $ fixed_factors          : chr  "{'RT_I': 0}" "{'T2_I': 0, 'U1_I': 29, 'RT_J': 5, 'RT_I': 2, 'T2_J': 0}" "{'T2_I': 0, 'U1_I': 29, 'RT_J': 5, 'RT_I': 2, 'T2_J': 0}" "{'T2_I': 0, 'U1_I': 29, 'RT_J': 5, 'RT_I': 2, 'T2_J': 0}" ...
- $ step                   : int  1 1 1 1 1 1 1 2 2 2 ...
- $ design_best            : num  3.23 3.16 3.16 3.16 3.16 ...
+ $ current_best_coordinate: chr  "{'T1_I': 2048, 'T1_J': 64, 'U_J': 1, 'U_I': 30, 'T2_I': 1, 'T2_J': 2048, 'U1_I': 14, 'RT_I': 4, 'RT_J': 4}" "{'T1_I': 2048, 'T1_J': 64, 'U_J': 1, 'U_I': 30, 'T2_I': 1, 'T2_J': 2048, 'U1_I': 14, 'RT_I': 4, 'RT_J': 4}" "{'T1_I': 2048, 'T1_J': 1, 'U_J': 1, 'U_I': 20, 'T2_I': 1, 'T2_J': 128, 'U1_I': 22, 'RT_I': 1, 'RT_J': 4}" "{'T1_I': 2048, 'T1_J': 1, 'U_J': 1, 'U_I': 20, 'T2_I': 1, 'T2_J': 128, 'U1_I': 22, 'RT_I': 1, 'RT_J': 4}" ...
+ $ tested_configurations  : int  2527166 2527166 2543603 2543603 2543603 2543603 2533531 2533531 2533531 2533531 ...
+ $ fixed_factors          : chr  "{'RT_I': 2}" "{'RT_I': 2}" "{'RT_I': 0}" "{'RT_I': 0}" ...
+ $ step                   : int  1 1 2 2 2 2 2 2 2 2 ...
+ $ design_best            : num  3.32 3.32 3.18 3.18 3.18 ...
  $ total_budget           : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
- $ removed_variables      : chr  "RT_I" "RT_I" "I(RT_J^2)" "U1_I" ...
+ $ removed_variables      : chr  "I(RT_I^2)" "RT_I" "I(RT_I^2)" "RT_I" ...
  $ model                  : chr  "~ I(T1_I ^ 2)
 I(T1_J ^ 2)
 I(T2_I ^ 2)
@@ -43613,39 +43613,39 @@ I(U1_I ^ 2)
 I(U_I ^ 2)
 I(U_J ^ 2)
 I(RT_I ^ 2) +"| __truncated__ ...
- $ predicted_best         : num  4.68 4.12 4.12 4.12 4.12 ...
- $ experiment_id          : chr  "paravance-54" "paravance-69" "paravance-69" "paravance-69" ...
+ $ predicted_best         : num  4.03 4.03 4.58 4.58 4.58 ...
+ $ experiment_id          : chr  "paravance-67" "paravance-67" "paravance-24" "paravance-24" ...
 
-'data.frame':	721 obs. of  20 variables:
+'data.frame':	788 obs. of  20 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_I                        : int  8 2048 256 32 64 4 2048 1024 32 1 ...
- $ T1_J                        : int  32 4 1 4 2048 64 2 2048 16 2048 ...
- $ cost_mean                   : num  4.58 3.87 6.44 3.49 5.51 ...
- $ U_J                         : int  1 1 1 1 1 30 1 1 30 30 ...
- $ U_I                         : int  30 16 30 10 19 1 2 13 1 1 ...
+ $ T1_I                        : int  4 128 32 1 1 2048 1 2 2048 2048 ...
+ $ T1_J                        : int  2048 1024 1 256 1 1 64 2048 1024 4 ...
+ $ cost_mean                   : num  4.59 3.46 4 4.05 3.3 ...
+ $ U_J                         : int  1 2 1 1 1 1 15 30 5 16 ...
+ $ U_I                         : int  29 1 22 11 1 11 1 1 1 1 ...
  $ technique                   : chr  "DLMT" "DLMT" "DLMT" "DLMT" ...
- $ T2_I                        : int  2048 1 1 64 256 2048 2048 2048 32 1 ...
+ $ T2_I                        : int  1 512 128 64 32 2048 1 16 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ T2_J                        : int  128 2048 1 1 2048 1 32 1 128 1 ...
- $ U1_I                        : int  28 30 15 1 13 28 10 22 18 26 ...
- $ mean_confidence_interval_inf: num  4.58 3.87 6.44 3.49 5.51 ...
- $ mean_confidence_interval_sup: num  4.58 3.87 6.44 3.49 5.51 ...
- $ cost_std                    : num  0.000141 0.000275 0.000629 0.000141 0.002583 ...
+ $ T2_J                        : int  2048 1 64 2048 256 2048 256 1 2048 8 ...
+ $ U1_I                        : int  19 1 13 27 25 1 1 7 21 1 ...
+ $ mean_confidence_interval_inf: num  4.59 3.46 4 4.02 3.3 ...
+ $ mean_confidence_interval_sup: num  4.59 3.46 4 4.08 3.3 ...
+ $ cost_std                    : num  0.000138 0.003625 0.002324 0.049525 0.000176 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
- $ RT_I                        : int  1 2 32 1 32 32 4 4 8 1 ...
- $ RT_J                        : int  8 32 4 1 1 1 1 8 16 2 ...
- $ experiment_id               : chr  "paravance-40" "paravance-40" "paravance-40" "paravance-40" ...
+ $ RT_I                        : int  1 16 4 1 4 4 32 1 4 1 ...
+ $ RT_J                        : int  1 1 32 32 4 4 4 4 32 1 ...
+ $ experiment_id               : chr  "paravance-24" "paravance-24" "paravance-24" "paravance-24" ...
 
-There were 36 warnings (use warnings() to see them)
+There were 40 warnings (use warnings() to see them)
 
 Joining, by = c("id", "step")
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	600 obs. of  4 variables:
- $ metric_value: num  0.022 0.0983 0.089 0.1028 0.1068 ...
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	648 obs. of  4 variables:
+ $ metric_value: num  0.0095 0.169 0.1109 0.0364 0.04 ...
  $ factors     : chr  "(Intercept)" "I(T1_Ie^2)" "I(T1_Je^2)" "I(T2_Ie^2)" ...
- $ id          : chr  "paravance-40" "paravance-40" "paravance-40" "paravance-40" ...
+ $ id          : chr  "paravance-24" "paravance-24" "paravance-24" "paravance-24" ...
  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
 
@@ -43754,7 +43754,7 @@ grid.draw(new_plot)
 #+LABEL: fig:best-found-q05
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurezlrFF4.pdf]]
+[[file:/tmp/babel-Bco3bb/figuretVNOzT.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -43987,7 +43987,7 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be-q05
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureXncsjg.pdf]]
+[[file:/tmp/babel-Bco3bb/figurenBX52M.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -44022,7 +44022,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-all-q05
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureUz34uV.pdf]]
+[[file:/tmp/babel-Bco3bb/figurecPAXZd.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 ggplot(subset(all_parameters_plot_data, experiment_id == "paravance-67"), aes(x = level, y = cost_mean)) +
@@ -65589,7 +65589,7 @@ theme_bw(base_size = 18)
 #+end_SRC
 
 #+CAPTION: Full factorial design and response for \textit{x1} and \textit{x2}.
-#+CAPTION: The predicted value for each point is shown in {\color{red}red}.
+#+CAPTION: The predicted value for each point is shown in @@latex:{\color{red}@@red@@latex:}@@.
 #+LABEL: ss-example
 #+ATTR_LATEX: :width 0.6\textwidth :placement [H]
 #+RESULTS:
@@ -66083,6 +66083,16 @@ str(design_data_plot)
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
 'data.frame':	87 obs. of  3 variables:
  $ removed_variables: Factor w/ 21 levels "","OMP","SCR",..: 1 2 6 3 8 12 1 4 2 5 ...
  $ step             : int  1 2 2 2 2 2 3 4 1 1 ...
@@ -66373,153 +66383,33 @@ data <- coded.data(data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5) / 5.5,
                                          RT_Ie = RT_Ie ~ (RT_I - 2.5) / 2.5,
                                          RT_Je = RT_Je ~ (RT_J - 2.5) / 2.5))
 
-sampled_data <- data[sample(1:nrow(data), 0.60 * nrow(data)), ]
-short_sampled_data <- data[sample(1:nrow(data), 0.15 * nrow(data)), ]
-med_sampled_data <- data[sample(1:nrow(data), 0.30 * nrow(data)), ]
+available_experiments <- data[data$cost_mean != min(data$cost_mean), ]
+
+sample_size <- 200
+sampled_data <- available_experiments[sample(1:nrow(available_experiments), 200), ]
 
 str(sampled_data)
-str(short_sampled_data)
-str(med_sampled_data)
-
 str(data)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
 
-Classes ‘coded.data’ and 'data.frame':	1789 obs. of  14 variables:
- $ T2_Ie    : num  0.818 0.455 0.818 -1 0.818 ...
- $ T2_Je    : num  0.6364 0.8182 -1 0.6364 -0.0909 ...
- $ RT_Ie    : num  -0.2 0.2 -0.6 1 -0.6 -0.6 -1 -1 -0.6 0.2 ...
- $ T1_Je    : num  0.273 0.273 0.636 0.455 -1 ...
- $ U_Je     : num  -0.931 1.069 0.448 -0.931 0.172 ...
- $ U_Ie     : num  -0.172 -0.931 -0.931 -0.793 -0.931 ...
- $ U1_Ie    : num  -0.448 -0.655 0.379 0.586 -0.586 ...
- $ RT_Je    : num  1 -0.2 -0.2 -1 -0.2 -0.6 1 0.6 0.2 0.6 ...
- $ T1_Ie    : num  0.8182 -0.6364 0.4545 0.0909 0.4545 ...
- $ OMPe     : num  1 1 1 -1 1 1 -1 -1 1 1 ...
- $ SCRe     : num  -1 -1 1 1 -1 1 -1 1 1 1 ...
- $ VEC1e    : num  -1 -1 1 1 -1 1 -1 1 -1 -1 ...
- $ VEC2e    : num  1 -1 -1 -1 1 -1 -1 -1 -1 1 ...
- $ cost_mean: num  0.852 0.942 0.756 3.856 0.88 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
-
-Classes ‘coded.data’ and 'data.frame':	447 obs. of  14 variables:
- $ T2_Ie    : num  0.273 -0.636 0.636 0.455 0.273 ...
- $ T2_Je    : num  0.8182 -1 -0.6364 0.8182 -0.0909 ...
- $ RT_Ie    : num  -0.2 0.2 0.2 -0.6 -1 -0.6 0.6 0.2 1 0.6 ...
- $ T1_Je    : num  -0.636 0.636 -0.636 -0.273 -0.818 ...
- $ U_Je     : num  -0.931 -0.931 -0.931 -0.931 0.172 ...
- $ U_Ie     : num  0.31 0.172 0.448 0.31 -0.931 ...
- $ U1_Ie    : num  -0.793 0.655 0.724 0.103 0.379 ...
- $ RT_Je    : num  -0.2 -0.2 -0.6 0.6 -1 0.2 -1 -0.6 -0.6 -1 ...
- $ T1_Ie    : num  0.0909 -1 -0.0909 -1 -1 ...
- $ OMPe     : num  1 1 1 -1 -1 1 1 1 1 1 ...
- $ SCRe     : num  1 1 -1 1 1 1 -1 1 -1 -1 ...
- $ VEC1e    : num  -1 1 -1 -1 -1 1 1 1 1 1 ...
- $ VEC2e    : num  -1 1 -1 -1 1 1 -1 1 -1 -1 ...
- $ cost_mean: num  0.65 0.864 0.799 1.91 3.572 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
-
-Classes ‘coded.data’ and 'data.frame':	894 obs. of  14 variables:
- $ T2_Ie    : num  0.6364 -0.0909 -0.2727 1 -1 ...
- $ T2_Je    : num  0.273 0.455 -1 0.273 -1 ...
- $ RT_Ie    : num  0.2 -0.6 -0.6 1 0.2 0.2 -0.6 -0.6 -0.6 0.6 ...
- $ T1_Je    : num  0.273 -1 -0.273 -0.273 -0.818 ...
- $ U_Je     : num  0.724 0.103 -0.724 0.31 -0.931 ...
- $ U_Ie     : num  -0.931 -0.931 -0.931 -0.931 -0.586 ...
- $ U1_Ie    : num  -0.931 -0.655 -0.724 1.069 -0.655 ...
- $ RT_Je    : num  -0.2 -1 0.2 -0.6 -0.6 -1 -0.2 -1 1 0.2 ...
- $ T1_Ie    : num  -0.455 -0.636 -0.636 -0.636 0.636 ...
- $ OMPe     : num  1 1 -1 -1 1 1 -1 -1 -1 1 ...
- $ SCRe     : num  1 1 -1 -1 1 -1 -1 1 1 1 ...
- $ VEC1e    : num  -1 1 -1 1 1 1 -1 1 1 1 ...
- $ VEC2e    : num  1 -1 1 -1 -1 1 1 1 1 1 ...
- $ cost_mean: num  0.658 0.813 4.496 5.899 0.716 ...
+Classes ‘coded.data’ and 'data.frame':	200 obs. of  14 variables:
+ $ T2_Ie    : num  -1 1 0.4545 0.0909 -0.4545 ...
+ $ T2_Je    : num  0.273 0.273 0.818 0.455 0.273 ...
+ $ RT_Ie    : num  -0.6 -0.2 0.2 -1 -1 -1 -1 -0.6 -0.6 -1 ...
+ $ T1_Je    : num  0.0909 -1 0.2727 0.2727 -0.4545 ...
+ $ U_Je     : num  -0.931 -0.31 -0.931 1.069 -0.931 ...
+ $ U_Ie     : num  -0.931 -0.931 -0.0345 -0.931 0.8621 ...
+ $ U1_Ie    : num  -0.862 -0.931 -0.172 0.655 0.517 ...
+ $ RT_Je    : num  -0.2 -0.2 0.2 -0.6 -0.6 1 -0.2 -0.6 -1 -0.6 ...
+ $ T1_Ie    : num  1 0.455 0.455 -0.636 -0.636 ...
+ $ OMPe     : num  1 1 -1 -1 1 1 -1 -1 1 1 ...
+ $ SCRe     : num  -1 1 -1 -1 1 -1 -1 1 1 1 ...
+ $ VEC1e    : num  1 1 1 1 1 -1 -1 1 -1 -1 ...
+ $ VEC2e    : num  -1 1 -1 1 1 -1 1 1 1 -1 ...
+ $ cost_mean: num  0.756 0.606 4.104 5.738 0.876 ...
  - attr(*, "codings")=List of 13
   ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
   .. .. ..- attr(*, ".Environment")=<environment: R_
@@ -66625,12 +66515,8 @@ Classes ‘coded.data’ and 'data.frame':	2983 obs. of  14 variables:
 #+end_example
 
 #+begin_SRC R :results output :session *R* :exports none
-short_m1 <- NULL
-med_m1 <- NULL
 m1 <- NULL
 
-short_m1 <- km(design = select(short_sampled_data, -cost_mean), response = short_sampled_data$cost_mean)
-med_m1 <- km(design = select(med_sampled_data, -cost_mean), response = med_sampled_data$cost_mean)
 m1 <- km(design = select(sampled_data, -cost_mean), response = sampled_data$cost_mean)
 #+end_SRC
 
@@ -66642,604 +66528,145 @@ optimisation start
 ,* estimation method   : MLE
 ,* optimisation method : BFGS
 ,* analytical gradient : used
-,* trend model : ~T2_Ie
-T2_Je
-RT_Ie
-T1_Je
-U_Je
-U_Ie
-U1_Ie
-RT_Je
-
-    T1_Ie
-OMPe
-SCRe
-VEC1e
-VEC2e
-T2_Ie:T2_Je
-T2_Ie:RT_Ie
-
-    T2_Ie:T1_Je
-T2_Ie:U_Je
-T2_Ie:U_Ie
-T2_Ie:U1_Ie
-T2_Ie:RT_Je
-
-    T2_Ie:T1_Ie
-T2_Ie:OMPe
-T2_Ie:SCRe
-T2_Ie:VEC1e
-T2_Ie:VEC2e
-
-    T2_Je:RT_Ie
-T2_Je:T1_Je
-T2_Je:U_Je
-T2_Je:U_Ie
-T2_Je:U1_Ie
-
-    T2_Je:RT_Je
-T2_Je:T1_Ie
-T2_Je:OMPe
-T2_Je:SCRe
-T2_Je:VEC1e
-
-    T2_Je:VEC2e
-RT_Ie:T1_Je
-RT_Ie:U_Je
-RT_Ie:U_Ie
-RT_Ie:U1_Ie
-
-    RT_Ie:RT_Je
-RT_Ie:T1_Ie
-RT_Ie:OMPe
-RT_Ie:SCRe
-RT_Ie:VEC1e
-
-    RT_Ie:VEC2e
-T1_Je:U_Je
-T1_Je:U_Ie
-T1_Je:U1_Ie
-T1_Je:RT_Je
-
-    T1_Je:T1_Ie
-T1_Je:OMPe
-T1_Je:SCRe
-T1_Je:VEC1e
-T1_Je:VEC2e
-
-    U_Je:U_Ie
-U_Je:U1_Ie
-U_Je:RT_Je
-U_Je:T1_Ie
-U_Je:OMPe
-
-    U_Je:SCRe
-U_Je:VEC1e
-U_Je:VEC2e
-U_Ie:U1_Ie
-U_Ie:RT_Je
-
-    U_Ie:T1_Ie
-U_Ie:OMPe
-U_Ie:SCRe
-U_Ie:VEC1e
-U_Ie:VEC2e
-
-    U1_Ie:RT_Je
-U1_Ie:T1_Ie
-U1_Ie:OMPe
-U1_Ie:SCRe
-U1_Ie:VEC1e
-
-    U1_Ie:VEC2e
-RT_Je:T1_Ie
-RT_Je:OMPe
-RT_Je:SCRe
-RT_Je:VEC1e
-
-    RT_Je:VEC2e
-T1_Ie:OMPe
-T1_Ie:SCRe
-T1_Ie:VEC1e
-T1_Ie:VEC2e
-
-    OMPe:SCRe
-OMPe:VEC1e
-OMPe:VEC2e
-SCRe:VEC1e
-SCRe:VEC2e
-
-    VEC1e:VEC2e
+,* trend model : ~1
 ,* covariance model :
   - type :  matern5_2
   - nugget : NO
   - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
   - parameters upper bounds :  4 4 4 4 4 4 4 4 4 4 4 4 4
-  - best initial criterion value(s) :  -431.3669
+  - best initial criterion value(s) :  -307.4088
 
 N = 13, M = 5 machine precision = 2.22045e-16
 At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       431.37  |proj g|=       3.8713
-At iterate     1  f =       417.98  |proj g|=        2.3386
-At iterate     2  f =       411.35  |proj g|=        1.4487
-At iterate     3  f =       410.32  |proj g|=        2.2241
-At iterate     4  f =       409.61  |proj g|=        1.2585
-At iterate     5  f =       409.31  |proj g|=         1.729
-At iterate     6  f =       408.71  |proj g|=        1.6267
-At iterate     7  f =       407.92  |proj g|=        1.6368
-At iterate     8  f =       407.61  |proj g|=        0.7737
-At iterate     9  f =       407.25  |proj g|=        1.5929
-At iterate    10  f =       407.11  |proj g|=        1.5315
-At iterate    11  f =       406.42  |proj g|=       0.15809
-At iterate    12  f =       406.42  |proj g|=      0.090475
-At iterate    13  f =       406.42  |proj g|=      0.065249
-At iterate    14  f =       406.42  |proj g|=      0.045925
-At iterate    15  f =       406.42  |proj g|=      0.034337
-At iterate    16  f =       406.42  |proj g|=      0.027282
-At iterate    17  f =       406.42  |proj g|=      0.026974
+At iterate     0  f=       307.41  |proj g|=       2.9577
+At iterate     1  f =       236.61  |proj g|=         2.103
+At iterate     2  f =        232.3  |proj g|=        2.2433
+At iterate     3  f =       229.39  |proj g|=        3.3318
+At iterate     4  f =       227.34  |proj g|=        3.2602
+At iterate     5  f =       226.89  |proj g|=        1.0044
+At iterate     6  f =       226.74  |proj g|=       0.90467
+At iterate     7  f =       226.57  |proj g|=        0.8456
+At iterate     8  f =       226.26  |proj g|=       0.86688
+At iterate     9  f =       226.02  |proj g|=       0.84066
+At iterate    10  f =       225.95  |proj g|=       0.27131
+At iterate    11  f =       225.94  |proj g|=       0.29776
+At iterate    12  f =       225.92  |proj g|=        0.6093
+At iterate    13  f =       225.91  |proj g|=       0.29473
+At iterate    14  f =       225.91  |proj g|=      0.050079
+At iterate    15  f =       225.91  |proj g|=      0.006292
+At iterate    16  f =       225.91  |proj g|=     0.0034087
+At iterate    17  f =       225.91  |proj g|=    0.00030191
 
 iterations 17
-function evaluations 32
-segments explored during Cauchy searches 25
+function evaluations 26
+segments explored during Cauchy searches 30
 BFGS updates skipped 0
-active bounds at final generalized Cauchy point 9
-norm of the final projected gradient 0.0269742
-final function value 406.419
+active bounds at final generalized Cauchy point 10
+norm of the final projected gradient 0.000301913
+final function value 225.909
 
-F = 406.419
-final  value 406.418707
+F = 225.909
+final  value 225.909388
 converged
-Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-
-optimisation start
-------------------
-,* estimation method   : MLE
-,* optimisation method : BFGS
-,* analytical gradient : used
-,* trend model : ~T2_Ie
-T2_Je
-RT_Ie
-T1_Je
-U_Je
-U_Ie
-U1_Ie
-RT_Je
-
-    T1_Ie
-OMPe
-SCRe
-VEC1e
-VEC2e
-T2_Ie:T2_Je
-T2_Ie:RT_Ie
-
-    T2_Ie:T1_Je
-T2_Ie:U_Je
-T2_Ie:U_Ie
-T2_Ie:U1_Ie
-T2_Ie:RT_Je
-
-    T2_Ie:T1_Ie
-T2_Ie:OMPe
-T2_Ie:SCRe
-T2_Ie:VEC1e
-T2_Ie:VEC2e
-
-    T2_Je:RT_Ie
-T2_Je:T1_Je
-T2_Je:U_Je
-T2_Je:U_Ie
-T2_Je:U1_Ie
-
-    T2_Je:RT_Je
-T2_Je:T1_Ie
-T2_Je:OMPe
-T2_Je:SCRe
-T2_Je:VEC1e
-
-    T2_Je:VEC2e
-RT_Ie:T1_Je
-RT_Ie:U_Je
-RT_Ie:U_Ie
-RT_Ie:U1_Ie
-
-    RT_Ie:RT_Je
-RT_Ie:T1_Ie
-RT_Ie:OMPe
-RT_Ie:SCRe
-RT_Ie:VEC1e
-
-    RT_Ie:VEC2e
-T1_Je:U_Je
-T1_Je:U_Ie
-T1_Je:U1_Ie
-T1_Je:RT_Je
-
-    T1_Je:T1_Ie
-T1_Je:OMPe
-T1_Je:SCRe
-T1_Je:VEC1e
-T1_Je:VEC2e
-
-    U_Je:U_Ie
-U_Je:U1_Ie
-U_Je:RT_Je
-U_Je:T1_Ie
-U_Je:OMPe
-
-    U_Je:SCRe
-U_Je:VEC1e
-U_Je:VEC2e
-U_Ie:U1_Ie
-U_Ie:RT_Je
-
-    U_Ie:T1_Ie
-U_Ie:OMPe
-U_Ie:SCRe
-U_Ie:VEC1e
-U_Ie:VEC2e
-
-    U1_Ie:RT_Je
-U1_Ie:T1_Ie
-U1_Ie:OMPe
-U1_Ie:SCRe
-U1_Ie:VEC1e
-
-    U1_Ie:VEC2e
-RT_Je:T1_Ie
-RT_Je:OMPe
-RT_Je:SCRe
-RT_Je:VEC1e
-
-    RT_Je:VEC2e
-T1_Ie:OMPe
-T1_Ie:SCRe
-T1_Ie:VEC1e
-T1_Ie:VEC2e
-
-    OMPe:SCRe
-OMPe:VEC1e
-OMPe:VEC2e
-SCRe:VEC1e
-SCRe:VEC2e
-
-    VEC1e:VEC2e
-,* covariance model :
-  - type :  matern5_2
-  - nugget : NO
-  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
-  - parameters upper bounds :  4 4 4 4 4 4 4 4 4 4 4 4 4
-  - best initial criterion value(s) :  -849.3689
-
-N = 13, M = 5 machine precision = 2.22045e-16
-At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       849.37  |proj g|=       3.1729
-At iterate     1  f =       848.74  |proj g|=       0.15057
-At iterate     2  f =       848.71  |proj g|=      0.078222
-At iterate     3  f =       848.61  |proj g|=      0.017081
-At iterate     4  f =        848.6  |proj g|=       0.01192
-At iterate     5  f =       848.59  |proj g|=    0.00028679
-At iterate     6  f =       848.59  |proj g|=    0.00023709
-At iterate     7  f =       848.59  |proj g|=     0.0001096
-At iterate     8  f =       848.59  |proj g|=    6.4223e-05
-At iterate     9  f =       848.59  |proj g|=             0
-
-iterations 9
-function evaluations 13
-segments explored during Cauchy searches 20
-BFGS updates skipped 0
-active bounds at final generalized Cauchy point 13
-norm of the final projected gradient 0
-final function value 848.591
-
-F = 848.591
-final  value 848.591375
-converged
-Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-
-optimisation start
-------------------
-,* estimation method   : MLE
-,* optimisation method : BFGS
-,* analytical gradient : used
-,* trend model : ~T2_Ie
-T2_Je
-RT_Ie
-T1_Je
-U_Je
-U_Ie
-U1_Ie
-RT_Je
-
-    T1_Ie
-OMPe
-SCRe
-VEC1e
-VEC2e
-T2_Ie:T2_Je
-T2_Ie:RT_Ie
-
-    T2_Ie:T1_Je
-T2_Ie:U_Je
-T2_Ie:U_Ie
-T2_Ie:U1_Ie
-T2_Ie:RT_Je
-
-    T2_Ie:T1_Ie
-T2_Ie:OMPe
-T2_Ie:SCRe
-T2_Ie:VEC1e
-T2_Ie:VEC2e
-
-    T2_Je:RT_Ie
-T2_Je:T1_Je
-T2_Je:U_Je
-T2_Je:U_Ie
-T2_Je:U1_Ie
-
-    T2_Je:RT_Je
-T2_Je:T1_Ie
-T2_Je:OMPe
-T2_Je:SCRe
-T2_Je:VEC1e
-
-    T2_Je:VEC2e
-RT_Ie:T1_Je
-RT_Ie:U_Je
-RT_Ie:U_Ie
-RT_Ie:U1_Ie
-
-    RT_Ie:RT_Je
-RT_Ie:T1_Ie
-RT_Ie:OMPe
-RT_Ie:SCRe
-RT_Ie:VEC1e
-
-    RT_Ie:VEC2e
-T1_Je:U_Je
-T1_Je:U_Ie
-T1_Je:U1_Ie
-T1_Je:RT_Je
-
-    T1_Je:T1_Ie
-T1_Je:OMPe
-T1_Je:SCRe
-T1_Je:VEC1e
-T1_Je:VEC2e
-
-    U_Je:U_Ie
-U_Je:U1_Ie
-U_Je:RT_Je
-U_Je:T1_Ie
-U_Je:OMPe
-
-    U_Je:SCRe
-U_Je:VEC1e
-U_Je:VEC2e
-U_Ie:U1_Ie
-U_Ie:RT_Je
-
-    U_Ie:T1_Ie
-U_Ie:OMPe
-U_Ie:SCRe
-U_Ie:VEC1e
-U_Ie:VEC2e
-
-    U1_Ie:RT_Je
-U1_Ie:T1_Ie
-U1_Ie:OMPe
-U1_Ie:SCRe
-U1_Ie:VEC1e
-
-    U1_Ie:VEC2e
-RT_Je:T1_Ie
-RT_Je:OMPe
-RT_Je:SCRe
-RT_Je:VEC1e
-
-    RT_Je:VEC2e
-T1_Ie:OMPe
-T1_Ie:SCRe
-T1_Ie:VEC1e
-T1_Ie:VEC2e
-
-    OMPe:SCRe
-OMPe:VEC1e
-OMPe:VEC2e
-SCRe:VEC1e
-SCRe:VEC2e
-
-    VEC1e:VEC2e
-,* covariance model :
-  - type :  matern5_2
-  - nugget : NO
-  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
-  - parameters upper bounds :  4 4 4 4 4 4 4 4 4 4 4 4 4
-  - best initial criterion value(s) :  -1570.65
-
-N = 13, M = 5 machine precision = 2.22045e-16
-At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       1570.7  |proj g|=       3.8819
-At iterate     1  f =       1559.6  |proj g|=        3.2594
-At iterate     2  f =         1521  |proj g|=        3.2726
-At iterate     3  f =         1511  |proj g|=        3.4838
-At iterate     4  f =       1470.5  |proj g|=        3.2724
-At iterate     5  f =         1462  |proj g|=        3.6007
-At iterate     6  f =       1448.6  |proj g|=        3.5778
-At iterate     7  f =         1433  |proj g|=        3.5914
-At iterate     8  f =       1430.2  |proj g|=        3.2702
-At iterate     9  f =       1425.7  |proj g|=        2.2551
-At iterate    10  f =       1423.7  |proj g|=         2.215
-At iterate    11  f =       1421.5  |proj g|=        3.5453
-At iterate    12  f =       1420.8  |proj g|=        3.5413
-At iterate    13  f =       1419.1  |proj g|=        2.0306
-At iterate    14  f =       1418.7  |proj g|=        2.0397
-At iterate    15  f =         1418  |proj g|=        3.5337
-At iterate    16  f =       1417.5  |proj g|=        3.1888
-At iterate    17  f =       1417.2  |proj g|=        1.8825
-At iterate    18  f =       1416.7  |proj g|=        2.9759
-At iterate    19  f =       1416.2  |proj g|=        2.9984
-At iterate    20  f =       1415.5  |proj g|=        2.9726
-At iterate    21  f =       1415.5  |proj g|=        3.5545
-At iterate    22  f =       1415.3  |proj g|=        1.2435
-At iterate    23  f =       1415.2  |proj g|=        1.2233
-At iterate    24  f =       1415.1  |proj g|=         1.144
-At iterate    25  f =       1414.8  |proj g|=        2.1862
-At iterate    26  f =       1414.7  |proj g|=         3.004
-At iterate    27  f =       1414.6  |proj g|=        3.3516
-At iterate    28  f =       1414.5  |proj g|=         3.362
-At iterate    29  f =       1414.4  |proj g|=        3.5521
-At iterate    30  f =       1414.3  |proj g|=        1.6184
-At iterate    31  f =       1414.3  |proj g|=        1.5535
-At iterate    32  f =       1414.2  |proj g|=        1.3555
-At iterate    33  f =       1414.2  |proj g|=         1.068
-At iterate    34  f =         1414  |proj g|=          1.76
-At iterate    35  f =       1413.8  |proj g|=        3.1232
-At iterate    36  f =       1413.6  |proj g|=        3.0994
-At iterate    37  f =       1413.4  |proj g|=        3.0615
-At iterate    38  f =       1413.3  |proj g|=        1.7066
-At iterate    39  f =       1413.3  |proj g|=        1.4875
-At iterate    40  f =       1413.3  |proj g|=        1.3629
-At iterate    41  f =       1413.3  |proj g|=        2.6295
-At iterate    42  f =       1413.3  |proj g|=         1.672
-At iterate    43  f =       1413.3  |proj g|=        1.8901
-At iterate    44  f =       1413.3  |proj g|=       0.24423
-At iterate    45  f =       1413.2  |proj g|=       0.23991
-At iterate    46  f =       1413.2  |proj g|=       0.22493
-At iterate    47  f =       1413.2  |proj g|=        0.4615
-At iterate    48  f =       1413.2  |proj g|=        0.4616
-At iterate    49  f =       1413.2  |proj g|=       0.46541
-At iterate    50  f =       1413.2  |proj g|=       0.56175
-At iterate    51  f =       1413.2  |proj g|=       0.14573
-At iterate    52  f =       1413.2  |proj g|=      0.077396
-At iterate    53  f =       1413.2  |proj g|=      0.037736
-At iterate    54  f =       1413.2  |proj g|=       0.10338
-At iterate    55  f =       1413.2  |proj g|=       0.12137
-At iterate    56  f =       1413.2  |proj g|=       0.07728
-Bad direction in the line search;
-   refresh the lbfgs memory and restart the iteration.
-Line search cannot locate an adequate point after 20 function
-and gradient evaluations
-final  value 1413.235972
-stopped after 56 iterations
-Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
 #+end_example
 
 #+begin_SRC R :results output :session *R* :exports none
 pm1 <- NULL
 pm1 <- predict(m1, select(data, -cost_mean), "UK")
 
+prediction_data <- data
+
 predicted.values.model1 <- pm1$mean
-if(is.null(data$prediction_m1) && !is.null(predicted.values.model1)) {
-  data$prediction_m1 <- predicted.values.model1
-  data$prediction_m1_sd <- pm1$sd
-}
 
-short_pm1 <- NULL
-short_pm1 <- predict(short_m1, select(data, -prediction_m1, -prediction_m1_sd, -cost_mean), "UK")
+prediction_data$prediction_m1 <- predicted.values.model1
+prediction_data$prediction_m1_sd <- pm1$sd
 
-short_predicted.values.model1 <- short_pm1$mean
-if(is.null(data$prediction_m1_short) && !is.null(short_predicted.values.model1)) {
-  data$prediction_m1_short <- short_predicted.values.model1
-  data$prediction_m1_sd_short <- short_pm1$sd
-}
-
-med_pm1 <- NULL
-med_pm1 <- predict(med_m1, select(data, -prediction_m1_sd_short, -prediction_m1_short, -prediction_m1, -prediction_m1_sd, -cost_mean), "UK")
-
-med_predicted.values.model1 <- med_pm1$mean
-if(is.null(data$prediction_m1_med) && !is.null(med_predicted.values.model1)) {
-  data$prediction_m1_med <- med_predicted.values.model1
-  data$prediction_m1_sd_med <- med_pm1$sd
-}
-
+prediction_data$prediction_plus_sd <- prediction_data$prediction_m1 -
+                                      (2 * prediction_data$prediction_m1_sd)
 str(data)
+str(prediction_data)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
 
-Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
+Classes ‘coded.data’ and 'data.frame':	2983 obs. of  14 variables:
+ $ T2_Ie    : num  0.6364 0.2727 1 -0.0909 0.2727 ...
+ $ T2_Je    : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
+ $ RT_Ie    : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
+ $ T1_Je    : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
+ $ U_Je     : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
+ $ U_Ie     : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
+ $ U1_Ie    : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
+ $ RT_Je    : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
+ $ T1_Ie    : num  0.2727 -0.2727 -0.0909 -1 -1 ...
+ $ OMPe     : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
+ $ SCRe     : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
+ $ VEC1e    : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
+ $ VEC2e    : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
+ $ cost_mean: num  0.82 1.632 0.747 0.777 2.291 ...
+ - attr(*, "codings")=List of 13
+  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
 
-Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
+  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
 
-Error in chol.default(t(M) %*% M) :
-  the leading minor of order 57 is not positive definite
-In addition: Warning messages:
-1: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-2: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
-3: In if (-1 == (strt <- regexpr(name, string))) return(c(0, 0)) :
-  the condition has length
-1 and only the first element will be used
+  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
 
-Classes ‘coded.data’ and 'data.frame':	2983 obs. of  18 variables:
- $ T2_Ie                 : num  0.6364 0.2727 1 -0.0909 0.2727 ...
- $ T2_Je                 : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
- $ RT_Ie                 : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
- $ T1_Je                 : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
- $ U_Je                  : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
- $ U_Ie                  : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
- $ U1_Ie                 : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
- $ RT_Je                 : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
- $ T1_Ie                 : num  0.2727 -0.2727 -0.0909 -1 -1 ...
- $ OMPe                  : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
- $ SCRe                  : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
- $ VEC1e                 : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
- $ VEC2e                 : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
- $ cost_mean             : num  0.82 1.632 0.747 0.777 2.291 ...
- $ prediction_m1         : num  NA NA NA NA NA NA NA NA NA NA ...
- $ prediction_m1_sd      : num  4.20e-01 5.65e-01 1.29e-08 1.53e-10 6.50e-01 ...
- $ prediction_m1_short   : num  NA NA NA NA NA NA NA NA NA NA ...
- $ prediction_m1_sd_short: num  0.447 0.695 0 0.777 0.804 ...
+  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
+  .. .. ..- attr(*, ".Environment")=<environment: R_
+
+ - attr(*, "rsdes")=List of 2
+  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
+  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
+
+Classes ‘coded.data’ and 'data.frame':	2983 obs. of  17 variables:
+ $ T2_Ie             : num  0.6364 0.2727 1 -0.0909 0.2727 ...
+ $ T2_Je             : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
+ $ RT_Ie             : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
+ $ T1_Je             : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
+ $ U_Je              : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
+ $ U_Ie              : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
+ $ U1_Ie             : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
+ $ RT_Je             : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
+ $ T1_Ie             : num  0.2727 -0.2727 -0.0909 -1 -1 ...
+ $ OMPe              : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
+ $ SCRe              : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
+ $ VEC1e             : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
+ $ VEC2e             : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
+ $ cost_mean         : num  0.82 1.632 0.747 0.777 2.291 ...
+ $ prediction_m1     : num  0.751 2.939 0.731 0.872 3.275 ...
+ $ prediction_m1_sd  : num  0.521 0.397 0.464 0.487 0.552 ...
+ $ prediction_plus_sd: num  -0.291 2.145 -0.197 -0.101 2.172 ...
  - attr(*, "codings")=List of 13
   ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
   .. .. ..- attr(*, ".Environment")=<environment: R_
@@ -67287,80 +66714,96 @@ Classes ‘coded.data’ and 'data.frame':	2983 obs. of  18 variables:
 
 ****** Results with Random Designs of Different Sizes
 We now perform Gaussian Process Regression using the data previously obtained in
-one of our Random Sampling experiments with  the =bicg= SPAPT kernel. We first use
-a large set with 60% of the samples used for regression, then a smaller set with
-30% of samples used, and then a fairly  small one, using only 15% of the samples
-for regression.   The search spaces available  and the predicted values  for the
-entire data set are shown in the figures below.
+one of our Random Sampling experiments with the =bicg= SPAPT kernel. We used a set
+with 200 of  the 2983 available samples  to obtain a GP Regression  using the =km=
+function. The  complete search space  that was  available for sampling,  and the
+actual performance of the 50 best predictions  for the entire data set are shown
+in the figures below.
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-all_parameters_plot_data <- data %>%
+plot_data <- prediction_data %>%
   gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
          T1_Je, U_Je, U_Ie, U1_Ie,
          RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
 
-ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+ggplot(plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_point(data = subset(all_parameters_plot_data, prediction_m1 == min(prediction_m1)), size = 3, color = "green") +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
+  geom_point(data = arrange(plot_data, prediction_plus_sd)[1:(50 * 13), ], size = 3, alpha = 0.8, color = "green") +
+  geom_point(data = subset(plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 17)
 #+end_SRC
 
 #+CAPTION: Sampled search space $\mathcal{A}$ of size 2983, divided by factors,
-#+CAPTION: where the best point is marked in @@latex:{\color{red}@@red@@latex:}@@.
-#+CAPTION: The best prediction of
-#+CAPTION: a Gaussian Regression Model trained with 1789 experiments, 60% of total samples,
-#+CAPTION: sampled uniformly from  $\mathcal{A}$, is shown in @@latex:{\color{green}@@green@@latex:}@@.
+#+CAPTION: where the best configuration is marked in @@latex:{\color{red}@@red@@latex:}@@.
+#+CAPTION: The 50 best configurations predicted (minus $2\sigma$) by
+#+CAPTION: a Gaussian Regression Model trained with 200 experiments,
+#+CAPTION: sampled uniformly from  $\mathcal{A}$, are shown in @@latex:{\color{green}@@green@@latex:}@@.
 #+LABEL: fig:gr-lds
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureE0f8ya.pdf]]
+[[file:/tmp/babel-Bco3bb/figureKtEJQU.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-all_parameters_plot_data <- data %>%
+plot_data <- prediction_data %>%
   gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
          T1_Je, U_Je, U_Ie, U1_Ie,
          RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
 
-ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+ggplot(plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_point(data = subset(all_parameters_plot_data, prediction_m1_med == min(prediction_m1_med)), size = 3, color = "green") +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
+  ylim(0.0, 1.0) +
+  geom_point(data = arrange(plot_data, prediction_plus_sd)[1:(50 * 13), ], size = 3, alpha = 0.8, color = "green") +
+  geom_point(data = subset(plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 17)
 #+end_SRC
 
-#+CAPTION: Sampled search space $\mathcal{A}$ of size 2983, divided by factors,
-#+CAPTION: where the best point is marked in @@latex:{\color{red}@@red@@latex:}@@.
-#+CAPTION: The best prediction of
-#+CAPTION: a Gaussian Regression Model trained with 894 experiments, 30% of total samples,
-#+CAPTION: sampled uniformly from  $\mathcal{A}$, is shown in @@latex:{\color{green}@@green@@latex:}@@.
-#+LABEL: fig:gr-mmd
+#+CAPTION: A closer look at the y-axis from the previous figure.
+#+LABEL: fig:gr-lds
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figure6cpvYa.pdf]]
+[[file:/tmp/babel-Bco3bb/figureKtEJQU.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-all_parameters_plot_data <- data %>%
-  gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
-         T1_Je, U_Je, U_Ie, U1_Ie,
-         RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 12 :height 10
+library(ggplot2)
+library(latex2exp)
 
-ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
-  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
-  geom_point(alpha = 0.4) +
-  geom_point(data = subset(all_parameters_plot_data, prediction_m1_short == min(prediction_m1_short)), size = 3, color = "green") +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
-  theme_bw(base_size = 17)
+plot_data <- arrange(prediction_data, prediction_plus_sd)[1:50, ]
+
+ggplot(plot_data) +
+  # geom_point(aes(x = 1:nrow(plot_data), y = prediction_m1, color = "predicted cost")) +
+  geom_pointrange(aes(x = 1:nrow(plot_data),
+                      y = prediction_m1,
+                      ymin = prediction_m1 - (2 * prediction_m1_sd),
+                      ymax = prediction_m1 + (2 * prediction_m1_sd),
+                      color = "Predicted cost")) +
+  geom_point(aes(x = 1:nrow(plot_data),
+                 y = cost_mean,
+                 color = "Measured cost"),
+             size = 2) +
+  scale_color_brewer(palette = "Set1", labels = list("Actual measured cost", TeX("Predicted cost $+/-2\\sigma$"))) +
+  ylab(TeX("Execution time in seconds")) +
+  xlab("Prediction") +
+  ggtitle("50 best predictions from GPR (by predicted cost)") +
+  theme_bw(base_size = 18) +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        text = element_text(family = "sans"))
 #+end_SRC
 
-#+CAPTION: Sampled search space $\mathcal{A}$ of size 2983, divided by factors,
-#+CAPTION: where the best point is marked in @@latex:{\color{red}@@red@@latex:}@@.
-#+CAPTION: The best prediction of
-#+CAPTION: a Gaussian Regression Model trained with 447 experiments, 15% of total samples,
-#+CAPTION: sampled uniformly from  $\mathcal{A}$, is shown in @@latex:{\color{green}@@green@@latex:}@@.
-#+LABEL: fig:gr-smd
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurexZ6jUl.pdf]]
+[[file:/tmp/babel-Bco3bb/figurecio2c5.pdf]]
+
+*** [2019-10-02 Wed]
+**** Questions for Alfredo
+- Airbnb prices: Are they ok for the location? (they are ok)
+- Visa: Should I confirm my ticket with CAPES? (I should)
+- SBAC hotel reservation: Can funding cover some of the expense? (no)
+- SBAC Poster: Can funding cover? (???)
+- SBAC Poster: Should I bring it printed or print it there? (???)
+- Course Book: Chapter 7 next week? (no)
+- Project: FAPESP? (ok Nelson)
+- Project with HPE with NO funding? (waiting)
+- Project with HPE WITH funding? (do the documents)
