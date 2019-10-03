@@ -66083,16 +66083,6 @@ str(design_data_plot)
 #+RESULTS:
 #+begin_example
 
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
 'data.frame':	87 obs. of  3 variables:
  $ removed_variables: Factor w/ 21 levels "","OMP","SCR",..: 1 2 6 3 8 12 1 4 2 5 ...
  $ step             : int  1 2 2 2 2 2 3 4 1 1 ...
@@ -66102,27 +66092,6 @@ The following objects are masked from ‘package:base’:
  $ current_best_coordinate: chr  "T1_I->16" "T1_J->1" "U_J->1" "U_I->6" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
  $ experiment_id          : chr  "paravance-44" "paravance-44" "paravance-44" "paravance-44" ...
-
-------------------------------------------------------------------------------
-You have loaded plyr after dplyr - this is likely to cause problems.
-If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-library(plyr); library(dplyr)
-------------------------------------------------------------------------------
-
-Attaching package: ‘plyr’
-
-The following objects are masked from ‘package:dplyr’:
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize
-
-Attaching package: ‘reshape2’
-
-The following object is masked from ‘package:tidyr’:
-
-    smiths
-
-Registering fonts with R
 
 'data.frame':	862 obs. of  31 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 10 11 ...
@@ -66302,34 +66271,6 @@ I(RT_I ^ 2) +"| __truncated__ ...
  $ mean_confidence_interval_sup: num  0.852 0.783 0.906 0.964 4.646 ...
  $ experiment_id               : chr  "paravance-44" "paravance-44" "paravance-44" "paravance-44" ...
 
-Loading required package: DoE.base
-Loading required package: grid
-Loading required package: conf.design
-
-Attaching package: ‘conf.design’
-
-The following object is masked from ‘package:plyr’:
-
-    join
-
-Registered S3 method overwritten by 'DoE.base':
-  method           from
-  factorize.factor conf.design
-
-Attaching package: ‘DoE.base’
-
-The following objects are masked from ‘package:stats’:
-
-    aov, lm
-
-The following object is masked from ‘package:graphics’:
-
-    plot.design
-
-The following object is masked from ‘package:base’:
-
-    lengths
-
 There were 40 warnings (use warnings() to see them)
 
 Joining, by = c("id", "step")
@@ -66382,334 +66323,102 @@ data <- coded.data(data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5) / 5.5,
                                          VEC2e = VEC2e ~ (VEC2 - 0.5) / 0.5,
                                          RT_Ie = RT_Ie ~ (RT_I - 2.5) / 2.5,
                                          RT_Je = RT_Je ~ (RT_J - 2.5) / 2.5))
+#+end_SRC
 
-available_experiments <- data[data$cost_mean != min(data$cost_mean), ]
+#+RESULTS:
 
-sample_size <- 200
-sampled_data <- available_experiments[sample(1:nrow(available_experiments), 200), ]
+#+begin_SRC R :results output :session *R*
+library(dplyr)
 
-str(sampled_data)
-str(data)
+# https://stackoverflow.com/questions/34208564/how-to-hide-or-disable-in-function-printed-message/34208658#34208658
+quiet <- function(x) {
+  sink(tempfile())
+  on.exit(sink())
+  invisible(force(x))
+}
+
+gpr_data <- NULL
+rs_data <- NULL
+experiment_data <- NULL
+
+iterations <- 30
+
+gpr_sample_size <- 200
+gpr_extra_points <- 50
+rs_sample_size <- gpr_sample_size + gpr_extra_points
+
+for(i in 1:iterations){
+  available_experiments <- data[data$cost_mean != min(data$cost_mean), ]
+
+  rs_sampled_data <- available_experiments[sample(1:nrow(available_experiments), rs_sample_size), ]
+  rs_best <- rs_sampled_data[rs_sampled_data$cost_mean == min(rs_sampled_data$cost_mean), ]
+
+  rs_best$technique = "RS"
+  rs_best$iteration = i
+
+  if(is.null(rs_data)){
+    rs_data <- rs_best
+  } else {
+    rs_data <- bind_rows(rs_data, rs_best)
+  }
+
+  gpr_sampled_data <- available_experiments[sample(1:nrow(available_experiments), gpr_sample_size), ]
+
+  gpr_model <- NULL
+  gpr_model <- quiet(km(design = select(gpr_sampled_data, -cost_mean), response = gpr_sampled_data$cost_mean))
+
+  gpr_prediction <- NULL
+  gpr_prediction <- predict(gpr_model, select(data, -cost_mean), "UK")
+
+  gpr_prediction_data <- data
+
+  gpr_prediction_data$predicted_mean <- gpr_prediction$mean
+  gpr_prediction_data$predicted_sd <- gpr_prediction$sd
+
+  gpr_prediction_data$predicted_mean_2s <- gpr_prediction_data$predicted_mean -
+    (2 * gpr_prediction_data$predicted_sd)
+
+  gpr_best_points <- arrange(gpr_prediction_data, predicted_mean_2s)[1:gpr_extra_points, ]
+
+  gpr_best <- gpr_best_points[gpr_best_points$cost_mean == min(gpr_best_points$cost_mean), ]
+
+  gpr_best$technique = "GPR"
+  gpr_best$iteration = i
+
+  if(is.null(gpr_data)){
+    gpr_data <- gpr_best
+  } else {
+    gpr_data <- bind_rows(gpr_data, gpr_best)
+  }
+}
+
+experiment_data <- bind_rows(rs_data, gpr_data)
+str(experiment_data)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
 
-Classes ‘coded.data’ and 'data.frame':	200 obs. of  14 variables:
- $ T2_Ie    : num  -1 1 0.4545 0.0909 -0.4545 ...
- $ T2_Je    : num  0.273 0.273 0.818 0.455 0.273 ...
- $ RT_Ie    : num  -0.6 -0.2 0.2 -1 -1 -1 -1 -0.6 -0.6 -1 ...
- $ T1_Je    : num  0.0909 -1 0.2727 0.2727 -0.4545 ...
- $ U_Je     : num  -0.931 -0.31 -0.931 1.069 -0.931 ...
- $ U_Ie     : num  -0.931 -0.931 -0.0345 -0.931 0.8621 ...
- $ U1_Ie    : num  -0.862 -0.931 -0.172 0.655 0.517 ...
- $ RT_Je    : num  -0.2 -0.2 0.2 -0.6 -0.6 1 -0.2 -0.6 -1 -0.6 ...
- $ T1_Ie    : num  1 0.455 0.455 -0.636 -0.636 ...
- $ OMPe     : num  1 1 -1 -1 1 1 -1 -1 1 1 ...
- $ SCRe     : num  -1 1 -1 -1 1 -1 -1 1 1 1 ...
- $ VEC1e    : num  1 1 1 1 1 -1 -1 1 -1 -1 ...
- $ VEC2e    : num  -1 1 -1 1 1 -1 1 1 1 -1 ...
- $ cost_mean: num  0.756 0.606 4.104 5.738 0.876 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
-
-Classes ‘coded.data’ and 'data.frame':	2983 obs. of  14 variables:
- $ T2_Ie    : num  0.6364 0.2727 1 -0.0909 0.2727 ...
- $ T2_Je    : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
- $ RT_Ie    : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
- $ T1_Je    : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
- $ U_Je     : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
- $ U_Ie     : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
- $ U1_Ie    : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
- $ RT_Je    : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
- $ T1_Ie    : num  0.2727 -0.2727 -0.0909 -1 -1 ...
- $ OMPe     : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
- $ SCRe     : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
- $ VEC1e    : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
- $ VEC2e    : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
- $ cost_mean: num  0.82 1.632 0.747 0.777 2.291 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
-#+end_example
-
-#+begin_SRC R :results output :session *R* :exports none
-m1 <- NULL
-
-m1 <- km(design = select(sampled_data, -cost_mean), response = sampled_data$cost_mean)
-#+end_SRC
-
-#+RESULTS:
-#+begin_example
-
-optimisation start
-------------------
-,* estimation method   : MLE
-,* optimisation method : BFGS
-,* analytical gradient : used
-,* trend model : ~1
-,* covariance model :
-  - type :  matern5_2
-  - nugget : NO
-  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
-  - parameters upper bounds :  4 4 4 4 4 4 4 4 4 4 4 4 4
-  - best initial criterion value(s) :  -307.4088
-
-N = 13, M = 5 machine precision = 2.22045e-16
-At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       307.41  |proj g|=       2.9577
-At iterate     1  f =       236.61  |proj g|=         2.103
-At iterate     2  f =        232.3  |proj g|=        2.2433
-At iterate     3  f =       229.39  |proj g|=        3.3318
-At iterate     4  f =       227.34  |proj g|=        3.2602
-At iterate     5  f =       226.89  |proj g|=        1.0044
-At iterate     6  f =       226.74  |proj g|=       0.90467
-At iterate     7  f =       226.57  |proj g|=        0.8456
-At iterate     8  f =       226.26  |proj g|=       0.86688
-At iterate     9  f =       226.02  |proj g|=       0.84066
-At iterate    10  f =       225.95  |proj g|=       0.27131
-At iterate    11  f =       225.94  |proj g|=       0.29776
-At iterate    12  f =       225.92  |proj g|=        0.6093
-At iterate    13  f =       225.91  |proj g|=       0.29473
-At iterate    14  f =       225.91  |proj g|=      0.050079
-At iterate    15  f =       225.91  |proj g|=      0.006292
-At iterate    16  f =       225.91  |proj g|=     0.0034087
-At iterate    17  f =       225.91  |proj g|=    0.00030191
-
-iterations 17
-function evaluations 26
-segments explored during Cauchy searches 30
-BFGS updates skipped 0
-active bounds at final generalized Cauchy point 10
-norm of the final projected gradient 0.000301913
-final function value 225.909
-
-F = 225.909
-final  value 225.909388
-converged
-#+end_example
-
-#+begin_SRC R :results output :session *R* :exports none
-pm1 <- NULL
-pm1 <- predict(m1, select(data, -cost_mean), "UK")
-
-prediction_data <- data
-
-predicted.values.model1 <- pm1$mean
-
-prediction_data$prediction_m1 <- predicted.values.model1
-prediction_data$prediction_m1_sd <- pm1$sd
-
-prediction_data$prediction_plus_sd <- prediction_data$prediction_m1 -
-                                      (2 * prediction_data$prediction_m1_sd)
-str(data)
-str(prediction_data)
-#+end_SRC
-
-#+RESULTS:
-#+begin_example
-
-Classes ‘coded.data’ and 'data.frame':	2983 obs. of  14 variables:
- $ T2_Ie    : num  0.6364 0.2727 1 -0.0909 0.2727 ...
- $ T2_Je    : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
- $ RT_Ie    : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
- $ T1_Je    : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
- $ U_Je     : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
- $ U_Ie     : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
- $ U1_Ie    : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
- $ RT_Je    : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
- $ T1_Ie    : num  0.2727 -0.2727 -0.0909 -1 -1 ...
- $ OMPe     : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
- $ SCRe     : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
- $ VEC1e    : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
- $ VEC2e    : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
- $ cost_mean: num  0.82 1.632 0.747 0.777 2.291 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
-
-Classes ‘coded.data’ and 'data.frame':	2983 obs. of  17 variables:
- $ T2_Ie             : num  0.6364 0.2727 1 -0.0909 0.2727 ...
- $ T2_Je             : num  0.2727 0.0909 -0.4545 -1 0.8182 ...
- $ RT_Ie             : num  -1 1 -0.2 -0.2 -0.6 -0.6 0.2 0.6 -1 -0.2 ...
- $ T1_Je             : num  -0.8182 -0.6364 -0.8182 -0.0909 0.0909 ...
- $ U_Je              : num  -0.931 -0.931 -0.931 -0.655 1.069 ...
- $ U_Ie              : num  -0.448 -0.448 -0.172 -0.931 -0.931 ...
- $ U1_Ie             : num  0.7931 -0.0345 -0.5862 0.8621 -0.1724 ...
- $ RT_Je             : num  -0.6 -0.2 0.2 0.6 1 0.2 0.2 -0.2 -1 -1 ...
- $ T1_Ie             : num  0.2727 -0.2727 -0.0909 -1 -1 ...
- $ OMPe              : num  1 -1 1 1 -1 -1 -1 -1 1 -1 ...
- $ SCRe              : num  -1 1 -1 1 1 -1 1 1 -1 -1 ...
- $ VEC1e             : num  -1 -1 1 1 1 1 -1 -1 -1 -1 ...
- $ VEC2e             : num  1 -1 1 -1 -1 -1 1 -1 -1 -1 ...
- $ cost_mean         : num  0.82 1.632 0.747 0.777 2.291 ...
- $ prediction_m1     : num  0.751 2.939 0.731 0.872 3.275 ...
- $ prediction_m1_sd  : num  0.521 0.397 0.464 0.487 0.552 ...
- $ prediction_plus_sd: num  -0.291 2.145 -0.197 -0.101 2.172 ...
- - attr(*, "codings")=List of 13
-  ..$ T1_Ie:Class 'formula'  language T1_Ie ~ (T1_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T1_Je:Class 'formula'  language T1_Je ~ (T1_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Je :Class 'formula'  language U_Je ~ (U_J - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U_Ie :Class 'formula'  language U_Ie ~ (U_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Ie:Class 'formula'  language T2_Ie ~ (T2_I - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ T2_Je:Class 'formula'  language T2_Je ~ (T2_J - 5.5)/5.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ U1_Ie:Class 'formula'  language U1_Ie ~ (U1_I - 14.5)/14.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ OMPe :Class 'formula'  language OMPe ~ (OMP - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ SCRe :Class 'formula'  language SCRe ~ (SCR - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC1e:Class 'formula'  language VEC1e ~ (VEC1 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ VEC2e:Class 'formula'  language VEC2e ~ (VEC2 - 0.5)/0.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Ie:Class 'formula'  language RT_Ie ~ (RT_I - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
-  ..$ RT_Je:Class 'formula'  language RT_Je ~ (RT_J - 2.5)/2.5
-  .. .. ..- attr(*, ".Environment")=<environment: R_
-
- - attr(*, "rsdes")=List of 2
-  ..$ primary: chr  "T1_Ie" "T1_Je" "U_Je" "U_Ie" ...
-  ..$ call   : language coded.data(data = data, formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5)/5.5,      T1_Je = T1_Je ~ (T1_J - 5.5)/5.5, | __truncated__ ...
+Classes ‘coded.data’ and 'data.frame':	60 obs. of  19 variables:
+ $ T2_Ie            : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ T2_Je            : num  0.0909 0.0909 0.6364 0.0909 0.8182 ...
+ $ RT_Ie            : num  -1 -1 -0.6 -1 -0.2 0.6 0.2 0.2 -0.6 -1 ...
+ $ T1_Je            : num  -0.455 -0.455 -0.818 -0.455 -0.636 ...
+ $ U_Je             : num  -0.931 -0.931 -0.931 -0.931 -0.931 ...
+ $ U_Ie             : num  -0.3793 -0.3793 -0.0345 -0.3793 -0.5862 ...
+ $ U1_Ie            : num  0.655 0.655 -0.862 0.655 0.862 ...
+ $ RT_Je            : num  -0.6 -0.6 0.2 -0.6 -0.2 0.2 -1 -1 -0.6 -0.6 ...
+ $ T1_Ie            : num  1 1 -0.455 1 0.818 ...
+ $ OMPe             : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ SCRe             : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ VEC1e            : num  -1 -1 1 -1 1 -1 -1 1 -1 -1 ...
+ $ VEC2e            : num  -1 -1 -1 -1 1 1 1 -1 -1 1 ...
+ $ cost_mean        : num  0.547 0.547 0.55 0.547 0.502 ...
+ $ technique        : chr  "RS" "RS" "RS" "RS" ...
+ $ iteration        : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ predicted_mean   : num  NA NA NA NA NA NA NA NA NA NA ...
+ $ predicted_sd     : num  NA NA NA NA NA NA NA NA NA NA ...
+ $ predicted_mean_2s: num  NA NA NA NA NA NA NA NA NA NA ...
 #+end_example
 
 ****** Results with Random Designs of Different Sizes
@@ -66721,7 +66430,12 @@ actual performance of the 50 best predictions  for the entire data set are shown
 in the figures below.
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-plot_data <- prediction_data %>%
+plot_data <- data %>%
+  gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
+         T1_Je, U_Je, U_Ie, U1_Ie,
+         RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
+
+plot_gpr_best_points <- gpr_best_points %>%
   gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
          T1_Je, U_Je, U_Ie, U1_Ie,
          RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
@@ -66729,7 +66443,7 @@ plot_data <- prediction_data %>%
 ggplot(plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
-  geom_point(data = arrange(plot_data, prediction_plus_sd)[1:(50 * 13), ], size = 3, alpha = 0.8, color = "green") +
+  geom_point(data = plot_gpr_best_points, size = 3, alpha = 0.8, color = "green") +
   geom_point(data = subset(plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 17)
 #+end_SRC
@@ -66742,10 +66456,15 @@ ggplot(plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:gr-lds
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureKtEJQU.pdf]]
+[[file:/tmp/babel-Bco3bb/figurenx18E9.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-plot_data <- prediction_data %>%
+plot_data <- data %>%
+  gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
+         T1_Je, U_Je, U_Ie, U1_Ie,
+         RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
+
+plot_gpr_best_points <- gpr_best_points %>%
   gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
          T1_Je, U_Je, U_Ie, U1_Ie,
          RT_Je, T1_Ie, OMPe, SCRe, VEC1e, VEC2e)
@@ -66754,7 +66473,7 @@ ggplot(plot_data, aes(x = level, y = cost_mean)) +
   facet_wrap(factor ~ ., ncol = 4, scale = "free") +
   geom_point(alpha = 0.4) +
   ylim(0.0, 1.0) +
-  geom_point(data = arrange(plot_data, prediction_plus_sd)[1:(50 * 13), ], size = 3, alpha = 0.8, color = "green") +
+  geom_point(data = plot_gpr_best_points, size = 3, alpha = 0.8, color = "green") +
   geom_point(data = subset(plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
   theme_bw(base_size = 17)
 #+end_SRC
@@ -66763,29 +66482,25 @@ ggplot(plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:gr-lds
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureKtEJQU.pdf]]
+[[file:/tmp/babel-Bco3bb/figure56wKtU.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 12 :height 10
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 library(ggplot2)
 library(latex2exp)
 
-plot_data <- arrange(prediction_data, prediction_plus_sd)[1:50, ]
-
-ggplot(plot_data) +
-  # geom_point(aes(x = 1:nrow(plot_data), y = prediction_m1, color = "predicted cost")) +
-  geom_pointrange(aes(x = 1:nrow(plot_data),
-                      y = prediction_m1,
-                      ymin = prediction_m1 - (2 * prediction_m1_sd),
-                      ymax = prediction_m1 + (2 * prediction_m1_sd),
+ggplot(gpr_best_points) +
+  geom_pointrange(aes(x = 1:nrow(gpr_best_points),
+                      y = predicted_mean,
+                      ymin = predicted_mean - (2 * predicted_sd),
+                      ymax = predicted_mean + (2 * predicted_sd),
                       color = "Predicted cost")) +
-  geom_point(aes(x = 1:nrow(plot_data),
+  geom_point(aes(x = 1:nrow(gpr_best_points),
                  y = cost_mean,
                  color = "Measured cost"),
              size = 2) +
   scale_color_brewer(palette = "Set1", labels = list("Actual measured cost", TeX("Predicted cost $+/-2\\sigma$"))) +
   ylab(TeX("Execution time in seconds")) +
   xlab("Prediction") +
-  ggtitle("50 best predictions from GPR (by predicted cost)") +
   theme_bw(base_size = 18) +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
@@ -66793,8 +66508,78 @@ ggplot(plot_data) +
         text = element_text(family = "sans"))
 #+end_SRC
 
+#+CAPTION: 50 best predictions from 1 GPR run (by predicted cost)
+#+LABEL: fig:best-found
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurecio2c5.pdf]]
+[[file:/tmp/babel-Bco3bb/figure2jDeSe.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+library(ggplot2)
+library(latex2exp)
+
+ggplot(subset(experiment_data, technique == "GPR")) +
+  geom_pointrange(aes(x = iteration,
+                      y = predicted_mean,
+                      ymin = predicted_mean - (2 * predicted_sd),
+                      ymax = predicted_mean + (2 * predicted_sd),
+                      color = "Predicted cost")) +
+  geom_point(aes(x = iteration,
+                 y = cost_mean,
+                 color = "Measured cost"),
+             size = 2) +
+  scale_color_brewer(palette = "Set1", labels = list("Actual measured cost", TeX("Predicted cost $+/-2\\sigma$"))) +
+  ylab(TeX("Execution time in seconds")) +
+  xlab("Prediction") +
+  theme_bw(base_size = 18) +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        text = element_text(family = "sans"))
+#+end_SRC
+
+#+CAPTION: 30 best predictions from all GPR runs (by measured cost)
+#+LABEL: fig:best-found
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-Bco3bb/figuregNv1Pm.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+library(ggplot2)
+
+ggplot() +
+  geom_smooth(data = subset(experiment_data, technique == "GPR"),
+              method = "lm",
+              formula = "y ~ 1",
+              aes(x = iteration,
+                  y = cost_mean, color = "GPR")) +
+  geom_smooth(data = subset(experiment_data, technique == "RS"),
+              method = "lm",
+              formula = "y ~ 1",
+              aes(x = iteration,
+                  y = cost_mean, color = "RS")) +
+  geom_point(data = subset(experiment_data, technique == "RS"),
+             aes(x = iteration,
+                 y = cost_mean, color = "RS")) +
+  geom_point(data = subset(experiment_data, technique == "GPR"),
+             aes(x = iteration,
+                 y = cost_mean, color = "GPR")) +
+  ylab(TeX("Execution time in seconds")) +
+  xlab("Experiments") +
+  theme_bw(base_size = 18) +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        text = element_text(family = "sans")) +
+  scale_color_brewer(palette = "Set2")
+#+END_SRC
+
+#+CAPTION: Measured cost of the best points found over 10 experiments
+#+CAPTION: with GPR and RS
+#+LABEL: fig:best-found
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-Bco3bb/figurePKCFY8.pdf]]
 
 *** [2019-10-02 Wed]
 **** Questions for Alfredo
