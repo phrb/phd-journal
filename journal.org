@@ -66788,7 +66788,963 @@ ggplot() +
 [[file:/tmp/babel-eC1tkY/figuresebtyH.pdf]]
 
 ***** GPR Orio Implementation
-****** Loading Data                                           :noexport:
+****** Small Step Loading Data                                :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+read_experiment <- function(x) {
+  data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  return(data)
+}
+
+current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_smaller_steps"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
+
+
+# Loading Data for Histograms and Iterations
+
+data_dir <- current_experiment
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$cost_mean == min(data$cost_mean), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+str(data)
+
+full_data <- data
+
+plot_data <- data %>%
+             group_by(experiment_id) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup() %>%
+             subset(cost_mean == min_run_cost)
+
+complete_plot_data <- plot_data
+
+str(complete_plot_data)
+
+# data_dir <- "dlmt_spapt_experiments/data/results"
+# data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
+data_dir <- "dlmt_spapt_experiments/data/results"
+# data_dir <- "dlmt_spapt_experiments/data/tests/gpr_random_190"
+#target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+target_dirs <- c("bicgkernel")
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][5], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$cost_mean == max(data$cost_mean), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+full_data <- bind_rows(filter(full_data, technique == "GPR"),
+                       filter(rs_data, technique == "RS", application == "bicgkernel"))
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel") %>%
+  group_by(experiment_id) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup() %>%
+  subset(cost_mean == min_run_cost)
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "GPR"),
+                                rs_plot_data)
+
+str(complete_plot_data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	5301 obs. of  31 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  1 16 2048 2048 1024 128 128 64 2048 32 ...
+ $ T2_I                        : int  512 2048 64 128 1024 32 256 32 128 2048 ...
+ $ RT_I                        : int  16 16 4 2 2 8 8 8 4 16 ...
+ $ mean_confidence_interval_inf: num  0.931 5.629 0.837 1.643 3.991 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2048 2 2 8 8 1 2 4 128 2 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "False" "False" "False" ...
+ $ SCR                         : chr  "False" "False" "False" "True" ...
+ $ U1_I                        : int  2 28 20 1 27 30 12 28 1 7 ...
+ $ RT_J                        : int  1 1 32 16 1 2 16 1 32 8 ...
+ $ T1_I                        : int  8 4 1 16 256 8 8 1 1 8 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.069872 0.000121 0.018143 0.000143 0.000132 ...
+ $ cost_mean                   : num  0.975 5.63 0.849 1.643 3.991 ...
+ $ U_J                         : int  1 14 1 1 29 1 11 1 26 30 ...
+ $ U_I                         : int  17 1 4 19 1 5 1 22 1 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  1.02 5.63 0.86 1.64 3.99 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-14" "graoully-14" "graoully-14" ...
+ $ cost_baseline               : num  5.78 5.78 5.78 5.78 5.78 ...
+ $ speedup                     : num  5.93 1.03 6.81 3.52 1.45 ...
+ $ max_run_speedup             : num  13 13 13 13 13 ...
+ $ min_run_cost                : num  0.445 0.445 0.445 0.445 0.445 ...
+ $ best_iteration              : num  244 244 244 244 244 244 244 244 244 244 ...
+ $ points                      : int  520 520 520 520 520 520 520 520 520 520 ...
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  34 variables:
+ $ id                          : int  244 55 14 459 80 235 478 493 400 468
+ $ T2_J                        : int  2048 2048 512 512 1 2048 256 2048 2048 2048
+ $ T2_I                        : int  2048 2048 2048 2048 2048 2048 1 2048 2048 2048
+ $ RT_I                        : int  8 16 16 8 8 8 2 8 8 2
+ $ mean_confidence_interval_inf: num  0.425 0.436 0.429 0.395 0.42 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2048 4 16 512 512 1 64 64 4 1
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "True" "True" "True" "True" ...
+ $ U1_I                        : int  25 1 28 30 15 29 1 24 8 30
+ $ RT_J                        : int  8 8 2 1 8 2 2 8 8 4
+ $ T1_I                        : int  1 2048 1 1 2048 16 2048 1 2048 64
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10
+ $ cost_std                    : num  0.033 0.1089 0.064 0.0349 0.028 ...
+ $ cost_mean                   : num  0.445 0.503 0.469 0.417 0.437 ...
+ $ U_J                         : int  1 2 19 19 1 24 3 1 1 1
+ $ U_I                         : int  1 1 1 1 25 1 1 2 2 28
+ $ step                        : int  17 3 1 34 5 17 35 37 29 35
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  0.466 0.571 0.508 0.438 0.455 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-15" "graoully-16" "graoully-3" ...
+ $ cost_baseline               : num  5.78 5.9 5.78 5.79 5.91 ...
+ $ speedup                     : num  13 11.7 12.3 13.9 13.5 ...
+ $ max_run_speedup             : num  13 11.7 12.3 13.9 13.5 ...
+ $ min_run_cost                : num  0.445 0.503 0.469 0.417 0.437 ...
+ $ best_iteration              : num  244 55 14 459 80 235 478 493 400 468
+ $ points                      : int  520 544 539 527 529 544 539 521 502 536
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline          : num  5.84 5.84 5.84 5.84 5.84 ...
+ $ label_center_x              : num  0.938 0.938 0.938 0.938 0.938 ...
+ $ label_center_y              : num  291 291 291 291 291 ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  34 variables:
+ $ id                          : int  244 55 14 459 80 235 478 493 400 468 ...
+ $ T2_J                        : int  2048 2048 512 512 1 2048 256 2048 2048 2048 ...
+ $ T2_I                        : int  2048 2048 2048 2048 2048 2048 1 2048 2048 2048 ...
+ $ RT_I                        : int  8 16 16 8 8 8 2 8 8 2 ...
+ $ mean_confidence_interval_inf: num  0.425 0.436 0.429 0.395 0.42 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2048 4 16 512 512 1 64 64 4 1 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "True" "True" "True" "True" ...
+ $ U1_I                        : int  25 1 28 30 15 29 1 24 8 30 ...
+ $ RT_J                        : int  8 8 2 1 8 2 2 8 8 4 ...
+ $ T1_I                        : int  1 2048 1 1 2048 16 2048 1 2048 64 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.033 0.1089 0.064 0.0349 0.028 ...
+ $ cost_mean                   : num  0.445 0.503 0.469 0.417 0.437 ...
+ $ U_J                         : int  1 2 19 19 1 24 3 1 1 1 ...
+ $ U_I                         : int  1 1 1 1 25 1 1 2 2 28 ...
+ $ step                        : int  17 3 1 34 5 17 35 37 29 35 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  0.466 0.571 0.508 0.438 0.455 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-15" "graoully-16" "graoully-3" ...
+ $ cost_baseline               : num  5.78 5.9 5.78 5.79 5.91 ...
+ $ speedup                     : num  13 11.7 12.3 13.9 13.5 ...
+ $ max_run_speedup             : num  13 11.7 12.3 13.9 13.5 ...
+ $ min_run_cost                : num  0.445 0.503 0.469 0.417 0.437 ...
+ $ best_iteration              : num  244 55 14 459 80 235 478 493 400 468 ...
+ $ points                      : int  520 544 539 527 529 544 539 521 502 536 ...
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline          : num  5.84 5.84 5.84 5.84 5.84 ...
+ $ label_center_x              : num  0.938 0.938 0.938 0.938 0.938 ...
+ $ label_center_y              : num  291 291 291 291 291 ...
+#+end_example
+
+****** Small Steps and Starting Sample
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 500), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500)) +
+    #xlim(NA, .6) +
+    scale_size_manual("", values = 0.45) +
+    #annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 17) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 17) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Results with a starting sample of size 26, steps add the 13 best predictions
+#+LABEL: fig:best-found-new
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-WEB6mM/figurexl5BsG.pdf]]
+
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 500), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500)) +
+    xlim(NA, .6) +
+    scale_size_manual("", values = 0.45) +
+    #annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 17) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 17) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Closer look at the previous data
+#+LABEL: fig:best-found-new
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-WEB6mM/figureYMsA2G.pdf]]
+
+****** Large Starting Set Loading Data                        :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+read_experiment <- function(x) {
+  data <- read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+  data$experiment_id <- str_split(str_split(x, "/")[[1]][6], "_")[[1]][5]
+  return(data)
+}
+
+current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_2x_step_size"
+target_path <- paste(current_experiment, "bicgkernel", sep = "/")
+
+
+# Loading Data for Histograms and Iterations
+
+data_dir <- current_experiment
+target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$cost_mean == min(data$cost_mean), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(data)) {
+            data <- target_data
+        } else {
+            data <- bind_rows(data, target_data)
+        }
+    }
+}
+
+str(data)
+
+full_data <- data
+
+plot_data <- data %>%
+             group_by(experiment_id) %>%
+             mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+             mutate(label_center_x = mean(cost_mean)) %>%
+             mutate(label_center_y = mean(best_iteration)) %>%
+             ungroup() %>%
+             subset(cost_mean == min_run_cost)
+
+complete_plot_data <- plot_data
+
+str(complete_plot_data)
+
+# data_dir <- "dlmt_spapt_experiments/data/results"
+# data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
+data_dir <- "dlmt_spapt_experiments/data/results"
+# data_dir <- "dlmt_spapt_experiments/data/tests/gpr_random_190"
+#target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+target_dirs <- c("bicgkernel")
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][5], "_")[[1]][5]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$speedup == max(data$speedup), ])), nrow(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+full_data <- bind_rows(filter(full_data, technique == "GPR"),
+                       filter(rs_data, technique == "RS", application == "bicgkernel"))
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel") %>%
+  group_by(experiment_id) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup() %>%
+  subset(cost_mean == min_run_cost)
+
+complete_plot_data <- bind_rows(filter(plot_data, technique == "GPR"),
+                                rs_plot_data)
+
+str(complete_plot_data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	5375 obs. of  31 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  1024 128 128 1024 1 64 512 1 1 256 ...
+ $ T2_I                        : int  1 2048 512 128 128 1 16 256 1 256 ...
+ $ RT_I                        : int  8 8 8 32 4 4 8 1 32 8 ...
+ $ mean_confidence_interval_inf: num  0.628 0.679 0.79 0.873 0.808 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  32 2 128 8 128 1 8 1024 64 256 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "False" "False" "False" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "True" "False" "False" "True" ...
+ $ U1_I                        : int  14 24 13 10 2 17 10 23 1 9 ...
+ $ RT_J                        : int  2 4 4 1 2 8 8 1 2 8 ...
+ $ T1_I                        : int  1024 128 8 8 32 512 1 8 16 128 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.1062 0.1841 0.047 0.025 0.0386 ...
+ $ cost_mean                   : num  0.694 0.793 0.819 0.888 0.832 ...
+ $ U_J                         : int  4 13 3 14 10 1 1 26 1 4 ...
+ $ U_I                         : int  1 1 1 1 1 29 3 1 27 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  0.76 0.907 0.848 0.904 0.856 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-14" "graoully-14" "graoully-14" ...
+ $ cost_baseline               : num  5.91 5.91 5.91 5.91 5.91 ...
+ $ speedup                     : num  8.51 7.45 7.21 6.65 7.1 ...
+ $ max_run_speedup             : num  13.4 13.4 13.4 13.4 13.4 ...
+ $ min_run_cost                : num  0.442 0.442 0.442 0.442 0.442 ...
+ $ best_iteration              : num  343 343 343 343 343 343 343 343 343 343 ...
+ $ points                      : int  544 544 544 544 544 544 544 544 544 544 ...
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  34 variables:
+ $ id                          : int  343 277 297 33 273 89 203 176 427 254
+ $ T2_J                        : int  1 2 2048 2048 64 512 128 32 2048 512
+ $ T2_I                        : int  2048 2048 1 2048 2048 2048 2048 2048 1 2048
+ $ RT_I                        : int  8 4 1 4 2 8 2 8 8 8
+ $ mean_confidence_interval_inf: num  0.411 0.44 0.374 0.424 0.428 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2048 1 1 64 32 16 1 2 32 4
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "False" "True" "False" ...
+ $ VEC1                        : chr  "False" "False" "True" "False" ...
+ $ SCR                         : chr  "True" "True" "True" "True" ...
+ $ U1_I                        : int  2 30 29 28 15 4 10 27 7 22
+ $ RT_J                        : int  4 1 1 16 4 1 2 2 16 2
+ $ T1_I                        : int  1024 4 2048 2048 256 64 1 32 2048 1024
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10
+ $ cost_std                    : num  0.0493 0.017 0.0345 0.0254 0.0287 ...
+ $ cost_mean                   : num  0.442 0.45 0.395 0.439 0.445 ...
+ $ U_J                         : int  1 1 1 16 21 1 26 4 1 30
+ $ U_I                         : int  25 22 8 1 1 30 1 1 13 1
+ $ step                        : int  13 10 11 1 10 3 7 6 16 9
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  0.472 0.461 0.417 0.455 0.463 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-15" "graoully-16" "graoully-3" ...
+ $ cost_baseline               : num  5.91 5.78 6.04 5.78 5.79 ...
+ $ speedup                     : num  13.4 12.8 15.3 13.2 13 ...
+ $ max_run_speedup             : num  13.4 12.8 15.3 13.2 13 ...
+ $ min_run_cost                : num  0.442 0.45 0.395 0.439 0.445 ...
+ $ best_iteration              : num  343 277 297 33 273 89 203 176 427 254
+ $ points                      : int  544 540 543 525 541 543 536 536 541 526
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline          : num  5.85 5.85 5.85 5.85 5.85 ...
+ $ label_center_x              : num  0.917 0.917 0.917 0.917 0.917 ...
+ $ label_center_y              : num  238 238 238 238 238 ...
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  34 variables:
+ $ id                          : int  343 277 297 33 273 89 203 176 427 254 ...
+ $ T2_J                        : int  1 2 2048 2048 64 512 128 32 2048 512 ...
+ $ T2_I                        : int  2048 2048 1 2048 2048 2048 2048 2048 1 2048 ...
+ $ RT_I                        : int  8 4 1 4 2 8 2 8 8 8 ...
+ $ mean_confidence_interval_inf: num  0.411 0.44 0.374 0.424 0.428 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2048 1 1 64 32 16 1 2 32 4 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "False" "True" "False" ...
+ $ VEC1                        : chr  "False" "False" "True" "False" ...
+ $ SCR                         : chr  "True" "True" "True" "True" ...
+ $ U1_I                        : int  2 30 29 28 15 4 10 27 7 22 ...
+ $ RT_J                        : int  4 1 1 16 4 1 2 2 16 2 ...
+ $ T1_I                        : int  1024 4 2048 2048 256 64 1 32 2048 1024 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.0493 0.017 0.0345 0.0254 0.0287 ...
+ $ cost_mean                   : num  0.442 0.45 0.395 0.439 0.445 ...
+ $ U_J                         : int  1 1 1 16 21 1 26 4 1 30 ...
+ $ U_I                         : int  25 22 8 1 1 30 1 1 13 1 ...
+ $ step                        : int  13 10 11 1 10 3 7 6 16 9 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  0.472 0.461 0.417 0.455 0.463 ...
+ $ experiment_id               : chr  "graoully-14" "graoully-15" "graoully-16" "graoully-3" ...
+ $ cost_baseline               : num  5.91 5.78 6.04 5.78 5.79 ...
+ $ speedup                     : num  13.4 12.8 15.3 13.2 13 ...
+ $ max_run_speedup             : num  13.4 12.8 15.3 13.2 13 ...
+ $ min_run_cost                : num  0.442 0.45 0.395 0.439 0.445 ...
+ $ best_iteration              : num  343 277 297 33 273 89 203 176 427 254 ...
+ $ points                      : int  544 540 543 525 541 543 536 536 541 526 ...
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline          : num  5.85 5.85 5.85 5.85 5.85 ...
+ $ label_center_x              : num  0.917 0.917 0.917 0.917 0.917 ...
+ $ label_center_y              : num  238 238 238 238 238 ...
+#+end_example
+
+****** Larger Steps and Starting Sample
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 450), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400, 450)) +
+    #xlim(NA, .6) +
+    scale_size_manual("", values = 0.45) +
+    #annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 17) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 17) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Results with a starting sample of size 260, steps add the 13 best predictions
+#+LABEL: fig:best-found-new
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-WEB6mM/figure3TPEBy.pdf]]
+
+#+HEADER: :results graphics output :session *R* :exports results
+#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
+#+HEADER: :width 13 :height 10
+#+BEGIN_SRC R
+library(grid)
+library(gtable)
+library(ggrepel)
+library(utf8)
+
+it_data <- complete_plot_data
+
+it_data <- it_data %>% subset(application %in% c("bicgkernel", "mm", "tensor", "gesummv",
+                                                 "lu", "mvt", "seidel", "jacobi"))
+it_data$facet <- factor(it_data$application, levels = c("bicgkernel", "mm", "tensor", "gesummv",
+                                                        "lu", "mvt", "seidel", "jacobi"))
+
+it_data$header <- rep(NA, nrow(it_data))
+
+it_data[it_data$facet %in% c("bicgkernel", "mm", "tensor", "gesummv", "lu", "mvt", "seidel", "jacobi"), "header"] <- "C"
+
+it_data$header <- factor(it_data$header, levels = c("C"))
+
+levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesummv",
+                           "[+] lu", "[+] mvt", "[+] seidel", "[+] jacobi")
+
+it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
+
+p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
+    facet_wrap(facet ~ ., ncol = 4) +
+    geom_point(size = 2, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
+    #geom_label_repel(data = . %>% group_by(application) %>%
+    #                              filter(technique == "RS") %>%
+    #                              filter(best_iteration == min(best_iteration)),
+    #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
+    geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
+    #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+    scale_y_continuous(limits = c(-20, 450), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400, 450)) +
+    xlim(NA, .6) +
+    scale_size_manual("", values = 0.45) +
+    #annotation_logticks(sides = "b") +
+    ggtitle("") +
+    ylab("Iteration where Best was Found") +
+    xlab("Best Cost in Seconds") +
+    guides(color = guide_legend(reverse = TRUE)) +
+    theme_bw(base_size = 17) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          text = element_text(family = "serif"),
+          strip.background = element_rect(fill = "white"),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
+    #scale_color_brewer(palette = "Set1")
+    scale_color_grey(start = 0.3, end = 0.7)
+
+dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
+                facet_wrap(facet ~ ., scale = "free", ncol = 4) +
+                geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
+                                              ymin = -Inf, ymax = Inf) +
+                theme_minimal(base_size = 17) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = "bottom",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
+                      )  +
+                scale_fill_brewer(palette = "Pastel2", direction = -1)
+                #scale_fill_grey()
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(dummy)
+
+gtable_select <- function (x, ...)
+{
+  matches <- c(...)
+  x$layout <- x$layout[matches, , drop = FALSE]
+  x$grobs <- x$grobs[matches]
+  x
+}
+
+panels <- grepl(pattern = "panel", g2$layout$name)
+strips <- grepl(pattern = "strip-t", g2$layout$name)
+g2$layout$t[panels] <- g2$layout$t[panels] - 1
+g2$layout$b[panels] <- g2$layout$b[panels] - 1
+
+new_strips <- gtable_select(g2, panels | strips)
+#grid.newpage()
+grid.draw(new_strips)
+
+gtable_stack <- function(g1, g2){
+  g1$grobs <- c(g1$grobs, g2$grobs)
+  g1$layout <- transform(g1$layout, z = z - max(z), name = "g2")
+  g1$layout <- rbind(g1$layout, g2$layout)
+  g1
+}
+
+new_plot <- gtable_stack(g1, new_strips)
+#grid.newpage()
+grid.draw(new_plot)
+#+END_SRC
+
+#+CAPTION: Closer look at the previous data
+#+LABEL: fig:best-found-new
+#+ATTR_LATEX: :width 0.65\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-WEB6mM/figureQarZ0I.pdf]]
+
+****** Large Starting Set Loading Data                        :noexport:
 #+HEADER: :results output :session *R* :exports none
 #+BEGIN_SRC R
 library(plyr)
@@ -66819,6 +67775,9 @@ data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+
+    str(csv_file)
+    str(data)
 
     data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
@@ -66945,6 +67904,232 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-14_1571609911/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  1024 64 1024 2048 64 1 2048 2048 2048 256 ...
+ $ T2_I                        : int  1 16 1024 512 4 64 2048 32 128 1 ...
+ $ RT_I                        : int  1 2 32 2 4 2 8 2 2 16 ...
+ $ mean_confidence_interval_inf: num  0.896 5.527 2.121 0.7 0.976 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  8 2 256 4 8 2048 512 1 128 32 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "False" "False" "False" "True" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "True" "True" "True" "True" ...
+ $ U1_I                        : int  4 14 9 10 9 7 15 5 21 29 ...
+ $ RT_J                        : int  16 32 4 32 8 16 8 32 8 1 ...
+ $ T1_I                        : int  64 2 8 16 2 64 2 4 16 2 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  3.29e-02 1.74e-04 9.24e-05 7.50e-02 2.34e-02 ...
+ $ cost_mean                   : num  0.916 5.527 2.121 0.746 0.991 ...
+ $ U_J                         : int  29 22 1 1 21 28 1 10 28 22 ...
+ $ U_I                         : int  1 1 14 12 1 1 26 1 1 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "False" "False" "True" ...
+ $ mean_confidence_interval_sup: num  0.936 5.527 2.121 0.793 1.005 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-15_1571609910/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  512 1024 2048 32 32 512 16 1024 512 1 ...
+ $ T2_I                        : int  16 32 2048 256 1 2048 32 1 1 8 ...
+ $ RT_I                        : int  4 1 2 32 32 16 1 2 2 2 ...
+ $ mean_confidence_interval_inf: num  0.825 1.619 2.221 3.746 6.392 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  32 128 64 2 4 512 4 8 8 8 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "False" "True" "True" "False" ...
+ $ VEC1                        : chr  "True" "False" "True" "True" ...
+ $ SCR                         : chr  "False" "True" "True" "True" ...
+ $ U1_I                        : int  13 13 13 20 11 4 27 29 4 20 ...
+ $ RT_J                        : int  4 2 32 4 1 1 4 32 1 4 ...
+ $ T1_I                        : int  8 16 1024 32 64 32 2 512 64 4 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.028228 0.000871 0.000737 0.000462 0.000524 ...
+ $ cost_mean                   : num  0.842 1.619 2.221 3.746 6.393 ...
+ $ U_J                         : int  10 1 24 1 1 3 5 1 1 1 ...
+ $ U_I                         : int  1 15 1 6 27 1 1 18 6 27 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "False" "False" "False" ...
+ $ mean_confidence_interval_sup: num  0.86 1.62 2.22 3.75 6.39 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-3_1571609923/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  256 4 512 8 1024 128 512 64 256 1 ...
+ $ T2_I                        : int  512 1 512 256 512 2 16 1024 256 1024 ...
+ $ RT_I                        : int  32 2 4 2 1 2 8 1 1 4 ...
+ $ mean_confidence_interval_inf: num  3.44 0.56 4.89 4.73 2.11 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  256 4 128 1 512 1 1 4 64 16 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "False" "False" ...
+ $ VEC1                        : chr  "False" "True" "False" "True" ...
+ $ SCR                         : chr  "True" "True" "False" "False" ...
+ $ U1_I                        : int  22 1 18 8 24 27 23 10 29 12 ...
+ $ RT_J                        : int  2 4 32 4 2 8 1 16 8 8 ...
+ $ T1_I                        : int  32 16 64 4 512 1 16 1024 8 32 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.000152 0.116082 0.001002 0.000501 0.000917 ...
+ $ cost_mean                   : num  3.44 0.632 4.894 4.729 2.114 ...
+ $ U_J                         : int  1 1 1 8 19 17 1 14 1 1 ...
+ $ U_I                         : int  15 28 10 1 1 1 30 1 9 25 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "False" "True" "False" "False" ...
+ $ mean_confidence_interval_sup: num  3.44 0.704 4.894 4.729 2.115 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-4_1571609911/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  2048 2048 16 2048 2 1 1024 32 256 2048 ...
+ $ T2_I                        : int  2048 1024 2 512 2048 1024 1024 1 256 1024 ...
+ $ RT_I                        : int  2 32 2 32 4 2 4 4 2 4 ...
+ $ mean_confidence_interval_inf: num  0.635 0.912 1.628 2.137 0.628 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  64 512 8 64 2 1024 32 1 4 32 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "True" "False" ...
+ $ VEC1                        : chr  "False" "False" "True" "False" ...
+ $ SCR                         : chr  "False" "False" "True" "True" ...
+ $ U1_I                        : int  30 2 1 1 24 23 4 18 7 6 ...
+ $ RT_J                        : int  1 2 4 2 32 1 8 16 8 1 ...
+ $ T1_I                        : int  1 32 1 2 16 128 64 4 1 128 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  1.74e-01 5.75e-02 8.23e-05 1.18e-04 2.26e-01 ...
+ $ cost_mean                   : num  0.743 0.948 1.628 2.137 0.768 ...
+ $ U_J                         : int  1 22 1 5 30 7 16 8 23 1 ...
+ $ U_I                         : int  25 1 24 1 1 1 1 1 1 20 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "False" "False" ...
+ $ mean_confidence_interval_sup: num  0.851 0.983 1.628 2.137 0.908 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-5_1571609910/search_space.csv"
+'data.frame':	390 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  256 32 4 512 16 128 1024 1 1024 1024 ...
+ $ T2_I                        : int  1024 4 1 2048 32 128 128 512 1024 2 ...
+ $ RT_I                        : int  32 8 1 2 2 8 1 8 4 2 ...
+ $ mean_confidence_interval_inf: num  0.892 2.269 1.559 4.461 1.521 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  1 16 4 128 1 16 8 1 512 16 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "False" "False" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "True" ...
+ $ SCR                         : chr  "False" "True" "True" "False" ...
+ $ U1_I                        : int  12 22 26 15 7 18 27 6 8 19 ...
+ $ RT_J                        : int  2 4 4 2 2 8 4 16 32 4 ...
+ $ T1_I                        : int  256 2 512 128 16 64 2 16 32 1 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  6.36e-02 1.50e-03 5.93e-05 2.83e-04 1.17e-04 ...
+ $ cost_mean                   : num  0.931 2.27 1.559 4.461 1.521 ...
+ $ U_J                         : int  8 19 1 1 1 1 15 1 2 1 ...
+ $ U_I                         : int  1 1 9 28 3 11 1 16 1 12 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "False" "False" "False" ...
+ $ mean_confidence_interval_sup: num  0.971 2.271 1.559 4.461 1.521 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-6_1571609911/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  2 512 2048 16 16 128 512 1 512 128 ...
+ $ T2_I                        : int  2048 128 1024 1 1024 2048 4 32 128 1 ...
+ $ RT_I                        : int  1 8 8 1 32 16 32 16 8 1 ...
+ $ mean_confidence_interval_inf: num  0.803 0.524 0.763 0.836 0.78 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2 4 8 4 8 64 128 16 512 128 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "False" "True" "False" "False" ...
+ $ VEC1                        : chr  "True" "True" "True" "True" ...
+ $ SCR                         : chr  "False" "True" "False" "False" ...
+ $ U1_I                        : int  9 27 4 4 15 21 27 13 4 18 ...
+ $ RT_J                        : int  4 16 8 16 4 1 2 1 2 8 ...
+ $ T1_I                        : int  16 128 1 32 64 128 1 1 1 4 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.1761 0.1868 0.0439 0.0433 0.0615 ...
+ $ cost_mean                   : num  0.912 0.64 0.79 0.863 0.819 ...
+ $ U_J                         : int  1 1 1 1 1 6 1 1 14 1 ...
+ $ U_I                         : int  27 20 18 16 21 1 2 12 1 15 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  1.021 0.756 0.818 0.889 0.857 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-7_1571609920/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  1 128 2048 2048 256 32 2 1 16 64 ...
+ $ T2_I                        : int  8 64 2048 512 1024 1024 8 512 2048 1 ...
+ $ RT_I                        : int  32 8 4 2 16 8 4 4 2 1 ...
+ $ mean_confidence_interval_inf: num  0.89 0.684 5.854 0.699 1.84 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  32 1 4 512 128 4 2 8 16 32 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "True" "False" "True" ...
+ $ VEC1                        : chr  "False" "False" "False" "True" ...
+ $ SCR                         : chr  "False" "False" "False" "True" ...
+ $ U1_I                        : int  12 25 12 13 19 28 20 5 22 28 ...
+ $ RT_J                        : int  4 4 8 1 1 1 16 8 8 16 ...
+ $ T1_I                        : int  1 8 32 4 1024 128 2 4 1024 1024 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.085373 0.137601 0.000167 0.090542 0.000162 ...
+ $ cost_mean                   : num  0.943 0.77 5.854 0.755 1.84 ...
+ $ U_J                         : int  19 1 22 19 20 26 18 1 1 26 ...
+ $ U_I                         : int  1 5 1 1 1 1 1 16 12 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "True" "True" "False" "True" ...
+ $ mean_confidence_interval_sup: num  0.996 0.855 5.854 0.811 1.84 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-8_1571609910/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  1 2048 32 512 2048 1024 1024 512 1 2 ...
+ $ T2_I                        : int  128 256 128 1024 1024 32 256 256 2048 32 ...
+ $ RT_I                        : int  2 1 1 2 8 32 8 32 2 1 ...
+ $ mean_confidence_interval_inf: num  6.657 2.124 0.896 0.859 4.478 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2 512 8 256 1024 1 1024 2 16 2 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "False" "False" "False" "True" ...
+ $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ SCR                         : chr  "False" "True" "False" "False" ...
+ $ U1_I                        : int  8 24 10 11 3 23 1 1 17 9 ...
+ $ RT_J                        : int  2 4 4 32 1 2 8 2 8 4 ...
+ $ T1_I                        : int  8 1 64 256 1 32 16 2 2 8 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.000211 0.000202 0.018723 0.075573 0.000173 ...
+ $ cost_mean                   : num  6.657 2.124 0.907 0.906 4.478 ...
+ $ U_J                         : int  11 9 1 1 1 8 1 1 29 29 ...
+ $ U_I                         : int  1 1 24 6 8 1 22 19 1 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "False" "False" "True" "True" ...
+ $ mean_confidence_interval_sup: num  6.657 2.124 0.919 0.953 4.478 ...
+ chr "dlmt_spapt_experiments/data/tests/gpr_large_step_size/bicgkernel/xeon_e5_2630_v3_graoully-9_1571609910/search_space.csv"
+'data.frame':	391 obs. of  23 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ T2_J                        : int  2048 256 32 1024 1 1 1024 32 4 1024 ...
+ $ T2_I                        : int  32 512 32 128 32 4 512 32 1024 2048 ...
+ $ RT_I                        : int  8 2 2 8 16 2 2 4 4 8 ...
+ $ mean_confidence_interval_inf: num  5.598 0.734 1.631 1.399 2.356 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  2 32 1 32 2 32 1024 32 1 1 ...
+ $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
+ $ VEC2                        : chr  "True" "False" "True" "True" ...
+ $ VEC1                        : chr  "False" "True" "False" "False" ...
+ $ SCR                         : chr  "False" "True" "True" "True" ...
+ $ U1_I                        : int  30 10 18 25 19 13 1 5 19 7 ...
+ $ RT_J                        : int  8 32 8 1 1 8 1 2 8 2 ...
+ $ T1_I                        : int  2 4 1 16 8 1 64 16 512 1024 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.001966 0.066107 0.000177 0.000143 0.000629 ...
+ $ cost_mean                   : num  5.599 0.775 1.631 1.399 2.357 ...
+ $ U_J                         : int  1 29 1 1 1 17 22 1 1 1 ...
+ $ U_I                         : int  17 1 16 30 9 1 1 1 7 12 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "False" "True" "False" "False" ...
+ $ mean_confidence_interval_sup: num  5.6 0.816 1.631 1.399 2.357 ...
+
 'data.frame':	3480 obs. of  31 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  1024 64 1024 2048 64 1 2048 2048 2048 256 ...
@@ -67051,7 +68236,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	19 obs. of  34 variables:
  $ label_center_y              : num  160 358 208 229 273 193 254 367 162 177 ...
 #+end_example
 
-****** Iterations that found the Best Configuration
+****** Large Steps and Larger Starting Sample                 :noexport:
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
 #+HEADER: :width 13 :height 10
@@ -67153,11 +68338,11 @@ new_plot <- gtable_stack(g1, new_strips)
 grid.draw(new_plot)
 #+END_SRC
 
-#+CAPTION: Iteration where best was found
+#+CAPTION: Results with a starting sample of size 260, steps add the 13 best predictions
 #+LABEL: fig:best-found-new
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-WEB6mM/figureGVnAyW.pdf]]
+[[file:/tmp/babel-WEB6mM/figuretnurLY.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -67205,394 +68390,6 @@ paravance-59 & RS & 0.4758884 & 64 & 16 & 29 & 1 & 2048 & 1 & 27 & 16 & 4 \\
 \end{tabular}
 \end{table}
 #+end_export
-
-****** Eliminated Factors and Fixed Values
-#+HEADER: :results graphics :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10 :exports results
-#+begin_SRC R
-base_size <- 18
-
-ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
-  geom_bar(stat = "Count", show.legend = TRUE) +
-  ylab("Eliminated Terms") +
-  xlab("") +
-  scale_x_discrete() +
-  theme_bw(base_size = base_size) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  guides(fill = guide_legend(nrow = 1)) +
-  scale_fill_brewer(palette = "Set1")
-#+end_SRC
-
-#+CAPTION: Eliminated terms
-#+LABEL: fig:eliminated-terms-new
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figuresZzq4T.pdf]]
-
-****** Fixed Model Terms                                      :noexport:
-******* Combined Experiments                                 :noexport:
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-color_count = length(unique(spread_data$removed_variables))
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
-  geom_bar(stat = "Count", show.legend = FALSE) +
-  geom_text(aes(label = removed_variables),
-            stat = "count",
-            position = position_stack(0.5)) +
-  ylab("Eliminated Terms by Step") +
-  xlab("Steps") +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans")) +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  scale_fill_manual(values = get_palette(color_count))
-#+end_SRC
-
-#+CAPTION: Eliminated terms, step-by-step, for all experiments
-#+LABEL: fig:et-ss-ae
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figurewpm8g4.pdf]]
-
-******* Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-color_count = length(unique(spread_data$removed_variables))
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(stat = "Count", show.legend = FALSE) +
-  geom_text(aes(label = removed_variables),
-            stat = "count",
-            position = position_stack(0.5)) +
-  ylab("Eliminated Terms by Step") +
-  xlab("Steps") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans")) +
-  scale_fill_manual(values = get_palette(color_count))
-#+end_SRC
-
-#+CAPTION: Eliminated terms, step-by-step, by experiment
-#+LABEL: fig:et-ss-be
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
-
-****** Fixed Factors & Values                                 :noexport:
-******* Combined Experiments                                 :noexport:
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-color_count = length(unique(fixed_steps_data$fixed_factors))
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
-  geom_bar(stat = "Count", show.legend = FALSE) +
-  geom_text(aes(label = fixed_factors),
-            stat = "count",
-            position = position_stack(0.5)) +
-  ylab("Fixed Factors by Step") +
-  xlab("Steps") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans")) +
-  scale_fill_manual(values = get_palette(color_count))
-#+end_SRC
-
-#+CAPTION: Fixed factors, step-by-step, for all experiments
-#+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
-
-******* Separate Experiments
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(stat = "Count", show.legend = FALSE) +
-  geom_text(aes(label = fixed_factors),
-            stat = "count",
-            position = position_stack(0.5)) +
-  ylab("Fixed Factors by Step") +
-  xlab("Steps") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans")) +
-  scale_fill_manual(values = get_palette(color_count))
-#+end_SRC
-
-#+CAPTION: Fixed Factors, step-by-step, by experiment
-#+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
-
-****** Fixed Factors & Values in the Explored Spaces
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
-ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
-  geom_jitter(data = subset(search_spaces, correct_result == "True"),
-              aes(x = step, y = cost_mean),
-              width = 0.2, height = 0, alpha = 0.5) +
-  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
-                                         label = fixed_factors),
-            stat = "count",
-            color = "black",
-            position = position_stack(0.5)) +
-  ylab("Execution Time") +
-  xlab("Step") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) # +
-#  scale_colour_manual(name = "",
-#                      values=c("red", "blue", "green", "purple"),
-#                      labels=c("OMP & SCR: False",
-#                               "OMP: True, SCR: False",
-#                               "OMP: False, SCR: True",
-#                               "OMP & SCR: True"))
-#+end_SRC
-
-#+CAPTION: Execution time of Searched Space, step-by-step, by experiment
-#+LABEL: fig:encpnc-ff-ss-be-new
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figuregBzTsF.pdf]]
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-all_parameters_plot_data <- full_data %>%
-  mutate(RT_I = log2(RT_I)) %>%
-  mutate(RT_J = log2(RT_J)) %>%
-  mutate(T1_I = log2(T1_I)) %>%
-  mutate(T2_I = log2(T2_I)) %>%
-  mutate(T1_J = log2(T1_J)) %>%
-  mutate(T2_J = log2(T2_J)) %>%
-  gather("factor", "level", T2_I, T2_J, RT_I,
-         T1_J, U_J, U_I, U1_I,
-         RT_J, T1_I, OMP, SCR, VEC1, VEC2) %>%
-  mutate(level = str_replace(level, "True", "1")) %>%
-  mutate(level = str_replace(level, "False", "0")) %>%
-  mutate(level = as.numeric(level)) %>%
-  subset(technique == "DLMT")
-
-ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
-  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
-  geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 2),
-                quantiles = c(0.01, 0.05, 0.15, 0.25),
-                size = 1,
-                alpha = 0.6,
-                color = "darkgreen") +
-  geom_smooth(method = "lm", color = "blue") +
-  geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
-  theme_bw(base_size = 17)
-#+end_SRC
-
-#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the DLMT runs
-#+LABEL: fig:lm-dlmt-all-new
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurezeShpG.pdf]]
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x = level, y = cost_mean)) +
-  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
-  geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 2),
-                quantiles = c(0.01, 0.05, 0.15, 0.25),
-                size = 1,
-                alpha = 0.6,
-                color = "darkgreen") +
-  geom_smooth(method = "lm", color = "blue") +
-  geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
-  geom_point(data = subset(subset(all_parameters_plot_data, experiment_id == "graoully-16"), cost_mean == min(cost_mean)), size = 2, color = "red") +
-  theme_bw(base_size = 17)
-#+END_SRC
-
-#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the DLMT runs, for \texttt{graoully-16}
-#+LABEL: fig:lm-rs-nobin-g16-new
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurev2Hjmx.pdf]]
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
-all_parameters_plot_data <- full_data %>%
-  mutate(RT_I = log2(RT_I)) %>%
-  mutate(RT_J = log2(RT_J)) %>%
-  mutate(T1_I = log2(T1_I)) %>%
-  mutate(T2_I = log2(T2_I)) %>%
-  mutate(T1_J = log2(T1_J)) %>%
-  mutate(T2_J = log2(T2_J)) %>%
-  gather("factor", "level", T2_I, T2_J, RT_I,
-         T1_J, U_J, U_I, U1_I,
-         RT_J, T1_I, OMP, SCR, VEC1, VEC2) %>%
-  mutate(level = str_replace(level, "True", "1")) %>%
-  mutate(level = str_replace(level, "False", "0")) %>%
-  mutate(level = as.numeric(level)) %>%
-  subset(technique == "RS")
-
-ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
-  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
-  geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 2),
-                quantiles = c(0.01, 0.05, 0.15, 0.25),
-                size = 1,
-                alpha = 0.6,
-                color = "darkgreen") +
-  geom_smooth(method = "lm", color = "blue") +
-  geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
-  theme_bw(base_size = 17)
-#+end_SRC
-
-#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs
-#+LABEL: fig:lm-rs-all-new
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figure25V7aE.pdf]]
-
-******* Combined Experiments                                 :noexport:
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-ggplot(subset(search_spaces, correct_result == "True"),
-       aes(x = as.factor(step), y = cost_mean)) +
-  geom_jitter(width = 0.3, height = 0, alpha = 0.56) +
-  ylab("Execution Time") +
-  xlab("Steps") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank())
-#+end_SRC
-
-#+CAPTION: Execution time of Searched Space, step-by-step, for all experiments
-#+LABEL: fig:encpnc-ff-ss-be
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
-
-****** Predicted Performance at Each Step
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-ggplot(summaries) +
-  geom_path(aes(x = step, y = predicted_best, color = "predicted_best"), size = 1) +
-  geom_point(aes(x = step, y = predicted_best, color = "predicted_best"), size = 2) +
-  geom_path(aes(x = step, y = design_best, color = "design_best"), size = 1) +
-  geom_point(aes(x = step, y = design_best, color = "design_best"), size = 2) +
-  geom_path(aes(x = step, y = current_best, color = "current_best"), size = 1) +
-  geom_point(aes(x = step, y = current_best, color = "current_best"), size = 2) +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  ylab("Execution Time") +
-  xlab("Step") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "top",
-        legend.direction = "horizontal",
-        legend.title = element_blank()) +
-  scale_color_brewer(palette = "Set1")
-#+end_SRC
-
-#+CAPTION: Performance of best points, step-by-step, by experiment
-#+LABEL: fig:nc-predicted-best-new
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurelZvmet.pdf]]
-
-****** D-Optimality
-******* D-Criterion
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-library(ggplot2)
-library(RColorBrewer)
-
-ggplot(summaries) +
-  geom_path(aes(x = step, y = D), size = 1) +
-  geom_point(aes(x = step, y = D), size = 2) +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  ylab("D-Criterion") +
-  xlab("Step") +
-  scale_x_discrete(limits = unique(summaries$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "top",
-        legend.direction = "horizontal",
-        legend.title = element_blank()) +
-  scale_color_brewer(palette = "Set1")
-#+end_SRC
-
-#+CAPTION: D-Criterion, step-by-step, by experiment
-#+LABEL: fig:dc-bp-ss-new
-#+ATTR_LATEX: :width 0.7\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureIgO4Cw.pdf]]
-
-******* D_A-Optimality at Each Step                          :noexport:
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
-color_count = length(unique(design_data_plot$factors))
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
-
-ggplot(design_data_plot, aes(x = factors, y = metric_value, fill = factors)) +
-  facet_grid(id ~ step) +
-  geom_bar(stat = "identity", show.legend = FALSE) +
-  geom_text(aes(x = factors, y = 0.0, label = factors),
-            stat = "identity",
-            hjust = "left",
-            size = 3,
-            angle = 90) +
-  theme_bw(base_size = 17) +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  scale_fill_manual(values = get_palette(color_count))
-#+end_SRC
-
-#+CAPTION: Values of D\textsubscript{A}-Optimality for all model terms, considering the model formula used at each step
-#+LABEL: fig:brices-metric
-#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
-#+RESULTS:
-[[file:/tmp/babel-w5lAu8/figurehpLRFI.pdf]]
 
 *** [2019-10-02 Wed]
 **** Questions for Alfredo
