@@ -71995,7 +71995,6 @@ ggpairs(data)
 **** Improving GPR
 - Compute EI, pick max/min
 - Remove selected experiments from candidate set
-*** [2019-10-28 Mon]
 **** R dplyr =anti_join=
 #+begin_SRC R :results output :session *R*
 library(dplyr)
@@ -72036,3 +72035,13 @@ print(anti_join(x, y))
 : [1] a b c
 : <0
 : (or 0-length row.names)
+** November
+*** [2019-11-08 Fri]
+**** ccslnotebooks temporary users
+|---------+------------------------+-----------------------|
+| user    | temp-pass              | email                 |
+|---------+------------------------+-----------------------|
+| greis   | prancingpony2203       | giullia.reis@usp.br   |
+| guiss   | flutteringkiskadee8810 | guiss@usp.br          |
+| vxavier | loiteringmarmoset6381  | vanessa.xavier@usp.br |
+|---------+------------------------+-----------------------|
