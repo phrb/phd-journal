@@ -70404,7 +70404,8 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
         legend.title = element_blank())
 #+end_SRC
 
-#+CAPTION: A closer look at the data from the previous figure
+#+CAPTION: Execution time of points measured by GPR along the iterations,
+#+CAPTION: a closer look at the data from the previous figure
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
@@ -70467,7 +70468,8 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
         legend.title = element_blank())
 #+end_SRC
 
-#+CAPTION: A closer look at the data from the previous figure
+#+CAPTION: Execution time of points measured by RS along the iterations,
+#+CAPTION: a closer look at the data from the previous figure
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
@@ -70497,7 +70499,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figureuwDx5X.pdf]]
+[[file:/tmp/babel-o88n4X/figurepeNHCe.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 ggplot(complete_plot_data, aes(x = min_run_cost,
@@ -70516,11 +70518,12 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
         legend.title = element_blank())
 #+end_SRC
 
-#+CAPTION: A closer look at the data from the previous figure
+#+CAPTION: Results with a starting sample of size 15, steps add the 13 best predictions,
+#+CAPTION: a closer look at the data from the previous figure
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figureX6kYHn.pdf]]
+[[file:/tmp/babel-o88n4X/figureY9Os9d.pdf]]
 ******* Tests with Expected Improvement                      :noexport:
 ******** Loading Data                                       :noexport:
 #+HEADER: :results output :session *R* :exports none
