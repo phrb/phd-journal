@@ -66570,7 +66570,7 @@ The  complete search  space  that was  available for  sampling,  and the  actual
 performance of the 50 best predictions for  the entire data set are shown in the
 figures below.
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -66613,9 +66613,9 @@ ggplot(plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:gr-lds
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figuregTAZEM.pdf]]
+[[file:/tmp/babel-o88n4X/figureSpx9CK.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 plot_data <- data %>%
   gather("factor", "level", T2_Ie, T2_Je, RT_Ie,
          T1_Je, U_Je, U_Ie, U1_Ie,
@@ -66649,7 +66649,7 @@ ggplot(plot_data, aes(x = level, y = cost_mean)) +
 #+RESULTS:
 [[file:/tmp/babel-20uDoh/figureG2I6WT.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 library(ggplot2)
 library(latex2exp)
 
@@ -66691,7 +66691,7 @@ ggplot(subset(gpr_best_points_complete, iteration == 10)) +
 #+RESULTS:
 [[file:/tmp/babel-20uDoh/figureUs3BBZ.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 library(ggplot2)
 library(latex2exp)
 
@@ -66733,7 +66733,7 @@ ggplot(subset(experiment_data, technique == "GPR")) +
 #+RESULTS:
 [[file:/tmp/babel-20uDoh/figureOecsaB.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 library(ggplot2)
 
 ggplot() +
@@ -70088,6 +70088,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 library(ggplot2)
+library(rPref)
 library(reshape2)
 library(openssl)
 library(RColorBrewer)
@@ -70099,7 +70100,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v0"
+current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1"
 target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 
@@ -70170,7 +70171,7 @@ str(complete_plot_data)
 # data_dir <- "dlmt_spapt_experiments/data/results"
 # data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
 # data_dir <- "dlmt_spapt_experiments/data/results"
-data_dir <- "dlmt_spapt_experiments/data/tests/random_300_graoully"
+data_dir <- "dlmt_spapt_experiments/data/tests/random_300_graoully_debnew"
 #target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 target_dirs <- c("bicgkernel")
 rs_data <- NULL
@@ -70237,130 +70238,135 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	2992 obs. of  32 variables:
+'data.frame':	3011 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  32 256 16 1024 512 1024 32 256 64 512 ...
- $ T2_I                        : int  32 256 2048 2048 256 1024 512 128 64 1024 ...
- $ RT_I                        : int  16 8 16 16 1 4 4 2 2 2 ...
- $ mean_confidence_interval_inf: num  0.415 0.47 0.627 0.443 4.674 ...
+ $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
+ $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
+ $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
+ $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  32 256 2 16 128 16 2 4 16 2 ...
+ $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
- $ VEC2                        : chr  "True" "True" "False" "False" ...
- $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ VEC2                        : chr  "True" "True" "False" "True" ...
+ $ VEC1                        : chr  "False" "False" "True" "True" ...
  $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  23 28 11 13 16 23 29 17 9 12 ...
- $ RT_J                        : int  4 4 2 4 4 8 32 2 16 16 ...
- $ T1_I                        : int  16 32 64 16 4 8 64 2 16 512 ...
+ $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
+ $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
+ $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.14719 0.10439 0.06741 0.11222 0.00741 ...
- $ cost_mean                   : num  0.507 0.535 0.668 0.512 4.679 ...
- $ U_J                         : int  13 1 16 1 12 17 1 1 1 1 ...
- $ U_I                         : int  1 27 1 22 1 1 10 21 9 15 ...
+ $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
+ $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
+ $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
+ $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "True" "True" "True" "True" ...
- $ mean_confidence_interval_sup: num  0.598 0.6 0.71 0.582 4.683 ...
- $ experiment_id               : chr  "graoully-13" "graoully-13" "graoully-13" "graoully-13" ...
+ $ OMP                         : chr  "False" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
+ $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  9.05 8.58 6.86 8.95 0.98 ...
- $ max_run_speedup             : num  11.5 11.5 11.5 11.5 11.5 ...
- $ min_run_cost                : num  0.398 0.398 0.398 0.398 0.398 ...
- $ best_iteration              : num  278 278 278 278 278 278 278 278 278 278 ...
+ $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
+ $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
+ $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
+ $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  298 298 298 298 298 298 298 298 298 298 ...
+ $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	2992 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  32 256 16 1024 512 1024 32 256 64 512 ...
- $ T2_I                        : int  32 256 2048 2048 256 1024 512 128 64 1024 ...
- $ RT_I                        : int  16 8 16 16 1 4 4 2 2 2 ...
- $ mean_confidence_interval_inf: num  0.415 0.47 0.627 0.443 4.674 ...
+ $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
+ $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
+ $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
+ $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  32 256 2 16 128 16 2 4 16 2 ...
+ $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
- $ VEC2                        : chr  "True" "True" "False" "False" ...
- $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ VEC2                        : chr  "True" "True" "False" "True" ...
+ $ VEC1                        : chr  "False" "False" "True" "True" ...
  $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  23 28 11 13 16 23 29 17 9 12 ...
- $ RT_J                        : int  4 4 2 4 4 8 32 2 16 16 ...
- $ T1_I                        : int  16 32 64 16 4 8 64 2 16 512 ...
+ $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
+ $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
+ $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.14719 0.10439 0.06741 0.11222 0.00741 ...
- $ cost_mean                   : num  0.507 0.535 0.668 0.512 4.679 ...
- $ U_J                         : int  13 1 16 1 12 17 1 1 1 1 ...
- $ U_I                         : int  1 27 1 22 1 1 10 21 9 15 ...
+ $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
+ $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
+ $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
+ $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "True" "True" "True" "True" ...
- $ mean_confidence_interval_sup: num  0.598 0.6 0.71 0.582 4.683 ...
- $ experiment_id               : chr  "graoully-13" "graoully-13" "graoully-13" "graoully-13" ...
+ $ OMP                         : chr  "False" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
+ $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  9.05 8.58 6.86 8.95 0.98 ...
- $ max_run_speedup             : num  11.5 11.5 11.5 11.5 11.5 ...
- $ min_run_cost                : num  0.398 0.398 0.398 0.398 0.398 ...
- $ best_iteration              : num  278 278 278 278 278 278 278 278 278 278 ...
+ $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
+ $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
+ $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
+ $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  298 298 298 298 298 298 298 298 298 298 ...
+ $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.62 4.62 4.62 4.62 4.62 ...
- $ label_center_x              : num  0.612 0.612 0.612 0.612 0.612 ...
- $ label_center_y              : num  194 194 194 194 194 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5970 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5993 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  32 256 16 1024 512 1024 32 256 64 512 ...
- $ T2_I                        : int  32 256 2048 2048 256 1024 512 128 64 1024 ...
- $ RT_I                        : int  16 8 16 16 1 4 4 2 2 2 ...
- $ mean_confidence_interval_inf: num  0.415 0.47 0.627 0.443 4.674 ...
+ $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
+ $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
+ $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
+ $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  32 256 2 16 128 16 2 4 16 2 ...
+ $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
- $ VEC2                        : chr  "True" "True" "False" "False" ...
- $ VEC1                        : chr  "True" "True" "True" "False" ...
+ $ VEC2                        : chr  "True" "True" "False" "True" ...
+ $ VEC1                        : chr  "False" "False" "True" "True" ...
  $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  23 28 11 13 16 23 29 17 9 12 ...
- $ RT_J                        : int  4 4 2 4 4 8 32 2 16 16 ...
- $ T1_I                        : int  16 32 64 16 4 8 64 2 16 512 ...
+ $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
+ $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
+ $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.14719 0.10439 0.06741 0.11222 0.00741 ...
- $ cost_mean                   : num  0.507 0.535 0.668 0.512 4.679 ...
- $ U_J                         : int  13 1 16 1 12 17 1 1 1 1 ...
- $ U_I                         : int  1 27 1 22 1 1 10 21 9 15 ...
+ $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
+ $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
+ $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
+ $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "True" "True" "True" "True" ...
- $ mean_confidence_interval_sup: num  0.598 0.6 0.71 0.582 4.683 ...
- $ experiment_id               : chr  "graoully-13" "graoully-13" "graoully-13" "graoully-13" ...
+ $ OMP                         : chr  "False" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
+ $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  9.05 8.58 6.86 8.95 0.98 ...
- $ max_run_speedup             : num  11.5 11.5 11.5 11.5 11.5 ...
- $ min_run_cost                : num  0.398 0.398 0.398 0.398 0.398 ...
- $ best_iteration              : num  278 278 278 278 278 278 278 278 278 278 ...
+ $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
+ $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
+ $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
+ $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  298 298 298 298 298 298 298 298 298 298 ...
+ $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.62 4.62 4.62 4.62 4.62 ...
- $ label_center_x              : num  0.612 0.612 0.612 0.612 0.612 ...
- $ label_center_y              : num  194 194 194 194 194 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 #+end_example
 
 ******** Small Steps and Starting Sample
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
 
+pareto_data <- gpr_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0, NA) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   scale_color_brewer(palette = "Set3") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
@@ -70371,22 +70377,27 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figuremlZDbC.pdf]]
+[[file:/tmp/babel-o88n4X/figurekN2CAV.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
 
+pareto_data <- gpr_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0.35, 0.6) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   scale_color_brewer(palette = "Set3") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
@@ -70397,24 +70408,28 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figure0xDACI.pdf]]
-
+[[file:/tmp/babel-o88n4X/figureMMKE1d.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
 
+pareto_data <- rs_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0, NA) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set3") +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
@@ -70424,23 +70439,29 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figureqkqugT.pdf]]
+[[file:/tmp/babel-o88n4X/figureuypoYn.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
 
+pareto_data <- rs_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
+
 ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0.35, 0.6) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set3") +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
@@ -70450,7 +70471,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figurecuHNnL.pdf]]
+[[file:/tmp/babel-o88n4X/figurekLvqpW.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 ggplot(complete_plot_data, aes(x = min_run_cost,
@@ -70476,7 +70497,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figureKh7VCr.png]]
+[[file:/tmp/babel-o88n4X/figureuwDx5X.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 ggplot(complete_plot_data, aes(x = min_run_cost,
@@ -70499,8 +70520,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figureGVlzVm.pdf]]
-
+[[file:/tmp/babel-o88n4X/figureX6kYHn.pdf]]
 ******* Tests with Expected Improvement                      :noexport:
 ******** Loading Data                                       :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -70510,6 +70530,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 library(ggplot2)
+library(rPref)
 library(reshape2)
 library(openssl)
 library(RColorBrewer)
@@ -70659,6 +70680,39 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘rPref’
+
+The following object is masked from ‘package:dplyr’:
+
+    between
+
+The following objects are masked from ‘package:plyr’:
+
+    empty, true
+
+Attaching package: ‘reshape2’
+
+The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+Registering fonts with R
+
 'data.frame':	3011 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
@@ -70726,9 +70780,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.64 4.64 4.64 4.64 4.64 ...
- $ label_center_x              : num  0.639 0.639 0.639 0.639 0.639 ...
- $ label_center_y              : num  190 190 190 190 190 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5989 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -70763,26 +70817,31 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5989 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.64 4.64 4.64 4.64 4.64 ...
- $ label_center_x              : num  0.639 0.639 0.639 0.639 0.639 ...
- $ label_center_y              : num  190 190 190 190 190 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 #+end_example
 
 ******** Small Steps and Starting Sample
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
 
+pareto_data <- gpr_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0, NA) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   scale_color_brewer(palette = "Set3") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
@@ -70793,22 +70852,27 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figure9iqvMO.pdf]]
+[[file:/tmp/babel-o88n4X/figurefmMmRp.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
 
+pareto_data <- gpr_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0.35, 0.6) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   scale_color_brewer(palette = "Set3") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
@@ -70819,24 +70883,28 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figurev9ykQC.pdf]]
-
+[[file:/tmp/babel-o88n4X/figureMMKE1d.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
 
+pareto_data <- rs_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
 ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0, NA) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set3") +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
@@ -70846,23 +70914,29 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figure03pTr5.pdf]]
+[[file:/tmp/babel-o88n4X/figureuypoYn.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
 
+pareto_data <- rs_plot_data %>%
+  group_by(experiment_id) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
+
 ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
   facet_wrap(experiment_id ~ .) +
   geom_point() +
+  geom_step(data = pareto_data, color = "red") +
   ylim(0.35, 0.6) +
   ylab("Execution Time") +
   xlab("Iteration") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "red") +
-  geom_vline(aes(xintercept = best_iteration, linetype = "Best Iteration"), color = "blue") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set3") +
-  scale_linetype_manual(name = "limit", values = c(2, 2),
-                        guide = guide_legend(override.aes = list(color = c("red", "blue")))) +
+  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
+  scale_linetype_manual(name = "limit", values = c(2),
+                        guide = guide_legend(override.aes = list(color = c("blue")))) +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
@@ -70872,7 +70946,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figurecuHNnL.pdf]]
+[[file:/tmp/babel-o88n4X/figurekLvqpW.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 ggplot(complete_plot_data, aes(x = min_run_cost,
@@ -70898,7 +70972,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figureKQeIsb.pdf]]
+[[file:/tmp/babel-o88n4X/figureSUGLME.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 ggplot(complete_plot_data, aes(x = min_run_cost,
@@ -70921,7 +70995,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-20uDoh/figureWyzjkX.pdf]]
+[[file:/tmp/babel-o88n4X/figuregqlnvn.pdf]]
 
 *** [2019-10-02 Wed]
 **** Questions for Alfredo
@@ -71242,7 +71316,7 @@ automagically extracted.  Provides comparisons with and  beats RS and a  GA on a
 problem. Compares with other frameworks, but gives no detailed information on
 statistical experimental conditions.
 
-Code is open-sourced and there are many useful -- it seems -- tutorials and tests.
+Code is open-sourced and there are many useful tutorials and tests.
 *** [2019-10-23 Wed]
 **** Rejection Sampling with Low Discrepancy Sampling
 ***** Random Sequences
@@ -72038,10 +72112,16 @@ print(anti_join(x, y))
 ** November
 *** [2019-11-08 Fri]
 **** ccslnotebooks temporary users
-|---------+------------------------+-----------------------|
-| user    | temp-pass              | email                 |
-|---------+------------------------+-----------------------|
-| greis   | prancingpony2203       | giullia.reis@usp.br   |
-| guiss   | flutteringkiskadee8810 | guiss@usp.br          |
-| vxavier | loiteringmarmoset6381  | vanessa.xavier@usp.br |
-|---------+------------------------+-----------------------|
+|--------------+------------------------+-----------------------------|
+| user         | temp-pass              | email                       |
+|--------------+------------------------+-----------------------------|
+| greis        | prancingpony2203       | giullia.reis@usp.br         |
+| guiss        | flutteringkiskadee8810 | guiss@usp.br                |
+| vxavier      | loiteringmarmoset6381  | vanessa.xavier@usp.br       |
+| *ecavalcante | frankgopher9281        | edsoncavalcantehp@gmail.com |
+| *gfranca     | elevatedgnu2193        | gui.franca21@usp.br         |
+| *sleone      | finedonkey1927         | stephanie-leone@outlook.com |
+| *lvargas     | largepidgeon1827       | luanacostavargas@usp.br     |
+| *ltartaro    | tarnishedturtle2813    | lucastartaro@usp.br         |
+| *rmoura      | lazydog2938            | raul.agra@usp.br            |
+|--------------+------------------------+-----------------------------|
