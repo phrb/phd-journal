@@ -70238,6 +70238,39 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Attaching package: ‘rPref’
+
+The following object is masked from ‘package:dplyr’:
+
+    between
+
+The following objects are masked from ‘package:plyr’:
+
+    empty, true
+
+Attaching package: ‘reshape2’
+
+The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+Registering fonts with R
+
 'data.frame':	3011 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
@@ -70484,8 +70517,8 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
   ylab("Iteration where Best was Found") +
   xlab("Best Cost in Seconds") +
   geom_vline(aes(xintercept = mean_cost_baseline[1], linetype = "-O3"), color = "black") +
-  #geom_smooth(formula = "y ~ 1",
-  #            method = "lm") +
+  geom_smooth(formula = "y ~ 1",
+              method = "lm") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Dark2") +
   scale_linetype_manual(name = "limit", values = c(2),
@@ -70499,20 +70532,22 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figurepeNHCe.pdf]]
+[[file:/tmp/babel-o88n4X/figureqypW5r.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-ggplot(complete_plot_data, aes(x = min_run_cost,
-                               y = best_iteration,
-                               color = technique)) +
+ggplot(complete_plot_data, aes(y = min_run_cost,
+                               x = best_iteration,
+                               color = technique,
+                               group = technique)) +
+  facet_wrap(technique ~ .) +
   geom_point() +
-  stat_ellipse(type = "t", linetype = 13) +
-  ylab("Iteration where Best was Found") +
-  xlab("Best Cost in Seconds") +
-  #geom_smooth(formula = "y ~ 1",
-  #            method = "lm") +
+  xlab("Iteration where Best was Found") +
+  ylab("Best Cost in Seconds") +
+  geom_smooth(formula = "y ~ 1",
+              method = "lm",
+              level = 0.99) +
   theme_bw(base_size = 18) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
@@ -70523,7 +70558,7 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figureY9Os9d.pdf]]
+[[file:/tmp/babel-o88n4X/figurebM6cci.pdf]]
 ******* Tests with Expected Improvement                      :noexport:
 ******** Loading Data                                       :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -72115,16 +72150,16 @@ print(anti_join(x, y))
 ** November
 *** [2019-11-08 Fri]
 **** ccslnotebooks temporary users
-|--------------+------------------------+-----------------------------|
-| user         | temp-pass              | email                       |
-|--------------+------------------------+-----------------------------|
-| greis        | prancingpony2203       | giullia.reis@usp.br         |
-| guiss        | flutteringkiskadee8810 | guiss@usp.br                |
-| vxavier      | loiteringmarmoset6381  | vanessa.xavier@usp.br       |
-| *ecavalcante | frankgopher9281        | edsoncavalcantehp@gmail.com |
-| *gfranca     | elevatedgnu2193        | gui.franca21@usp.br         |
-| *sleone      | finedonkey1927         | stephanie-leone@outlook.com |
-| *lvargas     | largepidgeon1827       | luanacostavargas@usp.br     |
-| *ltartaro    | tarnishedturtle2813    | lucastartaro@usp.br         |
-| *rmoura      | lazydog2938            | raul.agra@usp.br            |
-|--------------+------------------------+-----------------------------|
+|-------------+------------------------+-----------------------------|
+| user        | temp-pass              | email                       |
+|-------------+------------------------+-----------------------------|
+| greis       | prancingpony2203       | giullia.reis@usp.br         |
+| guiss       | flutteringkiskadee8810 | guiss@usp.br                |
+| vxavier     | loiteringmarmoset6381  | vanessa.xavier@usp.br       |
+| ecavalcante | frankgopher9281        | edsoncavalcantehp@gmail.com |
+| gfranca     | elevatedgnu2193        | gui.franca21@usp.br         |
+| sleone      | finedonkey1927         | stephanie-leone@outlook.com |
+| lvargas     | largepidgeon1827       | luanacostavargas@usp.br     |
+| ltartaro    | tarnishedturtle2813    | lucastartaro@usp.br         |
+| rmoura      | lazydog2938            | raul.agra@usp.br            |
+|-------------+------------------------+-----------------------------|
