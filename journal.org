@@ -72567,18 +72567,37 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 [[file:/tmp/babel-X0G35y/figureanTAEV.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-ggplot(complete_plot_data, aes(y = min_run_cost,
-                               x = best_iteration,
-                               color = technique)) +
+# qt(.975,9)*sd(x)/sqrt(10)
+
+large_plot_data <- complete_plot_data %>%
+  group_by(technique) %>%
+  mutate(mean_runs = mean(min_run_cost)) %>%
+  mutate(sd_runs = sd(min_run_cost)) %>%
+  ungroup()
+
+large_plot_data <- large_plot_data %>%
+  group_by(technique, experiment_id) %>%
+  subset(cost_mean == min_run_cost) %>%
+  ungroup()
+
+ggplot(large_plot_data, aes(y = min_run_cost,
+                            x = best_iteration,
+                            color = technique)) +
   facet_wrap(technique ~ .) +
+  #geom_hline(aes(yintercept = mean_runs), linetype = 3) +
+  geom_smooth(method = "lm",
+              formula = "y ~ 1") +
   geom_point() +
+  # geom_ribbon(aes(ymin = mean_runs - sd_runs,
+  #                 ymax = mean_runs + sd_runs),
+  #             fill = "grey70",
+  #             alpha = 0.4,
+  #             colour = NA) +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1],
-                 linetype = "-O3"),
-             color = "black") +
-  geom_smooth(formula = "y ~ 1",
-              method = "lm") +
+  # geom_hline(aes(yintercept = mean_cost_baseline[1],
+  #                linetype = "-O3"),
+  #            color = "black") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set1") +
   scale_linetype_manual(name = "limit", values = c(2),
@@ -72592,20 +72611,32 @@ ggplot(complete_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurevHSiKp.pdf]]
+[[file:/tmp/babel-X0G35y/figureOYRPaS.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-ggplot(complete_plot_data, aes(y = min_run_cost,
-                               x = best_iteration,
-                               color = technique,
-                               group = technique)) +
+short_plot_data <- complete_plot_data %>%
+  group_by(technique) %>%
+  mutate(mean_runs = mean(min_run_cost)) %>%
+  mutate(sd_runs = sd(min_run_cost)) %>%
+  ungroup()
+
+short_plot_data <- short_plot_data %>%
+  group_by(technique, experiment_id) %>%
+  subset(cost_mean == min_run_cost) %>%
+  ungroup()
+
+ggplot(short_plot_data, aes(y = min_run_cost,
+                            x = best_iteration,
+                            color = technique,
+                            group = technique)) +
   facet_wrap(technique ~ .) +
+  # geom_hline(aes(yintercept = mean_runs), linetype = 3) +
+  # geom_ribbon(aes(ymin = mean_runs - sd_runs, ymax = mean_runs + sd_runs), fill = "grey70", alpha = 0.4, colour = NA) +
+  geom_smooth(method = "lm",
+              formula = "y ~ 1") +
   geom_point() +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
-  geom_smooth(formula = "y ~ 1",
-              method = "lm",
-              level = 0.99) +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom",
@@ -72618,7 +72649,7 @@ ggplot(complete_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureKtrO8e.pdf]]
+[[file:/tmp/babel-X0G35y/figureIbGApH.pdf]]
 ***** Results for =atax=
 ****** Loading Data                                           :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -72772,6 +72803,9 @@ rs_plot_data <- rs_data %>%
 
 complete_plot_data <- bind_rows(filter(plot_data, technique == "GPR"),
                                 rs_plot_data)
+
+complete_plot_data <- complete_plot_data %>%
+  subset(experiment_id != "graoully-7" & experiment_id != "graoully-9")
 
 str(complete_plot_data)
 #+end_SRC
@@ -73133,7 +73167,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1992 obs. of  36 variables:
  $ label_center_x              : num  1.67 1.67 1.67 1.67 1.67 ...
  $ label_center_y              : num  228 228 228 228 228 228 228 228 228 228 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	4593 obs. of  40 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	4046 obs. of  40 variables:
  $ id                          : int  1 2 4 6 7 8 9 10 11 12 ...
  $ T2_K                        : int  1 512 1024 32 256 1024 2048 256 512 4 ...
  $ T2_J                        : int  1024 32 16 1024 2048 8 512 128 64 1 ...
@@ -73208,7 +73242,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureLI0R2V.pdf]]
+[[file:/tmp/babel-X0G35y/figureEjIQ75.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -73242,7 +73276,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure9zQm0M.pdf]]
+[[file:/tmp/babel-X0G35y/figureusnvIV.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -73309,23 +73343,33 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 [[file:/tmp/babel-X0G35y/figureyY8E7P.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-complete_plot_data_copy <- complete_plot_data
+large_plot_data <- complete_plot_data %>%
+  group_by(technique) %>%
+  mutate(mean_runs = mean(min_run_cost)) %>%
+  mutate(sd_runs = sd(min_run_cost)) %>%
+  ungroup()
 
-complete_plot_data_copy$mean_cost_baseline <- mean(subset(complete_plot_data,
-                                                          technique == "RS")$mean_cost_baseline)
+large_plot_data$mean_cost_baseline <- subset(large_plot_data, technique == "RS")$mean_cost_baseline[[1]]
 
-ggplot(complete_plot_data_copy, aes(y = min_run_cost,
-                               x = best_iteration,
-                               color = technique)) +
+large_plot_data <- large_plot_data %>%
+  group_by(technique, experiment_id) %>%
+  subset(cost_mean == min_run_cost) %>%
+  ungroup()
+
+ggplot(large_plot_data, aes(y = min_run_cost,
+                            x = best_iteration,
+                            color = technique)) +
   facet_wrap(technique ~ .) +
+  # geom_hline(aes(yintercept = mean_runs), linetype = 3) +
+  # geom_ribbon(aes(ymin = mean_runs - sd_runs, ymax = mean_runs + sd_runs), fill = "grey70", alpha = 0.4, colour = NA) +
+  geom_smooth(method = "lm",
+              formula = "y ~ 1") +
   geom_point() +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
   geom_hline(aes(yintercept = mean_cost_baseline[1],
                  linetype = "-O3"),
              color = "black") +
-  geom_smooth(formula = "y ~ 1",
-              method = "lm") +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set1") +
   scale_linetype_manual(name = "limit", values = c(2),
@@ -73339,20 +73383,32 @@ ggplot(complete_plot_data_copy, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurezuVv31.pdf]]
+[[file:/tmp/babel-X0G35y/figureENgZfa.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-ggplot(complete_plot_data, aes(y = min_run_cost,
-                               x = best_iteration,
-                               color = technique,
-                               group = technique)) +
+short_plot_data <- complete_plot_data %>%
+  group_by(technique) %>%
+  mutate(mean_runs = mean(min_run_cost)) %>%
+  mutate(sd_runs = sd(min_run_cost)) %>%
+  ungroup()
+
+short_plot_data <- short_plot_data %>%
+  group_by(technique, experiment_id) %>%
+  subset(cost_mean == min_run_cost) %>%
+  ungroup()
+
+ggplot(short_plot_data, aes(y = min_run_cost,
+                            x = best_iteration,
+                            color = technique,
+                            group = technique)) +
   facet_wrap(technique ~ .) +
+  # geom_hline(aes(yintercept = mean_runs), linetype = 3) +
+  # geom_ribbon(aes(ymin = mean_runs - sd_runs, ymax = mean_runs + sd_runs), fill = "grey70", alpha = 0.4, colour = NA) +
+  geom_smooth(method = "lm",
+              formula = "y ~ 1") +
   geom_point() +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
-  geom_smooth(formula = "y ~ 1",
-              method = "lm",
-              level = 0.99) +
   theme_bw(base_size = 18) +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom",
@@ -73365,7 +73421,7 @@ ggplot(complete_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure0GevPc.pdf]]
+[[file:/tmp/babel-X0G35y/figureIpol6R.pdf]]
 ***** Tests with Expected Improvement                          :noexport:
 ****** Loading Data                                           :noexport:
 #+HEADER: :results output :session *R* :exports none
