@@ -72150,21 +72150,24 @@ print(anti_join(x, y))
 ** November
 *** [2019-11-08 Fri]
 **** ccslnotebooks temporary users
-|-------------+------------------------+-----------------------------|
-| user        | temp-pass              | email                       |
-|-------------+------------------------+-----------------------------|
-| greis       | prancingpony2203       | giullia.reis@usp.br         |
-| guiss       | flutteringkiskadee8810 | guiss@usp.br                |
-| vxavier     | loiteringmarmoset6381  | vanessa.xavier@usp.br       |
-| ecavalcante | frankgopher9281        | edsoncavalcantehp@gmail.com |
-| gfranca     | elevatedgnu2193        | gui.franca21@usp.br         |
-| sleone      | finedonkey1927         | stephanie-leone@outlook.com |
-| lvargas     | largepidgeon1827       | luanacostavargas@usp.br     |
-| ltartaro    | tarnishedturtle2813    | lucastartaro@usp.br         |
-| rmoura      | lazydog2938            | raul.agra@usp.br            |
-| gkenji      | vicariousfly1729       | gukenji14@usp.br            |
-| ggoldenberg | troubledparrot1837     | giovannagoldenberg@usp.br   |
-|-------------+------------------------+-----------------------------|
+|-------------+------------------------+-------------------------------|
+| user        | temp-pass              | email                         |
+|-------------+------------------------+-------------------------------|
+| greis       | prancingpony2203       | giullia.reis@usp.br           |
+| guiss       | flutteringkiskadee8810 | guiss@usp.br                  |
+| vxavier     | loiteringmarmoset6381  | vanessa.xavier@usp.br         |
+| ecavalcante | frankgopher9281        | edsoncavalcantehp@gmail.com   |
+| gfranca     | elevatedgnu2193        | gui.franca21@usp.br           |
+| sleone      | finedonkey1927         | stephanie-leone@outlook.com   |
+| lvargas     | largepidgeon1827       | luanacostavargas@usp.br       |
+| ltartaro    | tarnishedturtle2813    | lucastartaro@usp.br           |
+| rmoura      | lazydog2938            | raul.agra@usp.br              |
+| gkenji      | vicariousfly1729       | gukenji14@usp.br              |
+| ggoldenberg | troubledparrot1837     | giovannagoldenberg@usp.br     |
+| +lmiranda   | colorfuleel1823        | luiza.mendonca.miranda@usp.br |
+| +bbouquerel | hardenedkitten1029     | bb.bouquerel@usp.br           |
+| +psilva     | lopsidedlizard2941     | paulo2.silva@usp.br           |
+|-------------+------------------------+-------------------------------|
 *** [2019-11-25 Mon]
 **** Gaussian Process Regression on SPAPT kernels      :ExportableReports:
 :PROPERTIES:
@@ -72204,7 +72207,8 @@ data <- NULL
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    print(csv_file)
+    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -72329,7 +72333,25 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	3011 obs. of  32 variables:
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-11_1573093618/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-14_1574882926/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-15_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-15_1574882926/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-16_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-16_1574882927/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-3_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-4_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-4_1574882926/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-5_1573093618/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-5_1574882926/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-6_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-7_1573093618/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-7_1574882926/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-8_1573093617/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-8_1574882925/search_space.csv"
+[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-9_1573093618/search_space.csv"
+
+'data.frame':	5112 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -72353,7 +72375,7 @@ str(complete_plot_data)
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -72363,7 +72385,7 @@ str(complete_plot_data)
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -72387,7 +72409,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -72400,7 +72422,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
  $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5993 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	8094 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -72424,7 +72446,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5993 obs. of  35 variables:
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -72468,7 +72490,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurePtk1dR.pdf]]
+[[file:/tmp/babel-X0G35y/figure6Drjgj.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -72611,7 +72633,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureOYRPaS.pdf]]
+[[file:/tmp/babel-X0G35y/figurew9g8ym.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
