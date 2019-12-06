@@ -40060,14 +40060,14 @@ formulas <- bind_rows(lapply(formulas_files, read_formula))
 
 names(formulas) <- c("formula", "id", "step")
 
-design_data <- inner_join(designs, formulas)
-
-design_data_plot <- design_data %>%
-  group_by(id, step) %>%
-  do(compute_factor_efficiencies(.)) %>%
-  ungroup()
-
-str(design_data_plot)
+# design_data <- inner_join(designs, formulas)
+#
+# design_data_plot <- design_data %>%
+#   group_by(id, step) %>%
+#   do(compute_factor_efficiencies(.)) %>%
+#   ungroup()
+#
+# str(design_data_plot)
 #+end_SRC
 
 #+RESULTS:
@@ -40151,27 +40151,6 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  34 variables:
  $ mean_cost_baseline          : num  5.79 5.79 5.79 5.79 5.79 ...
  $ label_center_x              : num  1.36 1.36 1.36 1.36 1.36 ...
  $ label_center_y              : num  49 49 49 49 49 ...
-
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-50_1537463780/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-50_1537466671/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537463771/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-51_1537466499/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-52_1537463781/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-52_1537466679/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-53_1537463765/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-53_1537466910/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-54_1537463776/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-54_1537467091/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-55_1537463780/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-55_1537466511/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-56_1537463776/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-56_1537467164/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-57_1537463776/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-57_1537466531/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-58_1537463762/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-58_1537467080/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-59_1537463775/search_space.csv"
-[1] "dlmt_spapt_experiments/data/results/bicgkernel/xeon_e5_2630_v3_paravance-59_1537466644/search_space.csv"
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  34 variables:
  $ id                          : int  20 48 24 34 36 78 39 39 96 58 ...
@@ -40283,13 +40262,6 @@ I(RT_I ^ 2) +"| __truncated__ ...
  $ experiment_id               : chr  "graoully-13" "graoully-13" "graoully-13" "graoully-13" ...
 
 There were 39 warnings (use warnings() to see them)
-
-Joining, by = c("id", "step")
-
-Error in solve.default((t(X) %*% X)/nrow(X)) :
-  system is computationally singular: reciprocal condition number = 2.03271e-18
-
-Error in str(design_data_plot) : object 'design_data_plot' not found
 #+end_example
 
 ****** Iterations that found the Best Configuration
@@ -40322,8 +40294,8 @@ it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
 
 p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     facet_wrap(facet ~ ., ncol = 4) +
-    geom_point(size = 2, pch = 19) +
-    stat_ellipse(type = "t", linetype = 13) +
+    geom_point(size = 3, pch = 19) +
+    stat_ellipse(size = 1, type = "t", linetype = 13) +
     #geom_label_repel(data = . %>% group_by(application) %>%
     #                              filter(technique == "RS") %>%
     #                              filter(best_iteration == min(best_iteration)),
@@ -40337,11 +40309,11 @@ p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     ylab("Iteration where Best was Found") +
     xlab("Best Cost in Seconds") +
     guides(color = guide_legend(reverse = TRUE)) +
-    theme_bw(base_size = 17) +
+    theme_bw(base_size = 26) +
     theme(legend.position = "bottom",
           legend.direction = "horizontal",
           legend.title = element_blank(),
-          text = element_text(family = "serif"),
+          text = element_text(family = "sans"),
           strip.background = element_rect(fill = "white"),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
     #scale_color_brewer(palette = "Set1")
@@ -40351,8 +40323,8 @@ dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
                 facet_wrap(facet ~ ., scale = "free", ncol = 4) +
                 geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
                                               ymin = -Inf, ymax = Inf) +
-                theme_minimal(base_size = 17) +
-                theme(text = element_text(family = "serif"),
+                theme_minimal(base_size = 25) +
+                theme(text = element_text(family = "sans"),
                       legend.position = "bottom",
                       legend.direction = "horizontal",
                       legend.title = element_blank(),
@@ -40397,7 +40369,7 @@ grid.draw(new_plot)
 #+LABEL: fig:best-found-new
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureazAWUy.pdf]]
+[[file:/tmp/babel-X0G35y/figurey1PYnd.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -40472,7 +40444,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+LABEL: fig:eliminated-terms-new
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figuresZzq4T.pdf]]
+[[file:/tmp/babel-X0G35y/figurebCBwge.pdf]]
 
 ****** Fixed Model Terms                                      :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -40528,7 +40500,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:et-ss-be
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
+[[file:/tmp/babel-X0G35y/figureUhUeKM.pdf]]
 
 ****** Fixed Factors & Values                                 :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -40556,7 +40528,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureALkZR6.pdf]]
+[[file:/tmp/babel-X0G35y/figureNOlp8P.pdf]]
 
 ******* Separate Experiments
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
@@ -40584,7 +40556,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 #+LABEL: fig:encpnc-ff-ss-be
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
+[[file:/tmp/babel-X0G35y/figurequjJQK.pdf]]
 
 ****** Fixed Factors & Values in the Explored Spaces
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
@@ -40630,7 +40602,7 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figuregBzTsF.pdf]]
+[[file:/tmp/babel-X0G35y/figure6USq4J.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -40667,7 +40639,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-all-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurezeShpG.pdf]]
+[[file:/tmp/babel-X0G35y/figurerNJ49T.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x = level, y = cost_mean)) +
@@ -40689,7 +40661,7 @@ ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x =
 #+LABEL: fig:lm-rs-nobin-g16-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurev2Hjmx.pdf]]
+[[file:/tmp/babel-X0G35y/figure4ryOpc.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -40726,7 +40698,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-rs-all-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figure25V7aE.pdf]]
+[[file:/tmp/babel-X0G35y/figureCcs50s.pdf]]
 
 ******* Combined Experiments                                 :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
@@ -40780,7 +40752,7 @@ ggplot(summaries) +
 #+LABEL: fig:nc-predicted-best-new
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurelZvmet.pdf]]
+[[file:/tmp/babel-X0G35y/figureB8KCO5.pdf]]
 
 ****** D-Optimality
 ******* D-Criterion
@@ -40807,7 +40779,7 @@ ggplot(summaries) +
 #+LABEL: fig:dc-bp-ss-new
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureIgO4Cw.pdf]]
+[[file:/tmp/babel-X0G35y/figurekA5QNA.pdf]]
 
 ******* D_A-Optimality at Each Step                           :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 22 :exports results
@@ -50732,167 +50704,6 @@ dos resultados e da formatação do documento.
 - Case where prediction was better than design point
 - Super point from RS at Section 3
   - Improve designs instead of restarting
-*** [2019-09-15 Sun]
-**** Descrição dos Investimentos no Projeto
-O orçamento total alocado ao projeto  é R$160.000,00. As seções seguintes apresentam
-cenários possíveis  com diferentes  números de  bolsas de  Iniciação Científica,
-Doutorado,  e Mestrado.
-
-***** Valores de Bolsas, com Viagens                           :noexport:
-#+ATTR_LATEX: :booktabs true :align lrr
-|--------------------+-------+------------+----------------|
-| Bolsas             | Valor | Quantidade | Total/Mês (R$) |
-|--------------------+-------+------------+----------------|
-| IC                 |   400 |          1 |            400 |
-| Mestrado           |  1500 |          3 |           4500 |
-| Doutorado          |  2200 |          1 |           2200 |
-| Doutorado + Gestão |  4500 |          1 |           4500 |
-| Coordenador        |  3000 |          1 |           3000 |
-|--------------------+-------+------------+----------------|
-| Total/Mês          |       |          7 |          14600 |
-| Total/Projeto      |       |            |         116800 |
-| Total + Desp.      |       |            |        155760. |
-|--------------------+-------+------------+----------------|
-#+TBLFM: $4=($2 * $3)::@7$3=vsum(@2..@6)::@7$4=vsum(@2..@6)::@8$4=(@7$4 * 8)::@9$4=((@8$4 + 13000) * 1.2)
-
-***** Adaptando ao PT
-****** Recursos Humanos Direto
-|--------------------+--------------+------------------+-------------+-----------+----------------+--------------+-------------|
-| Papel              | Escolaridade | Horas por Semana | Mês Inicial | Mês Final | Custo por Hora | Total Mensal | Total Anual |
-|--------------------+--------------+------------------+-------------+-----------+----------------+--------------+-------------|
-| Doutorando         | Mestrado     |               20 | 01/2020     | 08/2020   |      26.190476 |         2200 |      17600. |
-| Doutorando         | Mestrado     |               20 | 01/2020     | 08/2020   |      26.190476 |         2200 |      17600. |
-| Doutorando         | Mestrado     |               35 | 01/2020     | 08/2020   |      21.258503 |         3125 |      25000. |
-| Mestrando          | Graduação    |               20 | 01/2020     | 08/2020   |      17.857143 |         1500 |      12000. |
-| Mestrando          | Graduação    |               20 | 01/2020     | 08/2020   |      17.857143 |         1500 |      12000. |
-| Gerente de Projeto | Mestrado     |               10 | 01/2020     | 08/2020   |      35.714286 |         1500 |      12000. |
-| Coordenador        | Doutorado    |               15 | 01/2020     | 08/2020   |      47.619048 |         3000 |      24000. |
-|--------------------+--------------+------------------+-------------+-----------+----------------+--------------+-------------|
-| Total RH Direto    |              |                  |             |           |                |        15025 |     120200. |
-|--------------------+--------------+------------------+-------------+-----------+----------------+--------------+-------------|
-#+TBLFM: @2$6..@8$6=($7 / ($3 * 4.2))::$8=($7 * 8.0)::@9$7=vsum(@2..@8)
-
-****** Consolidação dos Investimentos nas Linhas de P&D
-A tabela abaixo consolida os valores apresentados nos itens anteriores.
-
-|---------------------+------------+-------------|
-| Item                | Custo (R$) | Porcentagem |
-|---------------------+------------+-------------|
-| RH Direto           |     120200 |   90.240240 |
-| Viagens             |      13000 |   9.7597598 |
-|---------------------+------------+-------------|
-| Total Despesas      |     133200 |             |
-| Despesas Incorridas |     26640. |         20. |
-|---------------------+------------+-------------|
-| Total               |    159840. |             |
-|---------------------+------------+-------------|
-#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
-
-****** Cronograma de Desembolsos
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-| Item                | Jan/2020 | Fev/2020 | Mar/2020 | Abr/2020 | Mai/2020 | Jun/2020 | Jul/2020 | Ago/2020 |   Total |
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-| RH Direto           |   15025. |   15025. |   15025. |   15025. |   15025. |   15025. |   15025. |   15025. | 120200. |
-| Viagens             |        0 |        0 |     6500 |        0 |        0 |     6500 |        0 |        0 |   13000 |
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-| Total Despesas      |   15025. |   15025. |   21525. |   15025. |   15025. |   21525. |   15025. |   15025. | 133200. |
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-| Despesas Incorridas |    3005. |    3005. |    4305. |    3005. |    3005. |    4305. |    3005. |    3005. |  26640. |
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-| Total               |   18030. |   18030. |   25830. |   18030. |   18030. |   25830. |   18030. |   18030. | 159840. |
-|---------------------+----------+----------+----------+----------+----------+----------+----------+----------+---------|
-#+TBLFM: $10=vsum($2..$9)::@2$2..@2$9=(120200 / 8.0)::@4$2..@4$9=(@2 + @3)::@5$2..@5$9=(0.2 * @4)::@6$2..@6$9=(@4 + @5)
-
-
-***** Cenário 1
-- 2 Bolsas de Mestrado
-- 3 Bolsas de Doutorado
-- 1 Gestor de Projeto
-- 1 Coordenador de Projeto
-- 2 Apresentações de Artigo em Conferência
-
-#+CAPTION: Orçamento no Cenário 1
-#+ATTR_LATEX: :booktabs true :align lrr
-|---------------------+------------+-------------|
-| Item                | Custo (R$) | Porcentagem |
-|---------------------+------------+-------------|
-| RH Direto           |     119200 |   90.166415 |
-| Viagens             |      13000 |   9.8335855 |
-|---------------------+------------+-------------|
-| Total Despesas      |     132200 |             |
-| Despesas Incorridas |     26440. |         20. |
-|---------------------+------------+-------------|
-| Total               |    158640. |             |
-|---------------------+------------+-------------|
-#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
-
-***** Cenário 2
-- 2 Bolsas de Iniciação Científica
-- 4 Bolsas de Doutorado
-- 1 Gestor de Projeto
-- 1 Coordenador de Projeto
-- 2 Apresentações de Artigo em Conferência
-
-#+CAPTION: Orçamento no Cenário 2
-#+ATTR_LATEX: :booktabs true :align lrr
-|---------------------+------------+-------------|
-| Item                | Custo (R$) | Porcentagem |
-|---------------------+------------+-------------|
-| RH Direto           |     119200 |   90.166415 |
-| Viagens             |      13000 |   9.8335855 |
-|---------------------+------------+-------------|
-| Total Despesas      |     132200 |             |
-| Despesas Incorridas |     26440. |         20. |
-|---------------------+------------+-------------|
-| Total               |    158640. |             |
-|---------------------+------------+-------------|
-#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
-
-***** Cenário 3
-- 1 Bolsa de Iniciação Científica
-- 3 Bolsas de Mestrado
-- 2 Bolsas de Doutorado
-- 1 Gestor de Projeto
-- 1 Coordenador de Projeto
-- 2 Apresentações de Artigo em Conferência
-
-#+CAPTION: Orçamento no Cenário 3
-#+ATTR_LATEX: :booktabs true :align lrr
-|---------------------+------------+-------------|
-| Item                | Custo (R$) | Porcentagem |
-|---------------------+------------+-------------|
-| RH Direto           |     116800 |   88.350983 |
-| Viagens             |      13000 |   9.8335855 |
-|---------------------+------------+-------------|
-| Total Despesas      |     129800 |             |
-| Despesas Incorridas |     25960. |         20. |
-|---------------------+------------+-------------|
-| Total               |    155760. |             |
-|---------------------+------------+-------------|
-#+TBLFM: @2$3=(100 * (@2$2 / @4$2))::@3$3=(100 * (@3$2 / @4$2))::@4$2=(@2$2 + @3$2)::@5$2=(@4$2 * 0.2)::@5$3=(100 * (@5$2 / @4$2))::@6$2=(@4$2 + @5$2)
-
-***** Calculando Orçamento                                     :noexport:
-#+begin_SRC jupyter-python :results output :session py :async yes
-meses = 7
-doc = 5
-coord = 3
-viagem = 6.5
-overhead = 0.2
-machine = 15
-total = (meses * (doc + coord)) + (2 * viagem) + (machine)
-total_overhead = total * overhead
-
-print("Total: {0}".format(total))
-print("Overhead: {0}".format(total_overhead))
-print("Total + Overhead: {0}".format(total + total_overhead))
-print((meses * (doc + coord)))
-#+end_SRC
-
-#+RESULTS:
-: Total: 84.0
-: Overhead: 16.8
-: Total + Overhead: 100.8
-: 56
 *** [2019-09-20 Fri]
 **** =quantreg= in R
 #+begin_SRC R :results output :session *R*
@@ -66134,6 +65945,12 @@ str(design_data_plot)
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘tidyr’
+
+The following object is masked from ‘package:reshape2’:
+
+    smiths
+
 'data.frame':	87 obs. of  3 variables:
  $ removed_variables: Factor w/ 21 levels "","OMP","SCR",..: 1 2 6 3 8 12 1 4 2 5 ...
  $ step             : int  1 2 2 2 2 2 3 4 1 1 ...
@@ -66332,6 +66149,158 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	739 obs. of  4 variables:
  $ id          : chr  "paravance-44" "paravance-44" "paravance-44" "paravance-44" ...
  $ step        : num  1 1 1 1 1 1 1 1 1 1 ...
 #+end_example
+****** Gaussian Process within an Interpolated Subspace
+#+begin_SRC R :results output :session *R* :exports none :eval no-export
+library(dplyr)
+library(tidyr)
+
+new_plot_data <- rs_data %>%
+  subset(technique == "RS" &
+         application == "bicgkernel" &
+         OMP == "True" &
+         SCR == "True") %>%
+  group_by(U_I, RT_J) %>%
+  mutate(averaged_effects = mean(cost_mean)) %>%
+  ungroup() %>%
+  select(U_I, RT_I, averaged_effects) %>%
+  #mutate(RT_I = log2(RT_I)) %>%
+  # mutate(U_I = (U_I - 14.5) / 14.5,
+  #        RT_I = (log2(RT_I) - 2.5) / 2.5)
+  distinct()
+
+str(new_plot_data)
+#+end_SRC
+
+#+RESULTS:
+:
+: Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	327 obs. of  3 variables:
+:  $ U_I             : int  1 5 1 14 1 1 21 5 8 16 ...
+:  $ RT_I            : int  4 8 2 2 8 2 8 16 8 8 ...
+:  $ averaged_effects: num  0.781 0.74 0.788 0.768 0.789 ...
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results :eval no-export
+library(lattice)
+library(akima)
+library(RColorBrewer)
+
+interpolated_data <- with(new_plot_data, interp(x = U_I,
+                                                y = RT_I,
+                                                z = averaged_effects,
+                                                nx = 30,
+                                                ny = 6,
+                                                duplicate = "mean"))
+
+new_design <- data.frame(interp2xyz(interpolated_data))
+names(new_design) <- c("U_I", "RT_I", "averaged_effects")
+
+# colors = colorRampPalette(c("red", "yellow", "blue", "green"))(100)
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(averaged_effects ~ U_I * RT_I,
+          data = new_design,
+          xlab = "Unrolling",
+          ylab = "Tiling",
+          zlab = list("Execution Time (s)",
+                      rot = "90"),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 140, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-X0G35y/figurebNbotg.pdf]]
+
+#+begin_SRC R :results output :session *R*
+library(DiceKriging)
+library(dplyr)
+
+new_design <- data.frame(interp2xyz(interpolated_data))
+names(new_design) <- c("U_I", "RT_I", "averaged_effects")
+
+sampled_design <- sample_n(new_design, 18)
+
+m1 <- km(design = select(sampled_design, -averaged_effects),
+         response = sampled_design$averaged_effects)
+
+pm1 <- predict(m1, select(new_design, U_I, RT_I), "UK")
+new_design$prediction <- pm1$mean - (2 * pm1$sd)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~1
+,* covariance model :
+  - type :  matern5_2
+  - nugget : NO
+  - parameters lower bounds :  1e-10 1e-10
+  - parameters upper bounds :  56 62
+  - best initial criterion value(s) :  28.17994
+
+N = 2, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=       -28.18  |proj g|=       2.3097
+At iterate     1  f =      -29.028  |proj g|=       0.71226
+At iterate     2  f =      -29.101  |proj g|=       0.14511
+At iterate     3  f =      -29.105  |proj g|=      0.084667
+At iterate     4  f =      -29.108  |proj g|=      0.083307
+At iterate     5  f =      -29.127  |proj g|=       0.23413
+At iterate     6  f =      -29.163  |proj g|=       0.46335
+At iterate     7  f =      -29.256  |proj g|=       0.80591
+At iterate     8  f =      -29.401  |proj g|=        1.0419
+At iterate     9  f =       -29.53  |proj g|=       0.65761
+At iterate    10  f =      -29.587  |proj g|=      0.052594
+At iterate    11  f =      -29.588  |proj g|=     0.0010694
+At iterate    12  f =      -29.588  |proj g|=    0.00029406
+At iterate    13  f =      -29.588  |proj g|=    1.4673e-06
+
+iterations 13
+function evaluations 15
+segments explored during Cauchy searches 13
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 1.4673e-06
+final function value -29.5877
+
+F = -29.5877
+final  value -29.587662
+converged
+#+end_example
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
+library(lattice)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(prediction ~ U_I * RT_I,
+          data = new_design,
+          xlab = "Unrolling",
+          ylab = "Tiling",
+          zlab = list("Execution Time (s)",
+                      rot = "90"),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 140, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+ATTR_LATEX: :width 0.5\textwidth :placement [H]
+#+RESULTS:
+[[file:/tmp/babel-X0G35y/figure3VuqPW.pdf]]
+
 ****** Gaussian Process Regression with =DiceKriging=           :noexport:
 #+begin_SRC R :results output :session *R* :exports none :eval no-export
 library(dplyr)
