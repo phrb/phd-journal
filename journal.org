@@ -40148,9 +40148,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  34 variables:
  $ best_iteration              : num  20 48 24 34 36 78 39 39 96 58
  $ points                      : int  81 90 81 63 95 90 89 48 97 92
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  5.79 5.79 5.79 5.79 5.79 ...
- $ label_center_x              : num  1.36 1.36 1.36 1.36 1.36 ...
- $ label_center_y              : num  49 49 49 49 49 ...
+ $ mean_cost_baseline          : num  5.78 5.78 5.79 5.78 5.78 ...
+ $ label_center_x              : num  1.26 1.24 1.47 1.46 1.22 ...
+ $ label_center_y              : num  20 48 24 34 36 78 39 39 96 58
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  34 variables:
  $ id                          : int  20 48 24 34 36 78 39 39 96 58 ...
@@ -40184,9 +40184,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  34 variables:
  $ best_iteration              : num  20 48 24 34 36 78 39 39 96 58 ...
  $ points                      : int  81 90 81 63 95 90 89 48 97 92 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  5.79 5.79 5.79 5.79 5.79 ...
- $ label_center_x              : num  1.36 1.36 1.36 1.36 1.36 ...
- $ label_center_y              : num  49 49 49 49 49 ...
+ $ mean_cost_baseline          : num  5.78 5.78 5.79 5.78 5.78 ...
+ $ label_center_x              : num  1.26 1.24 1.47 1.46 1.22 ...
+ $ label_center_y              : num  20 48 24 34 36 78 39 39 96 58 ...
 
 'data.frame':	51 obs. of  17 variables:
  $ id                     : int  1 1 1 1 1 1 1 1 1 1 ...
@@ -40267,7 +40267,7 @@ There were 39 warnings (use warnings() to see them)
 ****** Iterations that found the Best Configuration
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10
+#+HEADER: :width 9 :height 9
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -40310,7 +40310,7 @@ p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     xlab("Best Cost in Seconds") +
     guides(color = guide_legend(reverse = TRUE)) +
     theme_bw(base_size = 26) +
-    theme(legend.position = "bottom",
+    theme(legend.position = c(0.5, 0.5),
           legend.direction = "horizontal",
           legend.title = element_blank(),
           text = element_text(family = "sans"),
@@ -40325,7 +40325,7 @@ dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
                                               ymin = -Inf, ymax = Inf) +
                 theme_minimal(base_size = 25) +
                 theme(text = element_text(family = "sans"),
-                      legend.position = "bottom",
+                      legend.position = c(0.5, 0.5),
                       legend.direction = "horizontal",
                       legend.title = element_blank(),
                       plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
@@ -40369,7 +40369,7 @@ grid.draw(new_plot)
 #+LABEL: fig:best-found-new
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurey1PYnd.pdf]]
+[[file:/tmp/babel-X0G35y/figureGj8mAe.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -40559,31 +40559,32 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 [[file:/tmp/babel-X0G35y/figurequjJQK.pdf]]
 
 ****** Fixed Factors & Values in the Explored Spaces
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 8 :height 8 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
 color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
-get_palette = colorRampPalette(brewer.pal(9, "Set1"))
+get_palette = colorRampPalette(brewer.pal(9, "Pastel1"))
 
        # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
   facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+  geom_bar(data = subset(fixed_steps_data, experiment_id == "graoully-3"), aes(x = step + 0.5, fill = fixed_factors),
            stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
-  geom_jitter(data = subset(search_spaces, correct_result == "True"),
-              aes(x = step, y = cost_mean),
-              width = 0.2, height = 0, alpha = 0.5) +
-  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
+  geom_jitter(data = subset(search_spaces, correct_result == "True" & experiment_id == "graoully-3"),
+              aes(x = step, y = cost_mean), size = 3,
+              width = 0.2, height = 0, alpha = 0.6) +
+  geom_text(data = subset(fixed_steps_data, experiment_id == "graoully-3"), aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
+            sizer = 22,
             color = "black",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
   scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 22) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
@@ -40602,7 +40603,7 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure6USq4J.pdf]]
+[[file:/tmp/babel-X0G35y/figureQZZTlS.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -40639,7 +40640,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-all-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurerNJ49T.pdf]]
+[[file:/tmp/babel-X0G35y/figureSHJRg0.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x = level, y = cost_mean)) +
@@ -40661,7 +40662,7 @@ ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x =
 #+LABEL: fig:lm-rs-nobin-g16-new
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure4ryOpc.pdf]]
+[[file:/tmp/babel-X0G35y/figureG7DSgI.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -46822,9 +46823,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	10 obs. of  30 variables:
  $ best_iteration              : num  12 55 58 52 74 27 4 13 87 35
  $ points                      : int  71 74 78 82 84 75 84 83 86 85
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.79 4.79 4.79 4.79 4.79 ...
- $ label_center_x              : num  4.14 4.14 4.14 4.14 4.14 ...
- $ label_center_y              : num  42.2 42.2 42.2 42.2 42.2 ...
+ $ mean_cost_baseline          : num  4.76 4.86 4.96 4.86 4.75 ...
+ $ label_center_x              : num  4.29 4.2 4.19 3.94 4.18 ...
+ $ label_center_y              : num  12 55 58 52 74 27 4 13 87 35
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  30 variables:
  $ id                          : int  12 55 58 52 74 27 4 13 87 35 ...
@@ -46854,9 +46855,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	20 obs. of  30 variables:
  $ best_iteration              : num  12 55 58 52 74 27 4 13 87 35 ...
  $ points                      : int  71 74 78 82 84 75 84 83 86 85 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.79 4.79 4.79 4.79 4.79 ...
- $ label_center_x              : num  4.14 4.14 4.14 4.14 4.14 ...
- $ label_center_y              : num  42.2 42.2 42.2 42.2 42.2 ...
+ $ mean_cost_baseline          : num  4.76 4.86 4.96 4.86 4.75 ...
+ $ label_center_x              : num  4.29 4.2 4.19 3.94 4.18 ...
+ $ label_center_y              : num  12 55 58 52 74 27 4 13 87 35 ...
 
 'data.frame':	78 obs. of  17 variables:
  $ id                     : int  1 1 1 1 2 2 2 2 2 2 ...
@@ -46941,7 +46942,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	666 obs. of  4 variables:
 ****** Iterations that found the Best Configuration
 #+HEADER: :results graphics output :session *R* :exports results
 #+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10
+#+HEADER: :width 9 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -46966,28 +46967,31 @@ levels(it_data$facet) <- c("[+] bicgkernel", "[+] mm", "[+] tensor", "[+] gesumm
 
 it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
 
+it_data <- it_data %>%
+  subset(application == "bicgkernel")
+
 p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     facet_wrap(facet ~ ., ncol = 4) +
-    geom_point(size = 2, pch = 19) +
-    stat_ellipse(type = "t", linetype = 13) +
+    geom_point(size = 3, pch = 19) +
+    stat_ellipse(size = 1, type = "t", linetype = 13) +
     #geom_label_repel(data = . %>% group_by(application) %>%
     #                              filter(technique == "RS") %>%
     #                              filter(best_iteration == min(best_iteration)),
     #                 aes(label = technique, x = label_center_x, y = label_center_y), show.legend = FALSE) +
     geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
     #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-    scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
+    scale_y_continuous(limits = c(-10, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
     scale_size_manual("", values = 0.45) +
     #annotation_logticks(sides = "b") +
     ggtitle("") +
     ylab("Iteration where Best was Found") +
     xlab("Best Cost in Seconds") +
     guides(color = guide_legend(reverse = TRUE)) +
-    theme_bw(base_size = 17) +
-    theme(legend.position = "bottom",
+    theme_bw(base_size = 28) +
+    theme(text = element_text(family = "sans"),
+          legend.position = c(0.5, 0.5),
           legend.direction = "horizontal",
           legend.title = element_blank(),
-          text = element_text(family = "serif"),
           strip.background = element_rect(fill = "white"),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
     #scale_color_brewer(palette = "Set1")
@@ -46997,8 +47001,8 @@ dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
                 facet_wrap(facet ~ ., scale = "free", ncol = 4) +
                 geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
                                               ymin = -Inf, ymax = Inf) +
-                theme_minimal(base_size = 17) +
-                theme(text = element_text(family = "serif"),
+                theme_minimal(base_size = 28) +
+                theme(text = element_text(family = "sans"),
                       legend.position = "bottom",
                       legend.direction = "horizontal",
                       legend.title = element_blank(),
@@ -47043,7 +47047,7 @@ grid.draw(new_plot)
 #+LABEL: fig:best-found-q015
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figure5OqVJK.pdf]]
+[[file:/tmp/babel-X0G35y/figureCHy8C0.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -47119,7 +47123,7 @@ ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variab
 #+LABEL: fig:eliminated-terms-q015
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureeRAoHm.pdf]]
+[[file:/tmp/babel-X0G35y/figurecCLw1i.pdf]]
 
 ****** Fixed Model Terms                                      :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -47234,7 +47238,7 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 [[file:/tmp/babel-w5lAu8/figureuiwQJV.pdf]]
 
 ****** Fixed Factors & Values in the Explored Spaces
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 8 :height 8 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
@@ -47244,21 +47248,21 @@ get_palette = colorRampPalette(brewer.pal(9, "Set1"))
        # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
   facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+  geom_bar(data = subset(fixed_steps_data, experiment_id == "paravance-40"), aes(x = step + 0.5, fill = fixed_factors),
            stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
-  geom_jitter(data = subset(search_spaces, correct_result == "True"),
+  geom_jitter(data = subset(search_spaces, correct_result == "True" & experiment_id == "paravance-40"),
               aes(x = step, y = cost_mean),
-              width = 0.2, height = 0, alpha = 0.5) +
-  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
+              width = 0.2, height = 0, alpha = 0.6) +
+  geom_text(data = subset(fixed_steps_data, experiment_id == "paravance-40"), aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            color = "black",
+            color = "white",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
   scale_x_discrete(limits = unique(spread_data$step)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 18) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
         legend.direction = "horizontal",
@@ -47277,7 +47281,7 @@ ggplot() +
 #+LABEL: fig:encpnc-ff-ss-be-q015
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figureVAQWfX.pdf]]
+[[file:/tmp/babel-X0G35y/figureMP49mw.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -65945,12 +65949,6 @@ str(design_data_plot)
 #+RESULTS:
 #+begin_example
 
-Attaching package: ‘tidyr’
-
-The following object is masked from ‘package:reshape2’:
-
-    smiths
-
 'data.frame':	87 obs. of  3 variables:
  $ removed_variables: Factor w/ 21 levels "","OMP","SCR",..: 1 2 6 3 8 12 1 4 2 5 ...
  $ step             : int  1 2 2 2 2 2 3 4 1 1 ...
@@ -66212,73 +66210,37 @@ wireframe(averaged_effects ~ U_I * RT_I,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurebNbotg.pdf]]
+[[file:/tmp/babel-X0G35y/figureptyJvL.pdf]]
 
-#+begin_SRC R :results output :session *R*
+#+begin_SRC R :results graphics output :session *R* :file "/tmp/prediction_gpr.pdf" :width 10 :height 10 :exports results
 library(DiceKriging)
 library(dplyr)
+library(lattice)
 
 new_design <- data.frame(interp2xyz(interpolated_data))
 names(new_design) <- c("U_I", "RT_I", "averaged_effects")
 
-sampled_design <- sample_n(new_design, 18)
+sampled_design <- sample_n(new_design, 100)
 
-m1 <- km(design = select(sampled_design, -averaged_effects),
+# frml <- as.formula(paste('~',
+#                          paste('poly(',
+#                                names(select(sampled_design, -averaged_effects)),
+#                                ', 3)',
+#                                collapse = ' + ')))
+
+frml <- ~ 1
+
+m1 <- km(formula = frml,
+         design = select(sampled_design, -averaged_effects),
+         multistart = 10,
+         scaling = F,
+         covtype = "powexp",
          response = sampled_design$averaged_effects)
 
-pm1 <- predict(m1, select(new_design, U_I, RT_I), "UK")
-new_design$prediction <- pm1$mean - (2 * pm1$sd)
-#+end_SRC
-
-#+RESULTS:
-#+begin_example
-
-
-optimisation start
-------------------
-,* estimation method   : MLE
-,* optimisation method : BFGS
-,* analytical gradient : used
-,* trend model : ~1
-,* covariance model :
-  - type :  matern5_2
-  - nugget : NO
-  - parameters lower bounds :  1e-10 1e-10
-  - parameters upper bounds :  56 62
-  - best initial criterion value(s) :  28.17994
-
-N = 2, M = 5 machine precision = 2.22045e-16
-At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       -28.18  |proj g|=       2.3097
-At iterate     1  f =      -29.028  |proj g|=       0.71226
-At iterate     2  f =      -29.101  |proj g|=       0.14511
-At iterate     3  f =      -29.105  |proj g|=      0.084667
-At iterate     4  f =      -29.108  |proj g|=      0.083307
-At iterate     5  f =      -29.127  |proj g|=       0.23413
-At iterate     6  f =      -29.163  |proj g|=       0.46335
-At iterate     7  f =      -29.256  |proj g|=       0.80591
-At iterate     8  f =      -29.401  |proj g|=        1.0419
-At iterate     9  f =       -29.53  |proj g|=       0.65761
-At iterate    10  f =      -29.587  |proj g|=      0.052594
-At iterate    11  f =      -29.588  |proj g|=     0.0010694
-At iterate    12  f =      -29.588  |proj g|=    0.00029406
-At iterate    13  f =      -29.588  |proj g|=    1.4673e-06
-
-iterations 13
-function evaluations 15
-segments explored during Cauchy searches 13
-BFGS updates skipped 0
-active bounds at final generalized Cauchy point 0
-norm of the final projected gradient 1.4673e-06
-final function value -29.5877
-
-F = -29.5877
-final  value -29.587662
-converged
-#+end_example
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 10 :height 10 :exports results
-library(lattice)
+pm1 <- predict(m1, newdata = select(new_design, U_I, RT_I), "UK")
+#new_design$prediction <- pm1$mean - (2 * pm1$sd)
+new_design$prediction <- pm1$mean
+#new_design$prediction <- pm1$sd
 
 colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
 
@@ -66299,7 +66261,7 @@ wireframe(prediction ~ U_I * RT_I,
 
 #+ATTR_LATEX: :width 0.5\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure3VuqPW.pdf]]
+[[file:/tmp/prediction_gpr.pdf]]
 
 ****** Gaussian Process Regression with =DiceKriging=           :noexport:
 #+begin_SRC R :results output :session *R* :exports none :eval no-export
