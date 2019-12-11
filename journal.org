@@ -70044,7 +70044,7 @@ data <- NULL
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -70169,40 +70169,7 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:plyr’:
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-Attaching package: ‘rPref’
-
-The following object is masked from ‘package:dplyr’:
-
-    between
-
-The following objects are masked from ‘package:plyr’:
-
-    empty, true
-
-Attaching package: ‘reshape2’
-
-The following object is masked from ‘package:tidyr’:
-
-    smiths
-
-Registering fonts with R
-
-'data.frame':	3011 obs. of  32 variables:
+'data.frame':	5112 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -70226,7 +70193,7 @@ Registering fonts with R
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -70236,7 +70203,7 @@ Registering fonts with R
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -70260,7 +70227,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -70273,7 +70240,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	3011 obs. of  35 variables:
  $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
  $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5993 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	8094 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -70297,7 +70264,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5993 obs. of  35 variables:
  $ correct_result              : chr  "True" "True" "True" "True" ...
  $ OMP                         : chr  "False" "False" "True" "False" ...
  $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "graoully-11" "graoully-11" "graoully-11" "graoully-11" ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
  $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
  $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
@@ -70341,7 +70308,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figurekN2CAV.pdf]]
+[[file:/tmp/babel-X0G35y/figurelEKpAt.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -70373,7 +70340,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figureMMKE1d.pdf]]
+[[file:/tmp/babel-X0G35y/figureVwzu8r.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -70404,7 +70371,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-o88n4X/figureuypoYn.pdf]]
+[[file:/tmp/babel-X0G35y/figurelSytwC.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -72204,7 +72171,7 @@ rs_data <- NULL
 
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
-    data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
+    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
     data$speedup <- data_baseline / data$cost_mean
@@ -72353,7 +72320,7 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
  $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	8094 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11075 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -72421,7 +72388,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure6Drjgj.pdf]]
+[[file:/tmp/babel-jn9WIm/figureq9Dtis.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -72519,9 +72486,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+RESULTS:
 [[file:/tmp/babel-X0G35y/figureanTAEV.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
-# qt(.975,9)*sd(x)/sqrt(10)
-
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
 large_plot_data <- complete_plot_data %>%
   group_by(technique) %>%
   mutate(mean_runs = mean(min_run_cost)) %>%
@@ -72536,11 +72501,11 @@ large_plot_data <- large_plot_data %>%
 ggplot(large_plot_data, aes(y = min_run_cost,
                             x = best_iteration,
                             color = technique)) +
-  facet_wrap(technique ~ .) +
+  facet_wrap(technique ~ ., scales = "free_x") +
   #geom_hline(aes(yintercept = mean_runs), linetype = 3) +
   geom_smooth(method = "lm",
               formula = "y ~ 1") +
-  geom_point() +
+  geom_point(size = 3) +
   # geom_ribbon(aes(ymin = mean_runs - sd_runs,
   #                 ymax = mean_runs + sd_runs),
   #             fill = "grey70",
@@ -72551,12 +72516,13 @@ ggplot(large_plot_data, aes(y = min_run_cost,
   # geom_hline(aes(yintercept = mean_cost_baseline[1],
   #                linetype = "-O3"),
   #            color = "black") +
-  theme_bw(base_size = 18) +
+  theme_bw(base_size = 25) +
   scale_color_brewer(palette = "Set1") +
   scale_linetype_manual(name = "limit", values = c(2),
                         guide = guide_legend(override.aes = list(color = c("black")))) +
-  theme(legend.position = "bottom",
+  theme(legend.position = c(0.8, 0.1),
         legend.direction = "horizontal",
+        strip.background = element_rect(fill = "white"),
         legend.title = element_blank())
 #+end_SRC
 
@@ -72564,7 +72530,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figurew9g8ym.pdf]]
+[[file:/tmp/babel-jn9WIm/figureOqaS94.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -73850,3 +73816,171 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
 [[file:/tmp/babel-o88n4X/figuregqlnvn.pdf]]
+** December
+*** [2019-12-10 Tue]
+**** GPR Test
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+library(dplyr)
+library(DiceKriging)
+library(DiceOptim)
+
+gpr_data <- data.frame(x = c(0.1, 0.25, 0.3, 0.5, 0.7),
+                       y = c(-0.1, -0.1, 0.12, -0.8, 0.1))
+
+x_allowed <- data.frame(x = seq(0, 1, length = 300))
+
+reg <- km(design = select(gpr_data, -y),
+          control = list(pop.size = 40,
+                         covtype = "gauss",
+                         BFGSburnin = 4),
+          response = gpr_data$y)
+
+pred <- predict(reg, x_allowed, "UK")
+
+x_allowed$y <- pred$mean
+x_allowed$ymin <- pred$mean - (2 * pred$sd)
+x_allowed$ymax <- pred$mean + (2 * pred$sd)
+x_allowed$ei <- apply(select(x_allowed, x), 1, EI, reg)
+x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = select(x_allowed, x))[1, ]
+x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = select(x_allowed, x))[1, ]
+
+ggplot(data = gpr_data, aes(x = x, y = y)) +
+  geom_ribbon(data = x_allowed, aes(x = x, ymin = ymin, ymax = ymax, fill = "CI of the Mean"), alpha = 0.3) +
+  geom_line(data = x_allowed, size = 1, aes(color = "Predicted Mean")) +
+  geom_line(data = x_allowed, size = 1, aes(x = x, y = sampled_y, color = "Sampled")) +
+  #geom_line(data = x_allowed, size = 1, aes(x = x, y = uncond_y, color = "Prior Sampled")) +
+  geom_line(data = x_allowed, size = 1, aes(x = x, y = ei, color = "Expected Improvement")) +
+  geom_point(stroke = 2, shape = 3, size = 3, aes(color = "Observed")) +
+  geom_point(data = subset(x_allowed, ei == max(ei)),
+             size = 4,
+             stroke = 2,
+             shape = 3,
+             aes(x = x, y = ei, color = "Maximum EI")) +
+  scale_color_brewer(palette = "Set1") +
+  scale_fill_manual("", values = "gray48") +
+  theme_bw(base_size = 26) +
+  theme(legend.title = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
+        legend.position = c(0.2, 0.2))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figureZAqUmJ.png]]
+
+**** Plotting Covariance Kernels
+***** Constant
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(DiceKriging)
+library(dplyr)
+library(lattice)
+
+constant_kernel <- function(x) {
+  return(1.0)
+}
+
+d <- 2
+n <- 16
+
+point_grid <- expand.grid(x1 = seq(0, 1, length = n), x2 = seq(0, 1, length = n))
+evaluated_grid <- data.frame(point_grid)
+
+evaluated_grid$y <- apply(point_grid, 1, constant_kernel)
+
+str(evaluated_grid)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(y ~ x1 * x2,
+          data = evaluated_grid,
+          xlab = "x1",
+          ylab = "x2",
+          zlab = list("k(x,x')",
+                      rot = "90"),
+          zlim = range(seq(0.0, 2.0, by = 0.5)),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          #shade = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 140, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figure7Zu2B4.png]]
+***** Squared Exponential
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(DiceKriging)
+library(dplyr)
+library(lattice)
+
+se_kernel <- function(x, x_p, l = 0.2) {
+  return(exp(-(
+    ((x - x_p) ^ 2) /
+    ((2 * l) ^ 2)
+  )))
+}
+
+d <- 2
+n <- 32
+
+point_grid <- data.frame(x1 = seq(-1, 1, length = n), x2 = rep(0, n))
+evaluated_grid <- data.frame(point_grid)
+
+evaluated_grid$y <- se_kernel(point_grid$x1, point_grid$x2)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+ggplot(evaluated_grid, aes(x = x1, y = y)) +
+  geom_point() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figureAZLe6Y.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(DiceKriging)
+library(dplyr)
+library(lattice)
+
+se_kernel <- function(x, x_p) {
+  l = 0.2
+  return(exp(-(((x - x_p) ^ 2) / ((2 * l) ^ 2))))
+}
+
+d <- 2
+n <- 32
+
+#point_grid <- expand.grid(x1 = seq(-1, 1, length = n), x2 = seq(-1, 1, length = n))
+point_grid <- expand.grid(x1 = seq(-1, 1, length = n), x2 = rep(0, n))
+evaluated_grid <- data.frame(point_grid)
+
+evaluated_grid$y <- se_kernel(point_grid$x1, point_grid$x2)
+evaluated_grid$x_p <- seq(-1, 1, length = n)
+
+str(evaluated_grid)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(y ~ x1 * x_p,
+          data = evaluated_grid,
+          xlab = "x1",
+          ylab = "x2",
+          zlab = list("k(x,x')",
+                      rot = "90"),
+          zlim = range(seq(0.0, 2.0, by = 0.5)),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          #shade = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 60, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figureyHhKh6.png]]
