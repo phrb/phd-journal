@@ -72230,6 +72230,36 @@ str(complete_plot_data)
 
 #+RESULTS:
 #+begin_example
+------------------------------------------------------------------------------
+You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)
+------------------------------------------------------------------------------
+
+Attaching package: ‘plyr’
+
+The following objects are masked from ‘package:dplyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+Attaching package: ‘rPref’
+
+The following objects are masked from ‘package:plyr’:
+
+    empty, true
+
+The following object is masked from ‘package:dplyr’:
+
+    between
+
+Attaching package: ‘reshape2’
+
+The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+Registering fonts with R
 
 [1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-11_1573093618/search_space.csv"
 [1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-14_1574882926/search_space.csv"
@@ -72316,9 +72346,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
+ $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
+ $ label_center_y              : num  199 199 199 199 199 ...
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11075 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -72353,9 +72383,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11075 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
+ $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
+ $ label_center_y              : num  199 199 199 199 199 ...
 #+end_example
 
 ****** Small Steps and Starting Sample
@@ -72530,7 +72560,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureOqaS94.pdf]]
+[[file:/tmp/babel-jn9WIm/figureoYVZOS.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -73818,19 +73848,354 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 [[file:/tmp/babel-o88n4X/figuregqlnvn.pdf]]
 ** December
 *** [2019-12-10 Tue]
-**** GPR Test
+**** Graphs for Gaussian Process Regression
+***** Sampling from Multivariate Normals
+****** 2-Dimensional Example
+#+begin_SRC R :results output :session *R*
+library(latex2exp)
+library(MASS)
+
+n <- 2
+sigma <- data.frame(d1 = c(1, 0), d2 = c(0, 1))
+means <- c(0, 0)
+
+mv_sample <- mvrnorm(n = 300, means, as.matrix(sigma))
+mv_sample <- as.data.frame(mv_sample)
+
+#+end_SRC
+
+#+RESULTS:
+
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+library(GGally)
+
+ggpairs(mv_sample) +
+  theme_bw(base_size = 28)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figuretkxNfW.png]]
+
+#+begin_SRC R :results output :session *R*
+library(MASS)
+
+n <- 2
+sigma <- data.frame(d1 = c(1, 0.8), d2 = c(0.8, 1))
+means <- c(0, 0)
+
+mv_sample <- mvrnorm(n = 600, means, as.matrix(sigma))
+mv_sample <- as.data.frame(mv_sample)
+
+names(mv_sample) <- paste("d", seq(1, n), sep = "")
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+library(GGally)
+
+ggpairs(mv_sample) +
+  theme_bw(base_size = 26)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figure4i6KFi.png]]
+
+****** 10-Dimensional Example: Reinterpreting Samples
+#+begin_SRC R :results output :session *R*
+library(latex2exp)
+library(MASS)
+
+n <- 10
+sigma <- data.frame(diag(10))
+names(sigma) <- paste("d", seq(1, n), sep = "")
+
+means <- rep(0, n)
+
+mv_sample <- mvrnorm(n = 300, means, as.matrix(sigma))
+mv_sample <- as.data.frame(mv_sample)
+
+names(mv_sample) <- paste("d", seq(1, n), sep = "")
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+library(GGally)
+
+ggpairs(mv_sample) +
+  theme_bw(base_size = 22)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figureAKpZrc.png]]
+
+#+begin_SRC R :results output :session *R*
+library(latex2exp)
+library(MASS)
+
+n <- 10
+sigma <- data.frame(diag(10))
+names(sigma) <- paste("d", seq(1, n), sep = "")
+
+means <- rep(0, n)
+
+mv_sample <- mvrnorm(n = 1000, means, as.matrix(sigma))
+mv_sample <- as.data.frame(mv_sample)
+
+names(mv_sample) <- paste("d", seq(1, n), sep = "")
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(latex2exp)
+
+plot_data <- mv_sample
+sampled_function <- sample_n(plot_data, 1)
+
+plot_data <- plot_data %>%
+  gather("x", "f_x") %>%
+  mutate(x = ordered(x, levels = names(mv_sample)))
+
+sampled_function <- sampled_function %>%
+  gather("x", "f_x") %>%
+  mutate(x = ordered(x, levels = names(mv_sample)))
+
+ggplot(plot_data, aes(x = x, y = f_x)) +
+  geom_jitter(color = "gray48", size = 3, width = 0.25, alpha = 0.2) +
+  geom_point(data = sampled_function,
+             aes(color = "Sample of Multivariate Normal"),
+             size = 4) +
+  geom_line(data = sampled_function,
+            color = "red",
+            size = 1,
+            alpha = 0.3) +
+  ylab(TeX("Sampled Values")) +
+  xlab(TeX("Dimensions")) +
+  scale_fill_manual("", values = "gray48") +
+  scale_color_brewer(palette = "Set1") +
+  theme_bw(base_size = 26) +
+  theme(legend.title = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
+        legend.position = c(0.24, 0.06))
+
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figureG5afIc.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(latex2exp)
+
+n <- 10
+
+plot_data <- mv_sample
+names(plot_data) <- seq(1, n)
+
+sampled_function <- sample_n(plot_data, 1)
+
+plot_data <- plot_data %>%
+  gather("x", "f_x") %>%
+  mutate(x = as.numeric(x))
+
+sampled_function <- sampled_function %>%
+  gather("x", "f_x") %>%
+  mutate(x = as.numeric(x))
+
+ggplot(plot_data, aes(x = x, y = f_x)) +
+  geom_jitter(color = "gray48", size = 3, width = 0.25, alpha = 0.2) +
+  geom_point(data = sampled_function,
+             aes(color = "Sampled Function"),
+             size = 4) +
+  geom_line(data = sampled_function,
+            color = "red",
+            size = 1,
+            alpha = 0.3) +
+  ylab(TeX("Samples of $(d_1,\\ldots,d_{10})$ interpreted as $f(x \\in \\lbrack 1,10 \\rbrack)$")) +
+  xlab(TeX("$(d_1,\\ldots,d_{10})$ interpreted as discrete $x \\in \\lbrack 1,10 \\rbrack$")) +
+  scale_x_discrete(limits = seq(1, 10)) +
+  scale_fill_manual("", values = "gray48") +
+  scale_color_brewer(palette = "Set1") +
+  theme_bw(base_size = 26) +
+  theme(legend.title = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
+        legend.position = c(0.2, 0.06))
+
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figurekqGgwc.png]]
+
+***** Sampling Functions
+#+begin_SRC R :results output :session *R*
+d <- 2
+n <- 30
+
+target_X <- expand.grid(x1 = seq(-1, 1, length = n), x2 = seq(-1, 1, length = n))
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(ggplot2)
+library(GGally)
+
+ggpairs(target_X) +
+  theme_bw(base_size = 26)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figurec2wcsc.png]]
+
+#+begin_SRC R :results output :session *R*
+library(Rcpp)
+library(dplyr)
+library(MASS)
+
+src <-
+"#include <Rcpp.h>
+#include <math.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericMatrix rcpp_squared_exponential_kernel(NumericMatrix x,
+                                              NumericMatrix y,
+                                              float amplitude,
+                                              NumericVector lengthscale){
+  NumericMatrix output(x.nrow(), y.nrow());
+  float distance;
+
+  for(int i = 0; i < x.nrow(); i++) {
+    for(int j = 0; j < y.nrow(); j++) {
+      distance = 0;
+      for(int k = 0; k < x.ncol(); k++) {
+        distance += (((x(i, k) - y(j, k)) *
+                      (x(i, k) - y(j, k))) /
+                      (lengthscale(k) * lengthscale(k)));
+      }
+
+      output(i, j) = amplitude *
+                     amplitude *
+                     exp(-0.5 * distance);
+    }
+  }
+  return(output);
+}"
+
+sourceCpp(code = src)
+
+random_design <- function(factors, size) {
+  data.frame(replicate(factors, runif(size)))
+}
+
+simulate_gp <- function(covariance_matrix) {
+  return(unname(mvrnorm(n = 1,
+                        rep(0.0, nrow(covariance_matrix)),
+                        covariance_matrix)))
+}
+
+sqexp_covariance_matrix <- function(data, amplitude, lengthscale) {
+  return(rcpp_squared_exponential_kernel(as.matrix(data),
+                                         as.matrix(data),
+                                         amplitude,
+                                         lengthscale))
+}
+
+significance_probability <- 0.10
+amplitude <- 1.0
+lengthscale <- rep(0.2, n)
+
+cov_matrix <- sqexp_covariance_matrix(target_X, amplitude, lengthscale)
+plot_data <- target_X
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(DiceKriging)
+library(dplyr)
+library(lattice)
+
+se_kernel <- function(x, x_p, l = 0.2) {
+  return(exp(-(
+    ((x - x_p) ^ 2) /
+    ((2 * l) ^ 2)
+  )))
+}
+
+d <- 2
+n <- 32
+
+point_grid <- data.frame(x1 = seq(-1, 1, length = n), x2 = rep(0, n))
+evaluated_grid <- data.frame(point_grid)
+
+evaluated_grid$y <- se_kernel(point_grid$x1, point_grid$x2)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+ggplot(evaluated_grid, aes(x = x1, y = y)) +
+  geom_point() +
+  theme_bw(base_size = 18)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figurer90Cfk.png]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(lattice)
+library(RColorBrewer)
+
+plot_data$y <- simulate_gp(cov_matrix)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(y ~ x1 * x2,
+          data = plot_data,
+          xlab = "x1",
+          ylab = "x2",
+          zlab = list("k(x,x')",
+                      rot = "90"),
+          #zlim = range(seq(0.0, 1.0, by = 0.5)),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          #shade = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 20, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-jn9WIm/figurecdUnos.png]]
+
+***** Regression, Sampling, EI
+#+begin_SRC R :results output :session *R*
 library(ggplot2)
 library(dplyr)
 library(DiceKriging)
 library(DiceOptim)
 
-gpr_data <- data.frame(x = c(0.1, 0.25, 0.3, 0.5, 0.7),
-                       y = c(-0.1, -0.1, 0.12, -0.8, 0.1))
+# gpr_data <- data.frame(x = c(0.1, 0.25, 0.3, 0.5, 0.7),
+#                        y = c(-0.1, -0.1, 0.12, -0.8, 0.1))
+
+gpr_data <- data.frame(x = c(0.45, 0.5, 0.55),
+                       y = c(-0.1, 0.05, 0.2))
 
 x_allowed <- data.frame(x = seq(0, 1, length = 300))
 
-reg <- km(design = select(gpr_data, -y),
+reg <- km(design = dplyr::select(gpr_data, -y),
           control = list(pop.size = 40,
                          covtype = "gauss",
                          BFGSburnin = 4),
@@ -73841,22 +74206,58 @@ pred <- predict(reg, x_allowed, "UK")
 x_allowed$y <- pred$mean
 x_allowed$ymin <- pred$mean - (2 * pred$sd)
 x_allowed$ymax <- pred$mean + (2 * pred$sd)
-x_allowed$ei <- apply(select(x_allowed, x), 1, EI, reg)
-x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = select(x_allowed, x))[1, ]
-x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = select(x_allowed, x))[1, ]
+x_allowed$ei <- apply(dplyr::select(x_allowed, x), 1, EI, reg)
+x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = dplyr::select(x_allowed, x))[1, ]
+x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allowed, x))[1, ]
+#+end_SRC
 
+#+RESULTS:
+#+begin_example
+
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~1
+,* covariance model :
+  - type :  matern5_2
+  - nugget : NO
+  - parameters lower bounds :  1e-10
+  - parameters upper bounds :  0.2
+  - best initial criterion value(s) :  2.251958
+
+N = 1, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=       -2.252  |proj g|=     0.069738
+At iterate     1  f =      -2.2522  |proj g|=       0.01387
+At iterate     2  f =      -2.2522  |proj g|=     0.0014113
+At iterate     3  f =      -2.2522  |proj g|=    2.5092e-05
+At iterate     4  f =      -2.2522  |proj g|=    4.6505e-08
+
+iterations 4
+function evaluations 6
+segments explored during Cauchy searches 4
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 4.65052e-08
+final function value -2.25218
+
+F = -2.25218
+final  value -2.252181
+converged
+#+end_example
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 ggplot(data = gpr_data, aes(x = x, y = y)) +
   geom_ribbon(data = x_allowed, aes(x = x, ymin = ymin, ymax = ymax, fill = "CI of the Mean"), alpha = 0.3) +
   geom_line(data = x_allowed, size = 1, aes(color = "Predicted Mean")) +
-  geom_line(data = x_allowed, size = 1, aes(x = x, y = sampled_y, color = "Sampled")) +
-  #geom_line(data = x_allowed, size = 1, aes(x = x, y = uncond_y, color = "Prior Sampled")) +
-  geom_line(data = x_allowed, size = 1, aes(x = x, y = ei, color = "Expected Improvement")) +
+  geom_line(data = x_allowed, size = 1, aes(x = x, y = sampled_y, color = "Conditioned Sample")) +
+  geom_line(data = x_allowed, size = 1, aes(x = x, y = uncond_y, color = "Prior Sample")) +
+  #geom_line(data = x_allowed, size = 1, aes(x = x, y = ei, color = "Expected Improvement")) +
   geom_point(stroke = 2, shape = 3, size = 3, aes(color = "Observed")) +
-  geom_point(data = subset(x_allowed, ei == max(ei)),
-             size = 4,
-             stroke = 2,
-             shape = 3,
-             aes(x = x, y = ei, color = "Maximum EI")) +
+  #geom_point(data = subset(x_allowed, ei == max(ei)), size = 4, stroke = 2, shape = 3, aes(x = x, y = ei, color = "Maximum EI")) +
   scale_color_brewer(palette = "Set1") +
   scale_fill_manual("", values = "gray48") +
   theme_bw(base_size = 26) +
@@ -73866,7 +74267,7 @@ ggplot(data = gpr_data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureZAqUmJ.png]]
+[[file:/tmp/babel-jn9WIm/figurek3lOWe.png]]
 
 **** Plotting Covariance Kernels
 ***** Constant
@@ -73939,48 +74340,4 @@ ggplot(evaluated_grid, aes(x = x1, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureAZLe6Y.png]]
-
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
-library(DiceKriging)
-library(dplyr)
-library(lattice)
-
-se_kernel <- function(x, x_p) {
-  l = 0.2
-  return(exp(-(((x - x_p) ^ 2) / ((2 * l) ^ 2))))
-}
-
-d <- 2
-n <- 32
-
-#point_grid <- expand.grid(x1 = seq(-1, 1, length = n), x2 = seq(-1, 1, length = n))
-point_grid <- expand.grid(x1 = seq(-1, 1, length = n), x2 = rep(0, n))
-evaluated_grid <- data.frame(point_grid)
-
-evaluated_grid$y <- se_kernel(point_grid$x1, point_grid$x2)
-evaluated_grid$x_p <- seq(-1, 1, length = n)
-
-str(evaluated_grid)
-
-colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
-
-wireframe(y ~ x1 * x_p,
-          data = evaluated_grid,
-          xlab = "x1",
-          ylab = "x2",
-          zlab = list("k(x,x')",
-                      rot = "90"),
-          zlim = range(seq(0.0, 2.0, by = 0.5)),
-          colorkey = FALSE,
-          col.regions = colors,
-          drape = TRUE,
-          #shade = TRUE,
-          lattice.options = lattice.options(list(border = FALSE)),
-          scales = list(arrows = FALSE),
-          screen = list(z = 60, x = -60, y = 0),
-          par.settings = list(axis.line = list(col = "transparent")))
-#+end_SRC
-
-#+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureyHhKh6.png]]
+[[file:/tmp/babel-jn9WIm/figurehyJIns.png]]
