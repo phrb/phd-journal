@@ -72230,28 +72230,31 @@ str(complete_plot_data)
 
 #+RESULTS:
 #+begin_example
-------------------------------------------------------------------------------
-You have loaded plyr after dplyr - this is likely to cause problems.
-If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-library(plyr); library(dplyr)
-------------------------------------------------------------------------------
 
-Attaching package: ‘plyr’
+Attaching package: ‘dplyr’
 
-The following objects are masked from ‘package:dplyr’:
+The following objects are masked from ‘package:plyr’:
 
     arrange, count, desc, failwith, id, mutate, rename, summarise,
     summarize
 
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
 Attaching package: ‘rPref’
-
-The following objects are masked from ‘package:plyr’:
-
-    empty, true
 
 The following object is masked from ‘package:dplyr’:
 
     between
+
+The following objects are masked from ‘package:plyr’:
+
+    empty, true
 
 Attaching package: ‘reshape2’
 
@@ -72346,11 +72349,11 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
- $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
- $ label_center_y              : num  199 199 199 199 199 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11075 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
  $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
@@ -72383,9 +72386,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11075 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
- $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
- $ label_center_y              : num  199 199 199 199 199 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 #+end_example
 
 ****** Small Steps and Starting Sample
@@ -72518,29 +72521,46 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
 large_plot_data <- complete_plot_data %>%
+  group_by(technique, experiment_id) %>%
+  subset(cost_mean == min_run_cost) %>%
+  ungroup()
+
+# large_plot_data <- large_plot_data %>%
+#   group_by(technique) %>%
+#   mutate(mean_runs = mean(min_run_cost)) %>%
+#   mutate(sd_runs = sd(min_run_cost)) %>%
+#   mutate(ci95_runs = qnorm(.95) * (mean(min_run_cost) / sqrt(length(subset(large_plot_data, technique == technique)$cost_mean)))) %>%
+#   ungroup()
+
+large_plot_data <- large_plot_data %>%
   group_by(technique) %>%
   mutate(mean_runs = mean(min_run_cost)) %>%
   mutate(sd_runs = sd(min_run_cost)) %>%
-  ungroup()
-
-large_plot_data <- large_plot_data %>%
-  group_by(technique, experiment_id) %>%
-  subset(cost_mean == min_run_cost) %>%
+  mutate(ci95_runs = qt(0.975, df = length(subset(large_plot_data,
+                                                  technique == technique)$cost_mean) - 1) *
+           (sd(min_run_cost) /
+            sqrt(length(subset(large_plot_data,
+                               technique == technique)$cost_mean)))) %>%
   ungroup()
 
 ggplot(large_plot_data, aes(y = min_run_cost,
                             x = best_iteration,
                             color = technique)) +
   facet_wrap(technique ~ ., scales = "free_x") +
-  #geom_hline(aes(yintercept = mean_runs), linetype = 3) +
-  geom_smooth(method = "lm",
-              formula = "y ~ 1") +
-  geom_point(size = 3) +
+  geom_hline(aes(yintercept = mean_runs), linetype = 3) +
+  # geom_smooth(method = "lm",
+  #             formula = "y ~ 1") +
+  geom_ribbon(aes(ymin = mean_runs - ci95_runs,
+                  ymax = mean_runs + ci95_runs),
+              fill = "grey70",
+              alpha = 0.4,
+              colour = NA) +
   # geom_ribbon(aes(ymin = mean_runs - sd_runs,
   #                 ymax = mean_runs + sd_runs),
   #             fill = "grey70",
   #             alpha = 0.4,
   #             colour = NA) +
+  geom_point(size = 3) +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
   # geom_hline(aes(yintercept = mean_cost_baseline[1],
@@ -72560,7 +72580,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureoYVZOS.pdf]]
+[[file:/tmp/babel-VOewyd/figureAPu2J9.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -74191,13 +74211,12 @@ library(DiceOptim)
 #                        y = c(-0.1, -0.1, 0.12, -0.8, 0.1))
 
 gpr_data <- data.frame(x = c(0.45, 0.5, 0.55),
-                       y = c(-0.1, 0.05, 0.2))
+                       y = c(-0.1, 0.08, 0.2))
 
 x_allowed <- data.frame(x = seq(0, 1, length = 300))
 
-reg <- km(design = dplyr::select(gpr_data, -y),
+reg <- km(formula = ~ ., design = dplyr::select(gpr_data, -y),
           control = list(pop.size = 40,
-                         covtype = "gauss",
                          BFGSburnin = 4),
           response = gpr_data$y)
 
@@ -74207,8 +74226,8 @@ x_allowed$y <- pred$mean
 x_allowed$ymin <- pred$mean - (2 * pred$sd)
 x_allowed$ymax <- pred$mean + (2 * pred$sd)
 x_allowed$ei <- apply(dplyr::select(x_allowed, x), 1, EI, reg)
-x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = dplyr::select(x_allowed, x))[1, ]
-x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allowed, x))[1, ]
+# x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = dplyr::select(x_allowed, x))[1, ]
+# x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allowed, x))[1, ]
 #+end_SRC
 
 #+RESULTS:
@@ -74220,32 +74239,29 @@ optimisation start
 ,* estimation method   : MLE
 ,* optimisation method : BFGS
 ,* analytical gradient : used
-,* trend model : ~1
+,* trend model : ~x
 ,* covariance model :
   - type :  matern5_2
   - nugget : NO
   - parameters lower bounds :  1e-10
   - parameters upper bounds :  0.2
-  - best initial criterion value(s) :  2.251958
+  - best initial criterion value(s) :  8.518974
 
 N = 1, M = 5 machine precision = 2.22045e-16
 At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       -2.252  |proj g|=     0.069738
-At iterate     1  f =      -2.2522  |proj g|=       0.01387
-At iterate     2  f =      -2.2522  |proj g|=     0.0014113
-At iterate     3  f =      -2.2522  |proj g|=    2.5092e-05
-At iterate     4  f =      -2.2522  |proj g|=    4.6505e-08
+At iterate     0  f=       -8.519  |proj g|=   5.6612e-07
+At iterate     1  f =       -8.519  |proj g|=    5.6393e-07
 
-iterations 4
-function evaluations 6
-segments explored during Cauchy searches 4
+iterations 1
+function evaluations 2
+segments explored during Cauchy searches 1
 BFGS updates skipped 0
 active bounds at final generalized Cauchy point 0
-norm of the final projected gradient 4.65052e-08
-final function value -2.25218
+norm of the final projected gradient 5.63925e-07
+final function value -8.51897
 
-F = -2.25218
-final  value -2.252181
+F = -8.51897
+final  value -8.518974
 converged
 #+end_example
 
@@ -74253,11 +74269,11 @@ converged
 ggplot(data = gpr_data, aes(x = x, y = y)) +
   geom_ribbon(data = x_allowed, aes(x = x, ymin = ymin, ymax = ymax, fill = "CI of the Mean"), alpha = 0.3) +
   geom_line(data = x_allowed, size = 1, aes(color = "Predicted Mean")) +
-  geom_line(data = x_allowed, size = 1, aes(x = x, y = sampled_y, color = "Conditioned Sample")) +
-  geom_line(data = x_allowed, size = 1, aes(x = x, y = uncond_y, color = "Prior Sample")) +
-  #geom_line(data = x_allowed, size = 1, aes(x = x, y = ei, color = "Expected Improvement")) +
+  #geom_line(data = x_allowed, size = 1, aes(x = x, y = sampled_y, color = "Conditioned Sample")) +
+  #geom_line(data = x_allowed, size = 1, aes(x = x, y = uncond_y, color = "Prior Sample")) +
+  geom_line(data = x_allowed, size = 1, aes(x = x, y = ei, color = "Expected Improvement")) +
   geom_point(stroke = 2, shape = 3, size = 3, aes(color = "Observed")) +
-  #geom_point(data = subset(x_allowed, ei == max(ei)), size = 4, stroke = 2, shape = 3, aes(x = x, y = ei, color = "Maximum EI")) +
+  geom_point(data = subset(x_allowed, ei == max(ei)), size = 4, stroke = 2, shape = 3, aes(x = x, y = ei, color = "Maximum EI")) +
   scale_color_brewer(palette = "Set1") +
   scale_fill_manual("", values = "gray48") +
   theme_bw(base_size = 26) +
@@ -74267,7 +74283,7 @@ ggplot(data = gpr_data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figurek3lOWe.png]]
+[[file:/tmp/babel-jn9WIm/figure3xD54Z.png]]
 
 **** Plotting Covariance Kernels
 ***** Constant
