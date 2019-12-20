@@ -72230,31 +72230,28 @@ str(complete_plot_data)
 
 #+RESULTS:
 #+begin_example
+------------------------------------------------------------------------------
+You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)
+------------------------------------------------------------------------------
 
-Attaching package: ‘dplyr’
+Attaching package: ‘plyr’
 
-The following objects are masked from ‘package:plyr’:
+The following objects are masked from ‘package:dplyr’:
 
     arrange, count, desc, failwith, id, mutate, rename, summarise,
     summarize
 
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
 Attaching package: ‘rPref’
-
-The following object is masked from ‘package:dplyr’:
-
-    between
 
 The following objects are masked from ‘package:plyr’:
 
     empty, true
+
+The following object is masked from ‘package:dplyr’:
+
+    between
 
 Attaching package: ‘reshape2’
 
@@ -72349,9 +72346,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
+ $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
+ $ label_center_y              : num  199 199 199 199 199 ...
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -72386,9 +72383,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
+ $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
+ $ label_center_y              : num  199 199 199 199 199 ...
 #+end_example
 
 ****** Small Steps and Starting Sample
@@ -72421,7 +72418,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureq9Dtis.pdf]]
+[[file:/tmp/babel-VOewyd/figurejU9KTQ.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -72453,7 +72450,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureGiXvCJ.pdf]]
+[[file:/tmp/babel-VOewyd/figureouI2aZ.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -72484,7 +72481,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figure2p89Ah.pdf]]
+[[file:/tmp/babel-VOewyd/figureil6iFi.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -72519,11 +72516,13 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+RESULTS:
 [[file:/tmp/babel-X0G35y/figureanTAEV.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
+#+begin_SRC R :results graphics output :session *R2* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
 large_plot_data <- complete_plot_data %>%
   group_by(technique, experiment_id) %>%
   subset(cost_mean == min_run_cost) %>%
   ungroup()
+
+alpha <- 0.01
 
 # large_plot_data <- large_plot_data %>%
 #   group_by(technique) %>%
@@ -72536,11 +72535,9 @@ large_plot_data <- large_plot_data %>%
   group_by(technique) %>%
   mutate(mean_runs = mean(min_run_cost)) %>%
   mutate(sd_runs = sd(min_run_cost)) %>%
-  mutate(ci95_runs = qt(0.975, df = length(subset(large_plot_data,
-                                                  technique == technique)$cost_mean) - 1) *
+  mutate(ci95_runs = qt((1 - (alpha / 2)), df = n() - 1) *
            (sd(min_run_cost) /
-            sqrt(length(subset(large_plot_data,
-                               technique == technique)$cost_mean)))) %>%
+            sqrt(n()))) %>%
   ungroup()
 
 ggplot(large_plot_data, aes(y = min_run_cost,
@@ -72550,16 +72547,16 @@ ggplot(large_plot_data, aes(y = min_run_cost,
   geom_hline(aes(yintercept = mean_runs), linetype = 3) +
   # geom_smooth(method = "lm",
   #             formula = "y ~ 1") +
+  # geom_ribbon(aes(ymin = mean_runs - sd_runs,
+  #                 ymax = mean_runs + sd_runs),
+  #             fill = "red",
+  #             alpha = 0.1,
+  #             colour = NA) +
   geom_ribbon(aes(ymin = mean_runs - ci95_runs,
                   ymax = mean_runs + ci95_runs),
               fill = "grey70",
               alpha = 0.4,
               colour = NA) +
-  # geom_ribbon(aes(ymin = mean_runs - sd_runs,
-  #                 ymax = mean_runs + sd_runs),
-  #             fill = "grey70",
-  #             alpha = 0.4,
-  #             colour = NA) +
   geom_point(size = 3) +
   xlab("Iteration where Best was Found") +
   ylab("Best Cost in Seconds") +
@@ -72580,7 +72577,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureAPu2J9.pdf]]
+[[file:/tmp/babel-VOewyd/figureXMfYYB.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -73869,8 +73866,18 @@ ggplot(complete_plot_data, aes(x = min_run_cost,
 ** December
 *** [2019-12-10 Tue]
 **** Graphs for Gaussian Process Regression
-***** Sampling from Multivariate Normals
+***** Sampling from Multivariate Normal Distributions
 ****** 2-Dimensional Example
+Sampling from a 2-dimension normal distribution, with no correlation between dimensions,
+that is, identity covariance matrix:
+
+|----+-----+-----|
+|    |  v1 |  v2 |
+|----+-----+-----|
+| v1 | 1.0 | 0.0 |
+| v2 | 0.0 | 1.0 |
+|----+-----+-----|
+
 #+begin_SRC R :results output :session *R*
 library(latex2exp)
 library(MASS)
@@ -73895,7 +73902,16 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figuretkxNfW.png]]
+[[file:/tmp/babel-VOewyd/figureG4t7NS.png]]
+
+To get strong correlations, the covariance matrix could be:
+
+|----+-----+-----|
+|    |  v1 |  v2 |
+|----+-----+-----|
+| v1 | 1.0 | 0.8 |
+| v2 | 0.8 | 1.0 |
+|----+-----+-----|
 
 #+begin_SRC R :results output :session *R*
 library(MASS)
@@ -73907,7 +73923,7 @@ means <- c(0, 0)
 mv_sample <- mvrnorm(n = 600, means, as.matrix(sigma))
 mv_sample <- as.data.frame(mv_sample)
 
-names(mv_sample) <- paste("d", seq(1, n), sep = "")
+names(mv_sample) <- paste("V", seq(1, n), sep = "")
 #+end_SRC
 
 #+RESULTS:
@@ -73921,7 +73937,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figure4i6KFi.png]]
+[[file:/tmp/babel-VOewyd/figure6DT6jM.png]]
 
 ****** 10-Dimensional Example: Reinterpreting Samples
 #+begin_SRC R :results output :session *R*
@@ -73951,7 +73967,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureAKpZrc.png]]
+[[file:/tmp/babel-VOewyd/figureX0XfE8.png]]
 
 #+begin_SRC R :results output :session *R*
 library(latex2exp)
@@ -74009,7 +74025,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figureG5afIc.png]]
+[[file:/tmp/babel-VOewyd/figurexJxn17.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(dplyr)
@@ -74054,7 +74070,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figurekqGgwc.png]]
+[[file:/tmp/babel-VOewyd/figureFKoygF.png]]
 
 ***** Sampling Functions
 #+begin_SRC R :results output :session *R*
@@ -74075,7 +74091,7 @@ ggpairs(target_X) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figurec2wcsc.png]]
+[[file:/tmp/babel-VOewyd/figureskC9rc.png]]
 
 #+begin_SRC R :results output :session *R*
 library(Rcpp)
@@ -74145,6 +74161,7 @@ plot_data <- target_X
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(DiceKriging)
 library(dplyr)
+library(RColorBrewer)
 library(lattice)
 
 se_kernel <- function(x, x_p, l = 0.2) {
@@ -74170,7 +74187,7 @@ ggplot(evaluated_grid, aes(x = x1, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figurer90Cfk.png]]
+[[file:/tmp/babel-VOewyd/figureRdxAA8.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(lattice)
@@ -74198,7 +74215,7 @@ wireframe(y ~ x1 * x2,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figurecdUnos.png]]
+[[file:/tmp/babel-VOewyd/figure4jm9iJ.png]]
 
 ***** Regression, Sampling, EI
 #+begin_SRC R :results output :session *R*
@@ -74207,17 +74224,22 @@ library(dplyr)
 library(DiceKriging)
 library(DiceOptim)
 
-# gpr_data <- data.frame(x = c(0.1, 0.25, 0.3, 0.5, 0.7),
-#                        y = c(-0.1, -0.1, 0.12, -0.8, 0.1))
+gpr_data <- data.frame(x = c(0.1, 0.25, 0.3, 0.67, 0.8),
+                       y = c(0.1, 0.1, 0.6, -0.02, 0.1))
 
-gpr_data <- data.frame(x = c(0.45, 0.5, 0.55),
-                       y = c(-0.1, 0.08, 0.2))
+# gpr_data <- data.frame(x = c(0.45, 0.5, 0.55),
+#                        y = c(-0.1, 0.08, 0.2))
 
 x_allowed <- data.frame(x = seq(0, 1, length = 300))
 
-reg <- km(formula = ~ ., design = dplyr::select(gpr_data, -y),
-          control = list(pop.size = 40,
-                         BFGSburnin = 4),
+# reg <- km(formula = ~ I(x^2), design = dplyr::select(gpr_data, -y),
+#           control = list(pop.size = 40,
+#                          BFGSburnin = 4),
+#           response = gpr_data$y)
+
+reg <- km(design = dplyr::select(gpr_data, -y),
+          control = list(pop.size = 400,
+                         BFGSburnin = 400),
           response = gpr_data$y)
 
 pred <- predict(reg, x_allowed, "UK")
@@ -74226,8 +74248,8 @@ x_allowed$y <- pred$mean
 x_allowed$ymin <- pred$mean - (2 * pred$sd)
 x_allowed$ymax <- pred$mean + (2 * pred$sd)
 x_allowed$ei <- apply(dplyr::select(x_allowed, x), 1, EI, reg)
-# x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = dplyr::select(x_allowed, x))[1, ]
-# x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allowed, x))[1, ]
+x_allowed$sampled_y <- simulate(reg, cond = TRUE, newdata = dplyr::select(x_allowed, x))[1, ]
+x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allowed, x))[1, ]
 #+end_SRC
 
 #+RESULTS:
@@ -74239,30 +74261,19 @@ optimisation start
 ,* estimation method   : MLE
 ,* optimisation method : BFGS
 ,* analytical gradient : used
-,* trend model : ~x
+,* trend model : ~1
 ,* covariance model :
   - type :  matern5_2
   - nugget : NO
   - parameters lower bounds :  1e-10
-  - parameters upper bounds :  0.2
-  - best initial criterion value(s) :  8.518974
+  - parameters upper bounds :  1.4
+  - best initial criterion value(s) :  0.5438007
 
 N = 1, M = 5 machine precision = 2.22045e-16
 At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       -8.519  |proj g|=   5.6612e-07
-At iterate     1  f =       -8.519  |proj g|=    5.6393e-07
-
-iterations 1
-function evaluations 2
-segments explored during Cauchy searches 1
-BFGS updates skipped 0
-active bounds at final generalized Cauchy point 0
-norm of the final projected gradient 5.63925e-07
-final function value -8.51897
-
-F = -8.51897
-final  value -8.518974
-converged
+At iterate     0  f=      -0.5438  |proj g|=   1.6681e-60
+Derivative >= 0, backtracking line search impossible.final  value -0.543801
+stopped after 0 iterations
 #+end_example
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
@@ -74283,7 +74294,7 @@ ggplot(data = gpr_data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-jn9WIm/figure3xD54Z.png]]
+[[file:/tmp/babel-VOewyd/figure4dUwKd.png]]
 
 **** Plotting Covariance Kernels
 ***** Constant
@@ -74357,3 +74368,498 @@ ggplot(evaluated_grid, aes(x = x1, y = y)) +
 
 #+RESULTS:
 [[file:/tmp/babel-jn9WIm/figurehyJIns.png]]
+*** [2019-12-19 Thu]
+**** Estimating GPR Parameters using RS Data
+****** Loading Data                                           :noexport:
+#+HEADER: :results output :session *R* :exports none
+#+BEGIN_SRC R
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(rPref)
+library(reshape2)
+library(openssl)
+library(RColorBrewer)
+library(extrafont)
+
+# data_dir <- "dlmt_spapt_experiments/data/results"
+# data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
+# data_dir <- "dlmt_spapt_experiments/data/results"
+data_dir <- "dlmt_spapt_experiments/data/tests/random_300_graoully_debnew"
+#target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
+target_dirs <- c("bicgkernel")
+rs_data <- NULL
+
+read.csv.iterations.cost <- function(csv_file) {
+    data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
+    data$experiment_id <- str_split(csv_file, "/")[[1]][6]
+    data_baseline <- data[data$baseline == "True", "cost_mean"]
+    data$cost_baseline <- rep(data_baseline, nrow(data))
+    data$speedup <- data_baseline / data$cost_mean
+    data$max_run_speedup <- rep(max(data$speedup), nrow(data))
+    data$min_run_cost <- rep(min(data$cost_mean), nrow(data))
+
+    data <- data[data$baseline == "False", ]
+    data <- data[data$correct_result == "True", ]
+
+    data$best_iteration <- rep(as.numeric(rownames(data[data$cost_mean == min(data$cost_mean), ])), nrow(data))
+    data$iteration <- as.numeric(rownames(data))
+    data$points <- rep(nrow(data), nrow(data))
+
+    return(data)
+}
+
+for (target_dir in target_dirs) {
+    target_path <- paste(data_dir, "/", target_dir, "/", sep = "")
+
+    csv_files <- list.files(path = target_path, pattern = "search_space.csv", recursive = TRUE)
+    if (length(csv_files) != 0) {
+        csv_files <- paste0(target_path, csv_files)
+
+        info <- file.info(csv_files)
+        non_empty <- rownames(info[info$size != 0, ])
+        csv_files <- csv_files[csv_files %in% non_empty]
+        target_data <- lapply(csv_files, read.csv.iterations.cost)
+        target_data <- bind_rows(target_data)
+        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
+        target_data$application <- rep(target_dir, nrow(target_data))
+
+        if (is.null(rs_data)) {
+            rs_data <- target_data
+        } else {
+            rs_data <- bind_rows(rs_data, target_data)
+        }
+    }
+}
+
+full_data <- filter(rs_data, technique == "RS", application == "bicgkernel")
+
+rs_plot_data <- rs_data %>%
+  filter(technique == "RS", application == "bicgkernel") %>%
+  group_by(experiment_id) %>%
+  mutate(mean_cost_baseline = mean(cost_baseline)) %>%
+  mutate(label_center_x = mean(cost_mean)) %>%
+  mutate(label_center_y = mean(best_iteration)) %>%
+  ungroup()
+
+complete_plot_data <- rs_plot_data
+
+str(complete_plot_data)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	11927 obs. of  35 variables:
+ $ id                          : int  1 2 3 4 5 6 7 8 10 11 ...
+ $ T2_J                        : int  512 128 1 4 1 1024 2048 16 128 1024 ...
+ $ T2_I                        : int  1 1024 16 2048 2048 32 512 16 256 32 ...
+ $ RT_I                        : int  4 1 2 1 1 1 4 32 1 1 ...
+ $ mean_confidence_interval_inf: num  3.844 0.439 0.574 0.432 5.218 ...
+ $ baseline                    : chr  "False" "False" "False" "False" ...
+ $ T1_J                        : int  32 2 32 4 4 64 2048 1 64 512 ...
+ $ technique                   : chr  "RS" "RS" "RS" "RS" ...
+ $ VEC2                        : chr  "True" "False" "True" "False" ...
+ $ VEC1                        : chr  "False" "False" "True" "True" ...
+ $ SCR                         : chr  "False" "False" "False" "True" ...
+ $ U1_I                        : int  16 26 11 18 24 17 20 5 10 27 ...
+ $ RT_J                        : int  16 2 4 32 8 4 2 4 4 4 ...
+ $ T1_I                        : int  128 8 4 16 2048 1 1 1 8 16 ...
+ $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
+ $ cost_std                    : num  0.11057 0.15496 0.09848 0.11809 0.00476 ...
+ $ cost_mean                   : num  3.912 0.535 0.635 0.505 5.221 ...
+ $ U_J                         : int  21 1 24 1 15 1 2 17 29 11 ...
+ $ U_I                         : int  1 8 1 12 1 1 1 1 1 1 ...
+ $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ correct_result              : chr  "True" "True" "True" "True" ...
+ $ OMP                         : chr  "False" "True" "True" "True" ...
+ $ mean_confidence_interval_sup: num  3.981 0.631 0.696 0.578 5.224 ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-10_1573846466" "xeon_e5_2630_v3_graoully-10_1573846466" "xeon_e5_2630_v3_graoully-10_1573846466" "xeon_e5_2630_v3_graoully-10_1573846466" ...
+ $ cost_baseline               : num  4.58 4.58 4.58 4.58 4.58 ...
+ $ speedup                     : num  1.172 8.57 7.215 9.075 0.878 ...
+ $ max_run_speedup             : num  10 10 10 10 10 ...
+ $ min_run_cost                : num  0.458 0.458 0.458 0.458 0.458 ...
+ $ best_iteration              : num  146 146 146 146 146 146 146 146 146 146 ...
+ $ iteration                   : num  1 2 3 4 5 6 7 8 10 11 ...
+ $ points                      : int  297 297 297 297 297 297 297 297 297 297 ...
+ $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
+ $ mean_cost_baseline          : num  4.58 4.58 4.58 4.58 4.58 ...
+ $ label_center_x              : num  2.1 2.1 2.1 2.1 2.1 ...
+ $ label_center_y              : num  146 146 146 146 146 146 146 146 146 146 ...
+#+end_example
+****** Analyzing Data
+#+begin_SRC R :results output :session *R*
+results_data <- select(complete_plot_data,
+                       OMP, SCR, VEC1, VEC2,
+                       RT_I, RT_J, U1_I, T1_I,
+                       T1_J, T2_I, T2_J, U_I, U_J,
+                       cost_mean)
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results output :session *R*
+summary(aov(cost_mean ~ .*., results_data))
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+               Df Sum Sq Mean Sq   F value   Pr(>F)
+OMP             1  19192   19192 38112.189  < 2e-16 ***
+SCR             1   3272    3272  6498.543  < 2e-16 ***
+VEC1            1      0       0     0.001 0.970549
+VEC2            1      1       1     1.624 0.202602
+RT_I            1    169     169   336.253  < 2e-16 ***
+RT_J            1     65      65   129.166  < 2e-16 ***
+U1_I            1      0       0     0.283 0.594502
+T1_I            1      5       5     9.617 0.001933 **
+T1_J            1     36      36    71.053  < 2e-16 ***
+T2_I            1      2       2     3.997 0.045608 *
+T2_J            1     12      12    24.159 8.99e-07 ***
+U_I             1     64      64   127.359  < 2e-16 ***
+U_J             1     59      59   117.487  < 2e-16 ***
+OMP:SCR         1   2844    2844  5647.467  < 2e-16 ***
+OMP:VEC1        1      0       0     0.259 0.611151
+OMP:VEC2        1      1       1     2.758 0.096771 .
+OMP:RT_I        1    150     150   298.553  < 2e-16 ***
+OMP:RT_J        1     62      62   123.269  < 2e-16 ***
+OMP:U1_I        1      0       0     0.092 0.761103
+OMP:T1_I        1      5       5     9.749 0.001799 **
+OMP:T1_J        1     35      35    69.874  < 2e-16 ***
+OMP:T2_I        1      3       3     5.981 0.014475 *
+OMP:T2_J        1     10      10    20.631 5.62e-06 ***
+OMP:U_I         1     45      45    88.417  < 2e-16 ***
+OMP:U_J         1     43      43    84.456  < 2e-16 ***
+SCR:VEC1        1      1       1     1.040 0.307732
+SCR:VEC2        1      2       2     3.950 0.046888 *
+SCR:RT_I        1     10      10    19.513 1.01e-05 ***
+SCR:RT_J        1      1       1     1.041 0.307683
+SCR:U1_I        1      0       0     0.809 0.368458
+SCR:T1_I        1      0       0     0.944 0.331208
+SCR:T1_J        1     14      14    26.834 2.25e-07 ***
+SCR:T2_I        1      0       0     0.061 0.804390
+SCR:T2_J        1     11      11    22.349 2.30e-06 ***
+SCR:U_I         1      2       2     4.720 0.029841 *
+SCR:U_J         1      1       1     1.997 0.157646
+VEC1:VEC2       1      0       0     0.068 0.793657
+VEC1:RT_I       1      0       0     0.526 0.468237
+VEC1:RT_J       1      0       0     0.267 0.605334
+VEC1:U1_I       1      0       0     0.306 0.580000
+VEC1:T1_I       1      1       1     1.181 0.277249
+VEC1:T1_J       1      0       0     0.371 0.542290
+VEC1:T2_I       1      0       0     0.001 0.976130
+VEC1:T2_J       1      0       0     0.935 0.333683
+VEC1:U_I        1      0       0     0.332 0.564436
+VEC1:U_J        1      0       0     0.240 0.624535
+VEC2:RT_I       1      2       2     4.620 0.031620 *
+VEC2:RT_J       1      0       0     0.109 0.740790
+VEC2:U1_I       1      0       0     0.742 0.389009
+VEC2:T1_I       1      2       2     3.216 0.072926 .
+VEC2:T1_J       1      0       0     0.470 0.493163
+VEC2:T2_I       1      0       0     0.158 0.690606
+VEC2:T2_J       1      0       0     0.429 0.512448
+VEC2:U_I        1      1       1     2.582 0.108095
+VEC2:U_J        1      0       0     0.576 0.447972
+RT_I:RT_J       1     43      43    85.147  < 2e-16 ***
+RT_I:U1_I       1      1       1     1.256 0.262507
+RT_I:T1_I       1      5       5     9.666 0.001881 **
+RT_I:T1_J       1      4       4     7.960 0.004791 **
+RT_I:T2_I       1      3       3     5.370 0.020508 *
+RT_I:T2_J       1      4       4     7.676 0.005605 **
+RT_I:U_I        1      3       3     5.409 0.020053 *
+RT_I:U_J        1      1       1     2.243 0.134269
+RT_J:U1_I       1      0       0     0.031 0.859404
+RT_J:T1_I       1      6       6    11.039 0.000895 ***
+RT_J:T1_J       1      0       0     0.282 0.595687
+RT_J:T2_I       1      0       0     0.433 0.510771
+RT_J:T2_J       1      1       1     1.434 0.231172
+RT_J:U_I        1      0       0     0.217 0.641335
+RT_J:U_J        1      0       0     0.585 0.444387
+U1_I:T1_I       1      1       1     1.514 0.218576
+U1_I:T1_J       1      1       1     2.152 0.142439
+U1_I:T2_I       1      0       0     0.087 0.768016
+U1_I:T2_J       1      4       4     7.919 0.004899 **
+U1_I:U_I        1      0       0     0.635 0.425402
+U1_I:U_J        1      0       0     0.107 0.743765
+T1_I:T1_J       1      1       1     1.064 0.302230
+T1_I:T2_I       1      4       4     8.085 0.004471 **
+T1_I:T2_J       1      0       0     0.116 0.733167
+T1_I:U_I        1      0       0     0.084 0.772076
+T1_I:U_J        1      1       1     2.303 0.129124
+T1_J:T2_I       1      0       0     0.390 0.532562
+T1_J:T2_J       1      7       7    13.810 0.000203 ***
+T1_J:U_I        1      6       6    12.445 0.000421 ***
+T1_J:U_J        1      5       5    10.613 0.001126 **
+T2_I:T2_J       1      0       0     0.073 0.786504
+T2_I:U_I        1      0       0     0.233 0.629516
+T2_I:U_J        1      1       1     2.282 0.130881
+T2_J:U_I        1      3       3     4.965 0.025886 *
+T2_J:U_J        1      0       0     0.329 0.566421
+Residuals   11836   5960       1
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_SRC R :results output :session *R*
+nobin_results_data <- results_data %>%
+                      filter(OMP == "True", SCR == "True",
+                             VEC1 == "True", VEC2 == "True") %>%
+                      select(-OMP, -VEC1,
+                             -VEC2, -SCR)
+
+summary(aov(cost_mean ~ .*., nobin_results_data))
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+             Df Sum Sq Mean Sq F value   Pr(>F)
+RT_I          1  0.002 0.00151   0.263  0.60846
+RT_J          1  0.128 0.12832  22.306 2.84e-06 ***
+U1_I          1  0.006 0.00619   1.076  0.30006
+T1_I          1  0.109 0.10865  18.887 1.60e-05 ***
+T1_J          1  0.013 0.01290   2.242  0.13482
+T2_I          1  0.026 0.02609   4.535  0.03357 *
+T2_J          1  0.006 0.00608   1.057  0.30423
+U_I           1  0.057 0.05742   9.982  0.00165 **
+U_J           1  0.055 0.05450   9.474  0.00217 **
+RT_I:RT_J     1  0.059 0.05861  10.187  0.00148 **
+RT_I:U1_I     1  0.043 0.04340   7.544  0.00618 **
+RT_I:T1_I     1  0.002 0.00154   0.267  0.60549
+RT_I:T1_J     1  0.000 0.00016   0.028  0.86628
+RT_I:T2_I     1  0.031 0.03055   5.311  0.02150 *
+RT_I:T2_J     1  0.001 0.00096   0.167  0.68337
+RT_I:U_I      1  0.002 0.00151   0.262  0.60909
+RT_I:U_J      1  0.002 0.00162   0.281  0.59596
+RT_J:U1_I     1  0.004 0.00402   0.698  0.40370
+RT_J:T1_I     1  0.000 0.00044   0.076  0.78225
+RT_J:T1_J     1  0.014 0.01435   2.495  0.11469
+RT_J:T2_I     1  0.004 0.00413   0.718  0.39700
+RT_J:T2_J     1  0.001 0.00137   0.238  0.62601
+RT_J:U_I      1  0.000 0.00014   0.025  0.87394
+RT_J:U_J      1  0.015 0.01523   2.647  0.10421
+U1_I:T1_I     1  0.000 0.00048   0.083  0.77362
+U1_I:T1_J     1  0.001 0.00129   0.224  0.63606
+U1_I:T2_I     1  0.016 0.01631   2.835  0.09271 .
+U1_I:T2_J     1  0.005 0.00464   0.807  0.36947
+U1_I:U_I      1  0.001 0.00057   0.099  0.75268
+U1_I:U_J      1  0.001 0.00094   0.164  0.68540
+T1_I:T1_J     1  0.003 0.00301   0.523  0.47001
+T1_I:T2_I     1  0.000 0.00012   0.021  0.88580
+T1_I:T2_J     1  0.000 0.00019   0.032  0.85730
+T1_I:U_I      1  0.000 0.00009   0.015  0.90240
+T1_I:U_J      1  0.003 0.00323   0.562  0.45385
+T1_J:T2_I     1  0.019 0.01927   3.349  0.06769 .
+T1_J:T2_J     1  0.017 0.01686   2.930  0.08739 .
+T1_J:U_I      1  0.005 0.00468   0.814  0.36729
+T1_J:U_J      1  0.000 0.00033   0.058  0.80961
+T2_I:T2_J     1  0.016 0.01560   2.713  0.10004
+T2_I:U_I      1  0.001 0.00127   0.220  0.63927
+T2_I:U_J      1  0.001 0.00131   0.227  0.63385
+T2_J:U_I      1  0.006 0.00608   1.056  0.30450
+T2_J:U_J      1  0.002 0.00159   0.276  0.59942
+Residuals   664  3.820 0.00575
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+****** Estimating GPR Kernel Parameters
+#+begin_SRC R :results output :session *R*
+results_data <- select(complete_plot_data,
+                       OMP, SCR, VEC1, VEC2,
+                       RT_I, RT_J, U1_I, T1_I,
+                       T1_J, T2_I, T2_J, U_I, U_J,
+                       cost_mean)
+#+end_SRC
+
+#+RESULTS:
+
+#+begin_SRC R :results output :session *R*
+library(DiceKriging)
+library(dplyr)
+library(rsm)
+
+sampled_results_data <- sample_n(results_data, 5000)
+
+sampled_results_data <- sampled_results_data %>% mutate_all(funs(str_replace(., "True", "1"))) %>%
+  mutate_all(funs(str_replace(., "False", "0"))) %>%
+  mutate_all(funs(as.integer(.)))
+
+coded_sampled_design <- coded.data(select(sampled_results_data, -cost_mean),
+                                   formulas = list(T1_Ie = T1_Ie ~ (T1_I - 5.5) / 5.5,
+                                                   T1_Je = T1_Je ~ (T1_J - 5.5) / 5.5,
+                                                   U_Je = U_Je ~ (U_J - 14.5) / 14.5,
+                                                   U_Ie = U_Ie ~ (U_I - 14.5) / 14.5,
+                                                   T2_Ie = T2_Ie ~ (T2_I - 5.5) / 5.5,
+                                                   T2_Je = T2_Je ~ (T2_J - 5.5) / 5.5,
+                                                   U1_Ie = U1_Ie ~ (U1_I - 14.5) / 14.5,
+                                                   OMPe = OMPe ~ (OMP - 0.5) / 0.5,
+                                                   SCRe = SCRe ~ (SCR - 0.5) / 0.5,
+                                                   VEC1e = VEC1e ~ (VEC1 - 0.5) / 0.5,
+                                                   VEC2e = VEC2e ~ (VEC2 - 0.5) / 0.5,
+                                                   RT_Ie = RT_Ie ~ (RT_I - 2.5) / 2.5,
+                                                   RT_Je = RT_Je ~ (RT_J - 2.5) / 2.5))
+
+reg <- km(design = coded_sampled_design,
+          response = sampled_results_data$cost_mean)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~1
+,* covariance model :
+  - type :  matern5_2
+  - nugget : NO
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  4 4 4 4 24.8 24.8 4 744.3636 744.3636 744.3636 744.3636 4 4
+  - best initial criterion value(s) :  -7562.03
+
+N = 13, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=         7562  |proj g|=        24.25
+At iterate     1  f =       7413.9  |proj g|=        23.848
+At iterate     2  f =       7392.2  |proj g|=        23.778
+At iterate     3  f =       7325.1  |proj g|=        9.7341
+At iterate     4  f =       7296.3  |proj g|=        9.6407
+At iterate     5  f =       6766.4  |proj g|=        6.9176
+At iterate     6  f =       6709.6  |proj g|=        7.5269
+At iterate     7  f =       6694.2  |proj g|=        7.5742
+At iterate     8  f =       6663.7  |proj g|=        7.5463
+At iterate     9  f =       6620.9  |proj g|=        6.3228
+At iterate    10  f =       6571.9  |proj g|=         5.853
+At iterate    11  f =       6533.7  |proj g|=        5.0285
+At iterate    12  f =       6464.6  |proj g|=        5.2125
+At iterate    13  f =       6342.8  |proj g|=         7.443
+At iterate    14  f =       6324.5  |proj g|=        7.3488
+At iterate    15  f =       6323.4  |proj g|=        7.3507
+At iterate    16  f =       6321.3  |proj g|=        7.4102
+At iterate    17  f =       6318.6  |proj g|=        7.4496
+At iterate    18  f =       6316.4  |proj g|=        7.3897
+At iterate    19  f =       6313.5  |proj g|=        7.5038
+At iterate    20  f =       6310.5  |proj g|=        7.7871
+At iterate    21  f =       6310.2  |proj g|=        7.7868
+At iterate    22  f =       6309.9  |proj g|=        7.7872
+At iterate    23  f =       6308.1  |proj g|=        7.7314
+At iterate    24  f =       6303.1  |proj g|=        6.9893
+At iterate    25  f =         6301  |proj g|=        6.9916
+At iterate    26  f =       6300.5  |proj g|=        6.9778
+At iterate    27  f =       6297.4  |proj g|=        6.9241
+At iterate    28  f =       6290.7  |proj g|=        6.7774
+At iterate    29  f =       6283.6  |proj g|=        6.5873
+At iterate    30  f =       6282.4  |proj g|=        6.4988
+At iterate    31  f =       6282.2  |proj g|=        6.4529
+At iterate    32  f =       6281.9  |proj g|=        6.4503
+At iterate    33  f =       6280.7  |proj g|=         6.434
+At iterate    34  f =       6279.2  |proj g|=        6.4062
+At iterate    35  f =       6276.6  |proj g|=         6.345
+At iterate    36  f =       6275.7  |proj g|=        6.3308
+At iterate    37  f =       6275.3  |proj g|=        6.3282
+At iterate    38  f =       6274.8  |proj g|=        6.3181
+At iterate    39  f =       6274.2  |proj g|=        6.2935
+At iterate    40  f =       6273.6  |proj g|=        6.2499
+At iterate    41  f =       6273.1  |proj g|=        6.1728
+At iterate    42  f =       6272.8  |proj g|=        6.0966
+At iterate    43  f =       6272.4  |proj g|=        6.0309
+At iterate    44  f =       6272.2  |proj g|=        6.0113
+At iterate    45  f =       6271.9  |proj g|=        5.9816
+At iterate    46  f =       6271.4  |proj g|=        5.9122
+At iterate    47  f =         6270  |proj g|=        6.0153
+At iterate    48  f =       6266.5  |proj g|=        6.8669
+At iterate    49  f =       6265.1  |proj g|=        4.2789
+At iterate    50  f =       6261.3  |proj g|=        5.3392
+At iterate    51  f =       6258.6  |proj g|=        5.1225
+At iterate    52  f =       6255.9  |proj g|=        3.7405
+At iterate    53  f =       6255.4  |proj g|=        2.8486
+At iterate    54  f =       6255.2  |proj g|=        3.8057
+At iterate    55  f =       6255.1  |proj g|=        3.8055
+At iterate    56  f =       6254.8  |proj g|=        3.5039
+At iterate    57  f =       6254.6  |proj g|=        3.8092
+At iterate    58  f =       6254.3  |proj g|=        3.7397
+At iterate    59  f =         6254  |proj g|=        3.4176
+At iterate    60  f =         6254  |proj g|=        2.7449
+At iterate    61  f =         6254  |proj g|=        2.1714
+At iterate    62  f =         6254  |proj g|=        2.1588
+At iterate    63  f =         6254  |proj g|=        3.7402
+At iterate    64  f =       6253.9  |proj g|=        3.7424
+At iterate    65  f =       6253.8  |proj g|=        3.7462
+At iterate    66  f =       6253.6  |proj g|=        3.4908
+At iterate    67  f =       6253.4  |proj g|=        3.7551
+At iterate    68  f =       6253.3  |proj g|=        3.7525
+At iterate    69  f =       6253.2  |proj g|=        2.7038
+At iterate    70  f =       6253.2  |proj g|=        3.1047
+At iterate    71  f =       6253.1  |proj g|=        2.0107
+At iterate    72  f =       6253.1  |proj g|=        1.9014
+At iterate    73  f =       6253.1  |proj g|=         3.809
+At iterate    74  f =       6253.1  |proj g|=        2.9691
+At iterate    75  f =       6253.1  |proj g|=        2.3959
+At iterate    76  f =       6253.1  |proj g|=        2.4247
+At iterate    77  f =       6253.1  |proj g|=        1.2962
+At iterate    78  f =       6253.1  |proj g|=        1.5339
+At iterate    79  f =         6253  |proj g|=        3.8108
+At iterate    80  f =         6253  |proj g|=        3.8109
+At iterate    81  f =         6253  |proj g|=        3.8109
+At iterate    82  f =         6253  |proj g|=       0.96266
+At iterate    83  f =       6252.9  |proj g|=       0.96558
+At iterate    84  f =       6252.7  |proj g|=        3.7463
+At iterate    85  f =       6252.6  |proj g|=        3.7469
+At iterate    86  f =       6252.6  |proj g|=        1.5952
+At iterate    87  f =       6252.5  |proj g|=        2.0364
+At iterate    88  f =       6252.5  |proj g|=        3.7467
+At iterate    89  f =       6252.5  |proj g|=        2.2482
+At iterate    90  f =       6252.5  |proj g|=        2.2013
+At iterate    91  f =       6252.5  |proj g|=        2.5787
+At iterate    92  f =       6252.4  |proj g|=        3.8048
+At iterate    93  f =       6252.4  |proj g|=        3.5006
+At iterate    94  f =       6252.4  |proj g|=        2.4506
+At iterate    95  f =       6252.4  |proj g|=        2.5164
+At iterate    96  f =       6252.4  |proj g|=        3.8054
+At iterate    97  f =       6252.3  |proj g|=        3.8053
+At iterate    98  f =       6252.2  |proj g|=        3.8082
+At iterate    99  f =       6251.9  |proj g|=        3.8117
+At iterate   100  f =       6251.8  |proj g|=        3.8177
+At iterate   101  f =       6251.6  |proj g|=        3.8191
+final  value 6251.598219
+stopped after 101 iterations
+#+end_example
+
+#+begin_SRC R :results output :session *R*
+reg
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+Call:
+km(design = coded_sampled_design, response = sampled_results_data$cost_mean)
+
+Trend  coeff.:
+               Estimate
+ (Intercept)     1.4689
+
+Covar. type  : matern5_2
+Covar. coeff.:
+               Estimate
+ theta(OMPe)     0.0000
+ theta(SCRe)     1.3433
+theta(VEC1e)     4.0000
+theta(VEC2e)     4.0000
+theta(RT_Ie)     4.0576
+theta(RT_Je)     7.0118
+theta(U1_Ie)     0.2681
+theta(T1_Ie)   648.8870
+theta(T1_Je)   290.8718
+theta(T2_Ie)   174.3350
+theta(T2_Je)   744.2121
+ theta(U_Ie)     0.4684
+ theta(U_Je)     0.1809
+
+Variance estimate: 1.510738
+#+end_example
