@@ -29019,7 +29019,7 @@ Interesting book from Arnaud:
 - https://cran.r-project.org/doc/contrib/Faraway-PRA.pdf
 - Descriptions of estimators, ANOVA, etc...
 *** [2019-03-15 Fri]
-**** Reviewing an ISCC19 Paper from Alfredo
+**** Reviewing an ISCC19 Paper from Alfredo                  :PaperReview:
 The paper  presents a variation  of the  \varepsilon-greedy algorithm for  the Multi-Armed
 Bandit problem to the selection of Access Points by user stations, and evaluates
 the  performance of  the  proposed approach  in two  scenarios,  varying in  the
