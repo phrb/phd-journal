@@ -72105,7 +72105,6 @@ data <- NULL
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    print(csv_file)
     data$experiment_id <- str_split(csv_file, "/")[[1]][6]
     data_baseline <- data[data$baseline == "True", "cost_mean"]
     data$cost_baseline <- rep(data_baseline, nrow(data))
@@ -72230,54 +72229,6 @@ str(complete_plot_data)
 
 #+RESULTS:
 #+begin_example
-------------------------------------------------------------------------------
-You have loaded plyr after dplyr - this is likely to cause problems.
-If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-library(plyr); library(dplyr)
-------------------------------------------------------------------------------
-
-Attaching package: ‘plyr’
-
-The following objects are masked from ‘package:dplyr’:
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize
-
-Attaching package: ‘rPref’
-
-The following objects are masked from ‘package:plyr’:
-
-    empty, true
-
-The following object is masked from ‘package:dplyr’:
-
-    between
-
-Attaching package: ‘reshape2’
-
-The following object is masked from ‘package:tidyr’:
-
-    smiths
-
-Registering fonts with R
-
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-11_1573093618/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-14_1574882926/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-15_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-15_1574882926/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-16_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-16_1574882927/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-3_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-4_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-4_1574882926/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-5_1573093618/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-5_1574882926/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-6_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-7_1573093618/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-7_1574882926/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-8_1573093617/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-8_1574882925/search_space.csv"
-[1] "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1/bicgkernel/xeon_e5_2630_v3_graoully-9_1573093618/search_space.csv"
 
 'data.frame':	5112 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -72346,9 +72297,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
- $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
- $ label_center_y              : num  199 199 199 199 199 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 
 Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -72383,9 +72334,9 @@ Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
  $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
- $ mean_cost_baseline          : num  4.63 4.63 4.63 4.63 4.63 ...
- $ label_center_x              : num  0.637 0.637 0.637 0.637 0.637 ...
- $ label_center_y              : num  199 199 199 199 199 ...
+ $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
+ $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
+ $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
 #+end_example
 
 ****** Small Steps and Starting Sample
@@ -72516,7 +72467,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+RESULTS:
 [[file:/tmp/babel-X0G35y/figureanTAEV.pdf]]
 
-#+begin_SRC R :results graphics output :session *R2* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
 large_plot_data <- complete_plot_data %>%
   group_by(technique, experiment_id) %>%
   subset(cost_mean == min_run_cost) %>%
@@ -72577,7 +72528,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureXMfYYB.pdf]]
+[[file:/tmp/babel-xahz2a/figureGL30EE.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -72649,7 +72600,6 @@ data <- NULL
 read.csv.iterations.cost <- function(csv_file) {
     data <- read.csv(csv_file, header = TRUE, stringsAsFactor = FALSE)
 
-    print(csv_file)
     print(str(data))
     data$experiment_id <- str_split(str_split(csv_file, "/")[[1]][6], "_")[[1]][5]
     #data_baseline <- data[data$baseline == "True", "cost_mean"]
@@ -73208,7 +73158,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureEjIQ75.pdf]]
+[[file:/tmp/babel-xahz2a/figurezV3sGg.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -73892,6 +73842,12 @@ mv_sample <- as.data.frame(mv_sample)
 #+end_SRC
 
 #+RESULTS:
+:
+: Attaching package: ‘MASS’
+:
+: The following object is masked from ‘package:dplyr’:
+:
+:     select
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(ggplot2)
@@ -73902,7 +73858,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureG4t7NS.png]]
+[[file:/tmp/babel-VLBdRS/figureLiMltF.png]]
 
 To get strong correlations, the covariance matrix could be:
 
@@ -73937,7 +73893,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figure6DT6jM.png]]
+[[file:/tmp/babel-VLBdRS/figureYwfX6O.png]]
 
 ****** 10-Dimensional Example: Reinterpreting Samples
 #+begin_SRC R :results output :session *R*
@@ -73967,7 +73923,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureX0XfE8.png]]
+[[file:/tmp/babel-VLBdRS/figureNW9HFB.png]]
 
 #+begin_SRC R :results output :session *R*
 library(latex2exp)
@@ -74025,7 +73981,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figurexJxn17.png]]
+[[file:/tmp/babel-VLBdRS/figureAW0ktc.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(dplyr)
@@ -74070,7 +74026,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureFKoygF.png]]
+[[file:/tmp/babel-VLBdRS/figureT8p88w.png]]
 
 ***** Sampling Functions
 #+begin_SRC R :results output :session *R*
@@ -74091,7 +74047,7 @@ ggpairs(target_X) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureskC9rc.png]]
+[[file:/tmp/babel-VLBdRS/figurewj9ojC.png]]
 
 #+begin_SRC R :results output :session *R*
 library(Rcpp)
@@ -74187,7 +74143,7 @@ ggplot(evaluated_grid, aes(x = x1, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureRdxAA8.png]]
+[[file:/tmp/babel-VLBdRS/figurelLwlxE.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(lattice)
@@ -74215,7 +74171,7 @@ wireframe(y ~ x1 * x2,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figure4jm9iJ.png]]
+[[file:/tmp/babel-VLBdRS/figurehN5zzK.png]]
 
 ***** Regression, Sampling, EI
 #+begin_SRC R :results output :session *R*
@@ -74863,3 +74819,102 @@ theta(T2_Je)   744.2121
 
 Variance estimate: 1.510738
 #+end_example
+* 2020
+** February
+*** [2020-02-05 Wed]
+**** Review for COMCOM                                       :PaperReview:
+The  paper  presents  the  \varepsilon-sticky  algorithm, an  extension  of  the  \varepsilon-greedy
+algorithm for the  Multi-Armed Bandit problem to the selection  of Access Points
+by user stations, and evaluates the  performance of the proposed approach in two
+scenarios, varying in the distribution  of user stations.  The proposed approach
+presents significant improvements in user station satisfaction, in relation to a
+Strongest  Signal Access  Point  selection algorithm.   The paper  significantly
+extends  the authors'  previous  work,  providing a  brief  introduction to  the
+Multi-Armed Bandit  problem and  its different types,  and a  significantly more
+extensive evaluation and validation of  the proposed approach.  The experimental
+methodology is  solid, and  the proposed  approach convincingly  performs better
+than a Strongest Signal selection algorithm, in all scenarios studied. The study
+of the best  values of \varepsilon was  also interesting, since choosing a  good value for
+the parameter has a significant impact on the observed throughput.
+**** Applications of Program Autotuning: Call for Proposals for Funding for Undergraduates, Masters, and PhD Students
+We are glad to  announce a call for masters and PhD  scholarship proposals for a
+research project, done in the context  of a collaboration between the University
+of  São  Paulo   and  the  Hewlett  Packard  Enterprise   company,  starting  on
+February 2020.
+
+The work to be performed by candidates  will require 10 hours per week, and will
+involve the application of techniques for statistical optimization and design of
+experiments to a problem presented by the candidate. We are looking for students
+interested in optimizing their applications, or applications used in their work,
+targeting different metrics, such as performance, memory or network usage.
+
+Ideal  problems  for this  project  include  problems  where the  search  spaces
+involved  are  too large  to  be  explored  exhaustively,  and have  no  trivial
+configuration. Examples of problems include  the selection of hyperparameters of
+Machine Learning algorithms to  increase prediction accuracy, selecting compiler
+flags  to improve  performance, and  configuring user-developed  applications to
+improve user-defined metrics.
+
+We would like students who have  already stated their research problems and have
+had some progress towards measuring  and evaluating their objectives, but highly
+motivated students who are just starting are also welcome to apply.
+
+Up to  5 accepted  candidates will receive  funding, comparable  to scholarships
+from  CAPES,   payed  by  IME/USP   for  eight  months,  between   February  and
+September 2020. Students currently without funding are preferred.
+
+We invite  interested students to  submit a CV  and a cover  letter, summarizing
+their problem and  their interest in applying optimization techniques  to it, by
+February  20th 2020.  We assume  your advisor  is aware  and consents  with your
+participation in this project. Accepted candidates  will be invited to a two-day
+workshop at IME/USP, where techniques and libraries for statistical optimization
+and design  of experiments will  be presented, and  candidates will be  asked to
+give short presentations about their work. Final acceptance notification will be
+sent by February 29th.
+
+Project Coordinator: Prof. Dr. Alfredo Goldman
+Project Manager: Pedro Bruel
+*** [2020-02-06 Thu]
+**** Autotuning for GCC
+***** Some References
+- https://en.wikipedia.org/wiki/MILEPOST_GCC
+- https://github.com/ctuning
+- https://github.com/ctuning/ck/wiki
+***** Ideas
+****** Benchmark
+- Ofast
+  - unsafe optim
+  - error rate
+****** Search Space
+- Focus on *flags* at first:
+  - Explore *numerical, categorical parameters* later
+  - LTO
+- Which flags should be chosen?
+- Baselines:
+  - O0, ..., O3, (Ofast, ...?)
+  - Random sample of flag configurations
+****** Metrics / Search Objectives
+- Performance, memory, binary size, ...
+- Focus on *one metric* first
+  - Pareto frontier of the others
+- We could try something like a normalized, weighted sum of metrics
+****** Experiments and Analysis Plan
+- Plan a screening experiment: Identify Main Effects
+- Leverage expert knowledge plus screening to plan next experiments
+- Low-discrepancy sampling, linear model, ANOVA
+- Gaussian Process Regression?
+***** Plan
+1. Define a benchmark
+   - Firefox
+   - SPEC
+   - BLAS Lapack
+2. Define metrics
+3. Define the search space
+   1. Flags
+   2. Others
+4. Start experiments
+   1. Random sample
+   2. Screening
+   3. Linear models + ANOVA
+   4. Linear models + ANOVA + Optimal Design
+   5. Gaussian Process Regression
