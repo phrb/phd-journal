@@ -18,11 +18,15 @@
 
 #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \usepackage[margin=2cm]{geometry}
+#+LATEX_HEADER: \usepackage{amsmath,amsfonts,amssymb,amsthm}
+#+LATEX_HEADER: \usepackage{xcolor}
 #+LATEX_HEADER: \usepackage{sourcecodepro}
 #+LATEX_HEADER: \usepackage{booktabs}
 #+LATEX_HEADER: \usepackage{array}
 #+LATEX_HEADER: \usepackage{colortbl}
 #+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{tikz}
+#+LATEX_HEADER: \usepackage{tikz-qtree}
 #+LATEX_HEADER: \usepackage{algpseudocode}
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage{graphicx}
@@ -72092,7 +72096,7 @@ read_experiment <- function(x) {
   return(data)
 }
 
-current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_sobol_ei_parsimonious_v1"
+current_experiment <- "dlmt_spapt_experiments/data/tests/gpr_expanded_ss"
 target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 
@@ -72163,7 +72167,7 @@ str(complete_plot_data)
 # data_dir <- "dlmt_spapt_experiments/data/results"
 # data_dir <- "dlmt_spapt_experiments/data/tests/no_binary_random"
 # data_dir <- "dlmt_spapt_experiments/data/results"
-data_dir <- "dlmt_spapt_experiments/data/tests/random_300_graoully_debnew"
+data_dir <- "dlmt_spapt_experiments/data/tests/rs_baseline_19Feb"
 #target_dirs <- list.dirs(path = data_dir, full.names = FALSE, recursive = FALSE)
 target_dirs <- c("bicgkernel")
 rs_data <- NULL
@@ -72230,113 +72234,113 @@ str(complete_plot_data)
 #+RESULTS:
 #+begin_example
 
-'data.frame':	5112 obs. of  32 variables:
+'data.frame':	6554 obs. of  32 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
- $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
- $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
- $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
+ $ T2_J                        : int  1024 64 512 2048 64 128 2 512 128 4 ...
+ $ T2_I                        : int  32 512 64 16 8 2048 64 32 256 256 ...
+ $ RT_I                        : int  32 2 4 8 2 4 8 16 1 4 ...
+ $ mean_confidence_interval_inf: num  0.527 3.355 0.565 4.691 3.384 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
+ $ T1_J                        : int  32 8 512 32 8 4 2 256 4 4 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
  $ VEC2                        : chr  "True" "True" "False" "True" ...
- $ VEC1                        : chr  "False" "False" "True" "True" ...
- $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
- $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
- $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
+ $ VEC1                        : chr  "False" "True" "False" "False" ...
+ $ SCR                         : chr  "False" "False" "False" "False" ...
+ $ U1_I                        : int  5 10 5 16 20 16 29 19 11 9 ...
+ $ RT_J                        : int  4 1 32 4 32 8 8 1 2 1 ...
+ $ T1_I                        : int  1 256 32 4 2 512 16 1 4 8 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
- $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
- $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
- $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
+ $ cost_std                    : num  0.11978 0.00729 0.10372 0.00509 0.00406 ...
+ $ cost_mean                   : num  0.601 3.359 0.629 4.694 3.386 ...
+ $ U_J                         : int  25 8 1 1 1 12 1 7 1 27 ...
+ $ U_I                         : int  1 1 7 1 23 1 11 1 19 1 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "False" "False" "True" "False" ...
- $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
+ $ OMP                         : chr  "True" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  0.675 3.364 0.693 4.697 3.389 ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
- $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
- $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
- $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ speedup                     : num  7.629 1.365 7.292 0.977 1.355 ...
+ $ max_run_speedup             : num  10.7 10.7 10.7 10.7 10.7 ...
+ $ min_run_cost                : num  0.428 0.428 0.428 0.428 0.428 ...
+ $ best_iteration              : num  308 308 308 308 308 308 308 308 308 308 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
+ $ points                      : int  323 323 323 323 323 323 323 323 323 323 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	5112 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	6554 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
- $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
- $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
- $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
+ $ T2_J                        : int  1024 64 512 2048 64 128 2 512 128 4 ...
+ $ T2_I                        : int  32 512 64 16 8 2048 64 32 256 256 ...
+ $ RT_I                        : int  32 2 4 8 2 4 8 16 1 4 ...
+ $ mean_confidence_interval_inf: num  0.527 3.355 0.565 4.691 3.384 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
+ $ T1_J                        : int  32 8 512 32 8 4 2 256 4 4 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
  $ VEC2                        : chr  "True" "True" "False" "True" ...
- $ VEC1                        : chr  "False" "False" "True" "True" ...
- $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
- $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
- $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
+ $ VEC1                        : chr  "False" "True" "False" "False" ...
+ $ SCR                         : chr  "False" "False" "False" "False" ...
+ $ U1_I                        : int  5 10 5 16 20 16 29 19 11 9 ...
+ $ RT_J                        : int  4 1 32 4 32 8 8 1 2 1 ...
+ $ T1_I                        : int  1 256 32 4 2 512 16 1 4 8 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
- $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
- $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
- $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
+ $ cost_std                    : num  0.11978 0.00729 0.10372 0.00509 0.00406 ...
+ $ cost_mean                   : num  0.601 3.359 0.629 4.694 3.386 ...
+ $ U_J                         : int  25 8 1 1 1 12 1 7 1 27 ...
+ $ U_I                         : int  1 1 7 1 23 1 11 1 19 1 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "False" "False" "True" "False" ...
- $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
+ $ OMP                         : chr  "True" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  0.675 3.364 0.693 4.697 3.389 ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
- $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
- $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
- $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ speedup                     : num  7.629 1.365 7.292 0.977 1.355 ...
+ $ max_run_speedup             : num  10.7 10.7 10.7 10.7 10.7 ...
+ $ min_run_cost                : num  0.428 0.428 0.428 0.428 0.428 ...
+ $ best_iteration              : num  308 308 308 308 308 308 308 308 308 308 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
+ $ points                      : int  323 323 323 323 323 323 323 323 323 323 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
  $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ label_center_x              : num  1.16 1.16 1.16 1.16 1.16 ...
+ $ label_center_y              : num  308 308 308 308 308 308 308 308 308 308 ...
 
-Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	17039 obs. of  35 variables:
+Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	12521 obs. of  35 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
- $ T2_J                        : int  512 32 16 32 2048 2048 1024 16 512 64 ...
- $ T2_I                        : int  2048 2048 256 32 4 512 64 16 32 2048 ...
- $ RT_I                        : int  2 4 2 2 8 2 2 4 16 2 ...
- $ mean_confidence_interval_inf: num  5.814 1.478 0.585 1.642 0.543 ...
+ $ T2_J                        : int  1024 64 512 2048 64 128 2 512 128 4 ...
+ $ T2_I                        : int  32 512 64 16 8 2048 64 32 256 256 ...
+ $ RT_I                        : int  32 2 4 8 2 4 8 16 1 4 ...
+ $ mean_confidence_interval_inf: num  0.527 3.355 0.565 4.691 3.384 ...
  $ baseline                    : chr  "False" "False" "False" "False" ...
- $ T1_J                        : int  2 1 4 32 256 1024 256 16 16 8 ...
+ $ T1_J                        : int  32 8 512 32 8 4 2 256 4 4 ...
  $ technique                   : chr  "GPR" "GPR" "GPR" "GPR" ...
  $ VEC2                        : chr  "True" "True" "False" "True" ...
- $ VEC1                        : chr  "False" "False" "True" "True" ...
- $ SCR                         : chr  "True" "True" "False" "True" ...
- $ U1_I                        : int  12 8 30 23 20 2 17 5 13 11 ...
- $ RT_J                        : int  4 16 16 16 8 16 1 16 8 16 ...
- $ T1_I                        : int  32 32 128 16 4 32 16 16 2 1024 ...
+ $ VEC1                        : chr  "False" "True" "False" "False" ...
+ $ SCR                         : chr  "False" "False" "False" "False" ...
+ $ U1_I                        : int  5 10 5 16 20 16 29 19 11 9 ...
+ $ RT_J                        : int  4 1 32 4 32 8 8 1 2 1 ...
+ $ T1_I                        : int  1 256 32 4 2 512 16 1 4 8 ...
  $ runs                        : int  10 10 10 10 10 10 10 10 10 10 ...
- $ cost_std                    : num  0.01111 0.00681 0.0958 0.00667 0.17467 ...
- $ cost_mean                   : num  5.821 1.482 0.645 1.646 0.652 ...
- $ U_J                         : int  21 1 4 14 1 8 1 18 1 1 ...
- $ U_I                         : int  1 6 1 1 16 1 26 1 26 10 ...
+ $ cost_std                    : num  0.11978 0.00729 0.10372 0.00509 0.00406 ...
+ $ cost_mean                   : num  0.601 3.359 0.629 4.694 3.386 ...
+ $ U_J                         : int  25 8 1 1 1 12 1 7 1 27 ...
+ $ U_I                         : int  1 1 7 1 23 1 11 1 19 1 ...
  $ step                        : int  1 1 1 1 1 1 1 1 1 1 ...
  $ correct_result              : chr  "True" "True" "True" "True" ...
- $ OMP                         : chr  "False" "False" "True" "False" ...
- $ mean_confidence_interval_sup: num  5.828 1.486 0.704 1.65 0.76 ...
- $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" "xeon_e5_2630_v3_graoully-11_1573093618" ...
+ $ OMP                         : chr  "True" "False" "True" "False" ...
+ $ mean_confidence_interval_sup: num  0.675 3.364 0.693 4.697 3.389 ...
+ $ experiment_id               : chr  "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" "xeon_e5_2630_v3_graoully-13_1581967560" ...
  $ cost_baseline               : num  4.59 4.59 4.59 4.59 4.59 ...
- $ speedup                     : num  0.789 3.098 7.119 2.789 7.043 ...
- $ max_run_speedup             : num  10.6 10.6 10.6 10.6 10.6 ...
- $ min_run_cost                : num  0.433 0.433 0.433 0.433 0.433 ...
- $ best_iteration              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ speedup                     : num  7.629 1.365 7.292 0.977 1.355 ...
+ $ max_run_speedup             : num  10.7 10.7 10.7 10.7 10.7 ...
+ $ min_run_cost                : num  0.428 0.428 0.428 0.428 0.428 ...
+ $ best_iteration              : num  308 308 308 308 308 308 308 308 308 308 ...
  $ iteration                   : num  1 2 3 4 5 6 7 8 9 10 ...
- $ points                      : int  306 306 306 306 306 306 306 306 306 306 ...
+ $ points                      : int  323 323 323 323 323 323 323 323 323 323 ...
  $ application                 : chr  "bicgkernel" "bicgkernel" "bicgkernel" "bicgkernel" ...
  $ mean_cost_baseline          : num  4.59 4.59 4.59 4.59 4.59 ...
- $ label_center_x              : num  0.726 0.726 0.726 0.726 0.726 ...
- $ label_center_y              : num  93 93 93 93 93 93 93 93 93 93 ...
+ $ label_center_x              : num  1.16 1.16 1.16 1.16 1.16 ...
+ $ label_center_y              : num  308 308 308 308 308 308 308 308 308 308 ...
 #+end_example
 
 ****** Small Steps and Starting Sample
@@ -72369,7 +72373,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figurejU9KTQ.pdf]]
+[[file:/tmp/babel-6kiapU/figurev67NZ1.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -72401,7 +72405,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureouI2aZ.pdf]]
+[[file:/tmp/babel-6kiapU/figureQi4su4.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -72432,7 +72436,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figureil6iFi.pdf]]
+[[file:/tmp/babel-6kiapU/figure7vsh8B.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -72465,7 +72469,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureanTAEV.pdf]]
+[[file:/tmp/babel-6kiapU/figure8E0drB.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
 large_plot_data <- complete_plot_data %>%
@@ -72528,7 +72532,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-xahz2a/figureGL30EE.pdf]]
+[[file:/tmp/babel-6kiapU/figuref1uirL.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 short_plot_data <- complete_plot_data %>%
@@ -72566,7 +72570,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureIbGApH.pdf]]
+[[file:/tmp/babel-6kiapU/figureHwgMor.pdf]]
 ***** Results for =atax=
 ****** Loading Data                                           :noexport:
 #+HEADER: :results output :session *R* :exports none
@@ -73858,7 +73862,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figureLiMltF.png]]
+[[file:/tmp/babel-6kiapU/figureuAZRdX.png]]
 
 To get strong correlations, the covariance matrix could be:
 
@@ -73893,7 +73897,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figureYwfX6O.png]]
+[[file:/tmp/babel-6kiapU/figureReB2Vm.png]]
 
 ****** 10-Dimensional Example: Reinterpreting Samples
 #+begin_SRC R :results output :session *R*
@@ -73923,7 +73927,7 @@ ggpairs(mv_sample) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figureNW9HFB.png]]
+[[file:/tmp/babel-6kiapU/figurebdO8hQ.png]]
 
 #+begin_SRC R :results output :session *R*
 library(latex2exp)
@@ -73981,7 +73985,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figureAW0ktc.png]]
+[[file:/tmp/babel-6kiapU/figurehtbQ7z.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(dplyr)
@@ -74026,7 +74030,7 @@ ggplot(plot_data, aes(x = x, y = f_x)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figureT8p88w.png]]
+[[file:/tmp/babel-6kiapU/figurey5cDt0.png]]
 
 ***** Sampling Functions
 #+begin_SRC R :results output :session *R*
@@ -74047,7 +74051,7 @@ ggpairs(target_X) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figurewj9ojC.png]]
+[[file:/tmp/babel-6kiapU/figureB084Wp.png]]
 
 #+begin_SRC R :results output :session *R*
 library(Rcpp)
@@ -74143,7 +74147,7 @@ ggplot(evaluated_grid, aes(x = x1, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figurelLwlxE.png]]
+[[file:/tmp/babel-6kiapU/figurebGMFGA.png]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
 library(lattice)
@@ -74171,7 +74175,7 @@ wireframe(y ~ x1 * x2,
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VLBdRS/figurehN5zzK.png]]
+[[file:/tmp/babel-6kiapU/figureW4Ug8i.png]]
 
 ***** Regression, Sampling, EI
 #+begin_SRC R :results output :session *R*
@@ -74918,3 +74922,382 @@ Project Manager: Pedro Bruel
    3. Linear models + ANOVA
    4. Linear models + ANOVA + Optimal Design
    5. Gaussian Process Regression
+*** [2020-02-13 Thu]
+**** Experimental Design for a 2D Problem
+***** Defining a Problem
+Consider the following function of two factors $(x_1, x_2)$:
+
+\[
+f(x_1, x_2) + \varepsilon = 2.3 + (1.1x_1) + (1.6x_{1}^{2}) + (2.2x_2) + (3.2x_{2}^{2}) + \varepsilon
+\]
+
+That is, $f(x_1, x_2)$ has linear and quadratic dependence on $(x_1, x_2)$.  Here, \varepsilon
+is a normally distributed added error with mean zero and variance one.
+
+In R, we can write $f$ as:
+
+#+begin_SRC R :results output :session *R*
+f <- function(x1, x2) {
+  return(2.3 + (1.1 * x1) + (1.6 * x1 * x1) +
+         (2.2 * x2) + (3.2 * x2 * x2) + (2.7 * x1 * x2) + rnorm(length(x1)))
+}
+
+# Measuring 5 values of f(x1, x2)
+f(rnorm(5), rnorm(5))
+#+end_SRC
+
+#+RESULTS:
+:
+: [1]  1.022636 11.213378  5.611775  5.246327  5.553409
+
+The inputs of $f$ are defined to  be real numbers in the interval $[-1.0, 1.0]$.
+Since we cannot generate  the set of *all possible inputs* of $f$,  we have to set
+for a *sample of limited size*. Say that we cover the $(x_1, x_2)$ space with a grid
+of points in $[-1.0, 1.0]$, spaced by $0.05$ in each axis. In R, we can write:
+
+#+begin_SRC R :results output :session *R*
+resolution <- 0.05
+
+sample_grid <- expand.grid(x1 = seq(-1.0, 1.0, by = resolution),
+                           x2 = seq(-1.0, 1.0, by = resolution))
+
+sample_grid$f <- f(sample_grid$x1, sample_grid$x2)
+
+str(sample_grid)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	1681 obs. of  3 variables:
+ $ x1: num  -1 -0.95 -0.9 -0.85 -0.8 -0.75 -0.7 -0.65 -0.6 -0.55 ...
+ $ x2: num  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+ $ f : num  7.32 7.01 7.26 7.09 5.93 ...
+ - attr(*, "out.attrs")=List of 2
+  ..$ dim     : Named int  41 41
+  .. ..- attr(*, "names")= chr  "x1" "x2"
+  ..$ dimnames:List of 2
+  .. ..$ x1: chr  "x1=-1.00" "x1=-0.95" "x1=-0.90" "x1=-0.85" ...
+  .. ..$ x2: chr  "x2=-1.00" "x2=-0.95" "x2=-0.90" "x2=-0.85" ...
+#+end_example
+
+Plotting this low-resolution view the space, we get:
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720
+library(lattice)
+library(RColorBrewer)
+
+colors = colorRampPalette(brewer.pal(11, "RdYlBu"))(69)
+
+wireframe(f ~ x1 * x2,
+          data = sample_grid,
+          xlab = "x1",
+          ylab = "x2",
+          zlab = list("f(x1,x2)",
+                      rot = "90"),
+          zlim = range(seq(min(sample_grid$f) - 2.0, max(sample_grid$f) + 2.0, by = 0.5)),
+          colorkey = FALSE,
+          col.regions = colors,
+          drape = TRUE,
+          #shade = TRUE,
+          lattice.options = lattice.options(list(border = FALSE)),
+          scales = list(arrows = FALSE),
+          screen = list(z = 20, x = -60, y = 0),
+          par.settings = list(axis.line = list(col = "transparent")))
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-qRrjQN/figureElZ1TS.png]]
+***** Design of Experiments
+Suppose we want to minimize $f$, but we do not have access to the computation of
+$f(x_1, x_2)$, and  suppose that it is really expensive  to obtain each evaluation
+for the inputs, so expensive in fact,  that we can only afford 20 evaluations of
+$f$.  In this scenario, how to best explore the search space?
+
+#+begin_SRC R :results output :session *R*
+library(dplyr)
+library(AlgDesign)
+
+budget <- 200
+sample_rs <- sample_n(sample_grid, budget)
+
+sample_rs$method <- "Random Design"
+exploration <- sample_rs
+
+sample_linear_model <- optFederov(~ x1 + x2 + x1:x2,
+                                  data = sample_grid,
+                                  nTrials = budget)$design
+sample_linear_model$method <- "Linear Model Design"
+exploration <- bind_rows(exploration,
+                         sample_linear_model)
+
+sample_quadratic_model <- optFederov(~ (x1 + x2) + (x1:x2) + I(x1 ^ 2) + I(x2 ^ 2),
+                                     data = sample_grid,
+                                     nTrials = budget)$design
+
+sample_quadratic_model$method <- "Quadratic Model Design"
+exploration <- bind_rows(exploration,
+                         sample_quadratic_model)
+
+str(exploration)
+#+end_SRC
+
+#+RESULTS:
+:
+: 'data.frame':	600 obs. of  4 variables:
+:  $ x1    : num  1 -0.45 0.35 -0.7 -0.5 1 0.6 -0.25 -0.65 0.2 ...
+:  $ x2    : num  0.4 0.65 0.4 -0.15 0.1 -0.15 -0.15 -1 0.8 0.1 ...
+:  $ f     : num  8.29 5.12 6.08 1.46 1.86 ...
+:  $ method: chr  "Random Design" "Random Design" "Random Design" "Random Design" ...
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 400
+library(ggplot2)
+
+ggplot(data = exploration, aes(x = x1, y = x2)) +
+  facet_wrap(method ~ ., ncol = 3) +
+  geom_point(size = 3) +
+  theme_bw(base_size = 22)
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-qRrjQN/figuretwUzsW.png]]
+
+***** Fitting and Predicting Values
+We now remember the definition of $f$:
+
+\[
+f(x_1, x_2) = 2.3 + (1.1x_1) + (1.6x_{1}^{2}) + (2.2x_2) + (3.2x_{2}^{2}) + \varepsilon
+\]
+
+If  we try  to  obtain a  regression  function for  $f$,  testing the  quadratic
+hypotheses using the different designs, we would get:
+
+#+begin_SRC R :results output :session *R*
+rs_lm <- lm(f ~ x1 * x2 * I(x1 ^ 2) * I(x2 ^ 2), data = filter(exploration, method == "Random Design"))
+lin_lm <- lm(f ~ x1 * x2 * I(x1 ^ 2) * I(x2 ^ 2), data = filter(exploration, method == "Linear Model Design"))
+quad_lm <- lm(f ~ x1 * x2 * I(x1 ^ 2) * I(x2 ^ 2), data = filter(exploration, method == "Quadratic Model Design"))
+
+coef(rs_lm)
+coef(lin_lm)
+coef(quad_lm)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+          (Intercept)                    x1                    x2
+           2.27465946            0.53902138            1.79331229
+              I(x1^2)               I(x2^2)                 x1:x2
+           1.83183371            3.21003163            2.89395296
+           x1:I(x1^2)            x2:I(x1^2)            x1:I(x2^2)
+           0.55369765            0.65345353            1.82588396
+           x2:I(x2^2)       I(x1^2):I(x2^2)         x1:x2:I(x1^2)
+           0.44999902           -0.16324027           -0.94369167
+        x1:x2:I(x2^2)    x1:I(x1^2):I(x2^2)    x2:I(x1^2):I(x2^2)
+           0.08833311           -2.20304930           -1.10485608
+x1:x2:I(x1^2):I(x2^2)
+           1.20883837
+
+          (Intercept)                    x1                    x2
+            2.3489419            -0.4718219             0.6435793
+              I(x1^2)               I(x2^2)                 x1:x2
+            1.4927455             3.0955042             0.1057755
+           x1:I(x1^2)            x2:I(x1^2)            x1:I(x2^2)
+            1.9184213             2.1306245             2.0737388
+           x2:I(x2^2)       I(x1^2):I(x2^2)         x1:x2:I(x1^2)
+            1.9934353             0.3227596             2.2008337
+        x1:x2:I(x2^2)    x1:I(x1^2):I(x2^2)    x2:I(x1^2):I(x2^2)
+            2.9995394            -2.6608638            -2.7244153
+x1:x2:I(x1^2):I(x2^2)
+           -2.5155163
+
+          (Intercept)                    x1                    x2
+            2.0576184             2.0389072             1.2520964
+              I(x1^2)               I(x2^2)                 x1:x2
+            1.8942690             3.7012931             1.3285130
+           x1:I(x1^2)            x2:I(x1^2)            x1:I(x2^2)
+           -1.0086035             1.6426495            -0.4026176
+           x2:I(x2^2)       I(x1^2):I(x2^2)         x1:x2:I(x1^2)
+            1.0391508            -0.4528896             0.6970911
+        x1:x2:I(x2^2)    x1:I(x1^2):I(x2^2)    x2:I(x1^2):I(x2^2)
+            1.5442947             0.2870124            -1.9088828
+x1:x2:I(x1^2):I(x2^2)
+           -0.6770010
+#+end_example
+
+#+begin_SRC R :results output :session *R*
+rs_lm <- aov(f ~ x1 * x2 + I(x1 ^ 2) + I(x2 ^ 2), data = filter(exploration, method == "Random Design"))
+quad_lm <- aov(f ~ x1 * x2 + I(x1 ^ 2) + I(x2 ^ 2), data = filter(exploration, method == "Quadratic Model Design"))
+summary.aov(rs_lm)
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+             Df Sum Sq Mean Sq F value   Pr(>F)
+x1            1   67.3    67.3   66.44 4.37e-14 ***
+x2            1  324.3   324.3  320.20  < 2e-16 ***
+I(x1^2)       1   39.8    39.8   39.28 2.32e-09 ***
+I(x2^2)       1  195.4   195.4  192.94  < 2e-16 ***
+x1:x2         1  166.6   166.6  164.49  < 2e-16 ***
+Residuals   194  196.5     1.0
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#+end_example
+
+#+begin_SRC R :results output :session *R*
+prediction_rs <- predict(rs_lm, newdata = select(sample_grid, -f))
+prediction_error <- data.frame(error = sample_grid[prediction_rs == min(prediction_rs), ]$f - min(prediction_rs))
+prediction_error$method <- "Random Design"
+
+prediction_lin <- predict(lin_lm, newdata = select(sample_grid, -f))
+prediction_error_lin <- data.frame(error = sample_grid[prediction_lin == min(prediction_lin), ]$f - min(prediction_lin))
+prediction_error_lin$method <- "Linear Model Design"
+
+prediction_error <- bind_rows(prediction_error,
+                              prediction_error_lin)
+
+prediction_quad <- predict(quad_lm, newdata = select(sample_grid, -f))
+prediction_error_quad <- data.frame(error = sample_grid[prediction_quad == min(prediction_quad), ]$f - min(prediction_quad))
+prediction_error_quad$method <- "Quadratic Model Design"
+
+prediction_error <- bind_rows(prediction_error,
+                              prediction_error_quad)
+
+prediction_error
+#+end_SRC
+
+#+RESULTS:
+:
+:        error                 method
+: 1 -1.2170481          Random Design
+: 2  0.6531471    Linear Model Design
+: 3  0.3871706 Quadratic Model Design
+**** Underlying Hypotheses of Autotuning Methods       :ExportableReports:
+Given   a   program   with   a   set   $\bm{X}$   of   configurable   parameters
+$(\bm{x_i},\dots,\bm{x_k})  \in \bm{X}$,  we want  to choose  the best  parameter values
+according to  some performance metric $m$,  given by the function  $f_{*}(\bm{X}) =
+m$.  To encapsulate  the effect of all uncontrollable and  unknown parameters on
+the performance  metric $m$, we assume  that $f_{*}$ is not  directly observable and
+instead define $m$  to be given by $f(\bm{X})  = f_{*}(\bm{X}) + \varepsilon =  m$, where \varepsilon
+encapsulates measurement error and uncertainties.
+
+Autotuning methods  are the strategies  that attempt to /minimize/  $f(\bm{X})$ by
+exploring  the  parameter  search   space  $\bm{X}$.   Despite  their  different
+approaches, autotuning methods share some common hypotheses:
+
+- There is no knowledge about the global optimal configuration
+- There could be some problem-specific knowledge to exploit
+- Measuring the effects of a choice of parameter values is possible but costly
+
+Each  autotuning method  has  assumptions that  justify  its implementation  and
+usage. Some of  these hypotheses are explicit,  such as the ones  that come from
+the  linear model.   Others are  implicit,  such as  the ones  that support  the
+implementation and the justification of optimization heuristics.
+
+#+begin_export latex
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\begin{table}[ht]
+  \center
+  \begin{tabular}{@{}p{0.3\textwidth}p{0.5\textwidth}@{}}
+    \toprule
+    Method &  Hypotheses \\ \midrule
+    Metaheuristics & \tabitem There are similarities between natural fenomena and the target problem \\
+    & \tabitem Gradual changes in configurations produce gradual changes in performance \\
+    & \tabitem The optimal configuration is ``reachable'', by small changes, from non-optimal configurations  \\
+    \addlinespace \\
+    Machine Learning & \tabitem As more samples are obtained, decreases in ``out-of-sample error'' imply decreases ``in-sample error'' \\
+    & \tabitem \textbf{TODO} What are the classes of models? \\
+    \addlinespace \\
+    Design of Experiments & \tabitem There is ``exploitable search space structure''\\
+    & \tabitem Linear model: Response $\bm{Y}$ is an ``unobservable function'' of parameters $\bm{X}$: \\
+    & \hspace{0.15\textwidth} $f(\bm{X}) = \bm{Y} = \bm{X\beta} + \bm{\varepsilon}$ \\
+    & \tabitem Optimal Design: Variance of estimator $\hat{\bm{\beta}}$ is proportional to $\bm{X}$: \\
+    & \hspace{0.15\textwidth} $\bm{\hat{\beta}} = \left(\bm{X}^{\intercal}\bm{X}\right)^{-1}\bm{X}^{\intercal}\bm{Y}$ \\
+    \addlinespace \\
+    Gaussian Process Regression & \tabitem Response $\bm{Y}$ is a sample from a multidimensional Gaussian distribution, with mean $m(\bf{X})$ and variance $k(\bm{X}, \bm{X}^{\intercal})$: \\
+    & \hspace{0.1\textwidth} $\bm{Y} = f(\bm{X}) \sim \mathcal{N}(m(\bm{X}), k(\bm{X}, \bm{X}^{\intercal}))$ \\
+    & \tabitem Predictions $\bm{Y_{*}}$ can be made conditioning distribution to observed data\\ \bottomrule
+  \end{tabular}%
+\end{table}
+#+end_export
+
+#+begin_export latex
+\resizebox{!}{\textheight}{%
+  \begin{tikzpicture}[rotate = -90]
+    \begin{scope}
+      \tikzset{every tree node/.style = {align = center}}
+      \tikzset{level 1+/.style={level distance = 40pt}}
+      \Tree [.\node(n0){Minimize $f: X \mapsto \mathbb{R}$ \\ $f(X) = f^{*}(X) + \varepsilon = m$};
+        [.{Does not construct \\ estimate $\hat{f}(X)$}
+          [.{Reachability of \\ optima}
+            [.{\textbf{Greedy} \\ \textbf{Search}} ]
+            [.{$d(x_i, x_j) \to 0$ $\implies$ \\ $d(f(x_i), f(x_j)) \to 0$}
+              [.{Abundance of \\ local optima}
+                [.{\textbf{Simulated} \\ \textbf{Annealing}} ]]
+              [.{Closeness of a \\ ``population'' of $X$}
+                [.{\textbf{Genetic} \\ \textbf{Algorithms}} ]]]]
+          [.{\textbf{Random} \\ \textbf{Sampling}} ] ]
+        [.\node(r1){Constructs surrogate \\ estimate $\hat{f}(X)$};
+          [.{Estimates \\ parameters}
+            [.{$\hat{f}$ is \\ a NN} ]
+            [.{$\hat{f} = M(X)\beta + \varepsilon$}
+              [.{Independance \\ of effects}
+                [.{\textbf{Screening}} ] ]
+              [.{Homoscedasticity}
+                [.{\textbf{Optimal} \\ \textbf{Design}} ] ] ] ]
+          [.{Samples \\ functions}
+            [.{$\hat{f}(X) = \mathcal{GP}(X, K)$}
+              [.{\textbf{Gaussian Process} \\ \textbf{Regression}} ] ] ]
+          [.{$\hat{f}$ is $\mathbb{C}^{2}$}
+            [.{\textbf{Gradient} \\ \textbf{Descent}} ] ] ] ]
+    \end{scope}
+    % \begin{scope}[thick]
+    %   \draw [color = orange] (n0) to [bend left = 2] (r1);
+    %   \draw [color = green] (n0) to [bend right = 2] (r1);
+    % \end{scope}
+  \end{tikzpicture}
+}
+#+end_export
+*** [2020-02-18 Tue]
+**** Functions in R
+#+begin_SRC R :results output :session *R*
+my_function <- function(x, y, z) {
+  x + y
+  paste(z, collapse = "", sep = "")
+}
+
+my_function(2, 3, c("a", "v", "c"))
+#+end_SRC
+
+#+RESULTS:
+:
+: [1] "avc"
+**** PARCO Review                                            :PaperReview:
+- Title: A Comparative Study of Parallel and Serial Implementations of Content-Based Filtering
+***** Review
+****** Summary
+The paper  presents a shared  memory and a  message passing implementation  of a
+recommender system, and  evaluates the performance of  these two implementations
+on a data set produced for the study.
+****** Writing
+- There is no need to use the he/she formula, use the neutral singular "they".
+****** Experimental Validation
+The results  shown in Figures  17 to 19 compare  the performance of  the serial,
+shared memory and message passing implementations, but experimental settings are
+not clearly stated.  Without the  information of how many experiment repetitions
+were performed, and what was the standard deviation of the samples collected, it
+is  harder  to support  the  conclusions  of  the  paper, especially  since  the
+variations on performance  that is shown in the Figures  show large amplitude. A
+major  revision  of  this  paper  would involve  running  more  experiments  and
+analyzing the mean and standard deviation of the samples.
+****** Recommendation
+I recommend this  paper to be rejected,  since its contributions seem  to be the
+performance evaluation of  well known and studied  parallelization libraries, in
+the  context of  an existing  recommender  system.  The  data sets  used in  the
+experiments are also limited  in scope, and it would be  useful for the analyses
+presented  here to  use  data sets  from  real scenarios.   The  paper could  be
+resubmitted to this paper after a statistically sound evaluation and analysis of
+the  performance of  more parallel  recommender systems  in more  representative
+scenarios.
