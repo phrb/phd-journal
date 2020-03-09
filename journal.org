@@ -21,6 +21,8 @@
 #+LATEX_HEADER: \usepackage{amsmath,amsfonts,amssymb,amsthm}
 #+LATEX_HEADER: \usepackage{xcolor}
 #+LATEX_HEADER: \usepackage{sourcecodepro}
+#+LATEX_HEADER: \usepackage{forest}
+#+LATEX_HEADER: \usepackage{rotating}
 #+LATEX_HEADER: \usepackage{booktabs}
 #+LATEX_HEADER: \usepackage{array}
 #+LATEX_HEADER: \usepackage{colortbl}
@@ -75195,6 +75197,49 @@ usage. Some of  these hypotheses are explicit,  such as the ones  that come from
 the  linear model.   Others are  implicit,  such as  the ones  that support  the
 implementation and the justification of optimization heuristics.
 
+  #+begin_export latex
+  \begin{sidewaysfigure}
+    \resizebox{\textwidth}{!}{%
+      \begin{forest}
+        [{Minimize $f: X \mapsto \mathbb{R}$, $f(X) = f^{*}(X) + \varepsilon = m$}
+          [{Does not construct estimate $\hat{f}(X; \theta)$}
+            [{Reachable optima}
+              [{Strong $corr(f(X),f(X^{\prime}))$, for close $X,X^{\prime}$}
+                [{Strong $corr(f(X),d(X,X_{*}))$}
+                  [{Low local optima density}
+                    [{\textbf{Greedy Search}}, draw]]
+                  [{Introduce a ``population'' $pop(X)$}
+                    [{Combination, mutation within $pop(X)$}
+                      [{\textbf{Genetic Algorithms}}, draw]]
+                    [{\textbf{Ant Colony}}, draw]]]
+                [{Weaker $corr(f(X),d(X,X_{*}))$}
+                  [{Accept worst $f(X)$}
+                    [{\textbf{Simulated Annealing}}, draw]]
+                  [{Avoid recent $X$}
+                    [{\textbf{Tabu Search}}, draw]]]]]
+            [{\textbf{Random Sampling}}, draw]]
+          [{Constructs surrogate estimate $\hat{f}(X; \theta)$}
+            [{Explicit, variable $\theta$}
+              [{Construct model matrix $\mathcal{M}(X)$}
+                [{$\hat{f} = \mathcal{M}(X)\theta + \varepsilon$}
+                  [{Binary encoding}
+                    [{Independance of effects}
+                      [{\textbf{Screening}}, draw]]]
+                  [{Homoscedasticity}
+                    [{\textbf{Optimal Design}}, draw]]]]]
+            [{Implicit, fixed $\theta$}
+              [{\textbf{Neural Networks}}, draw]]
+            [{Samples functions}
+              [{Explicit covariance kernels $\mathcal{K}$}
+                [{$\hat{f} = \mathcal{GP}(X; \theta, \mathcal{K})$}
+                  [{\textbf{Gaussian Process Regression}}, draw]]]]]]
+      \end{forest}
+    }
+    \caption{Some hypothesis of some autotuning methods}
+  \end{sidewaysfigure}
+  #+end_export
+
+***** Previous Attempts                                        :noexport:
 #+begin_export latex
 \newcommand{\tabitem}{~~\llap{\textbullet}~~}
 
@@ -75230,7 +75275,7 @@ implementation and the justification of optimization heuristics.
       \tikzset{every tree node/.style = {align = center}}
       \tikzset{level 1+/.style={level distance = 40pt}}
       \Tree [.\node(n0){Minimize $f: X \mapsto \mathbb{R}$ \\ $f(X) = f^{*}(X) + \varepsilon = m$};
-        [.{Does not construct \\ estimate $\hat{f}(X)$}
+        [.{Does not construct \\ estimate $\hat{f}(X; \theta)$}
           [.{Reachability of \\ optima}
             [.{\textbf{Greedy} \\ \textbf{Search}} ]
             [.{$d(x_i, x_j) \to 0$ $\implies$ \\ $d(f(x_i), f(x_j)) \to 0$}
@@ -75239,19 +75284,18 @@ implementation and the justification of optimization heuristics.
               [.{Closeness of a \\ ``population'' of $X$}
                 [.{\textbf{Genetic} \\ \textbf{Algorithms}} ]]]]
           [.{\textbf{Random} \\ \textbf{Sampling}} ] ]
-        [.\node(r1){Constructs surrogate \\ estimate $\hat{f}(X)$};
-          [.{Estimates \\ parameters}
-            [.{$\hat{f}$ is \\ a NN} ]
-            [.{$\hat{f} = M(X)\beta + \varepsilon$}
+        [.\node(r1){Constructs surrogate \\ estimate $\hat{f}(X; \theta)$};
+          [.{Explicit, variable \\ models of $\theta$}
+            [.{$\hat{f} = M(X)\theta + \varepsilon$}
               [.{Independance \\ of effects}
                 [.{\textbf{Screening}} ] ]
               [.{Homoscedasticity}
                 [.{\textbf{Optimal} \\ \textbf{Design}} ] ] ] ]
+          [.{Implicit, fixed \\ models of $\theta$}
+            [.{\textbf{Neural Networks}} ] ]
           [.{Samples \\ functions}
-            [.{$\hat{f}(X) = \mathcal{GP}(X, K)$}
-              [.{\textbf{Gaussian Process} \\ \textbf{Regression}} ] ] ]
-          [.{$\hat{f}$ is $\mathbb{C}^{2}$}
-            [.{\textbf{Gradient} \\ \textbf{Descent}} ] ] ] ]
+            [.{$\hat{f} = \mathcal{GP}(X; \theta, \mathcal{K})$}
+              [.{\textbf{Gaussian Process} \\ \textbf{Regression}} ] ] ] ] ]
     \end{scope}
     % \begin{scope}[thick]
     %   \draw [color = orange] (n0) to [bend left = 2] (r1);
@@ -75260,6 +75304,7 @@ implementation and the justification of optimization heuristics.
   \end{tikzpicture}
 }
 #+end_export
+
 *** [2020-02-18 Tue]
 **** Functions in R
 #+begin_SRC R :results output :session *R*
@@ -75301,3 +75346,50 @@ presented  here to  use  data sets  from  real scenarios.   The  paper could  be
 resubmitted to this paper after a statistically sound evaluation and analysis of
 the  performance of  more parallel  recommender systems  in more  representative
 scenarios.
+*** [2020-02-27 Thu]
+**** Reproducible Science for SBC
+Write a small  manifesto for reproducible science, in  portuguese, for brazilian
+CS conferences.
+
+- https://github.com/ReScience
+- https://www.nature.com/articles/s41562-016-0021
+- https://www.semanticscholar.org/paper/A-manifesto-for-reproducible-science-Munaf%C3%B2-Nosek/a68ce412e92d87ca0116519651bbc484d98c76ae
+- https://rescience.github.io/faq/
+- https://www.bipm.org/utils/common/documents/jcgm/JCGM_200_2012.pdf
+
+***** Manifesto pela Reprodutibilidade da Ciência da Computação no Brasil
+Conclusões produzidas a partir de  dados obtidos experimentalmente não podem ser
+consideradas  validadas  até  que   seja  possível  reproduzi-las  em  condições
+experimentais independentes. Esse princípio  orienta todo o progresso científico
+baseado em  metodologias experimentais.  A  pesquisa experimental em  Ciência da
+Computação está em posição singular para reforçar e promover a reprodutibilidade
+científica,  pois experimentos  computacionais em  determinados casos  podem ser
+acompanhados,  registrados, e  repetidos  com precisão  e controle  praticamente
+impossíveis em  áreas como a  biologia e a química.  As organizações em  prol da
+ciência brasileira têm portanto grandes  justificativas para promover e reforçar
+a reprodutibilidade científica.
+
+Os  [[https://www.acm.org/publications/policies/artifact-review-badging][esforços da  ACM]] são  um bom  exemplo dos  esforços iniciais  que podem  ser
+realizados em prol da reprodutibilidade.   Diversas conferências e periódicos da
+ACM adotam  um sistema de  insígnias para  marcar trabalhos cujos  esforços para
+reprodutibilidade  de  seus  experimentos são  significativos.   A  nomenclatura
+utilizada pela ACM é derivada  do [[https://www.bipm.org/utils/common/documents/jcgm/JCGM_200_2012.pdf][Vocabulário Internacional de Metrologia]] (VIM),
+e distingue entre resultados e conclusões que podem ser reproduzidos:
+
+- Pela mesma equipe, nas mesmas condições experimentais (Repetibilidade)
+- Por uma equipe diferente, nas mesmas condições experimentais (Replicabilidade)
+- Por   uma   equipe   diferente,    em   condições   experimentais   diferentes
+  (Reprodutibilidade)
+
+O código e os dados que dão  suporte às conclusões de um estudo científico devem
+ser  submetidos junto  ao documento  que  será publicado.   Esses /artefatos/  são
+avaliados pelos  revisores e insígnias são  conferidas de acordo com  o nível de
+reprodutibilidade   alcançado.    Outras    organizações   também   promovem   a
+reprodutibilidade, como a  [[https://rescience.github.io/faq/][ReScience]], que recentemente promoveu o  [[https://rescience.github.io/ten-years/][Desafio de 10
+Anos  da Reprodutibilidade]],  onde  pesquisadores foram  incentivados a  submeter
+artigos com  a reprodução de  seus próprios resultados de  no mínimo 10  anos de
+idade.
+
+Ações  como as  tomadas pela  ACM  podem ter  um  grande impacto  no reforço  da
+credibilidade  do método  científico e  no  avanço da  descoberta científica  no
+Brasil.
