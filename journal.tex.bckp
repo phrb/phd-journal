@@ -1,0 +1,207 @@
+% Created 2020-03-13 Fri 15:45
+% Intended LaTeX compiler: pdflatex
+\documentclass[a4paper]{article}
+
+\usepackage{booktabs}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage{sourcecodepro}
+\usepackage{forest}
+\usepackage{rotating}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage[scale=2]{ccicons}
+\usepackage{hyperref}
+\usepackage{relsize}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{amsfonts}
+\usepackage{wasysym}
+\usepackage{float}
+\usepackage{ragged2e}
+\usepackage{textcomp}
+\usepackage{pgfplots}
+\usepackage{todonotes}
+\usepgfplotslibrary{dateplot}
+\lstdefinelanguage{Julia}%
+{morekeywords={abstract,struct,break,case,catch,const,continue,do,else,elseif,%
+end,export,false,for,function,immutable,mutable,using,import,importall,if,in,%
+macro,module,quote,return,switch,true,try,catch,type,typealias,%
+while,<:,+,-,::,/},%
+sensitive=true,%
+alsoother={$},%
+morecomment=[l]\#,%
+morecomment=[n]{\#=}{=\#},%
+morestring=[s]{"}{"},%
+morestring=[m]{'}{'},%
+}[keywords,comments,strings]%
+\lstset{ %
+backgroundcolor={},
+basicstyle=\ttfamily\scriptsize,
+breakatwhitespace=true,
+breaklines=true,
+captionpos=n,
+extendedchars=true,
+frame=n,
+language=R,
+rulecolor=\color{black},
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+stepnumber=2,
+stringstyle=\color{gray},
+tabsize=2,
+}
+\renewcommand*{\UrlFont}{\ttfamily\smaller\relax}
+\author{Pedro Bruel}
+\date{\today}
+\title{Underlying Hypotheses of Autotuning Methods}
+\hypersetup{
+ pdfauthor={Pedro Bruel},
+ pdftitle={Underlying Hypotheses of Autotuning Methods},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.3 (Org mode 9.2.5)},
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+Given   a   program   with   a   set   \(\bm{X}\)   of   configurable   parameters
+\((\bm{x_i},\dots,\bm{x_k})  \in \bm{X}\),  we want  to choose  the best  parameter values
+according to  some performance metric \(m\),  given by the function  \(f_{*}(\bm{X}) =
+m\).  To encapsulate  the effect of all uncontrollable and  unknown parameters on
+the performance  metric \(m\), we assume  that \(f_{*}\) is not  directly observable and
+instead define \(m\)  to be given by \(f(\bm{X})  = f_{*}(\bm{X}) + \varepsilon =  m\), where \(\varepsilon\)
+encapsulates measurement error and uncertainties.
+
+Autotuning methods  are the strategies  that attempt to \emph{minimize}  \(f(\bm{X})\) by
+exploring  the  parameter  search   space  \(\bm{X}\).   Despite  their  different
+approaches, autotuning methods share some common hypotheses:
+
+\begin{itemize}
+\item There is no knowledge about the global optimal configuration
+\item There could be some problem-specific knowledge to exploit
+\item Measuring the effects of a choice of parameter values is possible but costly
+\end{itemize}
+
+Each  autotuning method  has  assumptions that  justify  its implementation  and
+usage. Some of  these hypotheses are explicit,  such as the ones  that come from
+the  linear model.   Others are  implicit,  such as  the ones  that support  the
+implementation and the justification of optimization heuristics.
+
+\forestset{linebreaks/.style={for tree={align = center, l sep+=2em}}}
+\begin{figure}
+  \resizebox{\textwidth}{!}{%
+    \begin{forest}
+      linebreaks,
+      [{Minimize $f: \mathcal{X} \mapsto \mathbb{R}$,\\$Y = f(X = (x_1,\dots,x_k) \in \mathcal{X}) + \varepsilon$},
+        draw,
+        [{Constructs surrogate\\estimate $\hat{f}(\cdot, \theta(X))$?},
+          draw,
+          color = blue
+          [{Search\\Heuristics},
+            draw,
+            color = orange,
+            edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+            [{\textbf{Random}\\\textbf{Sampling}}, draw]
+            [{Reachable\\Optima},
+              draw,
+              color = orange
+              [{Strong $corr(f(X),f(X^{\prime}))$,\\for close $X,X^{\prime}$},
+                draw,
+                color = orange
+                [{Strong\\$corr(f(X),d(X,X_{*}))$?},
+                  draw,
+                  color = blue
+                  [{More\\Global},
+                    draw,
+                    color = orange,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                    [{Introduce a ``population''\\$\mathbf{X} = (X_1,\dots,X_n)$},
+                      draw,
+                      color = orange
+                      [{\textbf{Genetic}\\\textbf{Algorithms}}, draw]]]
+                  [{More\\Local},
+                    draw,
+                    color = orange,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+                    [{High local\\optima density?},
+                      draw,
+                      color = blue
+                      [{Steepest\\Descent},
+                        draw,
+                        color = orange,
+                        edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                        [{\textbf{Greedy}\\\textbf{Search}}, draw]
+                        [{Estimate $f^{\prime}(X)$},
+                          draw,
+                          color = orange,
+                          [{\textbf{Gradient}\\\textbf{Descent}}, draw]]]
+                      [{Allows\\exploration},
+                        draw,
+                        color = orange,
+                        edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+                        [{Accept\\worst $f(X)$},
+                          draw,
+                          color = orange
+                          [{\textbf{Simulated}\\\textbf{Annealing}}, draw]]
+                        [{Avoid\\recent $X$},
+                          draw,
+                          color = orange
+                          [{\textbf{Tabu}\\\textbf{Search}}, draw]]]]]]]]]
+          [{Statistical\\Learning},
+            draw,
+            color = orange,
+            edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+            [{Parametric\\Learning},
+              draw,
+              color = orange
+              [{$\forall{}i: x_i \in X$ is discrete\\$\hat{f}(X) \approx f_1(x_1) + \dots + f_k(x_k)$},
+                draw,
+                color = orange
+                [{\textbf{Independent Bandits}\\for each $x_i$:\textbf{UCB},\textbf{EXP3},$\dots$}, draw]]
+              [{Linear Model\\$\hat{f} = \mathcal{M}(X)\theta{}(X) + \varepsilon$},
+                draw,
+                color = orange
+                [{Check for\\model adequacy?},
+                  draw,
+                  color = blue
+                  [{Consider interactions?\\{$\exists x_i \neq x_j:\; \theta(x_ix_j) \neq 0$}},
+                    draw,
+                    color = blue,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                    [{$\forall x_i \in X: x_i \in \{-1, 1\}$},
+                      draw,
+                      color = orange,
+                      edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                      [{\textbf{Screening}\\\textbf{Designs}}, draw]]
+                    [{\textbf{Optimal}\\\textbf{Design}},
+                      draw,
+                      edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}]]
+                  [{\textbf{Space-filling}\\\textbf{Designs}},
+                    draw,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}]
+              ]]]
+            [{Nonparametric\\Learning},
+              draw,
+              color = orange
+              [{Splitting\\rules on X},
+                draw,
+                color = orange
+                [{\textbf{Decision}\\\textbf{Trees}}, draw]]
+              [{\textbf{Gaussian}\\\textbf{Process Regression}}, draw]
+              [{\textbf{Neural}\\\textbf{Networks}}, draw]]]]]
+    \end{forest}
+  }
+  \caption{Some hypothesis of some autotuning methods}
+\end{figure}
+\end{document}

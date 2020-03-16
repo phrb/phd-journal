@@ -75198,6 +75198,116 @@ the  linear model.   Others are  implicit,  such as  the ones  that support  the
 implementation and the justification of optimization heuristics.
 
 #+begin_export latex
+\forestset{linebreaks/.style={for tree={align = center, l sep+=2em}}}
+\begin{figure}
+  \resizebox{\textwidth}{!}{%
+    \begin{forest}
+      linebreaks,
+      [{Minimize $f: \mathcal{X} \mapsto \mathbb{R}$,\\$Y = f(X = (x_1,\dots,x_k) \in \mathcal{X}) + \varepsilon$},
+        draw,
+        [{Constructs surrogate\\estimate $\hat{f}(\cdot, \theta(X))$?},
+          draw,
+          color = blue
+          [{Search\\Heuristics},
+            draw,
+            color = orange,
+            edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+            [{\textbf{Random}\\\textbf{Sampling}}, draw]
+            [{Reachable\\Optima},
+              draw,
+              color = orange
+              [{Strong $corr(f(X),f(X^{\prime}))$,\\for close $X,X^{\prime}$},
+                draw,
+                color = orange
+                [{Strong\\$corr(f(X),d(X,X_{*}))$?},
+                  draw,
+                  color = blue
+                  [{More\\Global},
+                    draw,
+                    color = orange,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                    [{Introduce a ``population''\\$\mathbf{X} = (X_1,\dots,X_n)$},
+                      draw,
+                      color = orange
+                      [{\textbf{Genetic}\\\textbf{Algorithms}}, draw]]]
+                  [{More\\Local},
+                    draw,
+                    color = orange,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+                    [{High local\\optima density?},
+                      draw,
+                      color = blue
+                      [{Steepest\\Descent},
+                        draw,
+                        color = orange,
+                        edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                        [{\textbf{Greedy}\\\textbf{Search}}, draw]
+                        [{Estimate $f^{\prime}(X)$},
+                          draw,
+                          color = orange,
+                          [{\textbf{Gradient}\\\textbf{Descent}}, draw]]]
+                      [{Allows\\exploration},
+                        draw,
+                        color = orange,
+                        edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+                        [{Accept\\worst $f(X)$},
+                          draw,
+                          color = orange
+                          [{\textbf{Simulated}\\\textbf{Annealing}}, draw]]
+                        [{Avoid\\recent $X$},
+                          draw,
+                          color = orange
+                          [{\textbf{Tabu}\\\textbf{Search}}, draw]]]]]]]]]
+          [{Statistical\\Learning},
+            draw,
+            color = orange,
+            edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}
+            [{Parametric\\Learning},
+              draw,
+              color = orange
+              [{$\forall{}i: x_i \in X$ is discrete\\$\hat{f}(X) \approx f_1(x_1) + \dots + f_k(x_k)$},
+                draw,
+                color = orange
+                [{\textbf{Independent Bandits}\\for each $x_i$:\textbf{UCB},\textbf{EXP3},$\dots$}, draw]]
+              [{Linear Model\\$\hat{f} = \mathcal{M}(X)\theta{}(X) + \varepsilon$},
+                draw,
+                color = orange
+                [{Check for\\model adequacy?},
+                  draw,
+                  color = blue
+                  [{Consider interactions?\\{$\exists x_i \neq x_j:\; \theta(x_ix_j) \neq 0$}},
+                    draw,
+                    color = blue,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                    [{$\forall x_i \in X: x_i \in \{-1, 1\}$},
+                      draw,
+                      color = orange,
+                      edge label = {node[midway, fill=white, font = \scriptsize]{No}}
+                      [{\textbf{Screening}\\\textbf{Designs}}, draw]]
+                    [{\textbf{Optimal}\\\textbf{Design}},
+                      draw,
+                      edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}]]
+                  [{\textbf{Space-filling}\\\textbf{Designs}},
+                    draw,
+                    edge label = {node[midway, fill=white, font = \scriptsize]{Yes}}]
+              ]]]
+            [{Nonparametric\\Learning},
+              draw,
+              color = orange
+              [{Splitting\\rules on X},
+                draw,
+                color = orange
+                [{\textbf{Decision}\\\textbf{Trees}}, draw]]
+              [{\textbf{Gaussian}\\\textbf{Process Regression}}, draw]
+              [{\textbf{Neural}\\\textbf{Networks}}, draw]]]]]
+    \end{forest}
+  }
+  \caption{Some hypothesis of some autotuning methods}
+\end{figure}
+#+end_export
+
+***** Previous Attempts                                        :noexport:
+#+begin_export latex
 \forestset{linebreaks/.style={for tree={align = center}}}
 \begin{sidewaysfigure}
   \resizebox{\textwidth}{!}{%
@@ -75249,22 +75359,6 @@ implementation and the justification of optimization heuristics.
 
 #+end_export
 
-#+begin_export latex
-\forestset{linebreaks/.style={for tree={align = center}}}
-\begin{sidewaysfigure}
-  \resizebox{\textwidth}{!}{%
-    \begin{forest}
-      linebreaks
-      [{Minimize $f: \mathcal{X} \mapsto \mathbb{R}$,\\ $Y = f(X = (x_1,\dots,x_k) \in \mathcal{X}) + \varepsilon$}
-        [{Constructs surrogate\\estimate $\hat{f}(\cdot, \theta(X))$?}, draw, color = green]]
-    \end{forest}
-  }
-  \caption{Some hypothesis of some autotuning methods}
-\end{sidewaysfigure}
-
-#+end_export
-
-***** Previous Attempts                                        :noexport:
 #+begin_export latex
 \newcommand{\tabitem}{~~\llap{\textbullet}~~}
 
