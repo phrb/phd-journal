@@ -13,3 +13,4 @@ dlmt_spapt_experiments
 dopt_sampling_tests
 ExperimentalDesign
 rl_quant
+matrix-multiply-test
