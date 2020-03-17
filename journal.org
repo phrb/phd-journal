@@ -17,7 +17,7 @@
 #+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w@) APPT(a!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
 
 #+LATEX_CLASS_OPTIONS: [a4paper]
-#+LATEX_HEADER: \usepackage[margin=2cm]{geometry}
+#+LATEX_HEADER: \usepackage[showframe,margin=2cm]{geometry}
 #+LATEX_HEADER: \usepackage{amsmath,amsfonts,amssymb,amsthm}
 #+LATEX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LATEX_HEADER: \usepackage{sourcecodepro}
@@ -3278,17 +3278,12 @@ prediction_error
 : 2  0.6531471    Linear Model Design
 : 3  0.3871706 Quadratic Model Design
 **** Underlying Hypotheses of Autotuning Methods       :ExportableReports:
-Given   a   program   with   a   set   $\bm{X}$   of   configurable   parameters
-$(\bm{x_i},\dots,\bm{x_k})  \in \bm{X}$,  we want  to choose  the best  parameter values
-according to  some performance metric $m$,  given by the function  $f_{*}(\bm{X}) =
-m$.  To encapsulate  the effect of all uncontrollable and  unknown parameters on
-the performance  metric $m$, we assume  that $f_{*}$ is not  directly observable and
-instead define $m$  to be given by $f(\bm{X})  = f_{*}(\bm{X}) + \varepsilon =  m$, where \varepsilon
-encapsulates measurement error and uncertainties.
-
-Autotuning methods  are the strategies  that attempt to /minimize/  $f(\bm{X})$ by
-exploring  the  parameter  search   space  $\bm{X}$.   Despite  their  different
-approaches, autotuning methods share some common hypotheses:
+***** Introduction                                             :noexport:
+Given  a program  with $X  \in \mathcal{X}$  configurable parameters,  we want  to
+choose the best parameter values according  to a performance metric given by the
+function  $f(X)$.   Autotuning methods  attempt  find  the $X_{*}$  that  minimizes
+$f(\cdot)$.   Despite  their different  approaches,  autotuning  methods share  some
+common hypotheses:
 
 - There is no knowledge about the global optimal configuration
 - There could be some problem-specific knowledge to exploit
@@ -3298,13 +3293,17 @@ Each  autotuning method  has  assumptions that  justify  its implementation  and
 usage. Some of  these hypotheses are explicit,  such as the ones  that come from
 the  linear model.   Others are  implicit,  such as  the ones  that support  the
 implementation and the justification of optimization heuristics.
-
+***** Overview of Autotuning Methods
 #+begin_export latex
-\forestset{linebreaks/.style={for tree={align = center, l sep+=2em}}}
-\begin{sidewaysfigure}
+\begin{sidewaysfigure}[h]
+  \centering
   \resizebox{\textwidth}{!}{%
     \begin{forest}
-      linebreaks,
+      for tree={%
+        anchor = center,
+        align = center,
+        l sep+=2em
+      },
       [{Minimize $f: \mathcal{X} \mapsto \mathbb{R}$,\\$Y = f(X = (x_1,\dots,x_k) \in \mathcal{X}) + \varepsilon$},
         draw,
         [{Constructs surrogate\\estimate $\hat{f}(\cdot, \theta(X))$?},
@@ -3456,14 +3455,13 @@ implementation and the justification of optimization heuristics.
                 alias = gaussian,
                 draw]
               [{\textbf{Neural}\\\textbf{Networks}}, draw]]]]]
-      \draw [-stealth, semithick, ForestGreen](selection) to[bend left=25] (adequacy.south);
+      \draw [-stealth, semithick, ForestGreen](selection) to[bend left=22] (adequacy.south);
       \draw [-stealth, semithick, ForestGreen](estimate.east) to[bend right=30] (adequacy.south);
       \draw [-stealth, semithick, ForestGreen](gaussian) to (uncertainty);
       \draw [-stealth, semithick, ForestGreen](optimal) to (estimate);
     \end{forest}
   }
   \caption{A high-level view of autotuning methods, where \textcolor{NavyBlue}{\textbf{blue}} boxes
-    denote branching questions, \textcolor{BurntOrange}{\textbf{orange}} boxes
     denote key hypotheses, \textcolor{ForestGreen}{\textbf{green}} boxes
     denote specific method choices, and \textbf{bold} boxes denote specific methods.}
 \end{sidewaysfigure}
