@@ -3748,3 +3748,38 @@ println("test")
 : test
 : 4
 :END:
+*** [2020-03-17 Tue]
+**** Map Intervals
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+map_intervals <- function(x, interval_from, interval_to) {
+    new_x <- x - interval_from[1]
+    new_x <- new_x / (interval_from[2] - interval_from[1])
+    new_x <- new_x * (interval_to[2] - interval_to[1])
+    new_x <- new_x + interval_to[1]
+
+    return(new_x)
+}
+#+end_SRC
+
+#+RESULTS:
+
+**** "Circle Regression"
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 720 :eval no-export
+library(dplyr)
+library(ggplot2)
+
+map_intervals <- function(x, interval_from, interval_to) {
+    new_x <- x - interval_from[1]
+    new_x <- new_x / (interval_from[2] - interval_from[1])
+    new_x <- new_x * (interval_to[2] - interval_to[1])
+    new_x <- new_x + interval_to[1]
+
+    return(new_x)
+}
+
+df <- data.frame(x = map_intervals(runif(100), c(0.0, 1.0), c(-1.0, 1.0)),
+                 y = map_intervals(runif(100), c(0.0, 1.0), c(-1.0, 1.0)))
+
+df$y <-
+#+end_SRC
