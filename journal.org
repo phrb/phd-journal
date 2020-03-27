@@ -238,7 +238,6 @@ read_gpr <- function(current_path, application) {
       csv_files <- csv_files[csv_files %in% non_empty]
       target_data <- lapply(csv_files, read.csv.iterations.cost)
       target_data <- bind_rows(target_data)
-                                        # target_data <- target_data[, c("cost_mean", "experiment_id", "technique", "cost_baseline", "min_run_cost", "best_iteration")]
       target_data$application <- rep(target_dir, nrow(target_data))
 
       if (is.null(data)) {
@@ -863,7 +862,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureHUekRN.pdf]]
+[[file:/tmp/babel-oICNIQ/figuremAbwtW.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -1024,7 +1023,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureeo1Jym.pdf]]
+[[file:/tmp/babel-oICNIQ/figurewMf43q.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
