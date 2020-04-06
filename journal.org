@@ -892,17 +892,26 @@ x <- sobolGP(model = model,
              X1 = samples %>%
                filter(first_sample == TRUE) %>%
                select(-first_sample, -cost_mean) %>%
-               sample_n(200),
+               sample_n(500),
              X2 = samples %>%
                filter(first_sample != TRUE) %>%
                select(-first_sample, -cost_mean) %>%
-               sample_n(200),
+               sample_n(500),
              nboot = 100)
-
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
+
+Registered S3 method overwritten by 'sensitivity':
+  method    from
+  print.src dplyr
+
+Attaching package: ‘sensitivity’
+
+The following object is masked from ‘package:dplyr’:
+
+    src
 
 
 optimisation start
@@ -915,118 +924,121 @@ optimisation start
   - type :  matern5_2
   - nugget : NO
   - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
-  - parameters upper bounds :  4094 4094 62 62 2 62 2046 2 4094 4094 62 2 4094 2046 4094 4094 2 2 2 4094 2 2046 2 4094 2 30 30 4094 2 30 30 30 30 30 30 30 30 30 62 62 4094 4094 30 4094 2 30 62 62 30
-  - best initial criterion value(s) :  -414.3509
+  - parameters upper bounds :  4094 4094 62 62 2 62 4094 2 4094 4094 62 2 2046 4094 4094 4094 2 2 2 4094 2 2046 2 4094 2 30 30 4094 2 30 30 30 30 30 30 30 30 30 62 62 4094 4094 30 4094 2 30 62 62 30
+  - best initial criterion value(s) :  -369.3746
 
 N = 49, M = 5 machine precision = 2.22045e-16
 At X0, 0 variables are exactly at the bounds
-At iterate     0  f=       414.35  |proj g|=      0.29025
-At iterate     1  f =       414.27  |proj g|=       0.28562
-At iterate     2  f =       413.97  |proj g|=        0.2334
-At iterate     3  f =       413.85  |proj g|=       0.17301
-At iterate     4  f =       413.76  |proj g|=      0.044833
-At iterate     5  f =       413.75  |proj g|=      0.016764
-At iterate     6  f =       413.75  |proj g|=     0.0022428
-At iterate     7  f =       413.75  |proj g|=      0.015781
-At iterate     8  f =       413.74  |proj g|=      0.019711
-At iterate     9  f =       413.73  |proj g|=      0.009475
-At iterate    10  f =       413.73  |proj g|=     0.0034003
-At iterate    11  f =       413.73  |proj g|=      0.002222
-At iterate    12  f =       413.73  |proj g|=     0.0028104
-At iterate    13  f =       413.73  |proj g|=      0.024357
-At iterate    14  f =       413.72  |proj g|=      0.043213
-At iterate    15  f =       413.69  |proj g|=      0.013371
-At iterate    16  f =       413.64  |proj g|=      0.056992
-At iterate    17  f =       413.57  |proj g|=      0.053547
-At iterate    18  f =       413.57  |proj g|=      0.002553
-At iterate    19  f =       413.57  |proj g|=     0.0020459
-At iterate    20  f =       413.51  |proj g|=      0.048432
-At iterate    21  f =       413.49  |proj g|=      0.033294
-At iterate    22  f =       413.46  |proj g|=     0.0022799
-At iterate    23  f =       413.43  |proj g|=      0.017198
-At iterate    24  f =       413.38  |proj g|=      0.015077
-At iterate    25  f =       413.37  |proj g|=       0.01208
-At iterate    26  f =       413.31  |proj g|=      0.030481
-At iterate    27  f =       413.24  |proj g|=      0.012162
-At iterate    28  f =       413.15  |proj g|=     0.0076477
-At iterate    29  f =       413.09  |proj g|=       0.24752
-At iterate    30  f =       412.99  |proj g|=       0.10301
-At iterate    31  f =       412.92  |proj g|=      0.022569
-At iterate    32  f =        412.9  |proj g|=     0.0031336
-At iterate    33  f =       412.89  |proj g|=      0.011974
-At iterate    34  f =       412.88  |proj g|=      0.010954
-At iterate    35  f =       412.85  |proj g|=      0.018031
-At iterate    36  f =       412.62  |proj g|=       0.16021
-At iterate    37  f =       411.11  |proj g|=       0.40744
-At iterate    38  f =       410.95  |proj g|=       0.29417
-At iterate    39  f =       407.73  |proj g|=      0.068897
-At iterate    40  f =       407.41  |proj g|=      0.047332
-At iterate    41  f =       406.72  |proj g|=     0.0097644
-At iterate    42  f =       406.36  |proj g|=     0.0088956
-At iterate    43  f =       406.21  |proj g|=      0.018639
-At iterate    44  f =       406.13  |proj g|=      0.023045
-At iterate    45  f =       406.05  |proj g|=      0.020925
-At iterate    46  f =       405.76  |proj g|=     0.0042201
-At iterate    47  f =       405.57  |proj g|=       0.00506
-At iterate    48  f =       405.52  |proj g|=     0.0015438
-At iterate    49  f =       405.51  |proj g|=     0.0016306
-At iterate    50  f =       405.51  |proj g|=     0.0014719
-At iterate    51  f =       405.51  |proj g|=     0.0018176
-At iterate    52  f =       405.49  |proj g|=    0.00066822
-At iterate    53  f =       405.48  |proj g|=    0.00089802
-At iterate    54  f =       405.46  |proj g|=     0.0010605
-At iterate    55  f =       405.36  |proj g|=      0.010479
-At iterate    56  f =       405.32  |proj g|=     0.0032588
-At iterate    57  f =        405.3  |proj g|=     0.0025954
-At iterate    58  f =       405.21  |proj g|=    0.00099923
-At iterate    59  f =       405.21  |proj g|=     0.0030992
-At iterate    60  f =       405.21  |proj g|=     0.0018494
-At iterate    61  f =       405.21  |proj g|=    0.00078423
-At iterate    62  f =        405.2  |proj g|=     0.0011822
-At iterate    63  f =       405.19  |proj g|=     0.0042758
-At iterate    64  f =       405.16  |proj g|=     0.0085602
-At iterate    65  f =       405.09  |proj g|=      0.014065
-At iterate    66  f =       404.96  |proj g|=      0.024553
-At iterate    67  f =       404.84  |proj g|=      0.009546
-At iterate    68  f =       404.72  |proj g|=     0.0054176
-At iterate    69  f =       404.67  |proj g|=     0.0014457
-At iterate    70  f =       404.63  |proj g|=    0.00070367
-At iterate    71  f =       404.63  |proj g|=     0.0011617
-At iterate    72  f =       404.63  |proj g|=    0.00057257
-At iterate    73  f =       404.63  |proj g|=    0.00025235
-At iterate    74  f =       404.63  |proj g|=    0.00026342
-At iterate    75  f =       404.63  |proj g|=    0.00088685
-At iterate    76  f =       404.62  |proj g|=     0.0018875
-At iterate    77  f =        404.6  |proj g|=     0.0057987
-At iterate    78  f =       404.58  |proj g|=     0.0053439
-At iterate    79  f =       404.56  |proj g|=     0.0054091
-At iterate    80  f =       404.54  |proj g|=       0.00425
-At iterate    81  f =       404.52  |proj g|=    0.00024403
-At iterate    82  f =       404.52  |proj g|=    0.00027141
-At iterate    83  f =       404.51  |proj g|=    0.00080249
-At iterate    84  f =        404.5  |proj g|=    0.00095084
-At iterate    85  f =        404.5  |proj g|=     0.0017677
-At iterate    86  f =        404.5  |proj g|=     0.0009328
-At iterate    87  f =       404.49  |proj g|=    0.00042225
-At iterate    88  f =       404.49  |proj g|=    0.00065295
-At iterate    89  f =       404.49  |proj g|=     0.0012339
-At iterate    90  f =       404.47  |proj g|=     0.0024082
-At iterate    91  f =       404.44  |proj g|=     0.0039403
-At iterate    92  f =       404.43  |proj g|=      0.011132
-At iterate    93  f =       404.36  |proj g|=     0.0077755
-At iterate    94  f =       404.33  |proj g|=     0.0051485
-At iterate    95  f =        404.3  |proj g|=     0.0037061
-At iterate    96  f =       404.27  |proj g|=    0.00027213
-At iterate    97  f =       404.27  |proj g|=    0.00010434
-At iterate    98  f =       404.27  |proj g|=    0.00015252
-At iterate    99  f =       404.27  |proj g|=    0.00039317
-At iterate   100  f =       404.27  |proj g|=     0.0014921
-At iterate   101  f =       404.27  |proj g|=     0.0028137
-final  value 404.269772
+At iterate     0  f=       369.37  |proj g|=      0.09352
+At iterate     1  f =       369.36  |proj g|=      0.091451
+ys=-6.338e-04  -gs= 1.426e-02, BFGS update SKIPPED
+At iterate     2  f =        369.2  |proj g|=      0.065932
+At iterate     3  f =       369.12  |proj g|=      0.035766
+At iterate     4  f =        369.1  |proj g|=      0.019391
+At iterate     5  f =       369.04  |proj g|=      0.067895
+At iterate     6  f =       368.91  |proj g|=       0.10536
+ys=-2.182e-02  -gs= 1.161e-01, BFGS update SKIPPED
+At iterate     7  f =        368.9  |proj g|=       0.10176
+At iterate     8  f =       368.71  |proj g|=      0.048337
+At iterate     9  f =        366.9  |proj g|=        1.1595
+ys=-8.630e-01  -gs= 1.346e+00, BFGS update SKIPPED
+At iterate    10  f =       366.02  |proj g|=       0.16309
+At iterate    11  f =       365.56  |proj g|=       0.12367
+At iterate    12  f =       363.54  |proj g|=      0.060791
+At iterate    13  f =       362.51  |proj g|=      0.057381
+At iterate    14  f =       362.13  |proj g|=      0.054972
+At iterate    15  f =       360.93  |proj g|=      0.046093
+At iterate    16  f =       359.34  |proj g|=      0.032625
+At iterate    17  f =       359.01  |proj g|=      0.029339
+At iterate    18  f =       358.81  |proj g|=      0.027194
+At iterate    19  f =       358.32  |proj g|=      0.024839
+At iterate    20  f =       357.92  |proj g|=      0.024966
+At iterate    21  f =       357.02  |proj g|=      0.024697
+At iterate    22  f =       356.84  |proj g|=      0.024474
+At iterate    23  f =       356.74  |proj g|=       0.02421
+At iterate    24  f =       356.63  |proj g|=      0.023833
+At iterate    25  f =       356.46  |proj g|=      0.023202
+At iterate    26  f =       354.84  |proj g|=      0.016595
+At iterate    27  f =       352.63  |proj g|=       0.14045
+At iterate    28  f =       351.51  |proj g|=      0.082918
+At iterate    29  f =          350  |proj g|=      0.034724
+At iterate    30  f =       349.68  |proj g|=      0.016927
+At iterate    31  f =       349.59  |proj g|=      0.007416
+At iterate    32  f =       349.58  |proj g|=     0.0049821
+At iterate    33  f =       349.57  |proj g|=     0.0049587
+At iterate    34  f =       349.56  |proj g|=     0.0049344
+At iterate    35  f =       349.55  |proj g|=     0.0048969
+At iterate    36  f =        349.5  |proj g|=     0.0067917
+At iterate    37  f =       349.39  |proj g|=     0.0095001
+At iterate    38  f =       349.28  |proj g|=     0.0092258
+At iterate    39  f =       347.75  |proj g|=     0.0097496
+At iterate    40  f =       347.13  |proj g|=      0.033251
+At iterate    41  f =       345.48  |proj g|=      0.010731
+At iterate    42  f =       345.28  |proj g|=       0.01054
+At iterate    43  f =        345.1  |proj g|=      0.008476
+At iterate    44  f =       345.07  |proj g|=      0.018223
+At iterate    45  f =       344.98  |proj g|=      0.008978
+At iterate    46  f =       344.69  |proj g|=      0.010535
+At iterate    47  f =        344.5  |proj g|=      0.011505
+At iterate    48  f =       344.32  |proj g|=      0.012247
+At iterate    49  f =       344.16  |proj g|=      0.012427
+At iterate    50  f =       343.97  |proj g|=      0.011928
+At iterate    51  f =       343.86  |proj g|=      0.015428
+At iterate    52  f =       343.82  |proj g|=      0.018024
+At iterate    53  f =       343.71  |proj g|=      0.014379
+At iterate    54  f =       343.66  |proj g|=     0.0079144
+At iterate    55  f =       343.63  |proj g|=     0.0076223
+At iterate    56  f =       343.61  |proj g|=       0.00767
+At iterate    57  f =       343.58  |proj g|=     0.0094931
+At iterate    58  f =       343.54  |proj g|=      0.012193
+At iterate    59  f =       343.47  |proj g|=      0.013083
+At iterate    60  f =       342.17  |proj g|=      0.013068
+At iterate    61  f =       340.75  |proj g|=       0.06255
+At iterate    62  f =       340.59  |proj g|=      0.011591
+At iterate    63  f =       340.47  |proj g|=      0.008562
+At iterate    64  f =       339.79  |proj g|=     0.0061876
+At iterate    65  f =       338.85  |proj g|=     0.0059266
+At iterate    66  f =       338.78  |proj g|=     0.0035022
+At iterate    67  f =       338.78  |proj g|=     0.0034784
+At iterate    68  f =       338.77  |proj g|=     0.0034542
+At iterate    69  f =       338.75  |proj g|=     0.0039879
+At iterate    70  f =       338.72  |proj g|=     0.0072968
+At iterate    71  f =       338.66  |proj g|=      0.018514
+At iterate    72  f =       338.55  |proj g|=      0.034709
+At iterate    73  f =       338.25  |proj g|=      0.058925
+At iterate    74  f =       337.72  |proj g|=       0.05383
+At iterate    75  f =       337.53  |proj g|=      0.026444
+At iterate    76  f =       337.49  |proj g|=      0.014358
+At iterate    77  f =       337.46  |proj g|=     0.0047149
+At iterate    78  f =       337.45  |proj g|=     0.0018451
+At iterate    79  f =       337.44  |proj g|=     0.0032313
+At iterate    80  f =       337.43  |proj g|=     0.0056886
+At iterate    81  f =       337.41  |proj g|=     0.0082377
+At iterate    82  f =       337.38  |proj g|=      0.010192
+At iterate    83  f =       337.35  |proj g|=       0.01082
+At iterate    84  f =       337.29  |proj g|=     0.0087346
+At iterate    85  f =       337.25  |proj g|=     0.0030055
+At iterate    86  f =       337.24  |proj g|=     0.0035512
+At iterate    87  f =       337.24  |proj g|=     0.0041046
+At iterate    88  f =       337.23  |proj g|=     0.0051613
+At iterate    89  f =        337.2  |proj g|=     0.0065999
+At iterate    90  f =       337.15  |proj g|=     0.0085109
+At iterate    91  f =       337.03  |proj g|=     0.0087927
+At iterate    92  f =       336.89  |proj g|=     0.0055631
+At iterate    93  f =       336.79  |proj g|=     0.0071891
+At iterate    94  f =       336.75  |proj g|=     0.0077703
+At iterate    95  f =       336.75  |proj g|=     0.0076406
+At iterate    96  f =       336.74  |proj g|=     0.0075188
+At iterate    97  f =        336.7  |proj g|=       0.00714
+At iterate    98  f =       336.66  |proj g|=      0.011017
+At iterate    99  f =       336.59  |proj g|=      0.025548
+At iterate   100  f =       336.45  |proj g|=      0.046172
+At iterate   101  f =       335.99  |proj g|=      0.081592
+final  value 335.994966
 stopped after 101 iterations
 #+end_example
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".png") :width 800 :height 600 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "/tmp/figure21213.pdf") :width 13 :height 10 :eval no-export
 library(ggplot2)
 df <- data.frame(mean = x$S$mean[1, ],
                  var = x$S$var[1, ],
@@ -1040,13 +1052,14 @@ df <- df %>%
   mutate(id = row_number())
 
 ggplot(df) +
-  geom_point(aes(x = id, y = mean)) +
-  geom_errorbar(aes(x = id, ymin = mean - varPG, ymax = mean + varPG))
-  #geom_errorbar(aes(x = id, ymin = mean - varPG, ymax = mean + varPG))
+  geom_point(aes(x = id, y = mean), size = 4) +
+  geom_errorbar(aes(x = id, ymin = mean - ci, ymax = mean + ci)) +
+  #geom_errorbar(aes(x = id, ymin = mean - varPG, ymax = mean + varPG)) +
+  theme_bw(base_size = 28)
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-dNt8Ki/figurecI4aIi.png]]
+[[file:/tmp/figure21213.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -1082,7 +1095,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-dNt8Ki/figureUEFMjg.pdf]]
+[[file:/tmp/babel-QtkicR/figure6aFHQE.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -1116,7 +1129,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureKibyZT.pdf]]
+[[file:/tmp/babel-QtkicR/figureENyrzP.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -1247,7 +1260,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figurewMf43q.pdf]]
+[[file:/tmp/babel-QtkicR/figureEisPEd.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
@@ -1285,7 +1298,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figure7QGS5X.pdf]]
+[[file:/tmp/babel-QtkicR/figurea0qgAU.pdf]]
 ** December
 *** [2019-12-10 Tue]
 **** Graphs for Gaussian Process Regression
