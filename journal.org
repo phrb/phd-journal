@@ -3676,3 +3676,10 @@ ggplot() +
 
 #+RESULTS:
 [[file:top500_rmax_rpeak.pdf]]
+
+*** [2020-04-27 Mon]
+**** KL-Exchange Notes                                            :ATTACH:
+:PROPERTIES:
+:Attachments: kl_exchange_page1.jpg kl_exchange_page2.jpg
+:ID:       cef38015-0504-43cc-99d8-74e5a69cfcfa
+:END:
