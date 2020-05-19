@@ -3683,3 +3683,37 @@ ggplot() +
 :Attachments: kl_exchange_page1.jpg kl_exchange_page2.jpg
 :ID:       cef38015-0504-43cc-99d8-74e5a69cfcfa
 :END:
+** May
+*** [2020-05-16 Sat]
+**** CSmith Histogram                                             :ATTACH:
+:PROPERTIES:
+:Attachments: 100_depth.csv
+:ID:       0ece81f1-5ade-41e4-b217-c0d157e93922
+:END:
+
+#+begin_SRC R :results graphics output :session *R* :file "histogram.pdf" :width 10 :height 10 :eval no-export
+library(dplyr)
+library(ggplot2)
+
+df <- read.csv("data/0e/ce81f1-5ade-41e4-b217-c0d157e93922/100_depth.csv")
+
+ggplot(df) +
+    geom_col(aes(x = depth,
+                 y = occurrences)) +
+    theme_bw(base_size = 28)
+#+end_SRC
+
+#+RESULTS:
+[[file:histogram.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file "histogram.pdf" :width 10 :height 10 :eval no-export
+library(dplyr)
+library(ggplot2)
+
+df <- read.csv("data/0e/ce81f1-5ade-41e4-b217-c0d157e93922/100_depth.csv")
+
+ggplot(df) +
+    geom_point(aes(x = depth,
+                 y = occurrences)) +
+    theme_bw(base_size = 28)
+#+end_SRC
