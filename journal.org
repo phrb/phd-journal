@@ -395,7 +395,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-dNt8Ki/figurestQSYT.pdf]]
+[[file:/tmp/babel-gmALUx/figuretyK4z6.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -458,7 +458,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureXqbH8R.pdf]]
+[[file:/tmp/babel-gmALUx/figureuw3ezq.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -594,7 +594,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figurem73Mix.pdf]]
+[[file:/tmp/babel-gmALUx/figureKj92Ux.pdf]]
 ***** Results for =atax=
 ****** Loading Data                                           :noexport:
 #+begin_SRC R :results output :session *R* :exports results
@@ -850,7 +850,8 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 complete_plot_data <- NULL
 full_data <- NULL
 
-gpr_data <- read_gpr("dlmt_spapt_experiments/data/tests/gpr_expanded_ss", "dgemv")
+#gpr_data <- read_gpr("dlmt_spapt_experiments/data/tests/gpr_expanded_ss", "dgemv")
+gpr_data <- read_gpr("dlmt_spapt_experiments/data/tests/gpr_trend_sd", "dgemv")
 rs_data <- read_rs("dlmt_spapt_experiments/data/tests/rs_baseline", "dgemv", gpr_data[[1]], gpr_data[[2]])
 
 complete_plot_data <- rs_data[[1]]
@@ -1096,7 +1097,42 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-QtkicR/figure1JiTFU.pdf]]
+[[file:/tmp/babel-XCC5io/figurecMFz1v.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
+
+pareto_data <- gpr_plot_data %>%
+  group_by(experiment_id, technique) %>%
+  psel(low(iteration) * low(cost_mean)) %>%
+  ungroup()
+
+gpr_plot_data <- gpr_plot_data %>%
+  mutate(first_step = as.factor(step == 1)) %>%
+  mutate(scr_on = as.factor(SCR == "True"))
+
+gpr_plot_data <- gpr_plot_data %>%
+    filter(first_step == TRUE) %>%
+    select(-scr_on, -first_step, -label_center_y, -label_center_x,
+           -mean_cost_baseline, -application, -points, -iteration,
+           -best_iteration, -min_run_cost, -max_run_speedup, -speedup,
+           -cost_baseline, -experiment_id, -correct_result, -step,
+           -cost_mean, -mean_confidence_interval_sup, -baseline, -runs,
+           -mean_confidence_interval_inf, -cost_std, -technique, -id) %>%
+    mutate(across(where(is.character), as.factor)) %>%
+    mutate(across(where(is.factor), as.numeric)) %>%
+    gather("Parameter", "Value")
+
+ggplot(gpr_plot_data) +
+    geom_histogram(aes(x = Value)) +
+    ylab("Execution Time") +
+    xlab("Iteration") +
+    theme_bw(base_size = 18) +
+    facet_wrap(~ Parameter, scale = "free_x")
+#+end_SRC
+
+#+RESULTS:
+[[file:/tmp/babel-XCC5io/figure4SaaD4.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -1130,7 +1166,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-QtkicR/figureENyrzP.pdf]]
+[[file:/tmp/babel-XCC5io/figurePmbIYM.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -1163,7 +1199,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureoKrz9O.pdf]]
+[[file:/tmp/babel-XCC5io/figurenXziDX.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -1261,7 +1297,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-QtkicR/figureEisPEd.pdf]]
+[[file:/tmp/babel-XCC5io/figureh6PD8d.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
@@ -1299,7 +1335,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-QtkicR/figurea0qgAU.pdf]]
+[[file:/tmp/babel-XCC5io/figureOdNMsD.pdf]]
 ** December
 *** [2019-12-10 Tue]
 **** Graphs for Gaussian Process Regression
@@ -3722,3 +3758,65 @@ ggplot(df, aes(x = depth,
 
 #+RESULTS:
 [[file:fit.pdf]]
+** July
+*** [2020-07-03 Fri]
+**** Review for CLUSTER
+***** Summary
+The paper  presents a series  of performance  comparisons between Julia,  a High
+Level Language capable  of parallel and distributed computing,  and the pthreads
+and MPI APIs for C and C++.
+
+The paper  compares the  performance of Julia  with that of  the pthreads  C API
+using atomic operations and simple  synchronization tasks, and also compares the
+performance  of  Julia and  that  of  the MPI  C++  API  in microbenchmarks  for
+communication, reads, and writes.
+
+The paper presents  an implementation of HPCG,  a standard, communication-heavy,
+and large scale benchmark for HPC.
+
+The paper  argues that  the Julia  HPCG implementation  outperforms the  C++ MPI
+implementation in certain experimental conditions,  and that Julia is capable of
+performing certain synchronization operations faster than the pthreads API.
+
+***** Strengths and Weaknesses
+****** Strengths
+The paper  is clearly written and  easy to read.  The  paper reports statistical
+analysis choices and  experiment and experimental design, such as  the number of
+repeated  measurements and  under  which criteria  were  some outliers  removed.
+Interesting  discussions  are made  in  the  paper,  such  as regarding  be  the
+underlying causes  of each observation,  and some of the  implementation choices
+for HPCG.
+
+****** Weaknesses
+The paper  does not make available  any artifacts for the  verification of data,
+code, or  statistical analysis,  mentioning these will  be made  available after
+acceptance. Under  these conditions  it is  impossible to  verify or  attempt to
+reproduce  results.   The   claims  that  the  Julia  language   is  capable  of
+outperforming the  C++ MPI implementation  on HPCG  seem rushed, given  the data
+presented.
+
+***** Detailed Comments
+I believe that a more comprehensive  experimental analysis of the performance of
+Julia in  parallel and distributed  settings should be  performed to be  able to
+claim improvements over well established technologies such as MPI and pthreads.
+
+Although  motivating  and  interesting,   the  microbenchmarks  and  small-scale
+threading comparisons  do not provide  a solid basis for  claiming improvements,
+and  the  same  is  valid  for  HPCG. Further  work  should  aim  to  compile  a
+comprehensive set  of large-scale, possibly real-world,  applications written in
+Julia and C++ MPI.
+
+The paper mentions that the variance of  the HPCG measurements were large on the
+Julia  code. It  would  enrich and  better  support the  discussion  to add  the
+confidence  intervals of  these  measurements,  and for  the  other graphs  also
+presented.  It is  usual to compute an interval of  twice the standard deviation
+of the mean, in order to obtain an approximately 95% confidence interval.
+***** Suggestions for Improvement
+- Add the  95% confidence intervals for  the mean, on all  plots, but especially
+  for Figure 10
+
+- Perform performance evaluations on a more comprehensive benchmark, in order to
+  better support claims of improvement
+
+- "Figure III-A shows the results." ~> Should be "Figure 4", at page 6
+- "perfromance" ~> "performance", at page 10
