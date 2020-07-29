@@ -3820,3 +3820,125 @@ of the mean, in order to obtain an approximately 95% confidence interval.
 
 - "Figure III-A shows the results." ~> Should be "Figure 4", at page 6
 - "perfromance" ~> "performance", at page 10
+*** [2020-07-20 Mon]
+**** Extension Request
+The experimental validation of the approaches studied during this thesis, namely
+Design of Experiments and Gaussian Process Regression, took longer than expected
+in  the  initial SPAPT  benchmark.  The  large set  of  problems  and number  of
+configurable parameters slowed down a  comprehensive and careful analysis of the
+relationships between parameters and performance for many problems.
+
+The  Gaussian  Process  Regression  approach introduced  further  questions  and
+restrictions for experimental  validation, and the method was also  applied to a
+different  domain, the  selection of  bit precision  for layers  of Deep  Neural
+Networks, where completing a single experimental run takes a full week.
+
+I have  already started my efforts  towards writing the thesis,  but our current
+assessment of  the state of the  work indicates that  I most likely will  not be
+able to finish before the end of the third year's limit date.
+
+Compounding the  experimental difficulties sustained  during the last  year, the
+difficulties generated from  the COVID-19 pandemic greatly hindered  the pace of
+my work,  as they did for  many others. I  continue my cotutelle from  Brazil, a
+country that is at the moment the epicenter of the current pandemic.  During the
+final stages of my thesis, I had to relocate to a different city and
+*** [2020-07-25 Sat]
+**** Review for Fabio (Middleware 2020)
+***** Paper #72
+Title: ROBOTune: High-Dimensional Configuration Tuning for Cluster-Based Data
+Analytics
+
+****** A. Overall merit
+2. Weak reject (I don't want to publish this)
+
+****** B. Reviewer expertise
+5. I have published/worked on most/all this paper’s topics
+
+****** C. Paper summary
+The paper presents an autotuner for 44 parameters of the Spark data analytics
+framework.  The optimization approach is a composite of Random Forests to
+identify the most significant parameters, Latin Hypercube Sampling to better
+cover the search space, and Gaussian Process Regression to determine
+configurations to test, balancing exploitation of detected relationships and
+exploration of the search space. The paper performs experimental evaluation on
+five SparkBench workloads with three datasets each. Although the proposed
+approach achieves small but statistically significant improvements in relation
+to the optimization methods compared in the study, the paper does not present
+performance or optimization baselines.  The paper does not compare the achieved
+performance to the performance of default, or sensibly picked, Spark
+configurations. The results of the optimizers are also not compared to the best
+configurations found by naive methods such as Random Search.
+
+****** D. Strengths
+- Adapts well-established optimization techniques from Bayesian Optimization and
+  Statistical Learning to the Spark tuning problem, exploring better-performing
+  regions of search spaces and decreasing tuning costs with respect to other
+  tuning strategies
+
+****** E. Weaknesses
+- Proposes an interesting high-dimensional optimization problem, with around 200
+  dimensions, but the actual studied problem targets a more tractable search
+  space, one order of magnitude smaller, with only 44 parameters. The paper does
+  not mention the number of possible configurations
+- Performance improvements over established work seem to be statistically
+  significant although small, but the paper does not compare the results with
+  proper baselines.  Performance is never compared to the sensible default Spark
+  configurations for each workload, or to optimizations from more naive methods
+
+****** F. Comments for author
+******* Major Comments
+- The paper does not compare the performance achieved by autotuning strategies
+  to the performance achieved by more naive optimization strategies using the
+  same budget, such as Random Search, which could also be based on LHS.  Without
+  optimization and performance baselines it is difficult to measure the
+  effectiveness of the autotuners
+
+- The comparisons between the proposed system and others are not balanced.  The
+  study allows the proposed system to reuse results from previous runs in two of
+  the three datasets for each problem, which increases the effective
+  experimental budget and the optimization time used by the technique. The
+  author should modify figures to reflect this imbalance
+
+- Page 8: "For ROBOTune, we treat each workload to be an unseen one for the
+  first dataset, and for the remaining two, ROBOTune uses cached parameters and
+  configurations through memoized sampling."
+  - This means that the optimization time and budget comparisons presented in
+    Figures 4 and 6 are not balanced between methods. If the proposed approach
+    reuses measurements, its optimization costs must be updated accordingly
+
+******* Minor Comments
+- Page 3: "Eventually, it [Bayesian Optimization] locates the global extremum
+  for the objective function, or nearly so within a limited number of
+  observations."
+  - Finding the global optimum in a limited number of measurements is not a
+    guarantee of Bayesian Optimization
+
+- Page 5: "Furthermore, LHS is dimension agnostic, meaning that the number of
+  samples required is not tied to the dimensionality of the configuration
+  space."
+  - Obtaining an effective search space covering using Latin Hypercube Sampling
+    is tied to the problem dimension. A sample with only a handful of LHS
+    samples in high-dimensional spaces suffers from the same issues than uniform
+    samples, that is, most samples would be located in the grid regions near the
+    "shell" of the search space
+
+- Wrong date on page headers: "Conference’17, July 2017"
+
+- Page 5: "Another way of computing feature importances is through tree-based
+  estimators. Unlike linear models, they apply to non-linear relationships."
+  - Linear models can represent non-linear factor relationships, and are only
+    restricted in the sense of linear, or linearizable, relationships between
+    the estimated parameters
+
+- Page 5: "We compare the coefficient of determination (R2) for two linear and
+  two tree-based models in Figure 2."
+  - It is hard to compare the qualities of fit of the models in Figure 2 without
+    knowing the underlying models for the Lasso and the Lasso + Ridge (ENet)
+    approaches, since adding polynomial terms would increase flexibility of
+    these approaches and consequently increase R^2
+
+- Reference could be improved adding publisher information: "[11] L.  Breiman, J.
+  Friedman, C.J.  Stone, and R.A.  Olshen.  1984.Classification and Regression
+  Trees.  Taylor & Francis.https://books.google.com/books?id=JwQx-WOmSyQC"
+
+****** G. Comments for PC
