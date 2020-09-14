@@ -3942,3 +3942,1156 @@ configurations found by naive methods such as Random Search.
   Trees.  Taylor & Francis.https://books.google.com/books?id=JwQx-WOmSyQC"
 
 ****** G. Comments for PC
+
+***** Final Opinion
+
+The response did  not address my most concerning comments  satisfactorily, and I
+recommend  rejecting the  paper.   My comments  regard  mostly the  experimental
+validation of the approach. Detailed comments are listed below.
+
+****** Comments on the Rebuttal
+> Comment-72E-2: Comparison to the default/naive?
+>
+> We compared our  results to the default in Section-5.2.  It resulted in frequent
+> Out-Of-Memory/Runtime errors. We  need 5 runs for each dataset,  each run taking
+> up  to ~10  hours. Due  to time  constraints we  chose to  focus on  established
+> methods.
+
+A fair comparison  baseline would be a configuration considered  good enough for
+each dataset, that is,  a configuration that was used in other  work, or that is
+well established in  the industry for this  type of data, or at  least that does
+not  result   in  frequent   errors.   An  equivalent   example  would   be  the
+Spark-equivalent of the  "-O3" compiler option for the GCC  compiler, which is a
+common baseline  for works  on compiler  optimization. In  that way,  gains over
+sensible  defaults  could be  properly  assessed.   Another  fair option  for  a
+baseline would be picking the best  configuration found by a random search using
+the same experimental  budget. The paper should be  resubmitted after sufficient
+data is collected.
+
+> Comment-72E-3: Comparison not balanced.
+>
+> This could be a misunderstanding. In Section-5.3 we exclude the initial one-time
+> cost of parameter selection  as this is a fixed cost.  This overhead varies with
+> the number  of datasets tuned, 3  used in our  evaluation. Using more (5  or 10)
+> will change the overhead.
+
+In my  previous comment I argued  under the impression that  the proposed method
+leveraged  cached  results  from  previous  runs.  If  that  is  the  case,  the
+comparisons between  approaches must consider  the experimental cost  of caching
+these initial runs as  part of the optimization cost. The  cost of these initial
+evaluations, that  are then cached and  reused, should be included  in the total
+optimization cost of the approach.  If the  method does not in fact reuse cached
+results in further optimization, please ignore my comment.
+** September
+*** [2020-09-13 Sun]
+**** Running GPR on Steven's Data
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(DiceKriging)
+library(dplyr)
+
+complete_data <- read.csv("dopt_anova_experiments/data/search_space.csv",
+                          header = TRUE)
+complete_data <- complete_data %>%
+    select(-vector_recompute) %>%
+    mutate(row_number = row_number(),
+           load_overlap = as.numeric(as.factor(load_overlap)))
+
+str(complete_data)
+
+initial_budget <- 120
+initial_sample <- 24
+added_training_points <- 6
+iterations = (initial_budget - initial_sample) / added_training_points
+
+testing_sample <- complete_data
+training_sample <- NULL
+
+for(i in 1:iterations){
+    if(is.null(training_sample)){
+        training_sample <- slice_sample(testing_sample,
+                                        n = initial_sample)
+    }
+
+    testing_sample <- testing_sample %>%
+        filter(!(row_number %in% training_sample$row_number))
+
+    str(training_sample)
+    str(testing_sample)
+
+    gp_model <- km(formula = ~ .,
+                   design = select(training_sample,
+                                   -row_number,
+                                   -time_per_pixel),
+                   response = training_sample$time_per_pixel,
+                   nugget = 1e-8 * var(training_sample$time_per_pixel),
+                   control = list(pop.size = 400,
+                                  BFGSburnin = 500))
+
+    gp_prediction <- predict(gp_model,
+                             select(testing_sample,
+                                    -row_number,
+                                    -time_per_pixel),
+                             "UK")
+
+    testing_sample$expected_improvement <- gp_prediction$mean - (1.96 * gp_prediction$sd)
+
+    new_training_sample <- testing_sample %>%
+        arrange(expected_improvement)
+
+    testing_sample <- select(testing_sample, -expected_improvement)
+
+    new_training_sample <- select(new_training_sample[1:added_training_points, ],
+                                  -expected_improvement)
+
+    training_sample <- bind_rows(training_sample,
+                                 new_training_sample)
+}
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+
+'data.frame':	23120 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+'data.frame':	24 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23096 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 4.824515e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  34 10 30 4 2 1984 2046
+  - variance bounds :  2.052603e-19 2.553359e-17
+  - best initial criterion value(s) :  454.5974
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=       -454.6  |proj g|=      0.35301
+At iterate     1  f =      -454.83  |proj g|=       0.47661
+At iterate     2  f =      -454.84  |proj g|=       0.68324
+At iterate     3  f =      -454.85  |proj g|=       0.58821
+At iterate     4  f =      -454.85  |proj g|=       0.59805
+At iterate     5  f =      -454.85  |proj g|=       0.59881
+
+iterations 5
+function evaluations 8
+segments explored during Cauchy searches 6
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 0.598811
+final function value -454.852
+
+F = -454.852
+final  value -454.852318
+converged
+'data.frame':	30 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23090 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 4.158919e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.546129e-19 2.096394e-17
+  - best initial criterion value(s) :  580.85
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -580.85  |proj g|=      0.26263
+At iterate     1  f =      -581.25  |proj g|=       0.35475
+At iterate     2  f =       -581.3  |proj g|=         0.311
+At iterate     3  f =      -581.33  |proj g|=       0.32364
+At iterate     4  f =      -581.33  |proj g|=       0.32697
+At iterate     5  f =      -581.33  |proj g|=       0.32659
+At iterate     6  f =      -581.33  |proj g|=        0.3266
+
+iterations 6
+function evaluations 8
+segments explored during Cauchy searches 7
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 0.326596
+final function value -581.327
+
+F = -581.327
+final  value -581.327054
+converged
+'data.frame':	36 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23084 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 3.670591e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.616627e-19 1.776159e-17
+  - best initial criterion value(s) :  711.479
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -711.48  |proj g|=       1.0095
+At iterate     1  f =       -711.5  |proj g|=        1.0008
+At iterate     2  f =       -711.5  |proj g|=       0.99986
+At iterate     3  f =       -711.5  |proj g|=       0.99995
+At iterate     4  f =       -711.5  |proj g|=       0.99995
+
+iterations 4
+function evaluations 7
+segments explored during Cauchy searches 5
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 0.999945
+final function value -711.502
+
+F = -711.502
+final  value -711.501636
+converged
+'data.frame':	42 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23078 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 3.267964e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.358212e-19 1.523024e-17
+  - best initial criterion value(s) :  822.8939
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -822.89  |proj g|=       2.6176
+At iterate     1  f =      -828.73  |proj g|=       0.32256
+At iterate     2  f =      -839.77  |proj g|=       0.95276
+At iterate     3  f =      -839.77  |proj g|=       0.95398
+At iterate     4  f =      -839.77  |proj g|=       0.95398
+
+iterations 4
+function evaluations 8
+segments explored during Cauchy searches 5
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 0.953982
+final function value -839.771
+
+F = -839.771
+final  value -839.771283
+converged
+'data.frame':	48 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23072 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.888991e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.344697e-19 1.364339e-17
+  - best initial criterion value(s) :  945.3331
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -945.33  |proj g|=       2.1644
+At iterate     1  f =      -956.87  |proj g|=       0.71796
+At iterate     2  f =      -958.25  |proj g|=       0.71796
+At iterate     3  f =      -958.53  |proj g|=       0.71796
+At iterate     4  f =      -958.53  |proj g|=       0.71796
+At iterate     5  f =      -958.53  |proj g|=       0.71796
+At iterate     6  f =      -958.53  |proj g|=       0.71796
+
+iterations 6
+function evaluations 10
+segments explored during Cauchy searches 7
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 0.717961
+final function value -958.53
+
+F = -958.53
+final  value -958.530229
+converged
+'data.frame':	54 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23066 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 3.080921e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.396355e-19 1.520134e-17
+  - best initial criterion value(s) :  1027.369
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -1027.4  |proj g|=       4.3009
+At iterate     1  f =      -1052.6  |proj g|=        2.4202
+At iterate     2  f =      -1060.7  |proj g|=        4.3009
+At iterate     3  f =      -1061.6  |proj g|=        4.3009
+At iterate     4  f =      -1061.7  |proj g|=        4.3009
+At iterate     5  f =      -1061.7  |proj g|=        4.3009
+At iterate     6  f =      -1061.7  |proj g|=        4.3009
+At iterate     7  f =      -1061.7  |proj g|=        4.3009
+At iterate     8  f =      -1061.7  |proj g|=        4.3009
+
+iterations 8
+function evaluations 12
+segments explored during Cauchy searches 10
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 4.30092
+final function value -1061.72
+
+F = -1061.72
+final  value -1061.716830
+converged
+'data.frame':	60 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23060 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.844582e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.256898e-19 1.28029e-17
+  - best initial criterion value(s) :  406.211
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -406.21  |proj g|=       17.888
+At iterate     1  f =      -1139.8  |proj g|=        5.0051
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =        -1150  |proj g|=        1.6875
+At iterate     3  f =      -1150.1  |proj g|=        1.9032
+At iterate     4  f =      -1150.1  |proj g|=        1.9214
+At iterate     5  f =      -1150.1  |proj g|=        1.9189
+At iterate     6  f =      -1150.1  |proj g|=         1.919
+
+iterations 6
+function evaluations 7
+segments explored during Cauchy searches 9
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 1
+norm of the final projected gradient 1.91895
+final function value -1150.08
+
+F = -1150.08
+final  value -1150.075136
+converged
+'data.frame':	66 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23054 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.645092e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.155743e-19 1.241766e-17
+  - best initial criterion value(s) :  918.6032
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=       -918.6  |proj g|=       7.7478
+At iterate     1  f =      -1245.1  |proj g|=        7.7478
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =      -1291.2  |proj g|=        1.4331
+At iterate     3  f =      -1336.2  |proj g|=        1.3381
+At iterate     4  f =      -1336.7  |proj g|=        1.3589
+At iterate     5  f =      -1336.7  |proj g|=        1.3561
+At iterate     6  f =      -1336.7  |proj g|=        1.3547
+At iterate     7  f =      -1336.7  |proj g|=        1.3549
+At iterate     8  f =      -1336.7  |proj g|=        1.3549
+
+iterations 8
+function evaluations 16
+segments explored during Cauchy searches 13
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 2
+norm of the final projected gradient 1.35486
+final function value -1336.73
+
+F = -1336.73
+final  value -1336.732779
+converged
+'data.frame':	72 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23048 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.47173e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  1.072189e-19 1.200952e-17
+  - best initial criterion value(s) :  657.9494
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -657.95  |proj g|=       34.967
+At iterate     1  f =      -1371.3  |proj g|=        4.6193
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =      -1388.3  |proj g|=        3.0547
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     3  f =      -1397.8  |proj g|=        2.5433
+At iterate     4  f =      -1424.2  |proj g|=       0.98706
+Nonpositive definiteness in Cholesky factorization in formt();
+   refresh the lbfgs memory and restart the iteration.
+At iterate     5  f =      -1446.7  |proj g|=       0.55227
+At iterate     6  f =      -1446.7  |proj g|=       0.65807
+At iterate     7  f =      -1446.7  |proj g|=        0.6685
+At iterate     8  f =      -1446.7  |proj g|=       0.66743
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+Line search cannot locate an adequate point after 20 function
+and gradient evaluations
+final  value -1446.718976
+stopped after 8 iterations
+'data.frame':	78 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23042 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.323429e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  9.905381e-20 1.151977e-17
+  - best initial criterion value(s) :  660.3102
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -660.31  |proj g|=       8.4057
+At iterate     1  f =      -1432.2  |proj g|=        8.4057
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =        -1518  |proj g|=         2.777
+At iterate     3  f =      -1554.5  |proj g|=         1.613
+At iterate     4  f =      -1554.5  |proj g|=        1.6101
+At iterate     5  f =      -1554.5  |proj g|=        1.6105
+At iterate     6  f =      -1554.5  |proj g|=        1.6105
+
+iterations 6
+function evaluations 12
+segments explored during Cauchy searches 10
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 1
+norm of the final projected gradient 1.6105
+final function value -1554.48
+
+F = -1554.48
+final  value -1554.483386
+converged
+'data.frame':	84 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23036 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.187152e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  9.196176e-20 1.106997e-17
+  - best initial criterion value(s) :  -1445.493
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=       1445.5  |proj g|=       41.035
+At iterate     1  f =      -770.86  |proj g|=        27.498
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =      -1393.6  |proj g|=        14.908
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     3  f =      -1567.5  |proj g|=         8.616
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     4  f =      -1628.7  |proj g|=        5.6854
+At iterate     5  f =      -1693.1  |proj g|=         1.129
+Nonpositive definiteness in Cholesky factorization in formt();
+   refresh the lbfgs memory and restart the iteration.
+At iterate     6  f =      -1694.4  |proj g|=         2.143
+At iterate     7  f =      -1694.5  |proj g|=        1.6341
+At iterate     8  f =      -1694.6  |proj g|=        1.7846
+At iterate     9  f =      -1694.6  |proj g|=        1.8316
+At iterate    10  f =      -1694.6  |proj g|=         1.825
+At iterate    11  f =      -1694.6  |proj g|=        1.8252
+
+iterations 11
+function evaluations 14
+segments explored during Cauchy searches 19
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 3
+norm of the final projected gradient 1.82521
+final function value -1694.65
+
+F = -1694.65
+final  value -1694.645140
+converged
+'data.frame':	90 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23030 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 2.045255e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  8.634689e-20 9.978965e-18
+  - best initial criterion value(s) :  1727.642
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -1727.6  |proj g|=       9.3815
+At iterate     1  f =      -1798.9  |proj g|=        3.1005
+At iterate     2  f =      -1804.9  |proj g|=        3.0983
+At iterate     3  f =      -1805.7  |proj g|=        3.0966
+At iterate     4  f =      -1805.7  |proj g|=         3.097
+At iterate     5  f =      -1805.7  |proj g|=        3.0968
+At iterate     6  f =      -1805.7  |proj g|=        3.0968
+At iterate     7  f =      -1805.7  |proj g|=        3.0968
+
+iterations 7
+function evaluations 11
+segments explored during Cauchy searches 8
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 3.09684
+final function value -1805.68
+
+F = -1805.68
+final  value -1805.680462
+converged
+'data.frame':	96 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23024 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 1.938912e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  8.166673e-20 9.712258e-18
+  - best initial criterion value(s) :  1981.374
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -1981.4  |proj g|=       1.1907
+At iterate     1  f =      -1982.9  |proj g|=        1.1907
+At iterate     2  f =        -1983  |proj g|=        1.1907
+At iterate     3  f =        -1983  |proj g|=        1.1907
+At iterate     4  f =        -1983  |proj g|=        1.1907
+At iterate     5  f =        -1983  |proj g|=        1.1907
+
+iterations 5
+function evaluations 8
+segments explored during Cauchy searches 6
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 1.19066
+final function value -1983
+
+F = -1983
+final  value -1982.998119
+converged
+'data.frame':	102 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23018 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 1.844369e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  7.691429e-20 9.067925e-18
+  - best initial criterion value(s) :  1694.105
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -1694.1  |proj g|=        20.96
+At iterate     1  f =      -2063.6  |proj g|=        4.8063
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     2  f =      -2067.7  |proj g|=         1.246
+At iterate     3  f =      -2067.7  |proj g|=        1.2432
+Nonpositive definiteness in Cholesky factorization in formt();
+   refresh the lbfgs memory and restart the iteration.
+At iterate     4  f =      -2070.2  |proj g|=         2.299
+Bad direction in the line search;
+   refresh the lbfgs memory and restart the iteration.
+At iterate     5  f =      -2071.5  |proj g|=       0.99598
+At iterate     6  f =      -2071.5  |proj g|=       0.99591
+
+iterations 6
+function evaluations 9
+segments explored during Cauchy searches 14
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 3
+norm of the final projected gradient 0.995906
+final function value -2071.49
+
+F = -2071.49
+final  value -2071.490323
+converged
+'data.frame':	108 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23012 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 1.741822e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  7.482902e-20 9.563829e-18
+  - best initial criterion value(s) :  2083.444
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -2083.4  |proj g|=        8.499
+At iterate     1  f =      -2088.5  |proj g|=        8.8649
+At iterate     2  f =      -2115.2  |proj g|=          8.75
+At iterate     3  f =      -2115.2  |proj g|=        8.7493
+At iterate     4  f =      -2115.2  |proj g|=        8.7493
+
+iterations 4
+function evaluations 12
+segments explored during Cauchy searches 5
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 8.7493
+final function value -2115.2
+
+F = -2115.2
+final  value -2115.195088
+converged
+'data.frame':	114 obs. of  9 variables:
+ $ elements_number   : int  2 18 16 15 12 15 3 4 8 16 ...
+ $ y_component_number: int  2 6 4 5 4 5 1 1 4 4 ...
+ $ vector_length     : int  1 2 1 4 2 4 4 16 1 4 ...
+ $ temporary_size    : int  4 2 4 2 4 2 2 4 4 2 ...
+ $ load_overlap      : num  2 1 2 2 1 1 2 2 2 2 ...
+ $ threads_number    : int  128 512 1024 256 32 128 1024 1024 32 128 ...
+ $ lws_y             : int  16 256 16 128 2 64 1024 1 16 8 ...
+ $ time_per_pixel    : num  4.87e-10 1.98e-09 1.96e-10 1.79e-09 3.17e-10 ...
+ $ row_number        : int  1344 6561 8248 22308 8173 20071 6740 20655 19237 22691 ...
+'data.frame':	23006 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+
+optimisation start
+------------------
+,* estimation method   : MLE
+,* optimisation method : BFGS
+,* analytical gradient : used
+,* trend model : ~elements_number
+y_component_number
+vector_length
+temporary_size
+
+    load_overlap
+threads_number
+lws_y
+,* covariance model :
+  - type :  matern5_2
+  - nugget : 1.664672e-26
+  - parameters lower bounds :  1e-10 1e-10 1e-10 1e-10 1e-10 1e-10 1e-10
+  - parameters upper bounds :  46 10 30 4 2 1984 2046
+  - variance bounds :  7.086489e-20 9.645101e-18
+  - best initial criterion value(s) :  1920.233
+
+N = 8, M = 5 machine precision = 2.22045e-16
+At X0, 0 variables are exactly at the bounds
+At iterate     0  f=      -1920.2  |proj g|=       17.107
+At iterate     1  f =      -2248.5  |proj g|=       0.55339
+At iterate     2  f =      -2252.6  |proj g|=        1.5869
+At iterate     3  f =      -2253.3  |proj g|=        2.3385
+At iterate     4  f =      -2253.3  |proj g|=        2.4943
+At iterate     5  f =      -2253.3  |proj g|=        2.4492
+At iterate     6  f =      -2253.3  |proj g|=        2.4509
+
+iterations 6
+function evaluations 11
+segments explored during Cauchy searches 7
+BFGS updates skipped 0
+active bounds at final generalized Cauchy point 0
+norm of the final projected gradient 2.4509
+final function value -2253.32
+
+F = -2253.32
+final  value -2253.321096
+converged
+#+end_example
