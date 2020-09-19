@@ -4027,7 +4027,7 @@ The following objects are masked from ‘package:base’:
 #+end_example
 
 ***** GPR Code
-#+begin_SRC R :results output :session *R* :eval no-export :exports results :tangle "gpr.r"
+#+begin_SRC R :results output :session *R* :eval no-export :exports results :tangle "dopt_anova_experiments/src/gpr.r"
 library(DiceKriging)
 library(dplyr)
 
@@ -5654,37 +5654,39 @@ final  value -2273.813655
 converged
 #+end_example
 ***** Parsing Data
-#+begin_SRC R :results graphics output :session *R2* :file "comparison_histogram.pdf" :width 7 :height 8 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "dopt_anova_experiments/img/comparison_histogram.pdf" :width 7 :height 9 :eval no-export :tangle "dopt_anova_experiments/src/build_histogram.r"
 library(ggplot2)
 library(dplyr)
 
-# gpr_data <- read.csv("gpr_dlmt_best_points.csv") %>%
-#     select(slowdown, method, measurement_order, time_per_pixel)
-
-gpr_data <- read.csv("best_points.csv") %>%
-    select(slowdown, method, measurement_order, time_per_pixel)
+gpr_data <- read.csv("dopt_anova_experiments/data/gpr_nugget_best_points.csv") %>%
+    select(slowdown, method, measurement_order, time_per_pixel) %>%
+    mutate(method = "GPRN")
 
 names(gpr_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
-gpr_lin_data <- read.csv("gpr_lin_best_points.csv") %>%
+gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_dlmt_best_points.csv") %>%
     select(slowdown, method, measurement_order, time_per_pixel) %>%
-    mutate(method = "GPRL")
+    mutate(method = "GPR")
 
 names(gpr_lin_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
 df_all_methods <- read.csv("dopt_anova_experiments/data/complete_1000.csv",
                            strip.white = TRUE, header = TRUE)
 
+levels <- c("RS", "LHS", "GS", "GSR",
+                      "GA","LM", "LMB", "LMBT",
+                      "RQ", "DOPT", "DLM", "DLMT",
+                      "GPR", "GPRN")
+
+selected_methods <- c("RS", "LHS", "GS", "GSR",
+                      "GA", "LM", "DLMT", "GPR", "GPRN")
+
 df_all_methods <- df_all_methods %>%
     select(slowdown, method, point_number, time_per_pixel) %>%
     bind_rows(gpr_data, gpr_lin_data) %>%
     mutate(method = factor(method,
-                           levels = c("RS", "LHS", "GS", "GSR",
-                                      "GA","LM", "LMB", "LMBT",
-                                      "RQ", "DOPT", "DLM", "DLMT",
-                                      "GPR", "GPRL"))) %>%
-    filter(method %in% c("RS", "LHS", "GS", "GSR",
-                         "GA", "LM", "DLMT", "GPR", "GPRL")) %>%
+                           levels = levels)) %>%
+    filter(method %in% selected_methods) %>%
     group_by(method) %>%
     mutate(mean = mean(slowdown),
            median = median(slowdown),
@@ -5740,8 +5742,7 @@ ggplot(df_all_methods) +
 #+end_SRC
 
 #+RESULTS:
-[[file:comparison_histogram.pdf]]
-
+[[file:dopt_anova_experiments/img/comparison_histogram.pdf]]
 *** [2020-09-18 Fri]
 **** R session sample
 #+begin_SRC R :results output :session *R3* :eval no-export :exports results
