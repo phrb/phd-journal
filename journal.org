@@ -4013,7 +4013,6 @@ The following objects are masked from ‘package:stats’:
 The following objects are masked from ‘package:base’:
 
     intersect, setdiff, setequal, union
-
 'data.frame':	23120 obs. of  9 variables:
  $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
  $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
@@ -4048,6 +4047,8 @@ added_training_points <- 6
 iterations = (initial_budget - initial_sample) / added_training_points
 
 repetitions <- 1000
+# sd_range <- 1.96
+sd_range <- 0.5
 
 results <- NULL
 
@@ -4084,7 +4085,7 @@ for(j in 1:repetitions){
                                         -time_per_pixel),
                                  "UK")
 
-        testing_sample$expected_improvement <- gp_prediction$mean - (1.96 * gp_prediction$sd)
+        testing_sample$expected_improvement <- gp_prediction$mean - (sd_range * gp_prediction$sd)
 
         new_training_sample <- testing_sample %>%
             arrange(expected_improvement)
@@ -4121,7 +4122,6 @@ for(j in 1:repetitions){
 
     write.csv(best_points, "all_points.csv")
 }
-
 #+end_SRC
 
 ***** Sub-spaces Reached by each Method
@@ -4173,7 +4173,7 @@ gprn <- ggpairs(df_all_methods %>%
     ggtitle("GPRN: Trend + Nugget")
 
 gpr <- ggpairs(df_all_methods %>%
-               filter(method == "GPRN") %>%
+               filter(method == "GPR") %>%
                select(-method)) +
     ggtitle("GPR: Trend")
 
