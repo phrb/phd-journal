@@ -4026,7 +4026,7 @@ The following objects are masked from ‘package:base’:
 #+end_example
 
 ***** GPR Code
-#+begin_SRC R :results output :session *R* :eval no-export :exports results :tangle "dopt_anova_experiments/src/gpr.r"
+#+begin_SRC R :results output :session *R3* :eval no-export :exports results :tangle "dopt_anova_experiments/src/gpr.r"
 library(DiceKriging)
 library(dplyr)
 
@@ -4044,13 +4044,28 @@ global_optimum <- filter(complete_data, time_per_pixel == min(time_per_pixel))
 initial_budget <- 120
 initial_sample <- 24
 added_training_points <- 6
-iterations = (initial_budget - initial_sample) / added_training_points
+iterations = round((initial_budget - initial_sample) / added_training_points)
+print(iterations)
 
 repetitions <- 1000
 # sd_range <- 1.96
-sd_range <- 0.5
+sd_range <- 0.3
+nugget <- 1e-12
 
 results <- NULL
+
+delta <- 0.5 # (0, 1)
+scale_factor <- 30
+
+variance_dampening <- function(dimension, delta, time) {
+    return(sqrt((log((dimension * ((time * pi) ^ 2)) /
+                         (6 * delta))) /
+                scale_factor))
+}
+
+variance_dampening_ucb <- function(dimension, delta, time) {
+    return(sqrt(log(time)))
+}
 
 for(j in 1:repetitions){
     testing_sample <- complete_data
@@ -4065,7 +4080,10 @@ for(j in 1:repetitions){
         testing_sample <- testing_sample %>%
             filter(!(row_number %in% training_sample$row_number))
 
-        gp_model <- km(formula = ~ y_component_number + I(1 / y_component_number) +
+        invisible(
+            capture.output(
+                gp_model <-
+                    km(formula = ~ y_component_number + I(1 / y_component_number) +
                            vector_length + lws_y + I(1 / lws_y) +
                            load_overlap + temporary_size +
                            elements_number + I(1 / elements_number) +
@@ -4074,10 +4092,11 @@ for(j in 1:repetitions){
                                        -row_number,
                                        -time_per_pixel),
                        response = training_sample$time_per_pixel,
-                       #nugget = 1e-2 * var(training_sample$time_per_pixel),
-                       nugget = 1e-3,
+                       #nugget = nugget * var(training_sample$time_per_pixel),
+                       nugget = 1e-1,
                        control = list(pop.size = 400,
                                       BFGSburnin = 500))
+            ))
 
         gp_prediction <- predict(gp_model,
                                  select(testing_sample,
@@ -4085,7 +4104,18 @@ for(j in 1:repetitions){
                                         -time_per_pixel),
                                  "UK")
 
-        testing_sample$expected_improvement <- gp_prediction$mean - (sd_range * gp_prediction$sd)
+        # testing_sample$expected_improvement <- gp_prediction$mean -
+        #     (sd_range * gp_prediction$sd)
+
+        print(c(length(training_sample[, 1]),
+                variance_dampening(length(training_sample) - 2,
+                                   delta,
+                                   i)))
+
+        testing_sample$expected_improvement <- gp_prediction$mean -
+            (variance_dampening(length(training_sample),
+                                delta,
+                                length(training_sample[, 1])) * gp_prediction$sd)
 
         new_training_sample <- testing_sample %>%
             arrange(expected_improvement)
@@ -4113,16 +4143,32 @@ for(j in 1:repetitions){
     }
 
     best_points <- results %>%
-        mutate(method = "GPR") %>%
+        mutate(method = "GPR_dampening") %>%
         group_by(experiment_id)
 
     write.csv(best_points %>%
               filter(time_per_pixel == min(time_per_pixel)),
-              "best_points.csv")
+              "gpr_dampening_sc30_d05_best_points.csv")
 
-    write.csv(best_points, "all_points.csv")
+    write.csv(best_points, "gpr_dampening_sc30_d05_all_points.csv")
 }
 #+end_SRC
+
+#+RESULTS:
+#+begin_example
+'data.frame':	23120 obs. of  9 variables:
+ $ elements_number   : int  3 2 4 2 2 2 2 4 4 3 ...
+ $ y_component_number: int  3 2 1 1 1 2 2 2 4 1 ...
+ $ vector_length     : int  4 1 4 1 8 2 1 8 16 4 ...
+ $ temporary_size    : int  4 2 2 2 2 2 4 4 2 4 ...
+ $ load_overlap      : num  2 1 2 1 2 2 1 2 2 2 ...
+ $ threads_number    : int  64 128 64 256 128 128 128 64 128 32 ...
+ $ lws_y             : int  64 1 32 64 32 8 2 2 128 32 ...
+ $ time_per_pixel    : num  1.11e-08 1.58e-10 2.34e-09 1.39e-09 3.40e-09 ...
+ $ row_number        : int  1 2 3 4 5 6 7 8 9 10 ...
+[1] 18
+Error in t.default(T) : argument is not a matrix
+#+end_example
 
 ***** Sub-spaces Reached by each Method
 #+begin_SRC R :results graphics output :session *R* :file "dopt_anova_experiments/img/subspaces.pdf" :width 20 :height 20 :eval no-export
@@ -4139,7 +4185,7 @@ gpr_data <- read.csv("dopt_anova_experiments/data/gpr_nugget_best_points.csv") %
 
 # names(gpr_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
-gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_dlmt_best_points.csv") %>%
+gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_nosd_best_points.csv") %>%
     select(-slowdown, -time_per_pixel, -measurement_order,
            -experiment_id, -X, -row_number) %>%
     mutate(method = "GPR")
@@ -4203,15 +4249,17 @@ grid.arrange(p1, p2, p3, p4, ncol = 2)
 library(ggplot2)
 library(dplyr)
 
-gpr_data <- read.csv("dopt_anova_experiments/data/gpr_nugget_best_points.csv") %>%
+#gpr_data <- read.csv("dopt_anova_experiments/data/gpr_nugget_best_points.csv") %>%
+gpr_data <- read.csv("gpr_dampening_sc30_d05_best_points.csv") %>%
     select(slowdown, method, measurement_order, time_per_pixel) %>%
-    mutate(method = "GPRN")
+    mutate(method = "GPRD")
 
 names(gpr_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
-gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_dlmt_best_points.csv") %>%
+#gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_nosd_best_points.csv") %>%
+gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_03sd_nugget_best_points.csv") %>%
     select(slowdown, method, measurement_order, time_per_pixel) %>%
-    mutate(method = "GPR")
+    mutate(method = "GPR-0.3sd")
 
 names(gpr_lin_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
@@ -4219,12 +4267,12 @@ df_all_methods <- read.csv("dopt_anova_experiments/data/complete_1000.csv",
                            strip.white = TRUE, header = TRUE)
 
 levels <- c("RS", "LHS", "GS", "GSR",
-                      "GA","LM", "LMB", "LMBT",
-                      "RQ", "DOPT", "DLM", "DLMT",
-                      "GPR", "GPRN")
+            "GA","LM", "LMB", "LMBT",
+            "RQ", "DOPT", "DLM", "DLMT",
+            "GPR-0.3sd", "GPRD")
 
 selected_methods <- c("RS", "LHS", "GS", "GSR",
-                      "GA", "LM", "DLMT", "GPR", "GPRN")
+                      "GA", "LM", "DLMT", "GPR-0.3sd", "GPRD")
 
 df_all_methods <- df_all_methods %>%
     select(slowdown, method, point_number, time_per_pixel) %>%
@@ -4241,7 +4289,7 @@ df_all_methods <- df_all_methods %>%
 
 ggplot(df_all_methods) +
     facet_grid(method ~ .) +
-    theme_bw(base_size = 18) +
+    theme_bw(base_size = 15) +
     coord_cartesian(xlim = c(.9, 4),
                     ylim = c(0, 1000)) +
     geom_histogram(aes(slowdown),
@@ -4308,3 +4356,120 @@ str(df)
 
 #+RESULTS:
 :  num [1:10] 10.03 10.53 9.86 10.34 10.62 ...
+*** [2020-09-24 Thu]
+**** CI for Speedups
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+y1 = rnorm(mean = 20, n = 30)
+y2 = rnorm(mean = 25, n = 30)
+
+ci_speedup_inf = (mean(y2) - 1.96 * sd(y2)) /
+    (mean(y1) + 1.96 * sd(y1))
+
+    ci_speedup_sup = (mean(y2) + 1.96 * sd(y2)) /
+    (mean(y1) - 1.96 * sd(y1))
+
+c(25 / 20,
+  mean(y2) / mean(y1),
+  ci_speedup_inf,
+  ci_speedup_sup)
+#+end_SRC
+
+#+RESULTS:
+: [1] 1.250000 1.253689 1.066590 1.476254
+** October
+*** [2020-10-06 Tue]
+**** Related work Pedro (from Arnaud)
+***** Chat notes
+- https://www.jmp.com/support/help/en/15.2/index.shtml#page/jmp/gaussian-process-imse-optimal-designs.shtml#ww90928
+- https://sites.ualberta.ca/~dwiens/home%20page/publist.htm
+- https://sites.ualberta.ca/~dwiens/home%20page/pubs/lof%20discrete.pdf
+- https://bookdown.org/rbg/surrogates/
+***** Minimisation (f is known)
+- [[https://en.wikipedia.org/wiki/Stochastic_gradient_descent][Convex function or Pseudo-convex]]: Briefly, when the learning rates \eta
+decrease with
+  an appropriate rate, and subject to relatively mild assumptions,
+  stochastic gradient descent converges almost surely to a global
+  minimum
+  - Lipschitz guarantee ?
+  - [[https://en.wikipedia.org/wiki/Gradient_descent][Many variants]]
+(momentum to avoid zig-zag, Backtracking line
+    search so that objective strictly decreases, conjugate gradient
+    or Newton if hessian, Nelder-Mead if derivatives cannot be computed
+- C^2: converges almost surely to a local minimum
+- Meta-heuristics like Hill Climbing, Simulated Annealing
+  (stochastic neighborhood exploration, related to
+  https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm),
+  Genetic Algorithm.
+  -
+[[https://stackoverflow.com/questions/4092774/what-are-the-differences-between-simulated-annealing-and-genetic-algorithms][In  the  meta-heuristic taxonomy,  SA  is  a single-state  method  and  GA is  a
+population method (in  a sub-class along with PSO, ACO,  et al, usually referred
+to as biologically-inspired meta-heuristics).]]
+- Constrained optimization (requires Lagrangian unless a variable
+  change helps). Additional difficulty: avoiding to get stuck on the
+  border and following it with ridiculous steps.
+
+Convergence rate degrades with dimension and bad normalization.
+***** Learning (f is not known and should be approximated from x samples)
+- statistical learning: optimize the loss or maximum likelihood for
+  model parameters. In general seeks a good prediction
+  "everywhere". Tries to evaluate uncertainty on parameters and predictions.
+- "machine" learning: efficient optimization of the loss (i.e.
+  E_{x,\theta}[y_\theta(x)-y(x)])
+
+Statistical and Machine learning generally assume that the samples x
+are fixed inputs (observations vs. controled experiments), which
+raises difficulties regarding generalization/overfitting,
+discriminating causation from correlation, counterfactual analysis,
+etc.
+***** Design of Experiments (find the "best" x to obtain a good model)
+Assuming a model for f, propose a set of x to measure to obtain the
+best estimates for the model parameters \theta and the prediction.
+- Linear models
+  - Fractional Designs
+  - Screening
+  - D-optimal designs
+- Unconstrained models (gaussian process)
+  - LHS
+***** Online and Reinforcement Learning
+Choose x_i depending on previous observations and obtain feedback. Same
+rules: interact with the world and get feedback, and try to find the
+"best" configuration.
+
+- Online machine learning: regret from 1 to T, no discount. Often
+  relies on stochastic gradient.
+  - Special simple case = Bandit
+    - Stochastic: UCB/Thompson, log(T)
+    - Adversarial: EXP3, sqrt(T)
+  - Many variants Linear UCB, LinRel, Gaussian UCB
+- Reinforcement learning: optimize (infinite discounted) regret,
+  generally through Markov Decision Process (i.e., dynamic
+  programming).
+  - Well studied for finite-state space MDPs
+  - Does not scale well in high dimension
+
+In both cases, the balance between exploration and exploitation is
+lead by (temporally aggregated) regret.
+***** Fast exploration of expensive black-box functions
+- Reduce dimension by exploiting knowledge on the geometry of f (e.g.,
+  identify unsignificant parameters or parameters that need to be set
+  to "obvious" values).
+- [[https://smt.readthedocs.io/en/latest/_src_docs/applications/ego.html][EGO]]:
+Efficient global optimization of expensive black-box
+  functions. Journal of Global optimization, 13(4), 455-492.  EGO
+  targets the minimization of the expected deviation from the extremum
+  of the studied function.
+  - EI, Kriging Believer (no guarantee) and GaussianUCB differ by the
+*** [2020-10-18 Sun]
+**** Brice's Links for Sampling on a Constrained Triangle
+- https://cs.stackexchange.com/questions/3227/uniform-sampling-from-a-simplex
+- https://cs.stackexchange.com/questions/14007/random-sampling-in-a-polygon
+*** [2020-10-21 Wed]
+**** Arnaud's References
+- [[https://sites.ualberta.ca/~dwiens/home%2520page/publist.htm][List of publications on Maxmin Designs for Lack of Fit, Regression, etc]]
+- [[https://sites.ualberta.ca/~dwiens/home%2520page/pubs/nonlinear%2520quantile%2520regression%2520design.pdf][Model-robust designs for nonlinearquantile regression]]
+- [[https://sites.ualberta.ca/~dwiens/home%2520page/pubs/lof%2520discrete.pdf][Maximin power designs in testing lack of fit]]
+- [[https://sites.ualberta.ca/~dwiens/home%2520page/pubs/uniformdesigns.pdf][Designs for approximately linear regression: Two optimality properties of uniform designs]]
+- [[https://www.jmp.com/support/help/en/15.2/index.shtml#page/jmp/gaussian-process-imse-optimal-designs.shtml#ww90928][Gaussian Process IMSE Optimal Designs]]
+**** Surrogates Book
+- [[https://bookdown.org/rbg/surrogates/][Surrogates: Gaussian process modeling, design and optimization for the applied sciences]]
