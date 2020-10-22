@@ -4471,5 +4471,7 @@ Efficient global optimization of expensive black-box
 - [[https://sites.ualberta.ca/~dwiens/home%2520page/pubs/lof%2520discrete.pdf][Maximin power designs in testing lack of fit]]
 - [[https://sites.ualberta.ca/~dwiens/home%2520page/pubs/uniformdesigns.pdf][Designs for approximately linear regression: Two optimality properties of uniform designs]]
 - [[https://www.jmp.com/support/help/en/15.2/index.shtml#page/jmp/gaussian-process-imse-optimal-designs.shtml#ww90928][Gaussian Process IMSE Optimal Designs]]
+- [[https://smt.readthedocs.io/en/latest/_src_docs/applications/ego.html][Efficient Global Optimization (EGO): Bayesian Optimization]]
+- [[https://www.ressources-actuarielles.net/EXT/ISFA/1226.nsf/0/f84f7ac703bf5862c12576d8002f5259/$FILE/Jones98.pdf][EGO Original Paper]]
 **** Surrogates Book
 - [[https://bookdown.org/rbg/surrogates/][Surrogates: Gaussian process modeling, design and optimization for the applied sciences]]
