@@ -937,37 +937,37 @@ stargazer(select(complete_plot_data, experiment_id, technique, step, cost_mean,
 #+RESULTS:
 #+begin_export latex
 
-
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Mon, Sep 23, 2019 - 06:09:05 PM
+% Date and time: Mon, Jan 18, 2021 - 04:05:55 PM
 \begin{table}[!htbp] \centering
   \caption{}
   \label{}
-\begin{tabular}{@{\extracolsep{5pt}} cccccccccccccccc}
+\tiny
+\begin{tabular}{@{\extracolsep{0pt}} ccccccccccccccccc}
 \\[-1.8ex]\hline
 \hline \\[-1.8ex]
-experiment\_id & technique & cost\_mean & T1\_I & T1\_J & U\_J & U\_I & T2\_I & T2\_J & U1\_I & RT\_I & RT\_J & OMP & SCR & VEC1 & VEC2 \\
+experiment\_id & technique & step & cost\_mean & T1\_I & T1\_J & U\_J & U\_I & T2\_I & T2\_J & U1\_I & RT\_I & RT\_J & OMP & SCR & VEC1 & VEC2 \\
 \hline \\[-1.8ex]
-parasilo-1 & DLMT & 0.5244322 & 2048 & 64 & 1 & 30 & 1 & 1 & 25 & 1 & 1 & True & True & False & True \\
-parasilo-10 & DLMT & 0.55769 & 8 & 2 & 1 & 9 & 2048 & 2048 & 2 & 4 & 32 & True & True & False & True \\
-parasilo-11 & DLMT & 0.4753558 & 2048 & 1024 & 30 & 1 & 1 & 1024 & 16 & 4 & 4 & True & True & False & False \\
-parasilo-13 & DLMT & 0.5016148 & 1 & 256 & 21 & 1 & 2048 & 256 & 1 & 8 & 4 & True & False & False & False \\
-parasilo-14 & DLMT & 0.5404449 & 2048 & 1 & 1 & 13 & 2048 & 2048 & 4 & 8 & 4 & True & True & False & True \\
-parasilo-17 & DLMT & 0.5371861 & 2048 & 1 & 29 & 1 & 2048 & 1024 & 7 & 4 & 8 & True & True & True & False \\
-parasilo-19 & DLMT & 0.5507874 & 2048 & 2 & 1 & 13 & 2048 & 128 & 15 & 1 & 1 & True & True & True & True \\
-parasilo-2 & DLMT & 0.5229024 & 1024 & 1 & 1 & 1 & 2048 & 1024 & 2 & 8 & 1 & True & True & True & False \\
-parasilo-20 & DLMT & 0.5643309 & 1 & 2048 & 1 & 12 & 2048 & 2048 & 4 & 1 & 8 & True & True & False & True \\
-parasilo-9 & DLMT & 0.4685077 & 2048 & 128 & 1 & 16 & 1 & 256 & 19 & 1 & 1 & True & True & True & True \\
-paravance-50 & RS & 0.5685274 & 512 & 512 & 19 & 1 & 2048 & 1024 & 27 & 4 & 1 & True & True & True & False \\
-paravance-51 & RS & 0.5467725 & 1024 & 32 & 10 & 1 & 2048 & 512 & 9 & 8 & 8 & True & True & True & True \\
-paravance-52 & RS & 0.5417953 & 2048 & 8 & 9 & 1 & 2048 & 128 & 30 & 8 & 16 & True & True & True & True \\
-paravance-53 & RS & 0.5612387 & 2048 & 64 & 16 & 1 & 2048 & 256 & 9 & 16 & 2 & True & True & True & True \\
-paravance-54 & RS & 0.5322531 & 2048 & 8 & 1 & 9 & 1 & 1 & 19 & 1 & 1 & True & True & True & False \\
-paravance-55 & RS & 0.5540684 & 32 & 4 & 1 & 5 & 2048 & 256 & 4 & 16 & 1 & True & True & False & False \\
-paravance-56 & RS & 0.4648199 & 2048 & 1 & 1 & 23 & 1 & 512 & 25 & 8 & 1 & True & True & False & True \\
-paravance-57 & RS & 0.5463944 & 256 & 16 & 1 & 15 & 2048 & 512 & 2 & 2 & 2 & True & True & False & False \\
-paravance-58 & RS & 0.5496127 & 32 & 1 & 1 & 14 & 2048 & 2048 & 24 & 8 & 4 & True & True & True & True \\
-paravance-59 & RS & 0.4758884 & 64 & 16 & 29 & 1 & 2048 & 1 & 27 & 16 & 4 & True & True & True & True \\
+parasilo-1 & DLMT & 4 & 0.5244322 & 2048 & 64 & 1 & 30 & 1 & 1 & 25 & 1 & 1 & True & True & False & True \\
+parasilo-10 & DLMT & 4 & 0.55769 & 8 & 2 & 1 & 9 & 2048 & 2048 & 2 & 4 & 32 & True & True & False & True \\
+parasilo-11 & DLMT & 3 & 0.4753558 & 2048 & 1024 & 30 & 1 & 1 & 1024 & 16 & 4 & 4 & True & True & False & False \\
+parasilo-13 & DLMT & 3 & 0.5016148 & 1 & 256 & 21 & 1 & 2048 & 256 & 1 & 8 & 4 & True & False & False & False \\
+parasilo-14 & DLMT & 3 & 0.5404449 & 2048 & 1 & 1 & 13 & 2048 & 2048 & 4 & 8 & 4 & True & True & False & True \\
+parasilo-17 & DLMT & 4 & 0.5371861 & 2048 & 1 & 29 & 1 & 2048 & 1024 & 7 & 4 & 8 & True & True & True & False \\
+parasilo-19 & DLMT & 4 & 0.5507874 & 2048 & 2 & 1 & 13 & 2048 & 128 & 15 & 1 & 1 & True & True & True & True \\
+parasilo-2 & DLMT & 3 & 0.5229024 & 1024 & 1 & 1 & 1 & 2048 & 1024 & 2 & 8 & 1 & True & True & True & False \\
+parasilo-20 & DLMT & 3 & 0.5643309 & 1 & 2048 & 1 & 12 & 2048 & 2048 & 4 & 1 & 8 & True & True & False & True \\
+parasilo-9 & DLMT & 2 & 0.4685077 & 2048 & 128 & 1 & 16 & 1 & 256 & 19 & 1 & 1 & True & True & True & True \\
+paravance-50 & RS & NA & 0.5685274 & 512 & 512 & 19 & 1 & 2048 & 1024 & 27 & 4 & 1 & True & True & True & False \\
+paravance-51 & RS & NA & 0.5467725 & 1024 & 32 & 10 & 1 & 2048 & 512 & 9 & 8 & 8 & True & True & True & True \\
+paravance-52 & RS & NA & 0.5417953 & 2048 & 8 & 9 & 1 & 2048 & 128 & 30 & 8 & 16 & True & True & True & True \\
+paravance-53 & RS & NA & 0.5612387 & 2048 & 64 & 16 & 1 & 2048 & 256 & 9 & 16 & 2 & True & True & True & True \\
+paravance-54 & RS & NA & 0.5322531 & 2048 & 8 & 1 & 9 & 1 & 1 & 19 & 1 & 1 & True & True & True & False \\
+paravance-55 & RS & NA & 0.5540684 & 32 & 4 & 1 & 5 & 2048 & 256 & 4 & 16 & 1 & True & True & False & False \\
+paravance-56 & RS & NA & 0.4648199 & 2048 & 1 & 1 & 23 & 1 & 512 & 25 & 8 & 1 & True & True & False & True \\
+paravance-57 & RS & NA & 0.5463944 & 256 & 16 & 1 & 15 & 2048 & 512 & 2 & 2 & 2 & True & True & False & False \\
+paravance-58 & RS & NA & 0.5496127 & 32 & 1 & 1 & 14 & 2048 & 2048 & 24 & 8 & 4 & True & True & True & True \\
+paravance-59 & RS & NA & 0.4758884 & 64 & 16 & 29 & 1 & 2048 & 1 & 27 & 16 & 4 & True & True & True & True \\
 \hline \\[-1.8ex]
 \end{tabular}
 \end{table}
@@ -979,31 +979,33 @@ at each color-coded DLMT step.  As before, we see that =OMP= and =SCR= were the 
 eliminated factors, especially on the first step.
 
 #+HEADER: :results graphics :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10 :exports results
+#+HEADER: :file "./img/eliminated_terms_no_cubic.pdf"
+#+HEADER: :width 12 :height 10 :exports results
 #+begin_SRC R
-base_size <- 18
+base_size <- 25
 
-ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+ggplot(subset(eliminated_terms, removed_variables != ""),
+       aes(x = removed_variables,
+           fill = as.factor(step))) +
   geom_bar(stat = "Count", show.legend = TRUE) +
   ylab("Eliminated Terms") +
   xlab("") +
   scale_x_discrete() +
   theme_bw(base_size = base_size) +
   theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
+        legend.position = c(0.8, 0.95),
+        legend.background = element_blank(),
         legend.direction = "horizontal",
-        legend.title = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
   guides(fill = guide_legend(nrow = 1)) +
-  scale_fill_brewer(palette = "Set1")
+  scale_fill_brewer(name = "Step", palette = "Set2")
 #+end_SRC
 
 #+CAPTION: Eliminated terms
 #+LABEL: fig:eliminated-terms
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-ynhqKR/figure7r6W2z.pdf]]
+[[file:./img/eliminated_terms_no_cubic.pdf]]
 
 ****** Fixed Model Terms                                      :noexport:
 ******* Combined Experiments                                 :noexport:
