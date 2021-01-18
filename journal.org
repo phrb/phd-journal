@@ -3919,8 +3919,8 @@ There were 39 warnings (use warnings() to see them)
 
 ****** Iterations that found the Best Configuration
 #+HEADER: :results graphics output :session *R* :exports results
-#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 9 :height 9
+#+HEADER: :file "./img/iterations_reuse.pdf"
+#+HEADER: :width 12 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -3947,8 +3947,8 @@ it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
 
 p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     facet_wrap(facet ~ ., ncol = 4) +
-    geom_point(size = 3, pch = 19) +
-    stat_ellipse(size = 1, type = "t", linetype = 13) +
+    geom_point(size = 4, pch = 19) +
+    stat_ellipse(type = "t", linetype = 13) +
     #geom_label_repel(data = . %>% group_by(application) %>%
     #                              filter(technique == "RS") %>%
     #                              filter(best_iteration == min(best_iteration)),
@@ -3956,17 +3956,17 @@ p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
     #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
     scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
-    scale_size_manual("", values = 0.45) +
+    scale_size_manual("", values = 0.9) +
     #annotation_logticks(sides = "b") +
     ggtitle("") +
     ylab("Iteration where Best was Found") +
     xlab("Best Cost in Seconds") +
     guides(color = guide_legend(reverse = TRUE)) +
-    theme_bw(base_size = 26) +
-    theme(legend.position = c(0.5, 0.5),
+    theme_bw(base_size = 30) +
+    theme(legend.position = "bottom",
           legend.direction = "horizontal",
           legend.title = element_blank(),
-          text = element_text(family = "sans"),
+          #text = element_text(family = "serif"),
           strip.background = element_rect(fill = "white"),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
     #scale_color_brewer(palette = "Set1")
@@ -3976,9 +3976,9 @@ dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
                 facet_wrap(facet ~ ., scale = "free", ncol = 4) +
                 geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
                                               ymin = -Inf, ymax = Inf) +
-                theme_minimal(base_size = 25) +
-                theme(text = element_text(family = "sans"),
-                      legend.position = c(0.5, 0.5),
+                theme_minimal(base_size = 30) +
+                theme(text = element_text(family = "serif"),
+                      legend.position = c(0.2, 0.5),
                       legend.direction = "horizontal",
                       legend.title = element_blank(),
                       plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
@@ -4019,10 +4019,10 @@ grid.draw(new_plot)
 #+END_SRC
 
 #+CAPTION: Iteration where best was found
-#+LABEL: fig:best-found-new
+#+LABEL: fig:best-found-no-cubic
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-cKpmYZ/figurexK47Hz.pdf]]
+[[file:./img/iterations_reuse.pdf]]
 
 #+begin_SRC R :results output latex :session *R* :exports results
 library(stargazer)
@@ -4073,31 +4073,33 @@ paravance-59 & RS & 0.4758884 & 64 & 16 & 29 & 1 & 2048 & 1 & 27 & 16 & 4 \\
 
 ****** Eliminated Factors and Fixed Values
 #+HEADER: :results graphics :session *R*
-#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10 :exports results
+#+HEADER: :file "./img/eliminated_terms_reuse.pdf"
+#+HEADER: :width 12 :height 10 :exports results
 #+begin_SRC R
-base_size <- 18
+base_size <- 25
 
-ggplot(subset(eliminated_terms, removed_variables != ""), aes(x = removed_variables, fill = as.factor(step))) +
+ggplot(subset(eliminated_terms, removed_variables != ""),
+       aes(x = removed_variables,
+           fill = as.factor(step))) +
   geom_bar(stat = "Count", show.legend = TRUE) +
   ylab("Eliminated Terms") +
   xlab("") +
   scale_x_discrete() +
   theme_bw(base_size = base_size) +
   theme(text = element_text(family = "sans"),
-        legend.position = "bottom",
+        legend.position = c(0.8, 0.95),
+        legend.background = element_blank(),
         legend.direction = "horizontal",
-        legend.title = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
   guides(fill = guide_legend(nrow = 1)) +
-  scale_fill_brewer(palette = "Set1")
+  scale_fill_brewer(name = "Step", palette = "Set2")
 #+end_SRC
 
 #+CAPTION: Eliminated terms
-#+LABEL: fig:eliminated-terms-new
+#+LABEL: fig:eliminated-terms
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-cKpmYZ/figurergRpvu.pdf]]
+[[file:./img/eliminated_terms_reuse.pdf]]
 
 ****** Fixed Model Terms                                      :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -4212,51 +4214,47 @@ ggplot(fixed_steps_data, aes(x = as.factor(step), fill = fixed_factors)) +
 [[file:/tmp/babel-X0G35y/figurequjJQK.pdf]]
 
 ****** Fixed Factors & Values in the Explored Spaces
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 8 :height 8 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/explored_space_reuse.pdf" :width 13 :height 12 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
 color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
-get_palette = colorRampPalette(brewer.pal(9, "Pastel1"))
+get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
-       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  geom_bar(data = subset(fixed_steps_data, experiment_id == "graoully-3"), aes(x = step + 0.5, fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
-  geom_jitter(data = subset(search_spaces, correct_result == "True" & experiment_id == "graoully-3"),
-              aes(x = step, y = cost_mean), size = 3,
-              width = 0.2, height = 0, alpha = 0.6) +
-  geom_text(data = subset(fixed_steps_data, experiment_id == "graoully-3"), aes(x = step + 0.5, fill = fixed_factors,
+  facet_wrap(experiment_id ~ ., ncol = 2) +
+  geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
+           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.8) +
+  geom_jitter(data = subset(search_spaces, correct_result == "True"),
+              aes(x = step, y = cost_mean),
+              size = 3, width = 0.1, height = 0, alpha = 0.2) +
+  geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            sizer = 22,
-            color = "black",
+            angle = 0,
+            color = "white",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
+  scale_x_discrete(limits = c(1, 2, 3, 4),
+                   expand = c(0.3, 0.3)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 22) +
+  theme_bw(base_size = 25) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
+        strip.background = element_rect(size = 1, fill = "white"),
+        strip.text = element_text(size = 15),
         legend.direction = "horizontal",
         legend.title = element_blank(),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) # +
-#  scale_colour_manual(name = "",
-#                      values=c("red", "blue", "green", "purple"),
-#                      labels=c("OMP & SCR: False",
-#                               "OMP: True, SCR: False",
-#                               "OMP: False, SCR: True",
-#                               "OMP & SCR: True"))
+        panel.grid.minor = element_blank())
 #+end_SRC
 
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
-#+LABEL: fig:encpnc-ff-ss-be-new
+#+LABEL: fig:explored_space_reuse
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureQZZTlS.pdf]]
+[[file:./img/explored_space_reuse.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -4317,42 +4315,91 @@ ggplot(subset(all_parameters_plot_data, experiment_id == "graoully-16"), aes(x =
 #+RESULTS:
 [[file:/tmp/babel-X0G35y/figureG7DSgI.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/models_reuse.pdf" :width 19 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
-  mutate(RT_I = log2(RT_I)) %>%
-  mutate(RT_J = log2(RT_J)) %>%
-  mutate(T1_I = log2(T1_I)) %>%
-  mutate(T2_I = log2(T2_I)) %>%
-  mutate(T1_J = log2(T1_J)) %>%
-  mutate(T2_J = log2(T2_J)) %>%
-  gather("factor", "level", T2_I, T2_J, RT_I,
-         T1_J, U_J, U_I, U1_I,
-         RT_J, T1_I, OMP, SCR, VEC1, VEC2) %>%
-  mutate(level = str_replace(level, "True", "1")) %>%
-  mutate(level = str_replace(level, "False", "0")) %>%
-  mutate(level = as.numeric(level)) %>%
-  subset(technique == "RS")
+    mutate(RT_I = log2(RT_I)) %>%
+    mutate(RT_J = log2(RT_J)) %>%
+    mutate(T1_I = log2(T1_I)) %>%
+    mutate(T2_I = log2(T2_I)) %>%
+    mutate(T1_J = log2(T1_J)) %>%
+    mutate(T2_J = log2(T2_J)) %>%
+    gather("factor", "level", T2_I, T2_J, RT_I,
+           T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
+           RT_J, T1_I, SCR) %>%
+    mutate(level = str_replace(level, "True", "1")) %>%
+    mutate(level = str_replace(level, "False", "0")) %>%
+    mutate(level = as.numeric(level)) %>%
+    subset(technique == "RS")
 
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
-  facet_wrap(factor ~ ., ncol = 4, scale = "free") +
-  geom_point(alpha = 0.4) +
-  # geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "red", alpha = 0.5) +
-  geom_quantile(formula = y ~ poly(x, 2),
-                quantiles = c(0.01, 0.05, 0.15, 0.25),
-                size = 1,
-                alpha = 0.6,
-                color = "darkgreen") +
-  geom_smooth(method = "lm", color = "blue") +
-  geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
-  geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)), size = 2, color = "red") +
-  theme_bw(base_size = 17)
+    facet_wrap(factor ~ ., ncol = 5, scale = "free") +
+    geom_point(alpha = 0.4,
+               stat = "unique") +
+    geom_quantile(formula = y ~ poly(x, 2),
+                  quantiles = c(0.01, 0.05, 0.15, 0.25),
+                  size = 1,
+                  alpha = 0.6,
+                  color = "darkgreen") +
+    geom_smooth(method = "lm", color = "blue") +
+    geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
+    geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)),
+               size = 2, color = "red",
+               stat = "unique") +
+    ylab("Execution Time (s)") +
+    xlab("Factor Levels") +
+    theme_bw(base_size = 22) +
+    theme(strip.background = element_rect(fill = "white"))
 #+end_SRC
 
 #+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs
-#+LABEL: fig:lm-rs-all-new
+#+LABEL: fig:lm-rs-all
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureCcs50s.pdf]]
+[[file:./img/models_reuse.pdf]]
+
+#+begin_SRC R :results graphics output :session *R* :file "./img/models_fixed_omp_reuse.pdf" :width 15 :height 10 :exports results
+all_parameters_plot_data <- full_data %>%
+    mutate(RT_I = log2(RT_I)) %>%
+    mutate(RT_J = log2(RT_J)) %>%
+    mutate(T1_I = log2(T1_I)) %>%
+    mutate(T2_I = log2(T2_I)) %>%
+    mutate(T1_J = log2(T1_J)) %>%
+    mutate(T2_J = log2(T2_J)) %>%
+    subset(OMP == "True") %>%
+    gather("factor", "level", T2_I, T2_J, RT_I,
+           T1_J, VEC2, VEC1, OMP, U_J, U_I, U1_I,
+           RT_J, T1_I, SCR) %>%
+    mutate(level = str_replace(level, "True", "1")) %>%
+    mutate(level = str_replace(level, "False", "0")) %>%
+    mutate(level = as.numeric(level)) %>%
+    subset(technique == "RS") %>%
+    filter(factor != "OMP")
+
+ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
+    facet_wrap(factor ~ ., ncol = 4, scale = "free") +
+    geom_point(alpha = 0.4,
+               stat = "unique") +
+    geom_quantile(formula = y ~ poly(x, 2),
+                  quantiles = c(0.01, 0.05, 0.15, 0.25),
+                  size = 1,
+                  alpha = 0.6,
+                  color = "darkgreen") +
+    geom_smooth(method = "lm", color = "blue") +
+    geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
+    geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)),
+               size = 2, color = "red",
+               stat = "unique") +
+    ylab("Execution Time (s)") +
+    xlab("Factor Levels") +
+    theme_bw(base_size = 20) +
+    theme(strip.background = element_rect(fill = "white"))
+#+end_SRC
+
+#+CAPTION: Fitting \texttt{lm} linear and cubic models to separate factors for the RS runs, with \texttt{OMP} fixed to \texttt{true}
+#+LABEL: fig:lm-rs-nobin
+#+ATTR_LATEX: :width 0.9\textwidth :placement [H]
+#+RESULTS:
+[[file:./img/models_fixed_omp_reuse.pdf]]
 
 ******* Combined Experiments                                 :noexport:
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
@@ -4379,34 +4426,62 @@ ggplot(subset(search_spaces, correct_result == "True"),
 [[file:/tmp/babel-w5lAu8/figureTeckKY.pdf]]
 
 ****** Predicted Performance at Each Step
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/predictions_reuse.pdf" :width 17 :height 10 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
+colors = c("Best step prediction",
+           "Best in step design",
+           "Best measurement")
+
+point_size = 3.5
+line_size = 2
+
 ggplot(summaries) +
-  geom_path(aes(x = step, y = predicted_best, color = "predicted_best"), size = 1) +
-  geom_point(aes(x = step, y = predicted_best, color = "predicted_best"), size = 2) +
-  geom_path(aes(x = step, y = design_best, color = "design_best"), size = 1) +
-  geom_point(aes(x = step, y = design_best, color = "design_best"), size = 2) +
-  geom_path(aes(x = step, y = current_best, color = "current_best"), size = 1) +
-  geom_point(aes(x = step, y = current_best, color = "current_best"), size = 2) +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
-  ylab("Execution Time") +
-  xlab("Step") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
-  theme_bw(base_size = 17) +
-  theme(text = element_text(family = "sans"),
-        legend.position = "top",
-        legend.direction = "horizontal",
-        legend.title = element_blank()) +
-  scale_color_brewer(palette = "Set1")
+    geom_path(aes(x = step,
+                  y = predicted_best,
+                  color = colors[1]),
+              size = line_size) +
+    geom_point(aes(x = step,
+                   y = predicted_best,
+                   color = colors[1]),
+               size = point_size) +
+    geom_path(aes(x = step,
+                  y = design_best,
+                  color = colors[2]),
+              size = line_size) +
+    geom_point(aes(x = step,
+                   y = design_best,
+                   color = colors[2]),
+               size = point_size) +
+    geom_path(aes(x = step,
+                  y = current_best,
+                  color = colors[3]),
+              linetype = 2,
+              size = line_size) +
+    geom_point(aes(x = step,
+                   y = current_best,
+                   color = colors[3]),
+               size = point_size) +
+    facet_wrap(experiment_id ~ ., ncol = 4) +
+    ylab("Execution Time (s)") +
+    xlab("Step") +
+    scale_x_discrete(limits = unique(spread_data$step)) +
+    theme_bw(base_size = 22) +
+    theme(text = element_text(family = "sans"),
+          legend.position = c(0.09, 0.95),
+          legend.direction = "vertical",
+          legend.background = element_blank(),
+          legend.title = element_blank(),
+          strip.background = element_rect(fill = "white")) +
+    scale_color_brewer(palette = "Set1")
 #+end_SRC
 
 #+CAPTION: Performance of best points, step-by-step, by experiment
-#+LABEL: fig:nc-predicted-best-new
+#+LABEL: fig:nc-predicted-best
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-X0G35y/figureB8KCO5.pdf]]
+[[file:./img/predictions_reuse.pdf]]
 
 ****** D-Optimality
 ******* D-Criterion
