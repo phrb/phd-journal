@@ -1061,7 +1061,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:et-ss-be
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-w5lAu8/figureESVdh5.pdf]]
+[[file:/tmp/babel-cKpmYZ/figureOJ3t6W.pdf]]
 
 ****** Fixed Factors & Values                                 :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -1140,50 +1140,47 @@ A very slight worsening of execution times, an increase, that is, can be seen at
 the fourth step at /parasilo-11/, after =RT_I= was fixed. The minimum execution time
 seems to be higher than in the third step.
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/explored_space_no_cubic.pdf" :width 13 :height 12 :exports results
 library(ggplot2)
 library(RColorBrewer)
 
 color_count = length(unique(fixed_steps_data$fixed_factors)) + 10
 get_palette = colorRampPalette(brewer.pal(9, "Set1"))
 
-       # aes(x = as.factor(step), y = cost_mean, color = interaction(OMP, SCR))) +
 ggplot() +
-  facet_wrap(experiment_id ~ ., ncol = 3) +
+  facet_wrap(experiment_id ~ ., ncol = 2) +
   geom_bar(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors),
-           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.5) +
+           stat = "Count", show.legend = FALSE, alpha = 1.0, width = 0.8) +
   geom_jitter(data = subset(search_spaces, correct_result == "True"),
               aes(x = step, y = cost_mean),
-              width = 0.2, height = 0, alpha = 0.5) +
+              size = 3, width = 0.1, height = 0, alpha = 0.2) +
   geom_text(data = fixed_steps_data, aes(x = step + 0.5, fill = fixed_factors,
                                          label = fixed_factors),
             stat = "count",
-            color = "black",
+            angle = 0,
+            color = "white",
             position = position_stack(0.5)) +
   ylab("Execution Time") +
   xlab("Step") +
-  scale_x_discrete(limits = unique(spread_data$step)) +
+  scale_x_discrete(limits = c(1, 2, 3, 4),
+                   expand = c(0.3, 0.3)) +
   scale_fill_manual(values = get_palette(color_count)) +
-  theme_bw(base_size = 17) +
+  theme_bw(base_size = 25) +
   theme(text = element_text(family = "sans"),
         legend.position = "bottom",
+        strip.background = element_rect(size = 1, fill = "white"),
+        strip.text = element_text(size = 15),
         legend.direction = "horizontal",
         legend.title = element_blank(),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) # +
-#  scale_colour_manual(name = "",
-#                      values=c("red", "blue", "green", "purple"),
-#                      labels=c("OMP & SCR: False",
-#                               "OMP: True, SCR: False",
-#                               "OMP: False, SCR: True",
-#                               "OMP & SCR: True"))
+        panel.grid.minor = element_blank())
 #+end_SRC
 
 #+CAPTION: Execution time of Searched Space, step-by-step, by experiment
-#+LABEL: fig:encpnc-ff-ss-be
+#+LABEL: fig:explored_space_no_cubic
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figuretV900e.pdf]]
+[[file:./img/explored_space_no_cubic.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
@@ -1220,7 +1217,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+LABEL: fig:lm-dlmt-all
 #+ATTR_LATEX: :width 0.9\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-Bco3bb/figurepGi7gO.pdf]]
+[[file:/tmp/babel-cKpmYZ/figureuKHJbj.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 15 :height 10 :exports results
 all_parameters_plot_data <- full_data %>%
