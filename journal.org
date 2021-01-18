@@ -584,14 +584,47 @@ str(design_data_plot)
 
 #+RESULTS:
 #+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+replacing previous import ‘vctrs::data_frame’ by ‘tibble::data_frame’ when loading ‘dplyr’
 'data.frame':	61 obs. of  3 variables:
  $ removed_variables: Factor w/ 12 levels "","OMP","SCR",..: 2 3 1 1 1 1 1 2 7 4 ...
+  ..- attr(*, "names")= chr [1:61] "['OMP'" "'SCR']" "[]" "[]" ...
  $ step             : int  1 1 2 3 4 1 2 3 4 4 ...
  $ experiment_id    : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 'data.frame':	520 obs. of  3 variables:
  $ current_best_coordinate: chr  "T1_I->64" "T1_J->32" "U_J->18" "U_I->1" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
  $ experiment_id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+------------------------------------------------------------------------------
+You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)
+------------------------------------------------------------------------------
+
+Attaching package: ‘plyr’
+
+The following objects are masked from ‘package:dplyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+Attaching package: ‘reshape2’
+
+The following object is masked from ‘package:tidyr’:
+
+    smiths
+Registering fonts with R
 'data.frame':	999 obs. of  31 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  2048 1024 1024 512 1 1 1 2048 1 32 ...
@@ -737,6 +770,33 @@ tibble [20 × 34] (S3: tbl_df/tbl/data.frame)
  $ OMP                         : chr  "True" "False" "True" "True" ...
  $ mean_confidence_interval_sup: num  0.954 4.582 0.904 0.981 4.576 ...
  $ experiment_id               : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+Loading required package: DoE.base
+Loading required package: grid
+Loading required package: conf.design
+
+Attaching package: ‘conf.design’
+
+The following object is masked from ‘package:plyr’:
+
+    join
+
+Registered S3 method overwritten by 'DoE.base':
+  method           from
+  factorize.factor conf.design
+
+Attaching package: ‘DoE.base’
+
+The following objects are masked from ‘package:stats’:
+
+    aov, lm
+
+The following object is masked from ‘package:graphics’:
+
+    plot.design
+
+The following object is masked from ‘package:base’:
+
+    lengths
 There were 40 warnings (use warnings() to see them)
 Joining, by = c("id", "step")
 tibble [860 × 4] (S3: tbl_df/tbl/data.frame)
@@ -757,8 +817,8 @@ only linear  and quadratic terms, removing  the cubic terms used  in the paper's
 experiments.
 
 #+HEADER: :results graphics output :session *R* :exports results
-#+HEADER: :file (org-babel-temp-file "figure" ".pdf")
-#+HEADER: :width 13 :height 10
+#+HEADER: :file "./img/iterations_no_cubic.pdf"
+#+HEADER: :width 12 :height 10
 #+BEGIN_SRC R
 library(grid)
 library(gtable)
@@ -785,7 +845,7 @@ it_data$mean_cost_baseline <- unique(it_data$mean_cost_baseline)[1]
 
 p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     facet_wrap(facet ~ ., ncol = 4) +
-    geom_point(size = 2, pch = 19) +
+    geom_point(size = 4, pch = 19) +
     stat_ellipse(type = "t", linetype = 13) +
     #geom_label_repel(data = . %>% group_by(application) %>%
     #                              filter(technique == "RS") %>%
@@ -794,17 +854,17 @@ p1 <- ggplot(it_data, aes(min_run_cost, best_iteration, color = technique)) +
     geom_vline(aes(xintercept = mean_cost_baseline, size = "-O3"), linetype = 8, color = "black") +
     #scale_x_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
     scale_y_continuous(limits = c(-20, 400), breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
-    scale_size_manual("", values = 0.45) +
+    scale_size_manual("", values = 0.9) +
     #annotation_logticks(sides = "b") +
     ggtitle("") +
     ylab("Iteration where Best was Found") +
     xlab("Best Cost in Seconds") +
     guides(color = guide_legend(reverse = TRUE)) +
-    theme_bw(base_size = 17) +
+    theme_bw(base_size = 30) +
     theme(legend.position = "bottom",
           legend.direction = "horizontal",
           legend.title = element_blank(),
-          text = element_text(family = "serif"),
+          #text = element_text(family = "serif"),
           strip.background = element_rect(fill = "white"),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))  +
     #scale_color_brewer(palette = "Set1")
@@ -814,9 +874,9 @@ dummy <- ggplot(data = it_data, aes(x = min_run_cost, y = best_iteration)) +
                 facet_wrap(facet ~ ., scale = "free", ncol = 4) +
                 geom_rect(aes(fill = header), xmin = -Inf, xmax = Inf,
                                               ymin = -Inf, ymax = Inf) +
-                theme_minimal(base_size = 17) +
+                theme_minimal(base_size = 30) +
                 theme(text = element_text(family = "serif"),
-                      legend.position = "bottom",
+                      legend.position = c(0.2, 0.5),
                       legend.direction = "horizontal",
                       legend.title = element_blank(),
                       plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")
@@ -857,10 +917,10 @@ grid.draw(new_plot)
 #+END_SRC
 
 #+CAPTION: Iteration where best was found
-#+LABEL: fig:best-found
+#+LABEL: fig:best-found-no-cubic
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-cKpmYZ/figureByL9sn.pdf]]
+[[file:./img/iterations_no_cubic.pdf]]
 
 The results are very similar from the  ones in the paper, but our approach found
 slightly better  configurations slightly  faster. Random  sampling also  found a
