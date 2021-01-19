@@ -27354,23 +27354,15 @@ read_rs <- function(current_path, application, complete_plot_data, full_data){
 #+RESULTS:
 #+begin_example
 
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
 Attaching package: ‘rPref’
+
+The following objects are masked from ‘package:plyr’:
+
+    empty, true
 
 The following object is masked from ‘package:dplyr’:
 
     between
-
-Registering fonts with R
 #+end_example
 ***** Results for =bicgkernel=
 ****** Loading Data                                           :noexport:
@@ -27385,41 +27377,57 @@ full_data <- rs_data[[2]]
 #+RESULTS:
 
 ****** Figures
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/bicgkernel_gaussian_pareto.pdf" :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
 
 pareto_data <- gpr_plot_data %>%
-  group_by(experiment_id) %>%
-  psel(low(iteration) * low(cost_mean)) %>%
-  ungroup()
+    group_by(experiment_id) %>%
+    psel(low(iteration) * low(cost_mean)) %>%
+    ungroup()
 
 gpr_plot_data <- gpr_plot_data %>%
-  mutate(first_step = as.factor(step == 1))
+    mutate(first_step = factor(step == 1,
+                               levels = c(TRUE, FALSE),
+                               labels = c("Sobol sample",
+                                          "Optimization")))
 
 ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
-  facet_wrap(experiment_id ~ .) +
-  geom_point(aes(color = first_step), alpha = .5, show.legend = FALSE) +
-  geom_step(data = pareto_data) +
-  ylim(0, NA) +
-  ylab("Execution Time") +
-  xlab("Iteration") +
-  scale_y_log10() +
-  theme_bw(base_size = 18) +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
-  scale_linetype_manual(name = "limit", values = c(2),
-                        guide = guide_legend(override.aes = list(color = c("blue")))) +
-  scale_color_brewer(palette = "Set1") +
-  scale_y_log10() +
-  theme(legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank())
+    facet_wrap(experiment_id ~ .) +
+    geom_point(aes(color = first_step,
+                   shape = first_step),
+               size = 2,
+               alpha = .45,
+               show.legend = TRUE) +
+    geom_step(data = pareto_data,
+              size = 1.4,
+              alpha = 0.5) +
+    ylim(0, NA) +
+    ylab("Execution Time (s)") +
+    xlab("Iteration") +
+    theme_bw(base_size = 20) +
+    geom_hline(aes(yintercept = mean_cost_baseline[1],
+                   linetype = "-O3"),
+               stat = "unique",
+               size = 0.8,
+               color = "blue") +
+    scale_linetype_manual(name = "limit", values = c(2),
+                          guide = guide_legend(override.aes =
+                                                   list(size = 2, color = c("blue")))) +
+    scale_color_brewer(palette = "Dark2") +
+    scale_y_log10() +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          strip.background = element_blank(),
+          strip.text = element_blank(),
+          legend.title = element_blank()) +
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 4)))
 #+end_SRC
 
 #+CAPTION: Execution time of points measured by GPR along iterations, with pareto border in red
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-gmALUx/figuretyK4z6.pdf]]
+[[file:./img/bicgkernel_gaussian_pareto.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -27451,38 +27459,50 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figure7ZwcnW.pdf]]
+[[file:/tmp/babel-cKpmYZ/figurea8vfjL.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/bicgkernel_rs_pareto.pdf" :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
 
 pareto_data <- rs_plot_data %>%
-  group_by(experiment_id) %>%
-  psel(low(iteration) * low(cost_mean)) %>%
-  ungroup()
+    group_by(experiment_id) %>%
+    psel(low(iteration) * low(cost_mean)) %>%
+    ungroup()
 
 ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
-  facet_wrap(experiment_id ~ .) +
-  geom_point() +
-  geom_step(data = pareto_data, color = "red") +
-  ylim(0, NA) +
-  ylab("Execution Time") +
-  xlab("Iteration") +
-  theme_bw(base_size = 18) +
-  scale_color_brewer(palette = "Set3") +
-  geom_hline(aes(yintercept = mean_cost_baseline[1], linetype = "-O3"), color = "blue") +
-  scale_linetype_manual(name = "limit", values = c(2),
-                        guide = guide_legend(override.aes = list(color = c("blue")))) +
-  theme(legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank())
+    facet_wrap(experiment_id ~ .) +
+    geom_point(alpha = 0.4, stat = "unique") +
+    geom_step(data = pareto_data,
+              color = "black",
+              size = 1.4,
+              alpha = 0.5) +
+    ylim(0, NA) +
+    ylab("Execution Time") +
+    xlab("Iteration") +
+    theme_bw(base_size = 20) +
+    scale_color_brewer(palette = "Set3") +
+    geom_hline(aes(yintercept = mean_cost_baseline[1],
+                   linetype = "-O3"),
+               stat = "unique",
+               size = 0.8,
+               color = "blue") +
+    scale_y_log10() +
+    scale_linetype_manual(name = "limit", values = c(2),
+                          guide = guide_legend(override.aes =
+                                                   list(size = 2, color = c("blue")))) +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          strip.background = element_blank(),
+          strip.text = element_blank(),
+          legend.title = element_blank()) +
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 4)))
 #+end_SRC
 
 #+CAPTION: Execution time of points measured by RS along iterations
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-gmALUx/figureuw3ezq.pdf]]
+[[file:./img/bicgkernel_rs_pareto.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -27515,102 +27535,100 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-6kiapU/figure8E0drB.pdf]]
+[[file:/tmp/babel-cKpmYZ/figure2AEhBI.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "img/gp_rs_comparison.pdf" :width 13 :height 7.5 :exports none :eval no-export
 library(dplyr)
 
 large_plot_data <- complete_plot_data %>%
-  group_by(technique, experiment_id) %>%
-  filter(cost_mean == min_run_cost) %>%
-  ungroup()
+    dplyr::group_by(technique, experiment_id) %>%
+    dplyr::filter(cost_mean == min_run_cost) %>%
+    dplyr::ungroup()
 
 alpha <- 0.05
 
-# large_plot_data <- large_plot_data %>%
-#   group_by(technique) %>%
-#   mutate(mean_runs = mean(min_run_cost)) %>%
-#   mutate(sd_runs = sd(min_run_cost)) %>%
-#   mutate(ci95_runs = qnorm(.95) * (mean(min_run_cost) / sqrt(length(subset(large_plot_data, technique == technique)$cost_mean)))) %>%
-#   ungroup()
-
 large_plot_data <- large_plot_data %>%
-  group_by(technique) %>%
-  mutate(mean_runs = mean(min_run_cost)) %>%
-  mutate(sd_runs = sd(min_run_cost)) %>%
-  mutate(ci95_runs = qt((1 - (alpha / 2)), df = n() - 1) *
-           (sd(min_run_cost) /
-            sqrt(n()))) %>%
-  ungroup()
+    dplyr::group_by(technique) %>%
+    dplyr::mutate(mean_runs = mean(min_run_cost)) %>%
+    dplyr::mutate(sd_runs = sd(min_run_cost)) %>%
+    dplyr::mutate(ci95_runs = qt((1 - (alpha / 2)), df = n() - 1) *
+                      (sd(min_run_cost) /
+                       sqrt(n()))) %>%
+    dplyr::ungroup()
 
 ggplot(large_plot_data, aes(y = min_run_cost,
                             x = best_iteration,
                             color = technique)) +
-  facet_wrap(technique ~ ., scales = "free_x") +
-  geom_hline(aes(yintercept = mean_runs), linetype = 3) +
-  # geom_smooth(method = "lm",
-  #             formula = "y ~ 1") +
-  # geom_ribbon(aes(ymin = mean_runs - sd_runs,
-  #                 ymax = mean_runs + sd_runs),
-  #             fill = "red",
-  #             alpha = 0.1,
-  #             colour = NA) +
-  geom_ribbon(aes(ymin = mean_runs - ci95_runs,
-                  ymax = mean_runs + ci95_runs),
-              fill = "grey70",
-              alpha = 0.4,
-              colour = NA) +
-  geom_point(size = 3) +
-  xlab("Iteration where Best was Found") +
-  ylab("Best Cost in Seconds") +
-  # geom_hline(aes(yintercept = mean_cost_baseline[1],
-  #                linetype = "-O3"),
-  #            color = "black") +
-  theme_bw(base_size = 25) +
-  scale_color_brewer(palette = "Set1") +
-  scale_linetype_manual(name = "limit", values = c(2),
-                        guide = guide_legend(override.aes = list(color = c("black")))) +
-  theme(legend.position = c(0.8, 0.1),
-        legend.direction = "horizontal",
-        strip.background = element_rect(fill = "white"),
-        legend.title = element_blank())
+    facet_wrap(technique ~ ., scales = "free_x") +
+    geom_hline(aes(yintercept = mean_runs),
+               linetype = 2,
+               size = 0.8) +
+    # geom_smooth(method = "lm",
+    #             formula = "y ~ 1") +
+    geom_ribbon(aes(ymin = mean_runs - ci95_runs,
+                    ymax = mean_runs + ci95_runs),
+                fill = "grey70",
+                alpha = 0.35,
+                colour = NA) +
+    geom_point(size = 3.5,
+               shape = 1,
+               show.legend = FALSE) +
+    xlab("Iteration finding the Best Point") +
+    ylab("Execution Time (s)") +
+    # geom_hline(aes(yintercept = mean_cost_baseline[1],
+    #                linetype = "-O3"),
+    #            color = "black") +
+    theme_bw(base_size = 25) +
+    scale_color_brewer(palette = "Set1") +
+    scale_linetype_manual(name = "limit", values = c(2),
+                          guide = guide_legend(override.aes = list(color = c("black")))) +
+    theme(strip.background = element_rect(fill = "white"))
 #+end_SRC
 
 #+CAPTION: Results with a starting sample of size 15, steps add the 13 best predictions
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureW2AQ15.pdf]]
+[[file:img/gp_rs_comparison.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "img/old_gp_rs_comparison.pdf" :width 13 :height 7.5 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
-  group_by(technique) %>%
-  mutate(mean_runs = mean(min_run_cost)) %>%
-  mutate(sd_runs = sd(min_run_cost)) %>%
-  ungroup()
+    dplyr::group_by(technique, experiment_id) %>%
+    dplyr::filter(cost_mean == min_run_cost) %>%
+    dplyr::ungroup()
 
 short_plot_data <- short_plot_data %>%
-  group_by(technique, experiment_id) %>%
-  subset(cost_mean == min_run_cost) %>%
-  ungroup()
+    dplyr::group_by(technique) %>%
+    dplyr::mutate(mean_runs = mean(min_run_cost)) %>%
+    dplyr::mutate(sd_runs = sd(min_run_cost)) %>%
+    dplyr::mutate(ci95_runs = qt((1 - (alpha / 2)), df = n() - 1) *
+                      (sd(min_run_cost) /
+                       sqrt(n()))) %>%
+    dplyr::ungroup()
 
 ggplot(short_plot_data, aes(y = min_run_cost,
                             x = best_iteration,
                             color = technique,
                             group = technique)) +
-  facet_wrap(technique ~ .) +
-  # geom_hline(aes(yintercept = mean_runs), linetype = 3) +
-  # geom_ribbon(aes(ymin = mean_runs - sd_runs, ymax = mean_runs + sd_runs), fill = "grey70", alpha = 0.4, colour = NA) +
-  geom_smooth(method = "lm",
-              formula = "y ~ 1") +
-  geom_point() +
-  xlab("Iteration where Best was Found") +
-  ylab("Best Cost in Seconds") +
-  theme_bw(base_size = 18) +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_blank())
+    facet_wrap(. ~ technique) +
+    geom_hline(aes(yintercept = mean_runs),
+               linetype = 3) +
+    geom_ribbon(aes(ymin = mean_runs - ci95_runs,
+                    ymax = mean_runs + ci95_runs),
+                fill = "grey70",
+                alpha = 0.4,
+                colour = NA) +
+    # geom_smooth(method = "lm",
+    #             formula = "y ~ 1") +
+    geom_point(stat = "unique") +
+    xlab("Iteration finding the Best Point") +
+    ylab("Execution Time (s)") +
+    theme_bw(base_size = 24) +
+    scale_color_brewer(palette = "Set1") +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          strip.background = element_rect(fill = "white"),
+          legend.title = element_blank())
 #+end_SRC
 
 #+CAPTION: Results with a starting sample of size 15, steps add the 13 best predictions,
@@ -27618,7 +27636,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-gmALUx/figureKj92Ux.pdf]]
+[[file:img/old_gp_rs_comparison.pdf]]
 ***** Results for =atax=
 ****** Loading Data                                           :noexport:
 #+begin_SRC R :results output :session *R* :exports results
