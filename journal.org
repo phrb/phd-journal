@@ -31624,7 +31624,7 @@ baseline_files = list(c("autotuning_screening_experiment/data/gaussian_quadrom12
                         "baseline_results.csv", "Baseline (NDL)"))
 
 
-experiments_df = bind_rows(lapply(experiments_files,
+experiments_df = bind_rows(lapply(predictions_files,
                                   function(x) {
                                       parse_data(paste(x[1],
                                                        x[2],
@@ -31632,7 +31632,11 @@ experiments_df = bind_rows(lapply(experiments_files,
                                                  x[3])
                                   })) %>%
     mutate(experiment_type = "screening_prediction",
-           GPU = "Titan X")
+           GPU = "Quadro M1200") %>%
+    filter(!(experiment_id == "Model Prediction (GAU)" &
+             response > 3.35)) %>%
+    filter(!(experiment_id == "Model Prediction (NDL)" &
+             response > 0.102))
 
 str(experiments_df)
 
@@ -31644,8 +31648,11 @@ baselines_df = bind_rows(lapply(baseline_files,
                                                x[3])
                                 })) %>%
     mutate(experiment_type = "baseline",
-           GPU = "Titan X")
-
+           GPU = "Quadro M1200") %>%
+    filter(!(experiment_id == "Baseline (GAU)" &
+             response > 3.35)) %>%
+    filter(!(experiment_id == "Baseline (NDL)" &
+             response > 0.102))
 str(baselines_df)
 
 screening_df = bind_rows(lapply(screening_files,
@@ -31656,42 +31663,45 @@ screening_df = bind_rows(lapply(screening_files,
                                                x[3])
                                 })) %>%
     mutate(experiment_type = "screening",
-           GPU = "Titan X")
+           GPU = "Quadro M1200") %>%
+    filter(!(experiment_id == "Screening (GAU)" &
+             response > 3.35)) %>%
+    filter(!(experiment_id == "Screening (NDL)" &
+             response > 0.102))
 
 str(screening_df)
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
-'data.frame':	140 obs. of  20 variables:
- $ _use_fast_math                 : chr  "on" "on" "on" "on" ...
+'data.frame':	58 obs. of  19 variables:
+ $ _use_fast_math                 : chr  "off" "off" "off" "off" ...
  $ _opt_level_                    : int  3 3 3 3 3 3 3 3 3 3 ...
- $ _gpu_architecture_             : chr  "sm_52" "sm_52" "sm_52" "sm_52" ...
+ $ _gpu_architecture_             : chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
  $ _ftz_                          : chr  "false" "false" "false" "false" ...
- $ _force_store_cache_            : chr  "cg" "cg" "cg" "cg" ...
- $ _force_load_cache_             : chr  "cg" "cg" "cg" "cg" ...
- $ _allow_expensive_optimizations_: chr  "false" "false" "false" "false" ...
- $ _fmad_                         : chr  "false" "false" "false" "false" ...
- $ _optimize_                     : int  3 3 3 3 3 3 3 3 3 3 ...
- $ _preserve_relocs               : chr  "off" "off" "off" "off" ...
+ $ _force_store_cache_            : chr  "cs" "cs" "cs" "cs" ...
+ $ _force_load_cache_             : chr  "cs" "cs" "cs" "cs" ...
+ $ _allow_expensive_optimizations_: chr  "true" "true" "true" "true" ...
+ $ _fmad_                         : chr  "true" "true" "true" "true" ...
+ $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ _preserve_relocs               : chr  "on" "on" "on" "on" ...
  $ _relocatable_device_code_      : chr  "false" "false" "false" "false" ...
  $ _prec_div_                     : chr  "false" "false" "false" "false" ...
- $ _maxrregcount_                 : int  63 63 63 63 63 63 63 63 63 63 ...
- $ _prec_sqrt_                    : chr  "false" "false" "false" "false" ...
- $ _no_align_double               : chr  "off" "off" "off" "off" ...
- $ response                       : num  8.99 8.99 8.99 8.99 8.99 ...
- $ prediction                     : num  9.01 9.01 9.01 9.01 9.01 ...
+ $ _maxrregcount_                 : int  32 32 32 32 32 32 32 32 32 32 ...
+ $ _prec_sqrt_                    : chr  "true" "true" "true" "true" ...
+ $ _no_align_double               : chr  "on" "on" "on" "on" ...
+ $ response                       : num  3.32 3.31 3.31 3.31 3.31 ...
  $ experiment_id                  : chr  "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" ...
  $ experiment_type                : chr  "screening_prediction" "screening_prediction" "screening_prediction" "screening_prediction" ...
- $ GPU                            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
-'data.frame':	120 obs. of  6 variables:
+ $ GPU                            : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
+'data.frame':	109 obs. of  6 variables:
  $ _opt_level_       : int  2 2 2 2 2 2 2 2 2 2 ...
  $ _gpu_architecture_: chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
- $ response          : num  3.34 3.36 3.36 3.34 3.35 ...
+ $ response          : num  3.34 3.34 3.34 3.34 3.34 ...
  $ experiment_id     : chr  "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" ...
  $ experiment_type   : chr  "baseline" "baseline" "baseline" "baseline" ...
- $ GPU               : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
-'data.frame':	1200 obs. of  23 variables:
+ $ GPU               : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
+'data.frame':	1194 obs. of  23 variables:
  $ dummy3                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
  $ _use_fast_math                 : chr  "off" "off" "off" "off" ...
  $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 2 ...
@@ -31711,10 +31721,10 @@ str(screening_df)
  $ dummy4                         : int  1 1 1 1 1 1 1 1 1 1 ...
  $ _prec_sqrt_                    : chr  "true" "true" "true" "true" ...
  $ _no_align_double               : chr  "off" "off" "off" "off" ...
- $ response                       : num  3.36 3.31 3.31 3.31 3.32 ...
+ $ response                       : num  3.32 3.32 3.32 3.32 3.32 ...
  $ experiment_id                  : chr  "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" ...
  $ experiment_type                : chr  "screening" "screening" "screening" "screening" ...
- $ GPU                            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
+ $ GPU                            : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
 #+end_example
 ****** Computing Main Effects from Screening Data
 ******* Setup
@@ -31829,12 +31839,12 @@ ggplot() +
 #+RESULTS:
 [[file:img/main_effects_quadrom1200.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 13 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 11 :height 10 :eval no-export
 library(dplyr)
 library(ggplot2)
 
 plot_df = bind_rows(baselines_df %>%
-                    filter(`_opt_level_` == 2) %>%
+                    filter(`_opt_level_` == 3) %>%
                     select(experiment_type,
                            experiment_id,
                            response),
@@ -31860,7 +31870,7 @@ plot_df = bind_rows(baselines_df %>%
                                   experiment_type,
                                   fixed = TRUE)) %>%
     mutate(experiment_type = gsub("screening_prediction",
-                                  "Best Screening Prediction",
+                                  "Best Prediction",
                                   experiment_type,
                                   fixed = TRUE)) %>%
     # filter(!(experiment_id == "HWL" &
@@ -31871,11 +31881,13 @@ plot_df = bind_rows(baselines_df %>%
 
 ggplot() +
     geom_jitter(data = plot_df,
-                size = 4,
-                alpha = 0.5,
+                size = 3,
+                shape = 1,
+                alpha = 1,
                 aes(x = experiment_type,
                     y = response,
                     color = experiment_type),
+                width = 0.3,
                 height = 0.0,
                 show.legend = FALSE) +
     facet_grid(experiment_id ~ .,
@@ -31883,11 +31895,21 @@ ggplot() +
     geom_errorbar(data = plot_df,
                   aes(x = experiment_type,
                       ymin = mean_r - ci95,
-                      ymax = mean_r + ci95),
-                  width = 0.4) +
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = plot_df,
+               size = 3,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE) +
     ylab("Execution Time (s)") +
     scale_color_brewer(palette = "Dark2") +
-    theme_bw(base_size = 24) +
+    scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
+                       n.breaks = 3) +
+    theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
           strip.background = element_rect(fill = "white"))
 #+end_SRC
@@ -31895,13 +31917,13 @@ ggplot() +
 #+RESULTS:
 [[file:./img/executiontimes_screening_quadrom1200.pdf]]
 ****** Speedup
-#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_quadro1200.pdf" :width 11 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_quadrom1200.pdf" :width 11 :height 10 :eval no-export
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
 speedups = bind_cols(baselines_df %>%
-                     filter(`_opt_level_` == 2) %>%#,
+                     filter(`_opt_level_` == 3) %>%#,
                             # !(experiment_id == "Baseline (HWL)" &
                             #   response > 2.0)) %>%
                      select(experiment_type,
@@ -31947,14 +31969,14 @@ ggplot() +
                      y = 1.0,
                      yend = speedup),
                  linetype = 2) +
-    ylab("Speedup vs. -O2") +
+    ylab("Speedup vs. -O3") +
     scale_color_brewer(palette = "Dark2") +
-    theme_bw(base_size = 26) +
+    theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank())
 #+end_SRC
 
 #+RESULTS:
-[[file:./img/speedups_screening_quadro1200.pdf]]
+[[file:./img/speedups_screening_quadrom1200.pdf]]
 ***** Titan X
 ****** Loading Data
 #+begin_SRC R :results output :session *R* :eval no-export :exports results
@@ -31992,7 +32014,7 @@ baseline_files = list(c("autotuning_screening_experiment/data/gaussian_titanx",
                       c("autotuning_screening_experiment/data/needle_titanx",
                         "baseline_results.csv", "Baseline (NDL)"))
 
-experiments_df = bind_rows(lapply(experiments_files,
+experiments_df = bind_rows(lapply(predictions_files,
                                   function(x) {
                                       parse_data(paste(x[1],
                                                        x[2],
@@ -32000,7 +32022,9 @@ experiments_df = bind_rows(lapply(experiments_files,
                                                  x[3])
                                   })) %>%
     mutate(experiment_type = "screening_prediction",
-           GPU = "Titan X")
+           GPU = "Titan X") %>%
+    filter(!(experiment_id == "Model Prediction (HWL)" &
+             response > 2.0))
 
 str(experiments_df)
 
@@ -32012,7 +32036,9 @@ baselines_df = bind_rows(lapply(baseline_files,
                                                x[3])
                                 })) %>%
     mutate(experiment_type = "baseline",
-           GPU = "Titan X")
+           GPU = "Titan X") %>%
+    filter(!(experiment_id == "Baseline (HWL)" &
+             response > 2.0))
 
 str(baselines_df)
 
@@ -32024,7 +32050,10 @@ screening_df = bind_rows(lapply(screening_files,
                                                x[3])
                                 })) %>%
     mutate(experiment_type = "screening",
-           GPU = "Titan X")
+           GPU = "Titan X") %>%
+    filter(!(experiment_id == "Screening (HWL)" &
+             response > 2.0))
+
 
 str(screening_df)
 #+end_SRC
@@ -32052,7 +32081,7 @@ str(screening_df)
  $ experiment_id                  : chr  "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" ...
  $ experiment_type                : chr  "screening_prediction" "screening_prediction" "screening_prediction" "screening_prediction" ...
  $ GPU                            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
-'data.frame':	60 obs. of  5 variables:
+'data.frame':	58 obs. of  5 variables:
  $ _opt_level_    : int  3 3 3 3 3 3 3 3 3 3 ...
  $ response       : num  9.17 9.17 9.17 9.17 9.17 ...
  $ experiment_id  : chr  "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" ...
@@ -32194,7 +32223,7 @@ ggplot() +
 #+RESULTS:
 [[file:img/main_effects_titanx.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 13 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 11 :height 10 :eval no-export
 library(dplyr)
 library(ggplot2)
 
@@ -32225,7 +32254,7 @@ plot_df = bind_rows(baselines_df %>%
                                   experiment_type,
                                   fixed = TRUE)) %>%
     mutate(experiment_type = gsub("screening_prediction",
-                                  "Best Screening Prediction",
+                                  "Best Prediction",
                                   experiment_type,
                                   fixed = TRUE)) %>%
     filter(!(experiment_id == "HWL" &
@@ -32236,11 +32265,13 @@ plot_df = bind_rows(baselines_df %>%
 
 ggplot() +
     geom_jitter(data = plot_df,
-                size = 4,
-                alpha = 0.5,
+                size = 3,
+                shape = 1,
+                alpha = 1,
                 aes(x = experiment_type,
                     y = response,
                     color = experiment_type),
+                width = 0.3,
                 height = 0.0,
                 show.legend = FALSE) +
     facet_grid(experiment_id ~ .,
@@ -32248,11 +32279,21 @@ ggplot() +
     geom_errorbar(data = plot_df,
                   aes(x = experiment_type,
                       ymin = mean_r - ci95,
-                      ymax = mean_r + ci95),
-                  width = 0.4) +
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = plot_df,
+               size = 3,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE) +
     ylab("Execution Time (s)") +
     scale_color_brewer(palette = "Dark2") +
-    theme_bw(base_size = 24) +
+    scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
+                       n.breaks = 4) +
+    theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
           strip.background = element_rect(fill = "white"))
 #+end_SRC
@@ -32266,7 +32307,7 @@ library(tidyr)
 library(ggplot2)
 
 speedups = bind_cols(baselines_df %>%
-                     filter(`_opt_level_` == 2,
+                     filter(`_opt_level_` == 3,
                             !(experiment_id == "Baseline (HWL)" &
                               response > 2.0)) %>%
                      select(experiment_type,
@@ -32312,9 +32353,9 @@ ggplot() +
                      y = 1.0,
                      yend = speedup),
                  linetype = 2) +
-    ylab("Speedup vs. -O2") +
+    ylab("Speedup vs. -O3") +
     scale_color_brewer(palette = "Dark2") +
-    theme_bw(base_size = 26) +
+    theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank())
 #+end_SRC
 
