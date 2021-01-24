@@ -31785,7 +31785,7 @@ aov_ndl = run_aov("Screening (NDL)")
 #+RESULTS:
 
 ******* Plot
-#+begin_SRC R :results graphics output :session *R* :file "img/main_effects_quadrom1200.pdf" :width 14 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "img/main_effects_quadrom1200.pdf" :width 14 :height 10.5 :eval no-export
 library(dplyr)
 library(broom)
 library(ggplot2)
@@ -31810,7 +31810,7 @@ plot_df = bind_rows(bind_confint_lm(lm_gau, "GAU"),
     mutate(term = gsub("relocatable_device_code", "rel_dev_code", term,
                        fixed = FALSE))
 
-ggplot() +
+p_effects_quadro = ggplot() +
     geom_point(data = plot_df,
                aes(x = term,
                    y = mean),
@@ -31825,21 +31825,25 @@ ggplot() +
                linetype = 2,
                yintercept = 0.0) +
     ylab(TeX("Mean Effect Estimate $\\pm$ 95% CI")) +
+    ggtitle("Quadro M1200") +
     facet_grid(experiment ~ .,
                scales = "free_y") +
     theme_bw(base_size = 24) +
-    theme(strip.background = element_rect(fill = "white"),
+    theme(plot.title = element_text(size = 19),
+          strip.background = element_rect(fill = "white"),
           axis.title.x = element_blank(),
           axis.text.x = element_text(size = 18,
                                      angle = 30,
                                      hjust = 1,
                                      vjust = 1))
+
+p_effects_quadro
 #+end_SRC
 
 #+RESULTS:
 [[file:img/main_effects_quadrom1200.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 11 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 11 :height 10.5 :eval no-export
 library(dplyr)
 library(ggplot2)
 
@@ -31879,9 +31883,9 @@ plot_df = bind_rows(baselines_df %>%
     mutate(mean_r = mean(response),
            ci95 = 1.96 * sd(response) / sqrt(n()))
 
-ggplot() +
+p_timing_quadro = ggplot() +
     geom_jitter(data = plot_df,
-                size = 3,
+                size = 4,
                 shape = 1,
                 alpha = 1,
                 aes(x = experiment_type,
@@ -31900,24 +31904,28 @@ ggplot() +
                   show.legend = FALSE,
                   width = 0.3) +
     geom_point(data = plot_df,
-               size = 3,
+               size = 4,
                aes(x = experiment_type,
                    y = mean_r,
                    color = experiment_type),
                show.legend = FALSE) +
     ylab("Execution Time (s)") +
+    ggtitle("Quadro M1200") +
     scale_color_brewer(palette = "Dark2") +
     scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
                        n.breaks = 3) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
+          plot.title = element_text(size = 25),
           strip.background = element_rect(fill = "white"))
+
+p_timing_quadro
 #+end_SRC
 
 #+RESULTS:
 [[file:./img/executiontimes_screening_quadrom1200.pdf]]
 ****** Speedup
-#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_quadrom1200.pdf" :width 11 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_quadrom1200.pdf" :width 11 :height 10.5 :eval no-export
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -31951,7 +31959,7 @@ speedups = bind_cols(baselines_df %>%
                                 experiment_id,
                                 fixed = TRUE))
 
-ggplot() +
+p_speedup_quadro = ggplot() +
     geom_point(data = speedups,
                size = 4,
                alpha = 1,
@@ -31970,9 +31978,13 @@ ggplot() +
                      yend = speedup),
                  linetype = 2) +
     ylab("Speedup vs. -O3") +
+    ggtitle("Quadro M1200") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw(base_size = 37) +
-    theme(axis.title.x = element_blank())
+    theme(plot.title = element_text(size = 27),
+          axis.title.x = element_blank())
+
+p_speedup_quadro
 #+end_SRC
 
 #+RESULTS:
@@ -32169,7 +32181,7 @@ aov_ndl = run_aov("Screening (NDL)")
 #+RESULTS:
 
 ******* Plot
-#+begin_SRC R :results graphics output :session *R* :file "img/main_effects_titanx.pdf" :width 14 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "img/main_effects_titanx.pdf" :width 14 :height 10.5 :eval no-export
 library(dplyr)
 library(broom)
 library(ggplot2)
@@ -32194,7 +32206,7 @@ plot_df = bind_rows(bind_confint_lm(lm_gau, "GAU"),
     mutate(term = gsub("relocatable_device_code", "rel_dev_code", term,
                        fixed = FALSE))
 
-ggplot() +
+p_effects_titan = ggplot() +
     geom_point(data = plot_df,
                aes(x = term,
                    y = mean),
@@ -32209,21 +32221,25 @@ ggplot() +
                linetype = 2,
                yintercept = 0.0) +
     ylab(TeX("Mean Effect Estimate $\\pm$ 95% CI")) +
+    ggtitle("Titan X") +
     facet_grid(experiment ~ .,
                scales = "free_y") +
     theme_bw(base_size = 24) +
-    theme(strip.background = element_rect(fill = "white"),
+    theme(plot.title = element_text(size = 19),
+          strip.background = element_rect(fill = "white"),
           axis.title.x = element_blank(),
           axis.text.x = element_text(size = 18,
                                      angle = 30,
                                      hjust = 1,
                                      vjust = 1))
+
+p_effects_titan
 #+end_SRC
 
 #+RESULTS:
 [[file:img/main_effects_titanx.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 11 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 11 :height 10.5 :eval no-export
 library(dplyr)
 library(ggplot2)
 
@@ -32263,7 +32279,7 @@ plot_df = bind_rows(baselines_df %>%
     mutate(mean_r = mean(response),
            ci95 = 1.96 * sd(response) / sqrt(n()))
 
-ggplot() +
+p_timing_titan = ggplot() +
     geom_jitter(data = plot_df,
                 size = 3,
                 shape = 1,
@@ -32290,18 +32306,22 @@ ggplot() +
                    color = experiment_type),
                show.legend = FALSE) +
     ylab("Execution Time (s)") +
+    ggtitle("Titan X") +
     scale_color_brewer(palette = "Dark2") +
     scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
                        n.breaks = 4) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
+          plot.title = element_text(size = 25),
           strip.background = element_rect(fill = "white"))
+
+p_timing_titan
 #+end_SRC
 
 #+RESULTS:
 [[file:./img/executiontimes_screening_titanx.pdf]]
 ****** Speedup
-#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_titanx.pdf" :width 11 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/speedups_screening_titanx.pdf" :width 11 :height 10.5 :eval no-export
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -32335,7 +32355,7 @@ speedups = bind_cols(baselines_df %>%
                                 experiment_id,
                                 fixed = TRUE))
 
-ggplot() +
+p_speedup_titan = ggplot() +
     geom_point(data = speedups,
                size = 4,
                alpha = 1,
@@ -32354,10 +32374,45 @@ ggplot() +
                      yend = speedup),
                  linetype = 2) +
     ylab("Speedup vs. -O3") +
+    ggtitle("Titan X") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw(base_size = 37) +
-    theme(axis.title.x = element_blank())
+    theme(plot.title = element_text(size = 27),
+          axis.title.x = element_blank())
+
+p_speedup_titan
 #+end_SRC
 
 #+RESULTS:
 [[file:./img/speedups_screening_titanx.pdf]]
+***** Composing Figures
+****** Main Effects
+#+begin_SRC R :results graphics output :session *R* :file "./img/effects_gpu_screening.pdf" :width 14 :height 21 :eval no-export
+library(ggplot2)
+library(patchwork)
+
+p_effects_titan / p_effects_quadro
+#+end_SRC
+
+#+RESULTS:
+[[file:./img/effects_gpu_screening.pdf]]
+****** Timing
+#+begin_SRC R :results graphics output :session *R* :file "./img/timing_gpu_screening.pdf" :width 22 :height 10.5 :eval no-export
+library(ggplot2)
+library(patchwork)
+
+p_timing_titan | p_timing_quadro
+#+end_SRC
+
+#+RESULTS:
+[[file:./img/timing_gpu_screening.pdf]]
+****** Speedup
+#+begin_SRC R :results graphics output :session *R* :file "./img/speedup_gpu_screening.pdf" :width 22 :height 10.5 :eval no-export
+library(ggplot2)
+library(patchwork)
+
+p_speedup_titan | p_speedup_quadro
+#+end_SRC
+
+#+RESULTS:
+[[file:./img/speedup_gpu_screening.pdf]]
