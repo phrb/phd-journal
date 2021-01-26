@@ -31674,35 +31674,35 @@ str(screening_df)
 
 #+RESULTS:
 #+begin_example
-'data.frame':	58 obs. of  19 variables:
- $ _use_fast_math                 : chr  "off" "off" "off" "off" ...
- $ _opt_level_                    : int  3 3 3 3 3 3 3 3 3 3 ...
+'data.frame':	38 obs. of  19 variables:
+ $ _use_fast_math                 : chr  "on" "on" "on" "on" ...
+ $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 3 ...
  $ _gpu_architecture_             : chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
  $ _ftz_                          : chr  "false" "false" "false" "false" ...
- $ _force_store_cache_            : chr  "cs" "cs" "cs" "cs" ...
+ $ _force_store_cache_            : chr  "cg" "cg" "cg" "cg" ...
  $ _force_load_cache_             : chr  "cs" "cs" "cs" "cs" ...
- $ _allow_expensive_optimizations_: chr  "true" "true" "true" "true" ...
+ $ _allow_expensive_optimizations_: chr  "false" "false" "false" "false" ...
  $ _fmad_                         : chr  "true" "true" "true" "true" ...
- $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 3 ...
  $ _preserve_relocs               : chr  "on" "on" "on" "on" ...
  $ _relocatable_device_code_      : chr  "false" "false" "false" "false" ...
- $ _prec_div_                     : chr  "false" "false" "false" "false" ...
- $ _maxrregcount_                 : int  32 32 32 32 32 32 32 32 32 32 ...
- $ _prec_sqrt_                    : chr  "true" "true" "true" "true" ...
+ $ _prec_div_                     : chr  "true" "true" "true" "true" ...
+ $ _maxrregcount_                 : int  32 32 32 32 32 32 32 32 32 63 ...
+ $ _prec_sqrt_                    : chr  "false" "false" "false" "false" ...
  $ _no_align_double               : chr  "on" "on" "on" "on" ...
- $ response                       : num  3.32 3.31 3.31 3.31 3.31 ...
+ $ response                       : num  3.32 3.32 3.32 3.32 3.33 ...
  $ experiment_id                  : chr  "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" ...
  $ experiment_type                : chr  "screening_prediction" "screening_prediction" "screening_prediction" "screening_prediction" ...
  $ GPU                            : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
-'data.frame':	109 obs. of  6 variables:
+'data.frame':	70 obs. of  6 variables:
  $ _opt_level_       : int  2 2 2 2 2 2 2 2 2 2 ...
  $ _gpu_architecture_: chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
  $ response          : num  3.34 3.34 3.34 3.34 3.34 ...
  $ experiment_id     : chr  "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" ...
  $ experiment_type   : chr  "baseline" "baseline" "baseline" "baseline" ...
  $ GPU               : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
-'data.frame':	1194 obs. of  23 variables:
- $ dummy3                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+'data.frame':	793 obs. of  23 variables:
+ $ dummy3                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 1 ...
  $ _use_fast_math                 : chr  "off" "off" "off" "off" ...
  $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 2 ...
  $ _gpu_architecture_             : chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
@@ -31711,17 +31711,17 @@ str(screening_df)
  $ _force_load_cache_             : chr  "cs" "cs" "cs" "cs" ...
  $ _allow_expensive_optimizations_: chr  "false" "false" "false" "false" ...
  $ _fmad_                         : chr  "true" "true" "true" "true" ...
- $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 2 ...
- $ dummy2                         : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 3 ...
+ $ dummy2                         : int  1 1 1 1 1 1 1 1 1 -1 ...
  $ _preserve_relocs               : chr  "off" "off" "off" "off" ...
  $ _relocatable_device_code_      : chr  "true" "true" "true" "true" ...
  $ _prec_div_                     : chr  "false" "false" "false" "false" ...
- $ dummy1                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
- $ _maxrregcount_                 : int  63 63 63 63 63 63 63 63 63 63 ...
- $ dummy4                         : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ dummy1                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 1 ...
+ $ _maxrregcount_                 : int  63 63 63 63 63 63 63 63 63 32 ...
+ $ dummy4                         : int  1 1 1 1 1 1 1 1 1 -1 ...
  $ _prec_sqrt_                    : chr  "true" "true" "true" "true" ...
  $ _no_align_double               : chr  "off" "off" "off" "off" ...
- $ response                       : num  3.32 3.32 3.32 3.32 3.32 ...
+ $ response                       : num  3.32 3.33 3.33 3.33 3.32 ...
  $ experiment_id                  : chr  "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" ...
  $ experiment_type                : chr  "screening" "screening" "screening" "screening" ...
  $ GPU                            : chr  "Quadro M1200" "Quadro M1200" "Quadro M1200" "Quadro M1200" ...
@@ -31760,19 +31760,6 @@ run_aov <- function(experiment) {
        )
 }
 
-bind_confint_lm <- function(model, experiment) {
-    bind_cols(tidy(model) %>%
-              rename(mean = estimate) %>%
-              arrange(term),
-              tidy(confint(model)) %>%
-              rename(rownames = `.rownames`,
-                     ci_inf = `X2.5..`,
-                     ci_sup = `X97.5..`) %>%
-              arrange(rownames)) %>%
-        select(-rownames) %>%
-        mutate(experiment = experiment)
-}
-
 lm_gau = run_lm("Screening (GAU)")
 lm_hwl = run_lm("Screening (HWL)")
 lm_ndl = run_lm("Screening (NDL)")
@@ -31787,9 +31774,24 @@ aov_ndl = run_aov("Screening (NDL)")
 ******* Plot
 #+begin_SRC R :results graphics output :session *R* :file "img/main_effects_quadrom1200.pdf" :width 14 :height 10.5 :eval no-export
 library(dplyr)
+library(tidyr)
+library(tibble)
 library(broom)
 library(ggplot2)
 library(latex2exp)
+
+bind_confint_lm <- function(model, experiment) {
+    bind_cols(tidy(model) %>%
+              rename(mean = estimate) %>%
+              arrange(term),
+              data.frame(confint(model)) %>%
+              rownames_to_column() %>%
+              rename(ci_inf = `X2.5..`,
+                     ci_sup = `X97.5..`) %>%
+              arrange(rowname)) %>%
+        select(-rowname) %>%
+        mutate(experiment = experiment)
+}
 
 plot_df = bind_rows(bind_confint_lm(lm_gau, "GAU"),
                     bind_confint_lm(lm_hwl, "HWL"),
@@ -32156,19 +32158,6 @@ run_aov <- function(experiment) {
        )
 }
 
-bind_confint_lm <- function(model, experiment) {
-    bind_cols(tidy(model) %>%
-              rename(mean = estimate) %>%
-              arrange(term),
-              tidy(confint(model)) %>%
-              rename(rownames = `.rownames`,
-                     ci_inf = `X2.5..`,
-                     ci_sup = `X97.5..`) %>%
-              arrange(rownames)) %>%
-        select(-rownames) %>%
-        mutate(experiment = experiment)
-}
-
 lm_gau = run_lm("Screening (GAU)")
 lm_hwl = run_lm("Screening (HWL)")
 lm_ndl = run_lm("Screening (NDL)")
@@ -32183,9 +32172,24 @@ aov_ndl = run_aov("Screening (NDL)")
 ******* Plot
 #+begin_SRC R :results graphics output :session *R* :file "img/main_effects_titanx.pdf" :width 14 :height 10.5 :eval no-export
 library(dplyr)
+library(tidyr)
+library(tibble)
 library(broom)
 library(ggplot2)
 library(latex2exp)
+
+bind_confint_lm <- function(model, experiment) {
+    bind_cols(tidy(model) %>%
+              rename(mean = estimate) %>%
+              arrange(term),
+              data.frame(confint(model)) %>%
+              rownames_to_column() %>%
+              rename(ci_inf = `X2.5..`,
+                     ci_sup = `X97.5..`) %>%
+              arrange(rowname)) %>%
+        select(-rowname) %>%
+        mutate(experiment = experiment)
+}
 
 plot_df = bind_rows(bind_confint_lm(lm_gau, "GAU"),
                     bind_confint_lm(lm_hwl, "HWL"),
@@ -32385,6 +32389,35 @@ p_speedup_titan
 
 #+RESULTS:
 [[file:./img/speedups_screening_titanx.pdf]]
+***** Loading OpenTuner Data
+****** Quadro M1200
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+read_ot_df <- function(path, run_id) {
+    read.csv(path, header = FALSE, sep = " ") %>%
+        rename(time = V1,
+               response = V2) %>%
+        mutate(method = "OpenTuner",
+               experiment_id = run_id,
+               response = min(response)) %>%
+        select(-time) %>%
+        distinct(response, .keep_all = TRUE)
+}
+
+paths = list(c("autotuning_screening_experiment/data/needle_opentuner_quadrom1200",
+               "size_default_time_20/run_0/logall.txt", "NDL"),
+             c("autotuning_screening_experiment/data/gaussian_opentuner_quadrom1200",
+               "size_default_time_20/run_0/logall.txt", "GAU"),
+             c("autotuning_screening_experiment/data/heartwall_opentuner_quadrom1200",
+               "size_default_time_20/run_0/logall.txt", "HWL"))
+
+ot_df = bind_rows(lapply(paths, function(x) {
+    read_ot_df(paste(x[1], x[2], sep = "/"), x[3])
+    }))
+
+str(ot_df)
+#+end_SRC
 ***** Composing Figures
 ****** Main Effects
 #+begin_SRC R :results graphics output :session *R* :file "./img/effects_gpu_screening.pdf" :width 14 :height 21 :eval no-export
@@ -32396,16 +32429,32 @@ p_effects_titan / p_effects_quadro
 
 #+RESULTS:
 [[file:./img/effects_gpu_screening.pdf]]
+
 ****** Timing
 #+begin_SRC R :results graphics output :session *R* :file "./img/timing_gpu_screening.pdf" :width 22 :height 10.5 :eval no-export
 library(ggplot2)
 library(patchwork)
 
-p_timing_titan | p_timing_quadro
+p_timing_ot_quadro = p_timing_quadro +
+    geom_hline(data = ot_df,
+               aes(yintercept = response),
+               linetype = 2,
+               color = "gray50",
+               size = 1.2) +
+    geom_text(data = ot_df %>%
+                  filter(experiment_id == "GAU"),
+              aes(x = 2, y = response),
+              vjust = -0.35,
+              size = 10,
+              color = "gray50",
+              label = "OpenTuner best")
+
+p_timing_titan | p_timing_ot_quadro
 #+end_SRC
 
 #+RESULTS:
 [[file:./img/timing_gpu_screening.pdf]]
+
 ****** Speedup
 #+begin_SRC R :results graphics output :session *R* :file "./img/speedup_gpu_screening.pdf" :width 22 :height 10.5 :eval no-export
 library(ggplot2)
