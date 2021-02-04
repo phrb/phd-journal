@@ -30085,7 +30085,7 @@ baseado em  metodologias experimentais.  A  pesquisa experimental em  Ciência d
 Computação está em posição singular para reforçar e promover a reprodutibilidade
 científica,  pois experimentos  computacionais em  determinados casos  podem ser
 acompanhados,  registrados, e  repetidos  com precisão  e controle  praticamente
-impossíveis em  áreas como a  biologia e a química.  As organizações em  prol da
+impossíveis em áreas  como a biologia e  a química.  As organizações  em prol da
 ciência brasileira têm portanto grandes  justificativas para promover e reforçar
 a reprodutibilidade científica.
 
@@ -30102,13 +30102,13 @@ e distingue entre resultados e conclusões que podem ser reproduzidos:
   (Reprodutibilidade)
 
 O código e os dados que dão  suporte às conclusões de um estudo científico devem
-ser  submetidos junto  ao documento  que  será publicado.   Esses /artefatos/  são
+ser submetidos  junto ao  documento que será  publicado.  Esses  /artefatos/ são
 avaliados pelos  revisores e insígnias são  conferidas de acordo com  o nível de
 reprodutibilidade   alcançado.    Outras    organizações   também   promovem   a
-reprodutibilidade, como a  [[https://rescience.github.io/faq/][ReScience]], que recentemente promoveu o  [[https://rescience.github.io/ten-years/][Desafio de 10
-Anos  da Reprodutibilidade]],  onde  pesquisadores foram  incentivados a  submeter
-artigos com  a reprodução de  seus próprios resultados de  no mínimo 10  anos de
-idade.
+reprodutibilidade,   como    a   [[https://rescience.github.io/faq/][ReScience]],   que   recentemente    promoveu   o
+[[https://rescience.github.io/ten-years/][Desafio     de      10     Anos     da
+Reprodutibilidade]], onde  pesquisadores foram  incentivados a  submeter artigos
+com a reprodução de seus próprios resultados de no mínimo 10 anos de idade.
 
 Ações  como as  tomadas pela  ACM  podem ter  um  grande impacto  no reforço  da
 credibilidade  do método  científico e  no  avanço da  descoberta científica  no
@@ -31674,6 +31674,19 @@ str(screening_df)
 
 #+RESULTS:
 #+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+replacing previous import ‘vctrs::data_frame’ by ‘tibble::data_frame’ when loading ‘dplyr’
 'data.frame':	38 obs. of  19 variables:
  $ _use_fast_math                 : chr  "on" "on" "on" "on" ...
  $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 3 ...
@@ -31872,7 +31885,7 @@ plot_df = bind_rows(baselines_df %>%
                                 experiment_id,
                                 fixed = TRUE)) %>%
     mutate(experiment_type = gsub("baseline",
-                                  "Baseline (-O3)",
+                                  "-O3",
                                   experiment_type,
                                   fixed = TRUE)) %>%
     mutate(experiment_type = gsub("screening_prediction",
@@ -31896,8 +31909,6 @@ p_timing_quadro = ggplot() +
                 width = 0.3,
                 height = 0.0,
                 show.legend = FALSE) +
-    facet_grid(experiment_id ~ .,
-               scales = "free_y") +
     geom_errorbar(data = plot_df,
                   aes(x = experiment_type,
                       ymin = mean_r - ci95,
@@ -31911,6 +31922,8 @@ p_timing_quadro = ggplot() +
                    y = mean_r,
                    color = experiment_type),
                show.legend = FALSE) +
+    facet_grid(experiment_id ~ .,
+               scales = "free_y") +
     ylab("Execution Time (s)") +
     ggtitle("Quadro M1200") +
     scale_color_brewer(palette = "Dark2") +
@@ -31918,6 +31931,7 @@ p_timing_quadro = ggplot() +
                        n.breaks = 3) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
+          axis.text.x = element_text(size = 29),
           plot.title = element_text(size = 25),
           strip.background = element_rect(fill = "white"))
 
@@ -32074,11 +32088,11 @@ str(screening_df)
 
 #+RESULTS:
 #+begin_example
-'data.frame':	140 obs. of  20 variables:
+'data.frame':	30 obs. of  19 variables:
  $ _use_fast_math                 : chr  "on" "on" "on" "on" ...
- $ _opt_level_                    : int  3 3 3 3 3 3 3 3 3 3 ...
- $ _gpu_architecture_             : chr  "sm_52" "sm_52" "sm_52" "sm_52" ...
- $ _ftz_                          : chr  "false" "false" "false" "false" ...
+ $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ _gpu_architecture_             : chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
+ $ _ftz_                          : chr  "true" "true" "true" "true" ...
  $ _force_store_cache_            : chr  "cg" "cg" "cg" "cg" ...
  $ _force_load_cache_             : chr  "cg" "cg" "cg" "cg" ...
  $ _allow_expensive_optimizations_: chr  "false" "false" "false" "false" ...
@@ -32087,41 +32101,41 @@ str(screening_df)
  $ _preserve_relocs               : chr  "off" "off" "off" "off" ...
  $ _relocatable_device_code_      : chr  "false" "false" "false" "false" ...
  $ _prec_div_                     : chr  "false" "false" "false" "false" ...
- $ _maxrregcount_                 : int  63 63 63 63 63 63 63 63 63 63 ...
+ $ _maxrregcount_                 : int  32 32 32 32 32 32 32 32 32 32 ...
  $ _prec_sqrt_                    : chr  "false" "false" "false" "false" ...
- $ _no_align_double               : chr  "off" "off" "off" "off" ...
- $ response                       : num  8.99 8.99 8.99 8.99 8.99 ...
- $ prediction                     : num  9.01 9.01 9.01 9.01 9.01 ...
+ $ _no_align_double               : chr  "on" "on" "on" "on" ...
+ $ response                       : num  1.38 1.28 1.28 1.3 1.29 ...
  $ experiment_id                  : chr  "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" "Model Prediction (GAU)" ...
  $ experiment_type                : chr  "screening_prediction" "screening_prediction" "screening_prediction" "screening_prediction" ...
  $ GPU                            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
-'data.frame':	58 obs. of  5 variables:
- $ _opt_level_    : int  3 3 3 3 3 3 3 3 3 3 ...
- $ response       : num  9.17 9.17 9.17 9.17 9.17 ...
- $ experiment_id  : chr  "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" ...
- $ experiment_type: chr  "baseline" "baseline" "baseline" "baseline" ...
- $ GPU            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
+'data.frame':	60 obs. of  6 variables:
+ $ _opt_level_       : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ _gpu_architecture_: chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
+ $ response          : num  1.33 1.33 1.32 1.31 1.33 ...
+ $ experiment_id     : chr  "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" "Baseline (GAU)" ...
+ $ experiment_type   : chr  "baseline" "baseline" "baseline" "baseline" ...
+ $ GPU               : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
 'data.frame':	600 obs. of  23 variables:
  $ dummy3                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
  $ _use_fast_math                 : chr  "off" "off" "off" "off" ...
- $ _opt_level_                    : int  3 3 3 3 3 3 3 3 3 3 ...
+ $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 2 ...
  $ _gpu_architecture_             : chr  "sm_50" "sm_50" "sm_50" "sm_50" ...
  $ _ftz_                          : chr  "true" "true" "true" "true" ...
  $ _force_store_cache_            : chr  "cg" "cg" "cg" "cg" ...
  $ _force_load_cache_             : chr  "cs" "cs" "cs" "cs" ...
  $ _allow_expensive_optimizations_: chr  "false" "false" "false" "false" ...
  $ _fmad_                         : chr  "true" "true" "true" "true" ...
- $ _optimize_                     : int  3 3 3 3 3 3 3 3 3 3 ...
+ $ _optimize_                     : int  2 2 2 2 2 2 2 2 2 2 ...
  $ dummy2                         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ _preserve_relocs               : chr  "on" "on" "on" "on" ...
- $ _relocatable_device_code_      : chr  "false" "false" "false" "false" ...
+ $ _preserve_relocs               : chr  "off" "off" "off" "off" ...
+ $ _relocatable_device_code_      : chr  "true" "true" "true" "true" ...
  $ _prec_div_                     : chr  "false" "false" "false" "false" ...
- $ dummy1                         : int  1 1 1 1 1 1 1 1 1 1 ...
- $ _maxrregcount_                 : int  32 32 32 32 32 32 32 32 32 32 ...
- $ dummy4                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
- $ _prec_sqrt_                    : chr  "false" "false" "false" "false" ...
- $ _no_align_double               : chr  "on" "on" "on" "on" ...
- $ response                       : num  8.96 8.99 8.98 8.98 8.93 ...
+ $ dummy1                         : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+ $ _maxrregcount_                 : int  63 63 63 63 63 63 63 63 63 63 ...
+ $ dummy4                         : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ _prec_sqrt_                    : chr  "true" "true" "true" "true" ...
+ $ _no_align_double               : chr  "off" "off" "off" "off" ...
+ $ response                       : num  1.35 1.3 1.3 1.33 1.3 ...
  $ experiment_id                  : chr  "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" "Screening (GAU)" ...
  $ experiment_type                : chr  "screening" "screening" "screening" "screening" ...
  $ GPU                            : chr  "Titan X" "Titan X" "Titan X" "Titan X" ...
@@ -32138,6 +32152,7 @@ run_lm <- function(experiment) {
        filter(experiment_id == experiment) %>%
        select(-GPU,
               -experiment_id,
+              -`_gpu_architecture_`,
               -experiment_type) %>%
        mutate(across(!contains("response"), as.factor)) %>%
        mutate(across(where(is.character), as.factor)) #%>%
@@ -32151,6 +32166,7 @@ run_aov <- function(experiment) {
        filter(experiment_id == experiment) %>%
        select(-GPU,
               -experiment_id,
+              -`_gpu_architecture_`,
               -experiment_type) %>%
        mutate(across(!contains("response"), as.factor)) %>%
        mutate(across(where(is.character), as.factor)) #%>%
@@ -32270,7 +32286,7 @@ plot_df = bind_rows(baselines_df %>%
                                 experiment_id,
                                 fixed = TRUE)) %>%
     mutate(experiment_type = gsub("baseline",
-                                  "Baseline (-O3)",
+                                  "-O3",
                                   experiment_type,
                                   fixed = TRUE)) %>%
     mutate(experiment_type = gsub("screening_prediction",
@@ -32316,6 +32332,7 @@ p_timing_titan = ggplot() +
                        n.breaks = 4) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
+          axis.text.x = element_text(size = 29),
           plot.title = element_text(size = 25),
           strip.background = element_rect(fill = "white"))
 
@@ -32394,23 +32411,24 @@ p_speedup_titan
 #+begin_SRC R :results output :session *R* :eval no-export :exports results
 library(dplyr)
 
-read_ot_df <- function(path, run_id) {
-    read.csv(path, header = FALSE, sep = " ") %>%
-        rename(time = V1,
-               response = V2) %>%
-        mutate(method = "OpenTuner",
-               experiment_id = run_id,
-               response = min(response)) %>%
-        select(-time) %>%
-        distinct(response, .keep_all = TRUE)
+read_ot_df <- function(path, experiment_id) {
+    read.csv(path, header = TRUE) %>%
+        mutate(experiment_type = "OT",
+               experiment_id = experiment_id) %>%
+        group_by(run_id) %>%
+        mutate(mean_r = mean(response)) %>%
+        ungroup() %>%
+        filter(mean_r == min(mean_r)) %>%
+        select(-run_id) %>%
+        mutate(ci95 = 1.96 * sd(response) / sqrt(n()))
 }
 
 paths = list(c("autotuning_screening_experiment/data/needle_opentuner_quadrom1200",
-               "size_default_time_20/run_0/logall.txt", "NDL"),
+               "size_default_time_20/run_0/measurements.csv", "NDL"),
              c("autotuning_screening_experiment/data/gaussian_opentuner_quadrom1200",
-               "size_default_time_20/run_0/logall.txt", "GAU"),
+               "size_default_time_20/run_0/measurements.csv", "GAU"),
              c("autotuning_screening_experiment/data/heartwall_opentuner_quadrom1200",
-               "size_default_time_20/run_0/logall.txt", "HWL"))
+               "size_default_time_20/run_0/measurements.csv", "HWL"))
 
 ot_df = bind_rows(lapply(paths, function(x) {
     read_ot_df(paste(x[1], x[2], sep = "/"), x[3])
@@ -32418,6 +32436,130 @@ ot_df = bind_rows(lapply(paths, function(x) {
 
 str(ot_df)
 #+end_SRC
+
+#+RESULTS:
+: tibble [30 × 5] (S3: tbl_df/tbl/data.frame)
+:  $ response       : num [1:30] 0.12 0.105 0.104 0.105 0.104 ...
+:  $ experiment_type: chr [1:30] "OT" "OT" "OT" "OT" ...
+:  $ experiment_id  : chr [1:30] "NDL" "NDL" "NDL" "NDL" ...
+:  $ mean_r         : num [1:30] 0.106 0.106 0.106 0.106 0.106 ...
+:  $ ci95           : num [1:30] 0.00307 0.00307 0.00307 0.00307 0.00307 ...
+
+****** Titan X
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+read_ot_df <- function(path, experiment_id) {
+    read.csv(path, header = TRUE) %>%
+        mutate(experiment_type = "OT",
+               experiment_id = experiment_id) %>%
+        group_by(run_id) %>%
+        mutate(mean_r = mean(response)) %>%
+        ungroup() %>%
+        filter(mean_r == min(mean_r)) %>%
+        select(-run_id) %>%
+        mutate(ci95 = 1.96 * sd(response) / sqrt(n()))
+}
+
+paths = list(c("autotuning_screening_experiment/data/needle_opentuner_titanx",
+               "size_default_time_20/run_0/measurements.csv", "NDL"),
+             c("autotuning_screening_experiment/data/gaussian_opentuner_titanx",
+               "size_default_time_20/run_0/measurements.csv", "GAU"),
+             c("autotuning_screening_experiment/data/heartwall_opentuner_titanx",
+               "size_default_time_20/run_0/measurements.csv", "HWL"))
+
+titan_ot_df = bind_rows(lapply(paths, function(x) {
+    read_ot_df(paste(x[1], x[2], sep = "/"), x[3])
+    }))
+
+str(titan_ot_df)
+#+end_SRC
+
+#+RESULTS:
+: tibble [30 × 5] (S3: tbl_df/tbl/data.frame)
+:  $ response       : num [1:30] 0.215 0.193 0.19 0.208 0.154 ...
+:  $ experiment_type: chr [1:30] "OT" "OT" "OT" "OT" ...
+:  $ experiment_id  : chr [1:30] "NDL" "NDL" "NDL" "NDL" ...
+:  $ mean_r         : num [1:30] 0.186 0.186 0.186 0.186 0.186 ...
+:  $ ci95           : num [1:30] 0.0108 0.0108 0.0108 0.0108 0.0108 ...
+
+***** Loading Longer OpenTuner Data
+****** Quadro M1200
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+read_ot_df <- function(path, experiment_id) {
+    read.csv(path, header = TRUE) %>%
+        mutate(experiment_type = "OT:200",
+               experiment_id = experiment_id) %>%
+        group_by(run_id) %>%
+        mutate(mean_r = mean(response)) %>%
+        ungroup() %>%
+        filter(mean_r == min(mean_r)) %>%
+        select(-run_id) %>%
+        mutate(ci95 = 1.96 * sd(response) / sqrt(n()))
+}
+
+paths = list(c("autotuning_screening_experiment/data/needle_opentuner_long_quadrom1200",
+               "size_default_time_200/run_0/measurements.csv", "NDL"),
+             c("autotuning_screening_experiment/data/gaussian_opentuner_long_quadrom1200",
+               "size_default_time_200/run_0/measurements.csv", "GAU"),
+             c("autotuning_screening_experiment/data/heartwall_opentuner_long_quadrom1200",
+               "size_default_time_200/run_0/measurements.csv", "HWL"))
+
+ot_longer_df = bind_rows(lapply(paths, function(x) {
+    read_ot_df(paste(x[1], x[2], sep = "/"), x[3])
+    }))
+
+str(ot_longer_df)
+#+end_SRC
+
+#+RESULTS:
+: tibble [30 × 5] (S3: tbl_df/tbl/data.frame)
+:  $ response       : num [1:30] 0.104 0.104 0.104 0.105 0.105 ...
+:  $ experiment_type: chr [1:30] "OT:200" "OT:200" "OT:200" "OT:200" ...
+:  $ experiment_id  : chr [1:30] "NDL" "NDL" "NDL" "NDL" ...
+:  $ mean_r         : num [1:30] 0.104 0.104 0.104 0.104 0.104 ...
+:  $ ci95           : num [1:30] 0.000213 0.000213 0.000213 0.000213 0.000213 ...
+
+****** Titan X
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+read_ot_df <- function(path, experiment_id) {
+    read.csv(path, header = TRUE) %>%
+        mutate(experiment_type = "OT:200",
+               experiment_id = experiment_id) %>%
+        group_by(run_id) %>%
+        mutate(mean_r = mean(response)) %>%
+        ungroup() %>%
+        filter(mean_r == min(mean_r)) %>%
+        select(-run_id) %>%
+        mutate(ci95 = 1.96 * sd(response) / sqrt(n()))
+}
+
+paths = list(c("autotuning_screening_experiment/data/needle_opentuner_long_titanx",
+               "size_default_time_200/run_0/measurements.csv", "NDL"),
+             c("autotuning_screening_experiment/data/gaussian_opentuner_long_titanx",
+               "size_default_time_200/run_0/measurements.csv", "GAU"),
+             c("autotuning_screening_experiment/data/heartwall_opentuner_long_titanx",
+               "size_default_time_200/run_0/measurements.csv", "HWL"))
+
+titan_ot_longer_df = bind_rows(lapply(paths, function(x) {
+    read_ot_df(paste(x[1], x[2], sep = "/"), x[3])
+    }))
+
+str(titan_ot_longer_df)
+#+end_SRC
+
+#+RESULTS:
+: tibble [30 × 5] (S3: tbl_df/tbl/data.frame)
+:  $ response       : num [1:30] 0.201 0.18 0.174 0.18 0.164 ...
+:  $ experiment_type: chr [1:30] "OT:200" "OT:200" "OT:200" "OT:200" ...
+:  $ experiment_id  : chr [1:30] "NDL" "NDL" "NDL" "NDL" ...
+:  $ mean_r         : num [1:30] 0.177 0.177 0.177 0.177 0.177 ...
+:  $ ci95           : num [1:30] 0.00714 0.00714 0.00714 0.00714 0.00714 ...
+
 ***** Composing Figures
 ****** Main Effects
 #+begin_SRC R :results graphics output :session *R* :file "./img/effects_gpu_screening.pdf" :width 14 :height 21 :eval no-export
@@ -32436,20 +32578,102 @@ library(ggplot2)
 library(patchwork)
 
 p_timing_ot_quadro = p_timing_quadro +
-    geom_hline(data = ot_df,
-               aes(yintercept = response),
-               linetype = 2,
-               color = "gray50",
-               size = 1.2) +
-    geom_text(data = ot_df %>%
-                  filter(experiment_id == "GAU"),
-              aes(x = 2, y = response),
-              vjust = -0.35,
-              size = 10,
-              color = "gray50",
-              label = "OpenTuner best")
+    geom_jitter(data = ot_df,
+                size = 4,
+                shape = 1,
+                alpha = 1,
+                aes(x = experiment_type,
+                    y = response,
+                    color = experiment_type),
+                width = 0.3,
+                height = 0.0,
+                show.legend = FALSE) +
+    geom_errorbar(data = ot_df,
+                  aes(x = experiment_type,
+                      ymin = mean_r - ci95,
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = ot_df,
+               size = 4,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE) +
+    geom_jitter(data = ot_longer_df,
+                size = 4,
+                shape = 1,
+                alpha = 1,
+                aes(x = experiment_type,
+                    y = response,
+                    color = experiment_type),
+                width = 0.3,
+                height = 0.0,
+                show.legend = FALSE) +
+    geom_errorbar(data = ot_longer_df,
+                  aes(x = experiment_type,
+                      ymin = mean_r - ci95,
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = ot_longer_df,
+               size = 4,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE)
 
-p_timing_titan | p_timing_ot_quadro
+p_timing_ot_titan = p_timing_titan +
+    geom_jitter(data = titan_ot_df,
+                size = 4,
+                shape = 1,
+                alpha = 1,
+                aes(x = experiment_type,
+                    y = response,
+                    color = experiment_type),
+                width = 0.3,
+                height = 0.0,
+                show.legend = FALSE) +
+    geom_errorbar(data = titan_ot_df,
+                  aes(x = experiment_type,
+                      ymin = mean_r - ci95,
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = titan_ot_df,
+               size = 4,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE) +
+    geom_jitter(data = titan_ot_longer_df,
+                size = 4,
+                shape = 1,
+                alpha = 1,
+                aes(x = experiment_type,
+                    y = response,
+                    color = experiment_type),
+                width = 0.3,
+                height = 0.0,
+                show.legend = FALSE) +
+    geom_errorbar(data = titan_ot_longer_df,
+                  aes(x = experiment_type,
+                      ymin = mean_r - ci95,
+                      ymax = mean_r + ci95,
+                      color = experiment_type),
+                  show.legend = FALSE,
+                  width = 0.3) +
+    geom_point(data = titan_ot_longer_df,
+               size = 4,
+               aes(x = experiment_type,
+                   y = mean_r,
+                   color = experiment_type),
+               show.legend = FALSE)
+
+p_timing_ot_titan | p_timing_ot_quadro
 #+end_SRC
 
 #+RESULTS:
@@ -32465,3 +32689,221 @@ p_speedup_titan | p_speedup_quadro
 
 #+RESULTS:
 [[file:./img/speedup_gpu_screening.pdf]]
+
+*** [2021-01-27 Wed]
+**** Math Calendar 25 January
+#+begin_SRC R :results graphics output :session *R* :file "img/primes_math_calendar.png" :width 1080 :height 1080 :eval no-export
+library(ggplot2)
+library(primes)
+
+prime_list = generate_n_primes(10)
+combinations = expand.grid(p = prime_list, q = prime_list)
+combinations$is_prime = is_prime((as.double(combinations$p) ^
+                                  as.double(combinations$q)) + 1.0)
+
+ggplot() +
+    geom_tile(data = combinations,
+              aes(x = as.factor(p),
+                  y = as.factor(q),
+                  fill = is_prime),
+              show.legend = FALSE) +
+    scale_fill_brewer(palette = "Greys") +
+    theme_void()
+#+end_SRC
+
+#+RESULTS:
+[[file:img/primes_math_calendar.png]]
+** February
+*** [2021-02-03 Wed]
+**** Redoing CUDA Tuning Graphics
+***** Cloning and Updating the Repository
+#+begin_SRC shell :results output :session *Shell* :eval no-export :exports results
+git clone --depth=1 git@github.com:phrb/gpu-autotuning.git ||
+    (cd gpu-autotuning && git pull)
+#+end_SRC
+***** Parsing and Saving Data
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+library(stringr)
+
+parse_size <- function(path) {
+    return(str_split(str_split(path,
+                               pattern = "size_")[[1]][2],
+                     "_")[[1]][1])
+}
+
+parse_time <- function(path) {
+    return(str_split(str_split(path,
+                               pattern = "time_")[[1]][2],
+                     "/")[[1]][1])
+}
+
+parse_gpu <- function(path) {
+    return(str_split(str_split(path,
+                               pattern = "experiments/")[[1]][2],
+                     "//")[[1]][1])
+}
+
+parse_kernel <- function(path) {
+    return(str_split(str_split(path,
+                               pattern = "//")[[1]][2],
+                     "/")[[1]][1])
+}
+
+parse_olevel <- function(path) {
+    return(str_split(str_split(path,
+                               pattern = "opt_")[[1]][2],
+                     "\\.")[[1]][1])
+}
+
+read_benchmarks <- function(path) {
+    return(read.csv(path, header = FALSE, sep = " ") %>%
+           mutate(gpu = parse_gpu(path),
+                  kernel = parse_kernel(path),
+                  time = parse_time(path),
+                  size = parse_size(path),
+                  olevel = "-1",
+                  baseline_measurement = NA,
+                  id = "benchmark") %>%
+           rename(tuned_measurement = V1))
+}
+
+read_baselines <- function(path) {
+    return(read.csv(path, header = FALSE, sep = " ") %>%
+           mutate(gpu = parse_gpu(path),
+                  kernel = parse_kernel(path),
+                  time = "-1",
+                  size = parse_size(path),
+                  olevel = parse_olevel(path),
+                  tuned_measurement = NA,
+                  id = "baseline") %>%
+           rename(baseline_measurement = V1))
+}
+
+read_logbest <- function(path) {
+    return(read.csv(path, header = FALSE, sep = " ") %>%
+           mutate(gpu = parse_gpu(path),
+                  kernel = parse_kernel(path),
+                  time = parse_time(path),
+                  size = parse_size(path)) %>%
+           rename(tuning_time = V1,
+                  measurement = V2))
+}
+
+list_targets <- function(path, pattern) {
+    return(list.files(path,
+                      recursive = TRUE,
+                      full.names = TRUE,
+                      pattern = pattern))
+}
+
+read_experiments <- function(path) {
+    return(bind_rows(lapply(list_targets(path, "benchmark.txt"),
+                            function (x) { read_benchmarks(x) }),
+                     lapply(list_targets(path, "opt_"),
+                            function (x) { read_baselines(x) })))
+}
+
+read_timing <- function(path_list) {
+    return(bind_rows(lapply(path_list,
+                            function (x) { read_experiments(x) })))
+}
+
+read_progression <- function(path) {
+    return(bind_rows(lapply(list_targets(path, "logbest"),
+                            function (x) { read_logbest(x) })))
+}
+
+read_all_progression <- function(path_list) {
+    return(bind_rows(lapply(path_list,
+                            function(x) { read_progression(x) })))
+}
+
+path_list = c("gpu-autotuning/experiments/GTX-980/",
+              "gpu-autotuning/experiments/GTX-750/",
+              "gpu-autotuning/experiments/GTX-750-outliers/",
+              "gpu-autotuning/experiments/GTX-680/",
+              "gpu-autotuning/experiments/Tesla-K40/",
+              "gpu-autotuning/experiments/Tesla-K40-nvcc65/",
+              "gpu-autotuning/experiments/Tesla-K20/")
+
+baseline_tuned_timing = read_timing(path_list)
+
+write.csv(baseline_tuned_timing,
+          "gpu-autotuning/experiments/baseline_tuned_timing.csv",
+          row.names = FALSE)
+
+progression = read_all_progression(path_list)
+
+write.csv(progression,
+          "gpu-autotuning/experiments/tuning_progression.csv",
+          row.names = FALSE)
+#+end_SRC
+***** Loading Data
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+df = read.csv("gpu-autotuning/experiments/baseline_tuned_timing.csv")
+
+rodinia_kernels = c("backprop", "gaussian", "hotspot", "lud", "bfs", "b+tree",
+                    "heartwall", "lavaMD", "myocyte", "Pathfinder", "needle",
+                    "kmeans", "ParticleFilterFloat", "ParticleFilterNaive")
+
+adhoc_kernels = c("MatMulGPU", "MatMulShared", "MatMulSharedUn", "MatMulUn",
+                  "SubSeqMax", "Bitonic", "Quicksort", "VecAdd")
+
+times = c("3600", "7200")
+
+not_gpus = c("GTX-750-outliers")
+
+speedups_df = bind_rows(
+    df %>%
+    filter(!(gpu %in% not_gpus),
+           kernel %in% rodinia_kernels) %>%
+    group_by(kernel, gpu) %>%
+    mutate(speedup = mean(na.omit(baseline_measurement)) /
+               min(na.omit(tuned_measurement))) %>%
+    distinct(gpu, kernel, size, time, speedup) %>%
+    filter(time %in% times,
+           time == max(time),
+           size == max(size)) %>%
+    ungroup() %>%
+    mutate(id = "Rodinia"),
+    df %>%
+    filter(!(gpu %in% not_gpus),
+           kernel %in% adhoc_kernels) %>%
+    group_by(kernel, gpu) %>%
+    mutate(speedup = mean(na.omit(baseline_measurement)) /
+               min(na.omit(tuned_measurement))) %>%
+    distinct(gpu, kernel, size, time, speedup) %>%
+    filter(time %in% times,
+           time == max(time),
+           size == max(size)) %>%
+    ungroup() %>%
+    mutate(id = "Independent"))
+#+end_SRC
+
+#+RESULTS:
+***** Speedup Plots
+#+begin_SRC R :results graphics output :session *R* :file "./img/rodinia_speedups.pdf" :width 20 :height 10 :eval no-export
+library(dplyr)
+library(ggplot2)
+
+ggplot() +
+    geom_point(data = speedups_df %>%
+                   filter(#id == "Rodinia",
+                          gpu != "Tesla-K40-nvcc65"),
+               aes(y = kernel,
+                   x = speedup,
+                   color = gpu),
+               size = 5) +
+    scale_color_brewer(palette = "Set1") +
+    theme_bw(base_size = 30) +
+    theme(legend.position = c(0.9, 0.9),
+          legend.title = element_blank(),
+          legend.background = element_blank(),
+          axis.title.y = element_blank())
+#+end_SRC
+
+#+RESULTS:
+[[file:./img/rodinia_speedups.pdf]]
