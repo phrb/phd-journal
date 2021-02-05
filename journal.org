@@ -31674,19 +31674,6 @@ str(screening_df)
 
 #+RESULTS:
 #+begin_example
-
-Attaching package: ‘dplyr’
-
-The following objects are masked from ‘package:stats’:
-
-    filter, lag
-
-The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-
-Warning message:
-replacing previous import ‘vctrs::data_frame’ by ‘tibble::data_frame’ when loading ‘dplyr’
 'data.frame':	38 obs. of  19 variables:
  $ _use_fast_math                 : chr  "on" "on" "on" "on" ...
  $ _opt_level_                    : int  2 2 2 2 2 2 2 2 2 3 ...
@@ -31858,7 +31845,7 @@ p_effects_quadro
 #+RESULTS:
 [[file:img/main_effects_quadrom1200.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 11 :height 10.5 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_quadrom1200.pdf" :width 11.2 :height 10.5 :eval no-export
 library(dplyr)
 library(ggplot2)
 
@@ -31927,8 +31914,8 @@ p_timing_quadro = ggplot() +
     ylab("Execution Time (s)") +
     ggtitle("Quadro M1200") +
     scale_color_brewer(palette = "Dark2") +
-    scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
-                       n.breaks = 3) +
+    #scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) +
+    ylim(0, NA) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(size = 29),
@@ -32259,7 +32246,7 @@ p_effects_titan
 #+RESULTS:
 [[file:img/main_effects_titanx.pdf]]
 ****** Execution Times
-#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 11 :height 10.5 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/executiontimes_screening_titanx.pdf" :width 11.2 :height 10.5 :eval no-export
 library(dplyr)
 library(ggplot2)
 
@@ -32328,8 +32315,9 @@ p_timing_titan = ggplot() +
     ylab("Execution Time (s)") +
     ggtitle("Titan X") +
     scale_color_brewer(palette = "Dark2") +
-    scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
-                       n.breaks = 4) +
+    ylim(0, NA) +
+    # scale_y_continuous(labels = scales::number_format(accuracy = 0.01),
+    #                    n.breaks = 4) +
     theme_bw(base_size = 37) +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(size = 29),
@@ -32898,6 +32886,21 @@ speedups_df = bind_rows(
 #+end_SRC
 
 #+RESULTS:
+#+begin_example
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+replacing previous import ‘vctrs::data_frame’ by ‘tibble::data_frame’ when loading ‘dplyr’
+#+end_example
 
 ****** Tuning Progress
 #+begin_SRC R :results output :session *R* :eval no-export :exports results
@@ -32973,7 +32976,15 @@ plot_df = speedups_df %>%
            gpu != "Tesla-K40-nvcc65",
            kernel != "ParticleFilterFloat",
            kernel != "ParticleFilterNaive") %>%
-    mutate(kernel = gsub("Pathfinder", "pathfinder", kernel, fixed = TRUE))
+    mutate(kernel = gsub("Pathfinder", "pathfinder", kernel, fixed = TRUE),
+           kernel = factor(kernel,
+                           levels = c("b+tree", "backprop", "bfs", "gaussian",
+                                      "heartwall", "hotspot", "kmeans",
+                                      "lavaMD", "lud", "myocyte", "needle",
+                                      "pathfinder"),
+                           labels = c("BPT", "BCK", "BFS", "GAU", "HWL",
+                                      "HOT", "KMN", "LMD", "LUD", "MYO",
+                                      "NDL", "PTF")))
 
 ggplot() +
     geom_point(data = plot_df,
@@ -33013,7 +33024,13 @@ library(stringr)
 
 plot_df = speedups_df %>%
     filter(id == "Independent",
-           gpu != "Tesla-K40-nvcc65") #%>%
+           gpu != "Tesla-K40-nvcc65") %>%
+    mutate(kernel = factor(kernel,
+                           levels = c("Bitonic", "MatMulGPU", "MatMulShared",
+                                      "MatMulSharedUn", "MatMulUn", "Quicksort",
+                                      "SubSeqMax", "VecAdd"),
+                           labels = c("BTN", "MMG", "MMS", "MSU", "MMU", "QKS",
+                                      "MSA", "VAD")))
     #mutate(kernel = str_to_title(kernel))
 
 ggplot() +
@@ -33047,7 +33064,7 @@ ggplot() +
 [[file:./img/adhoc_speedups.pdf]]
 ***** Tuning Progress
 ****** Rodinia
-#+begin_SRC R :results graphics output :session *R* :file "./img/rodinia_tuning_progress.pdf" :width 13 :height 10 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/rodinia_tuning_progress.pdf" :width 14.5 :height 10 :eval no-export
 library(dplyr)
 library(ggplot2)
 library(latex2exp)
@@ -33062,7 +33079,15 @@ prolong_max = progression %>%
     mutate(kernel = gsub("Pathfinder",
                          "pathfinder",
                          kernel,
-                         fixed = TRUE)) %>%
+                         fixed = TRUE),
+           kernel = factor(kernel,
+                           levels = c("b+tree", "backprop", "bfs", "gaussian",
+                                      "heartwall", "hotspot", "kmeans",
+                                      "lavaMD", "lud", "myocyte", "needle",
+                                      "pathfinder"),
+                           labels = c("BPT", "BCK", "BFS", "GAU", "HWL",
+                                      "HOT", "KMN", "LMD", "LUD", "MYO",
+                                      "NDL", "PTF"))) %>%
     group_by(gpu, kernel) %>%
     summarize(tuning_time = 7200,
               progression = max(progression)) %>%
@@ -33077,7 +33102,18 @@ plot_df = bind_rows(progression %>%
                     mutate(kernel = gsub("Pathfinder",
                                          "pathfinder",
                                          kernel,
-                                         fixed = TRUE)) %>%
+                                         fixed = TRUE),
+                           kernel = factor(kernel,
+                                           levels = c("b+tree", "backprop",
+                                                      "bfs", "gaussian",
+                                                      "heartwall", "hotspot",
+                                                      "kmeans", "lavaMD", "lud",
+                                                      "myocyte", "needle",
+                                                      "pathfinder"),
+                                           labels = c("BPT", "BCK", "BFS",
+                                                      "GAU", "HWL", "HOT",
+                                                      "KMN", "LMD", "LUD",
+                                                      "MYO", "NDL", "PTF"))) %>%
                     select(gpu, kernel, progression, tuning_time),
                     prolong_max)
 
@@ -33087,12 +33123,13 @@ ggplot() +
                size = 1.1,
                color = "gray50") +
     geom_line(data = plot_df,
-              size = 1.3,
+              size = 1.8,
+              alpha = 0.8,
               aes(x = tuning_time,
                   y = progression,
                   color = gpu)) +
-    #facet_wrap(. ~ kernel, scales = "free_y", ncol = 4) +
-    facet_wrap(. ~ kernel, ncol = 4) +
+    facet_wrap(. ~ kernel, scales = "free_y", ncol = 4) +
+    #facet_wrap(. ~ kernel, ncol = 4) +
     scale_color_brewer(palette = "Set1") +
     ylab(TeX("Speedup vs \\textit{-O2}")) +
     xlab("Tuning Time (s)") +
@@ -33101,15 +33138,16 @@ ggplot() +
     theme(legend.position = c(0.9, 0.2),
           legend.title = element_blank(),
           legend.background = element_blank(),
+          legend.text = element_text(size = 18),
           strip.background = element_rect(fill = "white"),
-          axis.title.x = element_text(size = 22),
+          axis.title.x = element_text(size = 24),
           strip.text = element_text(face = "italic", size = 17))
 #+end_SRC
 
 #+RESULTS:
 [[file:./img/rodinia_tuning_progress.pdf]]
 ****** Independent Kernels
-#+begin_SRC R :results graphics output :session *R* :file "./img/adhoc_tuning_progress.pdf" :width 13 :height 6.9 :eval no-export
+#+begin_SRC R :results graphics output :session *R* :file "./img/adhoc_tuning_progress.pdf" :width 14.5 :height 6.9 :eval no-export
 library(dplyr)
 library(ggplot2)
 library(latex2exp)
@@ -33124,7 +33162,13 @@ prolong_max = progression %>%
     mutate(kernel = gsub("Pathfinder",
                          "pathfinder",
                          kernel,
-                         fixed = TRUE)) %>%
+                         fixed = TRUE),
+           kernel = factor(kernel,
+                           levels = c("Bitonic", "MatMulGPU", "MatMulShared",
+                                      "MatMulSharedUn", "MatMulUn", "Quicksort",
+                                      "SubSeqMax", "VecAdd"),
+                           labels = c("BTN", "MMG", "MMS", "MSU", "MMU", "QKS",
+                                      "MSA", "VAD"))) %>%
     group_by(gpu, kernel) %>%
     summarize(tuning_time = 7200,
               progression = max(progression)) %>%
@@ -33139,13 +33183,23 @@ plot_df = bind_rows(progression %>%
                     mutate(kernel = gsub("Pathfinder",
                                          "pathfinder",
                                          kernel,
-                                         fixed = TRUE)) %>%
+                                         fixed = TRUE),
+                           kernel = factor(kernel,
+                                           levels = c("Bitonic", "MatMulGPU",
+                                                      "MatMulShared",
+                                                      "MatMulSharedUn",
+                                                      "MatMulUn", "Quicksort",
+                                                      "SubSeqMax", "VecAdd"),
+                                           labels = c("BTN", "MMG", "MMS",
+                                                      "MSU", "MMU", "QKS",
+                                                      "MSA", "VAD"))) %>%
                     select(gpu, kernel, progression, tuning_time),
                     prolong_max)
 
 ggplot() +
     geom_line(data = plot_df,
-              size = 1.3,
+              size = 1.5,
+              alpha = 0.8,
               aes(x = tuning_time,
                   y = progression,
                   color = gpu)) +
@@ -33153,18 +33207,19 @@ ggplot() +
                linetype = 2,
                size = 1.1,
                color = "gray40") +
-    #facet_wrap(. ~ kernel, scales = "free_y", ncol = 4) +
-    facet_wrap(. ~ kernel, ncol = 4) +
+    facet_wrap(. ~ kernel, scales = "free_y", ncol = 4) +
+    #facet_wrap(. ~ kernel, ncol = 4) +
     scale_color_brewer(palette = "Set1") +
     ylab(TeX("Speedup vs \\textit{-O2}")) +
     xlab("Tuning Time (s)") +
     #ylim(1.0, NA) +
     theme_bw(base_size = 19) +
-    theme(legend.position = c(0.9, 0.25),
+    theme(legend.position = c(0.9, 0.21),
           legend.title = element_blank(),
+          legend.text = element_text(size = 18),
           legend.background = element_blank(),
           strip.background = element_rect(fill = "white"),
-          axis.title.x = element_text(size = 22),
+          axis.title.x = element_text(size = 24),
           strip.text = element_text(face = "italic", size = 17))
 #+end_SRC
 
