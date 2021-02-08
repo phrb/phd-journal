@@ -226,6 +226,7 @@ read_experiment <- function(x) {
 }
 
 current_experiment <- "dlmt_spapt_experiments/data/tests/formula_log_encoded"
+#current_experiment <- "dlmt_spapt_experiments/data/tests/threshold_0.01_16x_nocube_logged"
 target_path <- paste(current_experiment, "bicgkernel", sep = "/")
 
 summary_files <- paste(target_path,
@@ -413,7 +414,8 @@ for (target_dir in target_dirs) {
 }
 
 full_data <- bind_rows(filter(full_data, technique == "DLMT"),
-                       filter(rs_data, technique == "RS", application == "bicgkernel"))
+                       filter(rs_data, technique == "RS",
+                              application == "bicgkernel"))
 
 rs_plot_data <- rs_data %>%
   filter(technique == "RS", application == "bicgkernel") %>%
@@ -27354,15 +27356,25 @@ read_rs <- function(current_path, application, complete_plot_data, full_data){
 #+RESULTS:
 #+begin_example
 
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+replacing previous import ‘vctrs::data_frame’ by ‘tibble::data_frame’ when loading ‘dplyr’
+
 Attaching package: ‘rPref’
-
-The following objects are masked from ‘package:plyr’:
-
-    empty, true
 
 The following object is masked from ‘package:dplyr’:
 
     between
+Registering fonts with R
 #+end_example
 ***** Results for =bicgkernel=
 ****** Loading Data                                           :noexport:
@@ -27459,7 +27471,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-cKpmYZ/figurea8vfjL.pdf]]
+[[file:/tmp/babel-TX7U1J/figurenax9MM.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file "./img/bicgkernel_rs_pareto.pdf" :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -27686,7 +27698,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-dNt8Ki/figure5r0tu0.pdf]]
+[[file:/tmp/babel-TX7U1J/figurek1JPiJ.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10  :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -27718,7 +27730,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureINt2cB.pdf]]
+[[file:/tmp/babel-TX7U1J/figureKyVisb.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -27749,7 +27761,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureXqbH8R.pdf]]
+[[file:/tmp/babel-TX7U1J/figure5ifJok.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -27847,7 +27859,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-oICNIQ/figureJCSGZ2.pdf]]
+[[file:/tmp/babel-TX7U1J/figureMcsVvv.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
