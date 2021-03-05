@@ -924,12 +924,36 @@ str(design_data_plot)
 #+begin_example
 'data.frame':	61 obs. of  3 variables:
  $ removed_variables: Factor w/ 12 levels "","OMP","SCR",..: 2 3 1 1 1 1 1 2 7 4 ...
+  ..- attr(*, "names")= chr [1:61] "['OMP'" "'SCR']" "[]" "[]" ...
  $ step             : int  1 1 2 3 4 1 2 3 4 4 ...
  $ experiment_id    : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
 'data.frame':	520 obs. of  3 variables:
  $ current_best_coordinate: chr  "T1_I->64" "T1_J->32" "U_J->18" "U_I->1" ...
  $ step                   : int  1 1 1 1 1 1 1 1 1 1 ...
  $ experiment_id          : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+------------------------------------------------------------------------------
+You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)
+------------------------------------------------------------------------------
+
+Attaching package: ‘plyr’
+
+The following objects are masked from ‘package:rPref’:
+
+    empty, true
+
+The following objects are masked from ‘package:dplyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+Attaching package: ‘reshape2’
+
+The following object is masked from ‘package:tidyr’:
+
+    smiths
+Registering fonts with R
 'data.frame':	999 obs. of  31 variables:
  $ id                          : int  1 2 3 4 5 6 7 8 9 10 ...
  $ T2_J                        : int  2048 1024 1024 512 1 1 1 2048 1 32 ...
@@ -1075,6 +1099,33 @@ tibble [20 × 34] (S3: tbl_df/tbl/data.frame)
  $ OMP                         : chr  "True" "False" "True" "True" ...
  $ mean_confidence_interval_sup: num  0.954 4.582 0.904 0.981 4.576 ...
  $ experiment_id               : chr  "parasilo-1" "parasilo-1" "parasilo-1" "parasilo-1" ...
+Loading required package: DoE.base
+Loading required package: grid
+Loading required package: conf.design
+
+Attaching package: ‘conf.design’
+
+The following object is masked from ‘package:plyr’:
+
+    join
+
+Registered S3 method overwritten by 'DoE.base':
+  method           from
+  factorize.factor conf.design
+
+Attaching package: ‘DoE.base’
+
+The following objects are masked from ‘package:stats’:
+
+    aov, lm
+
+The following object is masked from ‘package:graphics’:
+
+    plot.design
+
+The following object is masked from ‘package:base’:
+
+    lengths
 There were 40 warnings (use warnings() to see them)
 Joining, by = c("id", "step")
 tibble [860 × 4] (S3: tbl_df/tbl/data.frame)
@@ -1345,7 +1396,7 @@ ggplot(spread_data, aes(x = as.factor(step), fill = removed_variables)) +
 #+LABEL: fig:et-ss-be
 #+ATTR_LATEX: :width 0.7\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-cKpmYZ/figureOJ3t6W.pdf]]
+[[file:/tmp/babel-VnHilA/figurejynTYx.pdf]]
 
 ****** Fixed Factors & Values                                 :noexport:
 ******* Combined Experiments                                 :noexport:
@@ -1503,7 +1554,7 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
 #+RESULTS:
 [[file:/tmp/babel-cKpmYZ/figure1ZhJ27.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file "./img/models_no_cubic.pdf" :width 19 :height 10 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/models_no_cubic.pdf" :width 15 :height 13 :exports results
 all_parameters_plot_data <- full_data %>%
     mutate(RT_I = log2(RT_I)) %>%
     mutate(RT_J = log2(RT_J)) %>%
@@ -1520,22 +1571,30 @@ all_parameters_plot_data <- full_data %>%
     subset(technique == "RS")
 
 ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
-    facet_wrap(factor ~ ., ncol = 5, scale = "free") +
+    facet_wrap(factor ~ .,
+               ncol = 4,
+               scale = "free") +
     geom_point(alpha = 0.4,
                stat = "unique") +
     geom_quantile(formula = y ~ poly(x, 2),
-                  quantiles = c(0.01, 0.05, 0.15, 0.25),
+                  quantiles = c(0.05, 0.25, 0.5),
                   size = 1,
                   alpha = 0.6,
                   color = "darkgreen") +
-    geom_smooth(method = "lm", color = "blue") +
-    geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
-    geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)),
-               size = 2, color = "red",
+    geom_smooth(method = "lm",
+                color = "blue") +
+    # geom_smooth(method = "lm",
+    #             color = "purple",
+    #             formula = y ~ poly(x, 2),
+    #             alpha = 0.6) +
+    geom_point(data = subset(all_parameters_plot_data,
+                             cost_mean == min(cost_mean)),
+               size = 2,
+               color = "red",
                stat = "unique") +
     ylab("Execution Time (s)") +
     xlab("Factor Levels") +
-    theme_bw(base_size = 22) +
+    theme_bw(base_size = 20) +
     theme(strip.background = element_rect(fill = "white"))
 #+end_SRC
 
@@ -1568,12 +1627,12 @@ ggplot(all_parameters_plot_data, aes(x = level, y = cost_mean)) +
     geom_point(alpha = 0.4,
                stat = "unique") +
     geom_quantile(formula = y ~ poly(x, 2),
-                  quantiles = c(0.01, 0.05, 0.15, 0.25),
+                  quantiles = c(0.05, 0.25, 0.5),
                   size = 1,
                   alpha = 0.6,
                   color = "darkgreen") +
     geom_smooth(method = "lm", color = "blue") +
-    geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
+    # geom_smooth(method = "lm", color = "purple", formula = y ~ poly(x, 2), alpha = 0.6) +
     geom_point(data = subset(all_parameters_plot_data, cost_mean == min(cost_mean)),
                size = 2, color = "red",
                stat = "unique") +
@@ -12973,14 +13032,14 @@ plot_df =  read.csv("data/complete_bicgkernel_data.csv") %>%
                                          "Original",
                                          "No Cubic Terms",
                                          "Reusing Designs",
-                                         "Quantile Regression (tau = 0.05)",
-                                         "Running 8 Steps"),
+                                         "Running 8 Steps",
+                                         "Quantile Regression (tau = 0.05)"),
                               labels = c("RS",
                                          "Original",
                                          "No Cubic",
                                          "Reuse Data",
-                                         "QR (5%)",
-                                         "Extra Steps")))
+                                         "Extra Steps",
+                                         "QR (5%)")))
 
 p1 = ggplot() +
     geom_jitter(data = plot_df,
@@ -28231,15 +28290,7 @@ full_data <- rs_data[[2]]
 #+end_SRC
 
 #+RESULTS:
-
 ****** Figures
-#+begin_SRC R :results output :session *R* :eval no-export :exports results
-(2*2000^3)/307.2e9
-#+end_SRC
-
-#+RESULTS:
-: [1] 0.05208333
-
 #+begin_SRC R :results output :session *R* :eval no-export :exports results
 library(ggplot2)
 library(dplyr)
@@ -28422,7 +28473,7 @@ df <- data.frame(mean = x$S$mean[1, ],
                  )
 
 df <- df %>%
-  mutate(id = row_number())
+  dplyr::mutate(id = row_number())
 
 ggplot(df) +
   geom_point(aes(x = id, y = mean), size = 4) +
@@ -28469,7 +28520,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-XCC5io/figurecMFz1v.pdf]]
+[[file:/tmp/babel-GhpmaA/figurewW2gDS.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -28504,7 +28555,7 @@ ggplot(gpr_plot_data) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-XCC5io/figure4SaaD4.pdf]]
+[[file:/tmp/babel-VnHilA/figureqnxBTV.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports none :eval no-export
 gpr_plot_data <- subset(complete_plot_data, technique == "GPR")
@@ -28538,7 +28589,7 @@ ggplot(gpr_plot_data, aes(y = cost_mean, x = iteration)) +
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-XCC5io/figurePmbIYM.pdf]]
+[[file:/tmp/babel-VnHilA/figure00gRaE.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 10 :exports results
 rs_plot_data <- subset(complete_plot_data, technique == "RS")
@@ -28606,7 +28657,7 @@ ggplot(rs_plot_data, aes(y = cost_mean, x = iteration)) +
 #+RESULTS:
 [[file:/tmp/babel-6kiapU/figure8E0drB.pdf]]
 
-#+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports results
+#+begin_SRC R :results graphics output :session *R* :file "./img/gp_rs_dgemv_comparison.pdf" :width 13 :height 7 :exports results
 library(dplyr)
 
 large_plot_data <- complete_plot_data %>%
@@ -28669,7 +28720,7 @@ ggplot(large_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-XCC5io/figureh6PD8d.pdf]]
+[[file:./img/gp_rs_dgemv_comparison.pdf]]
 
 #+begin_SRC R :results graphics output :session *R* :file (org-babel-temp-file "figure" ".pdf") :width 13 :height 7 :exports none :eval no-export
 short_plot_data <- complete_plot_data %>%
@@ -28707,7 +28758,7 @@ ggplot(short_plot_data, aes(y = min_run_cost,
 #+LABEL: fig:a
 #+ATTR_LATEX: :width 0.65\textwidth :placement [H]
 #+RESULTS:
-[[file:/tmp/babel-XCC5io/figureOdNMsD.pdf]]
+[[file:/tmp/babel-VnHilA/figureOaBE6i.pdf]]
 ** December
 *** [2019-12-10 Tue]
 **** Graphs for Gaussian Process Regression
@@ -31616,41 +31667,37 @@ grid.arrange(p1, p2, p3, p4, ncol = 2)
 [[file:dopt_anova_experiments/img/subspaces.pdf]]
 
 ***** Histogram
-#+begin_SRC R :results graphics output :session *R* :file "dopt_anova_experiments/img/comparison_histogram.pdf" :width 7 :height 9 :eval no-export :tangle "dopt_anova_experiments/src/build_histogram.r"
+#+begin_SRC R :results graphics output :session *R* :file "dopt_anova_experiments/img/comparison_histogram.pdf" :width 7 :height 10.5 :eval no-export :tangle "dopt_anova_experiments/src/build_histogram.r"
 library(ggplot2)
 library(dplyr)
 
 #gpr_data <- read.csv("dopt_anova_experiments/data/gpr_nugget_best_points.csv") %>%
-gpr_data <- read.csv("gpr_dampening_sc30_d05_best_points.csv") %>%
-    select(slowdown, method, measurement_order, time_per_pixel) %>%
-    mutate(method = "GPRD")
-
-names(gpr_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
+# gpr_data <- read.csv("gpr_dampening_sc30_d05_best_points.csv") %>%
+#     select(slowdown, method, measurement_order, time_per_pixel) %>%
+#     mutate(method = "GPRD")
+#
+# names(gpr_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
 #gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_nosd_best_points.csv") %>%
 gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_03sd_nugget_best_points.csv") %>%
     select(slowdown, method, measurement_order, time_per_pixel) %>%
-    mutate(method = "GPR-0.3sd")
+    mutate(method = "GPR")
 
 names(gpr_lin_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
 
 df_all_methods <- read.csv("dopt_anova_experiments/data/complete_1000.csv",
                            strip.white = TRUE, header = TRUE)
 
-levels <- c("RS", "LHS", "GS", "GSR",
-            "GA","LM", "LMB", "LMBT",
-            "RQ", "DOPT", "DLM", "DLMT",
-            "GPR-0.3sd", "GPRD")
-
-selected_methods <- c("RS", "LHS", "GS", "GSR",
-                      "GA", "LM", "DLMT", "GPR-0.3sd", "GPRD")
+levels <- c("RS", "LHS", "GS", "GSR", "GA", "LM", "RQ", "DLMT", "GPR")
+labels <- c("RS", "LHS", "GS", "GSR", "GA", "LM", "QR", "DLMT", "GPR")
 
 df_all_methods <- df_all_methods %>%
     select(slowdown, method, point_number, time_per_pixel) %>%
-    bind_rows(gpr_data, gpr_lin_data) %>%
+    bind_rows(gpr_lin_data) %>%
     mutate(method = factor(method,
-                           levels = levels)) %>%
-    filter(method %in% selected_methods) %>%
+                           levels = levels,
+                           labels = labels)) %>%
+    filter(method %in% labels) %>%
     group_by(method) %>%
     mutate(mean = mean(slowdown),
            median = median(slowdown),
@@ -31701,7 +31748,6 @@ ggplot(df_all_methods) +
                         labels = c("Mean error")) +
     ggtitle("") +
     theme(legend.position = "none",
-          text = element_text(family="serif"),
           strip.background = element_rect(fill = "white"))
 #+end_SRC
 
@@ -33555,3 +33601,227 @@ ggplot() +
 
 #+RESULTS:
 [[file:./img/adhoc_tuning_progress.pdf]]
+** March
+*** [2021-03-04 Thu]
+**** Computing Roofline, Peak Performance for SPAPT's DGEMV on the Xeon 2630v3 :ATTACH:
+:PROPERTIES:
+:Attachments: Screenshot_2021-03-02%20BigBlueButton%20-%20Réunion%20Hebdomadaire%20Pedro(5).png
+:ID:       bc7d06ad-e454-4bf7-8d84-fd4df9507cb9
+:END:
+***** Specs
+- Processor: Xeon E5-2630V3
+- Single Core Turbo Clock: 3.2e9 Hz
+- DGEMV Input Size: M = 20000, N = 20000
+
+***** Old Discussion
+- Run MKL with 20000 at Xeon 2630v3
+- Verify if matrix initialization is accounted for
+
+Finalement, EGO explore bien mais ne  gagne pas beaucoup par rapport au sampling
+initial. En même temps, il n'y a p-e pas grand chose à gagner.
+
+Xeon
+xeon_e5_2630_v3. https://ranker.sisoftware.co.uk/top_device.php?q=c2ffc9f1d7bad7eadafc8eb383a5ccf1c1e78fb282a4dce1d1f792f7cafdcbfddba895a492&l=en
+annonce 26.14GFLOPS mais bon..
+
+- 2 inst/cycle * 2 (FMA) = 4 flops/cycle * la taille du vecteur (4 pour l'AVX-2,
+  265 bits)
+- 2.4 GHz * 8 cores -> 307.2 GFLOPs
+- 2.8    GHz    (Turbo     all    cores)    *    8     cores->    358.4    Gflop
+  https://www.cpu-monkey.com/fr/compare_cpu-intel_xeon_e5_2630_v3-492-vs-intel_xeon_e3_1225_v3-75
+- 3.2 GHz (1 core)
+
+La bonne ref pour tout ça, c'est :
+https://ark.intel.com/content/www/us/en/ark/products/83356/intel-xeon-processor-e5-2630-v3-20m-cache-2-40-ghz.html
+
+Pour "mm" (DGEMM):
+
+Les matrices font 2,000 de côté
+
+Une  mult+une add  donc: $2*2,000^3/307.2E9$  = 0,052  secondes... :(  C'est pas
+possible, que ça soit un produit de matrices pour cette taille là.
+
+bon, finalement,c  'est un DGEMV  donc on peut  toujours calculer la  borne flop
+$2*20,000^2/307.2E9$ = 2 milisecondes... mais  c'est memory bound :) En mémoire:
+$20,000^2*8/ 59 E9 $ = 54 milisecondes.  On est de l'ordre de la seconde (1.13s)
+donc un facteur 20 par rapport à l'optimal.
+
+2 types de RAM. Si c'est un serveur avec de la RAM 1600, on perd 15% donc on est
+loin de la crète.
+
+Il faudrait  se comparer à la  MKL pour bien faire  mais il est possible  que le
+kernel paramétré  de SPAPT soit incapable  d'atteindre cette crète (qui  dans le
+cas du DGEMV devrait être proche d'un memcopy).
+
+Orio utilise gcc en interne;
+
+On pourrait réessayer  avec DGEMM mais on  peut avoir le même  problème. Si leur
+kernel paramétré est mal foutu on sera loin de la crète...
+
+Le set de benchmark est mal fichu (badly designed) au final. :(
+
+***** Some Calculations
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+(2 * 20000 ^ 3) / 307.2e9
+#+end_SRC
+
+#+RESULTS:
+: [1] 52.08333
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+20000 * 20000 * 2
+#+end_SRC
+
+#+RESULTS:
+: [1] 8e+08
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+(20000 * 20000) + 20000
+#+end_SRC
+
+#+RESULTS:
+: [1] 400020000
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+0.8 / 51.2
+#+end_SRC
+
+#+RESULTS:
+: [1] 0.015625
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+3.2 / 59
+#+end_SRC
+
+#+RESULTS:
+: [1] 0.05423729
+
+Time taken: max(mem, cpu)
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+0.054
+#+end_SRC
+
+#+RESULTS:
+: [1] 0.054
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+51.2 / 59
+#+end_SRC
+
+#+RESULTS:
+: [1] 0.8677966
+
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+1.13 / 0.054
+#+end_SRC
+
+#+RESULTS:
+: [1] 20.92593
+
+***** Theoretical Roofline Model for the Xeon E5 2630 v3
+#+begin_SRC R :results graphics output :session *R* :file "img/theoretical_roofline_xeonE52630v3.pdf" :width 15 :height 10 :eval no-export
+library(ggplot2)
+library(dplyr)
+library(directlabels)
+library(ggrepel)
+library(latex2exp)
+
+roofline <- function(peak_perf, peak_mem, arithm_intensity) {
+    return(min(peak_mem * arithm_intensity, peak_perf))
+}
+
+perf_gemv <- function(size) {
+    return(((size ^ 2) * 2) / 1e9)
+}
+
+mem_gemv <- function(size) {
+    return((((size ^ 2) + size) * 8) / 1e9)
+}
+
+peak_perf_8core = 307.2
+
+freq_8core = 2.4
+freq_1core = 3.2
+cores = 8
+
+peak_perf_1core = ((peak_perf_8core / freq_8core) *
+                   freq_1core) / cores
+
+peak_mem = 59
+
+arithm_intensity = seq(0, 2, length.out = 1000)
+
+roofline_df = data.frame(arithmetic_intensity = arithm_intensity,
+                         performance = sapply(arithm_intensity,
+                                              function(x) {
+                                                  roofline(peak_perf_1core, peak_mem, x) }))
+
+roofline_df = roofline_df %>%
+    mutate(memory_bound = factor(performance < peak_perf_1core,
+                                 levels = c(TRUE, FALSE),
+                                 labels = c("Memory Bound",
+                                            "Compute Bound")))
+gemv_size = 20000
+gemv_perf = perf_gemv(gemv_size)
+gemv_mem = mem_gemv(gemv_size)
+
+gemv_peak_perf = max(gemv_perf / peak_perf_1core,
+                     gemv_mem / peak_mem)
+
+gemv_df = data.frame(id = "GEMV",
+                     peak_theoretical = gemv_peak_perf,
+                     arithmetic_intensity = gemv_perf / gemv_mem,
+                     peak_achieved = 1.160198)
+
+ggplot() +
+    geom_line(data = roofline_df,
+              aes(x = arithmetic_intensity,
+                  y = performance,
+                  color = memory_bound),
+              size = 2.4) +
+    geom_dl(data = roofline_df %>%
+                filter(performance < peak_perf_1core),
+            aes(x = arithmetic_intensity,
+                y = performance,
+                color = memory_bound,
+                label = paste(peak_mem, "GB/s")),
+            method = list("smart.grid", rot = 53, cex = 2.5, vjust = 0)) +
+    geom_dl(data = roofline_df %>%
+                filter(performance >= peak_perf_1core),
+            aes(x = arithmetic_intensity,
+                y = performance,
+                color = memory_bound,
+                label = paste(peak_perf_1core, "GFLOPs/s")),
+            method = list("smart.grid", rot = 0, cex = 2.5, vjust = 2.7)) +
+    geom_point(data = gemv_df,
+               aes(x = arithmetic_intensity,
+                   y = arithmetic_intensity * peak_mem),
+               size = 6) +
+    geom_text_repel(data = gemv_df,
+               aes(x = arithmetic_intensity,
+                   y = arithmetic_intensity * peak_mem,
+                   label = "Theoretical GEMV (N = 2e4)"),
+               size = 11,
+               hjust = -0.15) +
+    geom_point(data = gemv_df,
+               aes(x = arithmetic_intensity,
+                   y = peak_achieved),
+               size = 6) +
+    geom_text_repel(data = gemv_df,
+               aes(x = arithmetic_intensity,
+                   y = peak_achieved,
+                   label = "Best Achieved GEMV (20x slower)"),
+               size = 11,
+               hjust = -0.15) +
+    ylab("Single Core GFLOPs/s") +
+    xlab("FLOPs/byte") +
+    scale_color_brewer(palette = "Dark2") +
+    theme_bw(base_size = 28) +
+    theme(legend.position = c(0.86, 0.1),
+          legend.background = element_blank(),
+          legend.title = element_blank(),
+          legend.text = element_text(size = 30))
+#+end_SRC
+
+#+RESULTS:
+[[file:img/theoretical_roofline_xeonE52630v3.pdf]]
