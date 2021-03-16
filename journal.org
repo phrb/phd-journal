@@ -33000,6 +33000,117 @@ ggplot(df_all_methods) +
 #+RESULTS:
 [[file:dopt_anova_experiments/img/comparison_histogram.pdf]]
 
+***** Final Table
+#+HEADER: :results output latex :session *R* :exports results :eval no-export
+#+BEGIN_SRC R
+library(xtable)
+library(dplyr)
+
+gpr_lin_data <- read.csv("dopt_anova_experiments/data/gpr_03sd_nugget_best_points.csv") %>%
+    select(slowdown, method, measurement_order, time_per_pixel) %>%
+    mutate(method = "GPR")
+
+names(gpr_lin_data) <- c("slowdown", "method", "point_number", "time_per_pixel")
+
+df_all_methods = read.csv("./dopt_anova_experiments/data/complete_1000.csv",
+                          strip.white = T, header = T) %>%
+    select(slowdown, method, point_number) %>%
+    bind_rows(gpr_lin_data) %>%
+    filter(method %in% c("RS", "LHS", "GS", "GSR", "GA", "LM",
+                         "DLMT", "RQ", "GPR")) %>%
+    mutate(method =  factor(method,
+                            levels = c("RS", "LHS", "GS", "GSR", "GA", "LM",
+                                       "RQ", "DLMT", "GPR"),
+                            labels = c("Random Sampling (RS)",
+                                       "Latin Hypercube Sampling (LHS)",
+                                       "Greedy Search (GS)",
+                                       "Greedy Search w. Restart (GSR)",
+                                       "Genetic Algorithm (GA)",
+                                       "Linear Model (LM)",
+                                       "Quantile Regression (QR)",
+                                       "D-Opt., Linear Model w. Transform (DLMT)",
+                                       "Gaussian Process Regression w. EI (GPR)")))
+
+summaries = df_all_methods %>%
+    group_by(method) %>%
+    summarise(method = method,
+              mean_slowdown = mean(slowdown),
+              min_slowdown = min(slowdown),
+              max_slowdown = max(slowdown),
+              mean_budget = mean(point_number),
+              max_budget = max(point_number),
+              .groups = "keep") %>%
+    distinct() %>%
+    ungroup()
+
+cap <- paste("Slowdown and budget used by 7 optimization methods on",
+             "the Laplacian Kernel, using a budget of 125 points with 1000 repetitions")
+
+x <- xtable(summaries,
+            caption = cap,
+            digits = 2,
+            label = "tab:gpu_laplacian_compare_budget")
+
+align(x) <- xalign(x)
+display(x) <- display(x)
+
+header = paste(paste("Method", "Mean", "Min.", "Max.", "Mean", "Max.",
+               sep = " & "), "\\\\ \n \\midrule \n")
+
+super_header = paste("\\toprule \n",
+                     "& \\multicolumn{3}{c}{Slowdown} & \\multicolumn{2}{c}{Budget}",
+                     "\\\\ \n")
+
+bottom = "\\bottomrule\n"
+
+print(x,
+      size = "\\small",
+      booktabs = TRUE,
+      include.rownames = FALSE,
+      include.colnames = FALSE,
+      hline.after = NULL,
+      add.to.row = list(pos = as.list(c(-1,
+                                        0,
+                                        7,
+                                        nrow(summaries))),
+                        command = c(super_header,
+                                    header,
+                                    "\\rowcolor{red!25}",
+                                    bottom)),
+      math.style.exponents = TRUE,
+      table.placement = "b",
+      caption.placement = "top")
+#+END_SRC
+
+#+RESULTS:
+#+begin_export latex
+% latex table generated in R 4.0.4 by xtable 1.8-4 package
+% Mon Mar 15 17:18:51 2021
+\begin{table}[b]
+\centering
+\caption{Slowdown and budget used by 7 optimization methods on the Laplacian Kernel, using a budget of 125 points with 1000 repetitions}
+\label{tab:gpu_laplacian_compare_budget}
+\begingroup\small
+\begin{tabular}{lrrrrr}
+  \toprule
+ & \multicolumn{3}{c}{Slowdown} & \multicolumn{2}{c}{Budget} \\
+  Method & Mean & Min. & Max. & Mean & Max. \\
+ \midrule
+Random Sampling (RS) & 1.10 & 1.00 & 1.39 & 120.00 & 120 \\
+  Latin Hypercube Sampling (LHS) & 1.17 & 1.00 & 1.52 & 98.92 & 125 \\
+  Greedy Search (GS) & 6.46 & 1.00 & 124.76 & 22.17 & 106 \\
+  Greedy Search w. Restart (GSR) & 1.23 & 1.00 & 3.16 & 120.00 & 120 \\
+  Genetic Algorithm (GA) & 1.12 & 1.00 & 1.65 & 120.00 & 120 \\
+  Linear Model (LM) & 1.02 & 1.01 & 3.77 & 119.00 & 119 \\
+  Quantile Regression (QR) & 1.02 & 1.01 & 2.06 & 119.00 & 119 \\
+   \rowcolor{red!25}D-Opt., Linear Model w. Transform (DLMT) & 1.01 & 1.01 & 1.01 & 54.84 &  56 \\
+  Gaussian Process Regression w. EI (GPR) & 1.04 & 1.01 & 1.27 & 71.45 & 120 \\
+   \bottomrule
+\end{tabular}
+\endgroup
+\end{table}
+#+end_export
+
 *** [2020-09-18 Fri]
 **** R session sample
 #+begin_SRC R :results output :session *R3* :eval no-export :exports results
