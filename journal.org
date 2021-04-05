@@ -34223,6 +34223,130 @@ titan_ot_df = titan_ot_df %>%
 :  $ mean_r         : num [1:30] 0.186 0.186 0.186 0.186 0.186 ...
 :  $ ci95           : num [1:30] 0.0108 0.0108 0.0108 0.0108 0.0108 ...
 
+***** Computing Speedups DataFrame
+****** Merge Data
+#+begin_SRC R :results output :session *R* :eval no-export :exports results
+library(dplyr)
+
+ot_titan = bind_cols(titan_baselines_df %>%
+                     filter(`_opt_level_` == 3,
+                            !(experiment_id == "Baseline (HWL)" &
+                              response > 2.0)) %>%
+                     select(GPU,
+                            experiment_type,
+                            experiment_id,
+                            response) %>%
+                     group_by(experiment_id) %>%
+                     summarise(mean_baseline = mean(response)) %>%
+                     ungroup(),
+                     titan_ot_df %>%
+                     distinct() %>%
+                     select(GPU,
+                            experiment_type,
+                            experiment_id,
+                            response) %>%
+                     group_by(experiment_id) %>%
+                     summarise(mean_predicted = mean(response)) %>%
+                     ungroup() %>%
+                     select(-experiment_id)) %>%
+    mutate(speedup = mean_baseline / mean_predicted,
+           GPU = "Titan X",
+           experiment_type = "OpenTuner") %>%
+    mutate(experiment_id = gsub("Baseline (",
+                                "",
+                                experiment_id,
+                                fixed = TRUE)) %>%
+    mutate(experiment_id = gsub(")",
+                                "",
+                                experiment_id,
+                                fixed = TRUE))
+
+ot_quadro = bind_cols(quadro_baselines_df %>%
+                      filter(`_opt_level_` == 3) %>%
+                      select(experiment_type,
+                             experiment_id,
+                             response) %>%
+                      group_by(experiment_id) %>%
+                      summarise(mean_baseline = mean(response)) %>%
+                      ungroup(),
+                      quadro_ot_df %>%
+                      distinct() %>%
+                      select(experiment_type,
+                             experiment_id,
+                             response) %>%
+                      group_by(experiment_id) %>%
+                      summarise(mean_predicted = mean(response)) %>%
+                      ungroup() %>%
+                      select(-experiment_id)) %>%
+    mutate(speedup = mean_baseline / mean_predicted,
+           GPU = "Quadro M1200",
+           experiment_type = "OpenTuner") %>%
+    mutate(experiment_id = gsub("Baseline (",
+                                "",
+                                experiment_id,
+                                fixed = TRUE)) %>%
+    mutate(experiment_id = gsub(")",
+                                "",
+                                experiment_id,
+                                fixed = TRUE))
+
+all_speedups_df = bind_rows(quadro_screening_speedups %>%
+                            mutate(experiment_type = "Screening"),
+                            titan_screening_speedups %>%
+                            mutate(experiment_type = "Screening"),
+                            ot_titan,
+                            ot_quadro)
+
+write.csv(all_speedups_df,
+          "autotuning_screening_experiment/data/all_speedups.csv",
+          row.names = FALSE)
+#+end_SRC
+****** Plot
+#+begin_SRC R :results graphics output :session *R* :file "./img/all_speedups.pdf" :width 20 :height 10.5 :eval no-export
+library(ggplot2)
+
+df = read.csv("autotuning_screening_experiment/data/all_speedups.csv") %>%
+    mutate(experiment_type = factor(experiment_type,
+                                    levels = c("Screening",
+                                               "OpenTuner")))
+
+ggplot() +
+    geom_point(data = df,
+               size = 7,
+               alpha = 1,
+               aes(y = experiment_id,
+                   x = speedup,
+                   color = GPU),
+               position = position_dodge(width = 0.8),
+               show.legend = TRUE) +
+    geom_vline(data = df,
+               aes(y = experiment_id),
+               linetype = 2,
+               xintercept = 1) +
+    geom_linerange(data = df,
+                   aes(y = experiment_id,
+                       xmin = speedup,
+                       xmax = 1.0,
+                       color = GPU),
+                   linetype = 2,
+                   position = position_dodge(width = 0.8),
+                   show.legend = FALSE) +
+    facet_grid(. ~ experiment_type) +
+    xlab("Speedup vs. -O3") +
+    scale_color_brewer(palette = "Dark2") +
+    theme_bw(base_size = 37) +
+    theme(axis.title.y = element_blank(),
+          legend.position = c(0.85, 0.9),
+          legend.background = element_blank(),
+          legend.title = element_blank(),
+          legend.text = element_text(size = 33),
+          strip.text = element_text(size = 33),
+          strip.background = element_rect(fill = "transparent"))
+#+end_SRC
+
+#+RESULTS:
+[[file:./img/all_speedups.pdf]]
+
 ***** Loading Longer OpenTuner Data
 ****** Quadro M1200
 #+begin_SRC R :results output :session *R* :eval no-export :exports results
