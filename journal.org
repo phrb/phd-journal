@@ -33372,6 +33372,7 @@ experiments_df = bind_rows(lapply(predictions_files,
              response > 0.102))
 
 str(experiments_df)
+quadro_experiments_df = experiments_df
 
 baselines_df = bind_rows(lapply(baseline_files,
                                 function(x) {
@@ -33387,6 +33388,7 @@ baselines_df = bind_rows(lapply(baseline_files,
     filter(!(experiment_id == "Baseline (NDL)" &
              response > 0.102))
 str(baselines_df)
+quadro_baselines_df = baselines_df
 
 screening_df = bind_rows(lapply(screening_files,
                                 function(x) {
@@ -33403,6 +33405,7 @@ screening_df = bind_rows(lapply(screening_files,
              response > 0.102))
 
 str(screening_df)
+quadro_screening_df = screening_df
 #+end_SRC
 
 #+RESULTS:
@@ -33695,6 +33698,9 @@ speedups = bind_cols(baselines_df %>%
                                 experiment_id,
                                 fixed = TRUE))
 
+quadro_screening_speedups = speedups %>%
+    mutate(GPU = "Quadro M1200")
+
 p_speedup_quadro = ggplot() +
     geom_point(data = speedups,
                size = 4,
@@ -33775,6 +33781,7 @@ experiments_df = bind_rows(lapply(predictions_files,
              response > 2.0))
 
 str(experiments_df)
+titan_experiments_df = experiments_df
 
 baselines_df = bind_rows(lapply(baseline_files,
                                 function(x) {
@@ -33789,6 +33796,7 @@ baselines_df = bind_rows(lapply(baseline_files,
              response > 2.0))
 
 str(baselines_df)
+titan_baselines_df = baselines_df
 
 screening_df = bind_rows(lapply(screening_files,
                                 function(x) {
@@ -33804,6 +33812,7 @@ screening_df = bind_rows(lapply(screening_files,
 
 
 str(screening_df)
+titan_screening_df = screening_df
 #+end_SRC
 
 #+RESULTS:
@@ -34072,7 +34081,8 @@ speedups = bind_cols(baselines_df %>%
                      filter(`_opt_level_` == 3,
                             !(experiment_id == "Baseline (HWL)" &
                               response > 2.0)) %>%
-                     select(experiment_type,
+                     select(GPU,
+                            experiment_type,
                             experiment_id,
                             response) %>%
                      group_by(experiment_id) %>%
@@ -34080,7 +34090,8 @@ speedups = bind_cols(baselines_df %>%
                      ungroup(),
                      experiments_df %>%
                      distinct() %>%
-                     select(experiment_type,
+                     select(GPU,
+                            experiment_type,
                             experiment_id,
                             response) %>%
                      group_by(experiment_id) %>%
@@ -34096,6 +34107,9 @@ speedups = bind_cols(baselines_df %>%
                                 "",
                                 experiment_id,
                                 fixed = TRUE))
+
+titan_screening_speedups = speedups %>%
+    mutate(GPU = "Titan X")
 
 p_speedup_titan = ggplot() +
     geom_point(data = speedups,
@@ -34156,6 +34170,8 @@ ot_df = bind_rows(lapply(paths, function(x) {
     }))
 
 str(ot_df)
+quadro_ot_df = ot_df %>%
+    mutate(GPU = "Quadro M1200")
 #+end_SRC
 
 #+RESULTS:
@@ -34194,6 +34210,9 @@ titan_ot_df = bind_rows(lapply(paths, function(x) {
     }))
 
 str(titan_ot_df)
+
+titan_ot_df = titan_ot_df %>%
+    mutate(GPU = "Titan X")
 #+end_SRC
 
 #+RESULTS:
