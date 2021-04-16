@@ -30408,7 +30408,6 @@ x_allowed$uncond_y <- simulate(reg, cond = FALSE, newdata = dplyr::select(x_allo
 #+RESULTS:
 #+begin_example
 
-
 optimisation start
 ------------------
 ,* estimation method   : MLE
@@ -30424,7 +30423,7 @@ optimisation start
 
 N = 1, M = 5 machine precision = 2.22045e-16
 At X0, 0 variables are exactly at the bounds
-At iterate     0  f=      -0.5438  |proj g|=   1.6681e-60
+At iterate     0  f=      -0.5438  |proj g|=   7.6521e-99
 Derivative >= 0, backtracking line search impossible.final  value -0.543801
 stopped after 0 iterations
 #+end_example
@@ -30447,7 +30446,7 @@ ggplot(data = gpr_data, aes(x = x, y = y)) +
 #+end_SRC
 
 #+RESULTS:
-[[file:/tmp/babel-VOewyd/figure4dUwKd.png]]
+[[file:/tmp/babel-A1cFSB/figureSD6oJw.png]]
 
 **** Plotting Covariance Kernels
 ***** Constant
